@@ -1,75 +1,75 @@
-import { useState } from 'react'
-import { Navigate } from '@tanstack/react-router'
-import { Lock, Shield } from 'lucide-react'
-import { useAuthStore } from '@/stores/use-auth-store'
-import { ForgotPasswordForm } from '../forgot-password/components/forgot-password-form'
-import { FloatingParticles } from './components/floating-particles'
-import { LoginForm } from './components/user-auth-form'
+import { useState } from "react";
+import { Navigate } from "@tanstack/react-router";
+import { Lock, Shield } from "lucide-react";
+import { useAuthStore } from "@/stores/use-auth-store";
+import { ForgotPasswordForm } from "../forgot-password/components/forgot-password-form";
+import { FloatingParticles } from "./components/floating-particles";
+import { LoginForm } from "./components/user-auth-form";
 
 // ✅ your component
 
 const AdminLogin = () => {
-  const { isAuthenticated } = useAuthStore()
-  const [showForgotPassword, setShowForgotPassword] = useState(false)
+  const { isAuthenticated } = useAuthStore();
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
-  if (typeof window !== 'undefined' && isAuthenticated) {
-    return <Navigate to='/' />
+  if (typeof window !== "undefined" && isAuthenticated) {
+    return <Navigate to="/" />;
   }
 
   return (
-    <div className='relative flex min-h-screen bg-gray-900 text-white'>
+    <div className="relative flex min-h-screen bg-gray-900 text-white">
       {/* Full-screen background elements */}
       <div
-        className='absolute inset-0'
+        className="absolute inset-0"
         style={{
           backgroundImage:
-            'radial-gradient(circle at 15% 50%, #E80339, rgba(232, 3, 57, 0) 30%), radial-gradient(circle at 85% 40%, #FFFFFF, rgba(255, 255, 255, 0) 40%)',
+            "radial-gradient(circle at 15% 50%, #E80339, rgba(232, 3, 57, 0) 30%), radial-gradient(circle at 85% 40%, #FFFFFF, rgba(255, 255, 255, 0) 40%)",
           opacity: 0.15,
         }}
       />
       <FloatingParticles />
       <div
-        className='absolute inset-0 opacity-10'
+        className="absolute inset-0 opacity-10"
         style={{
           backgroundImage:
-            'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0)',
-          backgroundSize: '20px 20px',
+            "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0)",
+          backgroundSize: "20px 20px",
         }}
       />
 
       {/* Left visual panel */}
-      <div className='relative hidden w-1/2 lg:flex'>
-        <div className='relative z-10 m-auto max-w-lg p-10 text-center'>
-          <div className='mb-8 animate-pulse'>
-            <div className='mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-white/20 bg-white/10 backdrop-blur-sm'>
-              <Shield className='h-10 w-10 text-white' />
+      <div className="relative hidden w-1/2 lg:flex">
+        <div className="relative z-10 m-auto max-w-lg p-10 text-center">
+          <div className="mb-8 animate-pulse">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-white/20 bg-white/10 backdrop-blur-sm">
+              <Shield className="h-10 w-10 text-white" />
             </div>
           </div>
-          <h1 className='mb-6 bg-gradient-to-r from-[#E80339] to-white bg-clip-text text-4xl font-bold text-transparent'>
+          <h1 className="mb-6 bg-gradient-to-r from-[#E80339] to-white bg-clip-text text-4xl font-bold text-transparent">
             Project Management
           </h1>
-          <p className='mb-8 text-xl opacity-90'>
-            Secure access to your administrative dashboard with advanced
+          <p className="mb-8 text-xl opacity-90">
+            Secure access to your Management system with advanced
             security features
           </p>
         </div>
       </div>
 
       {/* Right login / forgot password form */}
-      <div className='relative z-10 flex flex-1 items-center justify-center p-4'>
-        <div className='w-full max-w-md'>
-          <div className='rounded-2xl border border-white/20 bg-white/5 p-8 shadow-2xl backdrop-blur-lg'>
-            <div className='mb-8 space-y-3 text-center'>
-              <div className='mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#E80339] to-gray-800 shadow-lg'>
-                <Lock className='h-8 w-8 text-white' />
+      <div className="relative z-10 flex flex-1 items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="rounded-2xl border border-white/20 bg-white/5 p-8 shadow-2xl backdrop-blur-lg">
+            <div className="mb-8 space-y-3 text-center">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#E80339] to-gray-800 shadow-lg">
+                <Lock className="h-8 w-8 text-white" />
               </div>
-              <h1 className='text-3xl font-bold text-white'>
-                {showForgotPassword ? 'Forgot Password' : 'Welcome Back'}
+              <h1 className="text-3xl font-bold text-white">
+                {showForgotPassword ? "Forgot Password" : "Welcome Back"}
               </h1>
-              <p className='text-gray-400'>
+              <p className="text-gray-400">
                 {showForgotPassword
-                  ? 'Enter your email to reset your password'
-                  : 'Please sign in to your system account'}
+                  ? "Enter your email to reset your password"
+                  : "Please sign in to your system account"}
               </p>
             </div>
 
@@ -80,10 +80,10 @@ const AdminLogin = () => {
             ) : (
               <>
                 <LoginForm />
-                <div className='mt-4 text-center'>
+                <div className="mt-4 text-center">
                   <button
                     onClick={() => setShowForgotPassword(true)}
-                    className='text-sm font-medium text-[#E80339] hover:underline'
+                    className="text-sm font-medium text-[#fff] hover:underline"
                   >
                     Forgot Password?
                   </button>
@@ -94,7 +94,7 @@ const AdminLogin = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default AdminLogin
+export default AdminLogin;

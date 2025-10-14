@@ -21,8 +21,10 @@ import { Route as authSignInRouteImport } from './routes/(auth)/sign-in'
 import { Route as authOtpRouteImport } from './routes/(auth)/otp'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
+import { Route as AuthenticatedTechnologyIndexRouteImport } from './routes/_authenticated/technology/index'
+import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects/index'
 import { Route as AuthenticatedKanbanBoardIndexRouteImport } from './routes/_authenticated/kanban-board/index'
-import { Route as AuthenticatedCouponsIndexRouteImport } from './routes/_authenticated/coupons/index'
+import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -83,16 +85,28 @@ const AuthenticatedUsersIndexRoute = AuthenticatedUsersIndexRouteImport.update({
   path: '/users/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTechnologyIndexRoute =
+  AuthenticatedTechnologyIndexRouteImport.update({
+    id: '/technology/',
+    path: '/technology/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProjectsIndexRoute =
+  AuthenticatedProjectsIndexRouteImport.update({
+    id: '/projects/',
+    path: '/projects/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedKanbanBoardIndexRoute =
   AuthenticatedKanbanBoardIndexRouteImport.update({
     id: '/kanban-board/',
     path: '/kanban-board/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedCouponsIndexRoute =
-  AuthenticatedCouponsIndexRouteImport.update({
-    id: '/coupons/',
-    path: '/coupons/',
+const AuthenticatedClientsIndexRoute =
+  AuthenticatedClientsIndexRouteImport.update({
+    id: '/clients/',
+    path: '/clients/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
@@ -107,8 +121,10 @@ export interface FileRoutesByFullPath {
   '/503': typeof errors503Route
   '/unauthorized': typeof errorsUnauthorizedRoute
   '/': typeof AuthenticatedIndexRoute
-  '/coupons': typeof AuthenticatedCouponsIndexRoute
+  '/clients': typeof AuthenticatedClientsIndexRoute
   '/kanban-board': typeof AuthenticatedKanbanBoardIndexRoute
+  '/projects': typeof AuthenticatedProjectsIndexRoute
+  '/technology': typeof AuthenticatedTechnologyIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
 }
 export interface FileRoutesByTo {
@@ -122,8 +138,10 @@ export interface FileRoutesByTo {
   '/503': typeof errors503Route
   '/unauthorized': typeof errorsUnauthorizedRoute
   '/': typeof AuthenticatedIndexRoute
-  '/coupons': typeof AuthenticatedCouponsIndexRoute
+  '/clients': typeof AuthenticatedClientsIndexRoute
   '/kanban-board': typeof AuthenticatedKanbanBoardIndexRoute
+  '/projects': typeof AuthenticatedProjectsIndexRoute
+  '/technology': typeof AuthenticatedTechnologyIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
 }
 export interface FileRoutesById {
@@ -139,8 +157,10 @@ export interface FileRoutesById {
   '/(errors)/503': typeof errors503Route
   '/(errors)/unauthorized': typeof errorsUnauthorizedRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
-  '/_authenticated/coupons/': typeof AuthenticatedCouponsIndexRoute
+  '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
   '/_authenticated/kanban-board/': typeof AuthenticatedKanbanBoardIndexRoute
+  '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
+  '/_authenticated/technology/': typeof AuthenticatedTechnologyIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
 }
 export interface FileRouteTypes {
@@ -156,8 +176,10 @@ export interface FileRouteTypes {
     | '/503'
     | '/unauthorized'
     | '/'
-    | '/coupons'
+    | '/clients'
     | '/kanban-board'
+    | '/projects'
+    | '/technology'
     | '/users'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -171,8 +193,10 @@ export interface FileRouteTypes {
     | '/503'
     | '/unauthorized'
     | '/'
-    | '/coupons'
+    | '/clients'
     | '/kanban-board'
+    | '/projects'
+    | '/technology'
     | '/users'
   id:
     | '__root__'
@@ -187,8 +211,10 @@ export interface FileRouteTypes {
     | '/(errors)/503'
     | '/(errors)/unauthorized'
     | '/_authenticated/'
-    | '/_authenticated/coupons/'
+    | '/_authenticated/clients/'
     | '/_authenticated/kanban-board/'
+    | '/_authenticated/projects/'
+    | '/_authenticated/technology/'
     | '/_authenticated/users/'
   fileRoutesById: FileRoutesById
 }
@@ -291,6 +317,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/technology/': {
+      id: '/_authenticated/technology/'
+      path: '/technology'
+      fullPath: '/technology'
+      preLoaderRoute: typeof AuthenticatedTechnologyIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/projects/': {
+      id: '/_authenticated/projects/'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof AuthenticatedProjectsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/kanban-board/': {
       id: '/_authenticated/kanban-board/'
       path: '/kanban-board'
@@ -298,11 +338,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedKanbanBoardIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/coupons/': {
-      id: '/_authenticated/coupons/'
-      path: '/coupons'
-      fullPath: '/coupons'
-      preLoaderRoute: typeof AuthenticatedCouponsIndexRouteImport
+    '/_authenticated/clients/': {
+      id: '/_authenticated/clients/'
+      path: '/clients'
+      fullPath: '/clients'
+      preLoaderRoute: typeof AuthenticatedClientsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
   }
@@ -310,15 +350,19 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
-  AuthenticatedCouponsIndexRoute: typeof AuthenticatedCouponsIndexRoute
+  AuthenticatedClientsIndexRoute: typeof AuthenticatedClientsIndexRoute
   AuthenticatedKanbanBoardIndexRoute: typeof AuthenticatedKanbanBoardIndexRoute
+  AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
+  AuthenticatedTechnologyIndexRoute: typeof AuthenticatedTechnologyIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
-  AuthenticatedCouponsIndexRoute: AuthenticatedCouponsIndexRoute,
+  AuthenticatedClientsIndexRoute: AuthenticatedClientsIndexRoute,
   AuthenticatedKanbanBoardIndexRoute: AuthenticatedKanbanBoardIndexRoute,
+  AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
+  AuthenticatedTechnologyIndexRoute: AuthenticatedTechnologyIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
 }
 
