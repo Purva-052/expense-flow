@@ -1,11 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unused-expressions */
+/* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { HTMLAttributes, useState } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 // import { useNavigate } from '@tanstack/react-router'
-import { useAuthStore } from '@/stores/use-auth-store'
+// import { useAuthStore } from '@/stores/use-auth-store'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -23,8 +23,7 @@ import {
   InputOTPSeparator,
   InputOTPSlot,
 } from '@/components/ui/input-otp'
-import { useUpdatePassword } from '@/features/profile/services'
-import { useSendOTP, useVerifyOTP } from '../services'
+// import { useSendOTP, useVerifyOTP } from '../services'
 import { ResetPasswordForm } from './ResetPasswordForm'
 
 type ForgotFormProps = HTMLAttributes<HTMLFormElement>
@@ -50,24 +49,24 @@ export function ForgotPasswordForm({
   onBackToLogin,
   ...props
 }: ForgotFormProps & { onBackToLogin?: () => void }) {
-  const { verify, reverify } = useAuthStore()
+  // const { verify, reverify } = useAuthStore()
   // const navigate = useNavigate()
-  const [verifyEmail, setVerifyEmail] = useState('')
-  const onSuccessSendOTP = (data: any) => {
-    setVerifyEmail(data?.email)
-    setStep('otp')
-  }
+  // const [verifyEmail, setVerifyEmail] = useState('')
+  // const onSuccessSendOTP = (data: any) => {
+  //   setVerifyEmail(data?.email)
+  //   setStep('otp')
+  // }
 
-  const { mutate: createMutate, isPending: isCreateLoading } =
-    useSendOTP(onSuccessSendOTP)
+  // const { mutate: createMutate, isPending: isCreateLoading } =
+  //   useSendOTP(onSuccessSendOTP)
 
-  const onSuccessVerifyOTP = (data: any) => {
-    verify(data)
-    setStep('reset')
-  }
+  // const onSuccessVerifyOTP = (data: any) => {
+  //   verify(data)
+  //   setStep('reset')
+  // }
 
-  const { mutate: verifyOTP, isPending: verifyOTPLoading } =
-    useVerifyOTP(onSuccessVerifyOTP)
+  // const { mutate: verifyOTP, isPending: verifyOTPLoading } =
+  //   useVerifyOTP(onSuccessVerifyOTP)
 
   const [step, setStep] = useState<'email' | 'otp' | 'reset'>('email')
 
@@ -81,31 +80,36 @@ export function ForgotPasswordForm({
     defaultValues: { otp: '' },
   })
 
-  // Step 1: Submit email
+  // // Step 1: Submit email
   function onSubmitEmail(data: any) {
-    createMutate({
-      email: data?.email,
-    })
+    console.log(data,"data")
+    // createMutate({
+    //   email: data?.email,
+    // })
   }
 
   // Step 2: Submit OTP
   function onSubmitOtp(data: any) {
-    verifyOTP({
-      email: verifyEmail,
-      otp: data.otp,
-    })
+    // verifyOTP({
+    //   email: verifyEmail,
+    //   otp: data.otp,
+    // })
+    console.log(data,"data")
+
   }
 
   // ✅ 3. Reset Password
-  const onsuccessUpdatePassword = () => {
-    reverify()
-    onBackToLogin && onBackToLogin()
-  }
-  const { mutateAsync: updatePassword, isPending: isResetting } =
-    useUpdatePassword(onsuccessUpdatePassword)
+  // const onsuccessUpdatePassword = () => {
+  //   reverify()
+  //   onBackToLogin && onBackToLogin()
+  // }
+  // const { mutateAsync: updatePassword, isPending: isResetting } =
+  //   useUpdatePassword(onsuccessUpdatePassword)
 
   function onSubmitResetPassword(data: any) {
-    updatePassword({ newPassword: data.newPassword })
+    // updatePassword({ newPassword: data.newPassword })
+    console.log(data,"data")
+
   }
 
   return (
@@ -131,8 +135,8 @@ export function ForgotPasswordForm({
                   </FormItem>
                 )}
               />
-              <Button className='mt-2' disabled={isCreateLoading}>
-                {isCreateLoading ? 'Sending...' : 'Continue'}
+              <Button className='mt-2' disabled={false}>
+               Continue
               </Button>
             </form>
           </Form>
@@ -183,8 +187,8 @@ export function ForgotPasswordForm({
                   </FormItem>
                 )}
               />
-              <Button className='mt-2' disabled={verifyOTPLoading}>
-                {verifyOTPLoading ? 'Verifying...' : 'Verify OTP'}
+              <Button className='mt-2' disabled={false}>
+                Verify OTP
               </Button>
             </form>
           </Form>
@@ -204,7 +208,7 @@ export function ForgotPasswordForm({
         <>
           <ResetPasswordForm
             onSubmit={onSubmitResetPassword}
-            isSubmitting={isResetting}
+            isSubmitting={true}
           />
 
           <div className='mt-4 text-center'>

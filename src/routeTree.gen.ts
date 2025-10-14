@@ -20,30 +20,9 @@ import { Route as errors401RouteImport } from './routes/(errors)/401'
 import { Route as authSignInRouteImport } from './routes/(auth)/sign-in'
 import { Route as authOtpRouteImport } from './routes/(auth)/otp'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
-import { Route as AuthenticatedVenueSectionTypesIndexRouteImport } from './routes/_authenticated/venueSectionTypes/index'
-import { Route as AuthenticatedVenueIndexRouteImport } from './routes/_authenticated/venue/index'
-import { Route as AuthenticatedVenueViewIndexRouteImport } from './routes/_authenticated/venue-view/index'
-import { Route as AuthenticatedVenueTypesIndexRouteImport } from './routes/_authenticated/venue-types/index'
-import { Route as AuthenticatedVenueSectionsIndexRouteImport } from './routes/_authenticated/venue-sections/index'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
-import { Route as AuthenticatedTablesIndexRouteImport } from './routes/_authenticated/tables/index'
-import { Route as AuthenticatedTablesManagementIndexRouteImport } from './routes/_authenticated/tables-management/index'
-import { Route as AuthenticatedStatesIndexRouteImport } from './routes/_authenticated/states/index'
-import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
-import { Route as AuthenticatedSeatingPreferenceIndexRouteImport } from './routes/_authenticated/seating-preference/index'
-import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authenticated/profile/index'
-import { Route as AuthenticatedPaymentsIndexRouteImport } from './routes/_authenticated/payments/index'
-import { Route as AuthenticatedOperatorMagementIndexRouteImport } from './routes/_authenticated/operator-magement/index'
-import { Route as AuthenticatedMenuIndexRouteImport } from './routes/_authenticated/menu/index'
-import { Route as AuthenticatedMenuCategoriesIndexRouteImport } from './routes/_authenticated/menu-categories/index'
-import { Route as AuthenticatedLocalityIndexRouteImport } from './routes/_authenticated/locality/index'
-import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers/index'
+import { Route as AuthenticatedKanbanBoardIndexRouteImport } from './routes/_authenticated/kanban-board/index'
 import { Route as AuthenticatedCouponsIndexRouteImport } from './routes/_authenticated/coupons/index'
-import { Route as AuthenticatedCountryIndexRouteImport } from './routes/_authenticated/country/index'
-import { Route as AuthenticatedCityIndexRouteImport } from './routes/_authenticated/city/index'
-import { Route as AuthenticatedBookingsIndexRouteImport } from './routes/_authenticated/bookings/index'
-import { Route as AuthenticatedBookingDetailsIndexRouteImport } from './routes/_authenticated/booking-details/index'
-import { Route as AuthenticatedAdminMenuCategoriesIndexRouteImport } from './routes/_authenticated/admin-menu-categories/index'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -99,144 +78,21 @@ const authForgotPasswordRoute = authForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedVenueSectionTypesIndexRoute =
-  AuthenticatedVenueSectionTypesIndexRouteImport.update({
-    id: '/venueSectionTypes/',
-    path: '/venueSectionTypes/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedVenueIndexRoute = AuthenticatedVenueIndexRouteImport.update({
-  id: '/venue/',
-  path: '/venue/',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedVenueViewIndexRoute =
-  AuthenticatedVenueViewIndexRouteImport.update({
-    id: '/venue-view/',
-    path: '/venue-view/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedVenueTypesIndexRoute =
-  AuthenticatedVenueTypesIndexRouteImport.update({
-    id: '/venue-types/',
-    path: '/venue-types/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedVenueSectionsIndexRoute =
-  AuthenticatedVenueSectionsIndexRouteImport.update({
-    id: '/venue-sections/',
-    path: '/venue-sections/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedUsersIndexRoute = AuthenticatedUsersIndexRouteImport.update({
   id: '/users/',
   path: '/users/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedTablesIndexRoute =
-  AuthenticatedTablesIndexRouteImport.update({
-    id: '/tables/',
-    path: '/tables/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedTablesManagementIndexRoute =
-  AuthenticatedTablesManagementIndexRouteImport.update({
-    id: '/tables-management/',
-    path: '/tables-management/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedStatesIndexRoute =
-  AuthenticatedStatesIndexRouteImport.update({
-    id: '/states/',
-    path: '/states/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedSettingsIndexRoute =
-  AuthenticatedSettingsIndexRouteImport.update({
-    id: '/settings/',
-    path: '/settings/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedSeatingPreferenceIndexRoute =
-  AuthenticatedSeatingPreferenceIndexRouteImport.update({
-    id: '/seating-preference/',
-    path: '/seating-preference/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedProfileIndexRoute =
-  AuthenticatedProfileIndexRouteImport.update({
-    id: '/profile/',
-    path: '/profile/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedPaymentsIndexRoute =
-  AuthenticatedPaymentsIndexRouteImport.update({
-    id: '/payments/',
-    path: '/payments/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedOperatorMagementIndexRoute =
-  AuthenticatedOperatorMagementIndexRouteImport.update({
-    id: '/operator-magement/',
-    path: '/operator-magement/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedMenuIndexRoute = AuthenticatedMenuIndexRouteImport.update({
-  id: '/menu/',
-  path: '/menu/',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedMenuCategoriesIndexRoute =
-  AuthenticatedMenuCategoriesIndexRouteImport.update({
-    id: '/menu-categories/',
-    path: '/menu-categories/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedLocalityIndexRoute =
-  AuthenticatedLocalityIndexRouteImport.update({
-    id: '/locality/',
-    path: '/locality/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedCustomersIndexRoute =
-  AuthenticatedCustomersIndexRouteImport.update({
-    id: '/customers/',
-    path: '/customers/',
+const AuthenticatedKanbanBoardIndexRoute =
+  AuthenticatedKanbanBoardIndexRouteImport.update({
+    id: '/kanban-board/',
+    path: '/kanban-board/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedCouponsIndexRoute =
   AuthenticatedCouponsIndexRouteImport.update({
     id: '/coupons/',
     path: '/coupons/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedCountryIndexRoute =
-  AuthenticatedCountryIndexRouteImport.update({
-    id: '/country/',
-    path: '/country/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedCityIndexRoute = AuthenticatedCityIndexRouteImport.update({
-  id: '/city/',
-  path: '/city/',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedBookingsIndexRoute =
-  AuthenticatedBookingsIndexRouteImport.update({
-    id: '/bookings/',
-    path: '/bookings/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedBookingDetailsIndexRoute =
-  AuthenticatedBookingDetailsIndexRouteImport.update({
-    id: '/booking-details/',
-    path: '/booking-details/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedAdminMenuCategoriesIndexRoute =
-  AuthenticatedAdminMenuCategoriesIndexRouteImport.update({
-    id: '/admin-menu-categories/',
-    path: '/admin-menu-categories/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
@@ -251,30 +107,9 @@ export interface FileRoutesByFullPath {
   '/503': typeof errors503Route
   '/unauthorized': typeof errorsUnauthorizedRoute
   '/': typeof AuthenticatedIndexRoute
-  '/admin-menu-categories': typeof AuthenticatedAdminMenuCategoriesIndexRoute
-  '/booking-details': typeof AuthenticatedBookingDetailsIndexRoute
-  '/bookings': typeof AuthenticatedBookingsIndexRoute
-  '/city': typeof AuthenticatedCityIndexRoute
-  '/country': typeof AuthenticatedCountryIndexRoute
   '/coupons': typeof AuthenticatedCouponsIndexRoute
-  '/customers': typeof AuthenticatedCustomersIndexRoute
-  '/locality': typeof AuthenticatedLocalityIndexRoute
-  '/menu-categories': typeof AuthenticatedMenuCategoriesIndexRoute
-  '/menu': typeof AuthenticatedMenuIndexRoute
-  '/operator-magement': typeof AuthenticatedOperatorMagementIndexRoute
-  '/payments': typeof AuthenticatedPaymentsIndexRoute
-  '/profile': typeof AuthenticatedProfileIndexRoute
-  '/seating-preference': typeof AuthenticatedSeatingPreferenceIndexRoute
-  '/settings': typeof AuthenticatedSettingsIndexRoute
-  '/states': typeof AuthenticatedStatesIndexRoute
-  '/tables-management': typeof AuthenticatedTablesManagementIndexRoute
-  '/tables': typeof AuthenticatedTablesIndexRoute
+  '/kanban-board': typeof AuthenticatedKanbanBoardIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
-  '/venue-sections': typeof AuthenticatedVenueSectionsIndexRoute
-  '/venue-types': typeof AuthenticatedVenueTypesIndexRoute
-  '/venue-view': typeof AuthenticatedVenueViewIndexRoute
-  '/venue': typeof AuthenticatedVenueIndexRoute
-  '/venueSectionTypes': typeof AuthenticatedVenueSectionTypesIndexRoute
 }
 export interface FileRoutesByTo {
   '/forgot-password': typeof authForgotPasswordRoute
@@ -287,30 +122,9 @@ export interface FileRoutesByTo {
   '/503': typeof errors503Route
   '/unauthorized': typeof errorsUnauthorizedRoute
   '/': typeof AuthenticatedIndexRoute
-  '/admin-menu-categories': typeof AuthenticatedAdminMenuCategoriesIndexRoute
-  '/booking-details': typeof AuthenticatedBookingDetailsIndexRoute
-  '/bookings': typeof AuthenticatedBookingsIndexRoute
-  '/city': typeof AuthenticatedCityIndexRoute
-  '/country': typeof AuthenticatedCountryIndexRoute
   '/coupons': typeof AuthenticatedCouponsIndexRoute
-  '/customers': typeof AuthenticatedCustomersIndexRoute
-  '/locality': typeof AuthenticatedLocalityIndexRoute
-  '/menu-categories': typeof AuthenticatedMenuCategoriesIndexRoute
-  '/menu': typeof AuthenticatedMenuIndexRoute
-  '/operator-magement': typeof AuthenticatedOperatorMagementIndexRoute
-  '/payments': typeof AuthenticatedPaymentsIndexRoute
-  '/profile': typeof AuthenticatedProfileIndexRoute
-  '/seating-preference': typeof AuthenticatedSeatingPreferenceIndexRoute
-  '/settings': typeof AuthenticatedSettingsIndexRoute
-  '/states': typeof AuthenticatedStatesIndexRoute
-  '/tables-management': typeof AuthenticatedTablesManagementIndexRoute
-  '/tables': typeof AuthenticatedTablesIndexRoute
+  '/kanban-board': typeof AuthenticatedKanbanBoardIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
-  '/venue-sections': typeof AuthenticatedVenueSectionsIndexRoute
-  '/venue-types': typeof AuthenticatedVenueTypesIndexRoute
-  '/venue-view': typeof AuthenticatedVenueViewIndexRoute
-  '/venue': typeof AuthenticatedVenueIndexRoute
-  '/venueSectionTypes': typeof AuthenticatedVenueSectionTypesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -325,30 +139,9 @@ export interface FileRoutesById {
   '/(errors)/503': typeof errors503Route
   '/(errors)/unauthorized': typeof errorsUnauthorizedRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
-  '/_authenticated/admin-menu-categories/': typeof AuthenticatedAdminMenuCategoriesIndexRoute
-  '/_authenticated/booking-details/': typeof AuthenticatedBookingDetailsIndexRoute
-  '/_authenticated/bookings/': typeof AuthenticatedBookingsIndexRoute
-  '/_authenticated/city/': typeof AuthenticatedCityIndexRoute
-  '/_authenticated/country/': typeof AuthenticatedCountryIndexRoute
   '/_authenticated/coupons/': typeof AuthenticatedCouponsIndexRoute
-  '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
-  '/_authenticated/locality/': typeof AuthenticatedLocalityIndexRoute
-  '/_authenticated/menu-categories/': typeof AuthenticatedMenuCategoriesIndexRoute
-  '/_authenticated/menu/': typeof AuthenticatedMenuIndexRoute
-  '/_authenticated/operator-magement/': typeof AuthenticatedOperatorMagementIndexRoute
-  '/_authenticated/payments/': typeof AuthenticatedPaymentsIndexRoute
-  '/_authenticated/profile/': typeof AuthenticatedProfileIndexRoute
-  '/_authenticated/seating-preference/': typeof AuthenticatedSeatingPreferenceIndexRoute
-  '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
-  '/_authenticated/states/': typeof AuthenticatedStatesIndexRoute
-  '/_authenticated/tables-management/': typeof AuthenticatedTablesManagementIndexRoute
-  '/_authenticated/tables/': typeof AuthenticatedTablesIndexRoute
+  '/_authenticated/kanban-board/': typeof AuthenticatedKanbanBoardIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
-  '/_authenticated/venue-sections/': typeof AuthenticatedVenueSectionsIndexRoute
-  '/_authenticated/venue-types/': typeof AuthenticatedVenueTypesIndexRoute
-  '/_authenticated/venue-view/': typeof AuthenticatedVenueViewIndexRoute
-  '/_authenticated/venue/': typeof AuthenticatedVenueIndexRoute
-  '/_authenticated/venueSectionTypes/': typeof AuthenticatedVenueSectionTypesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -363,30 +156,9 @@ export interface FileRouteTypes {
     | '/503'
     | '/unauthorized'
     | '/'
-    | '/admin-menu-categories'
-    | '/booking-details'
-    | '/bookings'
-    | '/city'
-    | '/country'
     | '/coupons'
-    | '/customers'
-    | '/locality'
-    | '/menu-categories'
-    | '/menu'
-    | '/operator-magement'
-    | '/payments'
-    | '/profile'
-    | '/seating-preference'
-    | '/settings'
-    | '/states'
-    | '/tables-management'
-    | '/tables'
+    | '/kanban-board'
     | '/users'
-    | '/venue-sections'
-    | '/venue-types'
-    | '/venue-view'
-    | '/venue'
-    | '/venueSectionTypes'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/forgot-password'
@@ -399,30 +171,9 @@ export interface FileRouteTypes {
     | '/503'
     | '/unauthorized'
     | '/'
-    | '/admin-menu-categories'
-    | '/booking-details'
-    | '/bookings'
-    | '/city'
-    | '/country'
     | '/coupons'
-    | '/customers'
-    | '/locality'
-    | '/menu-categories'
-    | '/menu'
-    | '/operator-magement'
-    | '/payments'
-    | '/profile'
-    | '/seating-preference'
-    | '/settings'
-    | '/states'
-    | '/tables-management'
-    | '/tables'
+    | '/kanban-board'
     | '/users'
-    | '/venue-sections'
-    | '/venue-types'
-    | '/venue-view'
-    | '/venue'
-    | '/venueSectionTypes'
   id:
     | '__root__'
     | '/_authenticated'
@@ -436,30 +187,9 @@ export interface FileRouteTypes {
     | '/(errors)/503'
     | '/(errors)/unauthorized'
     | '/_authenticated/'
-    | '/_authenticated/admin-menu-categories/'
-    | '/_authenticated/booking-details/'
-    | '/_authenticated/bookings/'
-    | '/_authenticated/city/'
-    | '/_authenticated/country/'
     | '/_authenticated/coupons/'
-    | '/_authenticated/customers/'
-    | '/_authenticated/locality/'
-    | '/_authenticated/menu-categories/'
-    | '/_authenticated/menu/'
-    | '/_authenticated/operator-magement/'
-    | '/_authenticated/payments/'
-    | '/_authenticated/profile/'
-    | '/_authenticated/seating-preference/'
-    | '/_authenticated/settings/'
-    | '/_authenticated/states/'
-    | '/_authenticated/tables-management/'
-    | '/_authenticated/tables/'
+    | '/_authenticated/kanban-board/'
     | '/_authenticated/users/'
-    | '/_authenticated/venue-sections/'
-    | '/_authenticated/venue-types/'
-    | '/_authenticated/venue-view/'
-    | '/_authenticated/venue/'
-    | '/_authenticated/venueSectionTypes/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -554,41 +284,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/venueSectionTypes/': {
-      id: '/_authenticated/venueSectionTypes/'
-      path: '/venueSectionTypes'
-      fullPath: '/venueSectionTypes'
-      preLoaderRoute: typeof AuthenticatedVenueSectionTypesIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/venue/': {
-      id: '/_authenticated/venue/'
-      path: '/venue'
-      fullPath: '/venue'
-      preLoaderRoute: typeof AuthenticatedVenueIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/venue-view/': {
-      id: '/_authenticated/venue-view/'
-      path: '/venue-view'
-      fullPath: '/venue-view'
-      preLoaderRoute: typeof AuthenticatedVenueViewIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/venue-types/': {
-      id: '/_authenticated/venue-types/'
-      path: '/venue-types'
-      fullPath: '/venue-types'
-      preLoaderRoute: typeof AuthenticatedVenueTypesIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/venue-sections/': {
-      id: '/_authenticated/venue-sections/'
-      path: '/venue-sections'
-      fullPath: '/venue-sections'
-      preLoaderRoute: typeof AuthenticatedVenueSectionsIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/users/': {
       id: '/_authenticated/users/'
       path: '/users'
@@ -596,88 +291,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/tables/': {
-      id: '/_authenticated/tables/'
-      path: '/tables'
-      fullPath: '/tables'
-      preLoaderRoute: typeof AuthenticatedTablesIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/tables-management/': {
-      id: '/_authenticated/tables-management/'
-      path: '/tables-management'
-      fullPath: '/tables-management'
-      preLoaderRoute: typeof AuthenticatedTablesManagementIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/states/': {
-      id: '/_authenticated/states/'
-      path: '/states'
-      fullPath: '/states'
-      preLoaderRoute: typeof AuthenticatedStatesIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/settings/': {
-      id: '/_authenticated/settings/'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/seating-preference/': {
-      id: '/_authenticated/seating-preference/'
-      path: '/seating-preference'
-      fullPath: '/seating-preference'
-      preLoaderRoute: typeof AuthenticatedSeatingPreferenceIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/profile/': {
-      id: '/_authenticated/profile/'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof AuthenticatedProfileIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/payments/': {
-      id: '/_authenticated/payments/'
-      path: '/payments'
-      fullPath: '/payments'
-      preLoaderRoute: typeof AuthenticatedPaymentsIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/operator-magement/': {
-      id: '/_authenticated/operator-magement/'
-      path: '/operator-magement'
-      fullPath: '/operator-magement'
-      preLoaderRoute: typeof AuthenticatedOperatorMagementIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/menu/': {
-      id: '/_authenticated/menu/'
-      path: '/menu'
-      fullPath: '/menu'
-      preLoaderRoute: typeof AuthenticatedMenuIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/menu-categories/': {
-      id: '/_authenticated/menu-categories/'
-      path: '/menu-categories'
-      fullPath: '/menu-categories'
-      preLoaderRoute: typeof AuthenticatedMenuCategoriesIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/locality/': {
-      id: '/_authenticated/locality/'
-      path: '/locality'
-      fullPath: '/locality'
-      preLoaderRoute: typeof AuthenticatedLocalityIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/customers/': {
-      id: '/_authenticated/customers/'
-      path: '/customers'
-      fullPath: '/customers'
-      preLoaderRoute: typeof AuthenticatedCustomersIndexRouteImport
+    '/_authenticated/kanban-board/': {
+      id: '/_authenticated/kanban-board/'
+      path: '/kanban-board'
+      fullPath: '/kanban-board'
+      preLoaderRoute: typeof AuthenticatedKanbanBoardIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/coupons/': {
@@ -687,103 +305,21 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCouponsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/country/': {
-      id: '/_authenticated/country/'
-      path: '/country'
-      fullPath: '/country'
-      preLoaderRoute: typeof AuthenticatedCountryIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/city/': {
-      id: '/_authenticated/city/'
-      path: '/city'
-      fullPath: '/city'
-      preLoaderRoute: typeof AuthenticatedCityIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/bookings/': {
-      id: '/_authenticated/bookings/'
-      path: '/bookings'
-      fullPath: '/bookings'
-      preLoaderRoute: typeof AuthenticatedBookingsIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/booking-details/': {
-      id: '/_authenticated/booking-details/'
-      path: '/booking-details'
-      fullPath: '/booking-details'
-      preLoaderRoute: typeof AuthenticatedBookingDetailsIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/admin-menu-categories/': {
-      id: '/_authenticated/admin-menu-categories/'
-      path: '/admin-menu-categories'
-      fullPath: '/admin-menu-categories'
-      preLoaderRoute: typeof AuthenticatedAdminMenuCategoriesIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
-  AuthenticatedAdminMenuCategoriesIndexRoute: typeof AuthenticatedAdminMenuCategoriesIndexRoute
-  AuthenticatedBookingDetailsIndexRoute: typeof AuthenticatedBookingDetailsIndexRoute
-  AuthenticatedBookingsIndexRoute: typeof AuthenticatedBookingsIndexRoute
-  AuthenticatedCityIndexRoute: typeof AuthenticatedCityIndexRoute
-  AuthenticatedCountryIndexRoute: typeof AuthenticatedCountryIndexRoute
   AuthenticatedCouponsIndexRoute: typeof AuthenticatedCouponsIndexRoute
-  AuthenticatedCustomersIndexRoute: typeof AuthenticatedCustomersIndexRoute
-  AuthenticatedLocalityIndexRoute: typeof AuthenticatedLocalityIndexRoute
-  AuthenticatedMenuCategoriesIndexRoute: typeof AuthenticatedMenuCategoriesIndexRoute
-  AuthenticatedMenuIndexRoute: typeof AuthenticatedMenuIndexRoute
-  AuthenticatedOperatorMagementIndexRoute: typeof AuthenticatedOperatorMagementIndexRoute
-  AuthenticatedPaymentsIndexRoute: typeof AuthenticatedPaymentsIndexRoute
-  AuthenticatedProfileIndexRoute: typeof AuthenticatedProfileIndexRoute
-  AuthenticatedSeatingPreferenceIndexRoute: typeof AuthenticatedSeatingPreferenceIndexRoute
-  AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
-  AuthenticatedStatesIndexRoute: typeof AuthenticatedStatesIndexRoute
-  AuthenticatedTablesManagementIndexRoute: typeof AuthenticatedTablesManagementIndexRoute
-  AuthenticatedTablesIndexRoute: typeof AuthenticatedTablesIndexRoute
+  AuthenticatedKanbanBoardIndexRoute: typeof AuthenticatedKanbanBoardIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
-  AuthenticatedVenueSectionsIndexRoute: typeof AuthenticatedVenueSectionsIndexRoute
-  AuthenticatedVenueTypesIndexRoute: typeof AuthenticatedVenueTypesIndexRoute
-  AuthenticatedVenueViewIndexRoute: typeof AuthenticatedVenueViewIndexRoute
-  AuthenticatedVenueIndexRoute: typeof AuthenticatedVenueIndexRoute
-  AuthenticatedVenueSectionTypesIndexRoute: typeof AuthenticatedVenueSectionTypesIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
-  AuthenticatedAdminMenuCategoriesIndexRoute:
-    AuthenticatedAdminMenuCategoriesIndexRoute,
-  AuthenticatedBookingDetailsIndexRoute: AuthenticatedBookingDetailsIndexRoute,
-  AuthenticatedBookingsIndexRoute: AuthenticatedBookingsIndexRoute,
-  AuthenticatedCityIndexRoute: AuthenticatedCityIndexRoute,
-  AuthenticatedCountryIndexRoute: AuthenticatedCountryIndexRoute,
   AuthenticatedCouponsIndexRoute: AuthenticatedCouponsIndexRoute,
-  AuthenticatedCustomersIndexRoute: AuthenticatedCustomersIndexRoute,
-  AuthenticatedLocalityIndexRoute: AuthenticatedLocalityIndexRoute,
-  AuthenticatedMenuCategoriesIndexRoute: AuthenticatedMenuCategoriesIndexRoute,
-  AuthenticatedMenuIndexRoute: AuthenticatedMenuIndexRoute,
-  AuthenticatedOperatorMagementIndexRoute:
-    AuthenticatedOperatorMagementIndexRoute,
-  AuthenticatedPaymentsIndexRoute: AuthenticatedPaymentsIndexRoute,
-  AuthenticatedProfileIndexRoute: AuthenticatedProfileIndexRoute,
-  AuthenticatedSeatingPreferenceIndexRoute:
-    AuthenticatedSeatingPreferenceIndexRoute,
-  AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
-  AuthenticatedStatesIndexRoute: AuthenticatedStatesIndexRoute,
-  AuthenticatedTablesManagementIndexRoute:
-    AuthenticatedTablesManagementIndexRoute,
-  AuthenticatedTablesIndexRoute: AuthenticatedTablesIndexRoute,
+  AuthenticatedKanbanBoardIndexRoute: AuthenticatedKanbanBoardIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
-  AuthenticatedVenueSectionsIndexRoute: AuthenticatedVenueSectionsIndexRoute,
-  AuthenticatedVenueTypesIndexRoute: AuthenticatedVenueTypesIndexRoute,
-  AuthenticatedVenueViewIndexRoute: AuthenticatedVenueViewIndexRoute,
-  AuthenticatedVenueIndexRoute: AuthenticatedVenueIndexRoute,
-  AuthenticatedVenueSectionTypesIndexRoute:
-    AuthenticatedVenueSectionTypesIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
