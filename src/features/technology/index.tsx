@@ -7,12 +7,11 @@ import { FilterConfig } from "@/components/table/table-toolbar";
 import { ActionFormModal } from "./components/action";
 import { columns } from "./components/columns";
 import { ViewCouponModal } from "./components/view-model";
-import { useUsersStore } from "./stores/useUsersStore";
-
+import { useTechnologyStore } from "./stores/useTechnologyStore";
 // import { useGetCouponsData } from "./services";
 
-const UsersPage = () => {
-  const { open, setOpen } = useUsersStore();
+const TechnologyPage = () => {
+  const { open, setOpen } = useTechnologyStore();
   const [listParams, setListParams] = useState({
     pageSize: 10,
     currentPage: 1,
@@ -62,11 +61,11 @@ const UsersPage = () => {
   return (
     <PageLayout>
       <TablePageHeader
-        title="Users"
-        buttonText="Add User"
+        title="Technology"
+        buttonText="Add Technology"
         onButtonClick={handleAdd}
       >
-        Manage your Users here.
+        Manage your Technology here.
       </TablePageHeader>
       <GlobalFilterSection filters={filters ?? []} />
       <GlobalTable
@@ -87,4 +86,4 @@ const UsersPage = () => {
   );
 };
 
-export default UsersPage;
+export default TechnologyPage;

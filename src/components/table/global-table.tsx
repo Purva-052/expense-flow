@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react'
 import {
   ChevronLeftIcon,
@@ -116,7 +117,7 @@ export function GlobalTable<TData>({
                 key={headerGroup?.id}
                 className='border-b hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/50'
               >
-                {headerGroup?.headers?.map((header) => (
+                {headerGroup?.headers?.map((header:any) => (
                   <TableHead
                     key={header?.id}
                     colSpan={header?.colSpan}
@@ -152,7 +153,7 @@ export function GlobalTable<TData>({
                   data-state={row?.getIsSelected() && 'selected'}
                   className='border-b border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/50'
                 >
-                  {row?.getVisibleCells()?.map((cell) => (
+                  {row?.getVisibleCells()?.map((cell:any) => (
                     <TableCell
                       key={cell?.id}
                       className={`px-4 py-3 ${

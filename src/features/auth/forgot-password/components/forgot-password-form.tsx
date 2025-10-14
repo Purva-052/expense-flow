@@ -1,13 +1,13 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { HTMLAttributes, useState } from 'react'
-import { z } from 'zod'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { HTMLAttributes, useState } from "react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 // import { useNavigate } from '@tanstack/react-router'
 // import { useAuthStore } from '@/stores/use-auth-store'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -15,34 +15,34 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSeparator,
   InputOTPSlot,
-} from '@/components/ui/input-otp'
+} from "@/components/ui/input-otp";
 // import { useSendOTP, useVerifyOTP } from '../services'
-import { ResetPasswordForm } from './ResetPasswordForm'
+import { ResetPasswordForm } from "./ResetPasswordForm";
 
-type ForgotFormProps = HTMLAttributes<HTMLFormElement>
+type ForgotFormProps = HTMLAttributes<HTMLFormElement>;
 
 // Step 1: Email schema
 const formSchema = z.object({
   email: z
     .string()
-    .min(1, { message: 'Please enter your email' })
-    .email({ message: 'Invalid email address' }),
-})
+    .min(1, { message: "Please enter your email" })
+    .email({ message: "Invalid email address" }),
+});
 
 // Step 2: OTP schema
 const otpSchema = z.object({
   otp: z
     .string()
-    .min(6, { message: 'OTP must be at least 6 digits' })
-    .max(6, { message: 'OTP must be 6 digits' }),
-})
+    .min(6, { message: "OTP must be at least 6 digits" })
+    .max(6, { message: "OTP must be 6 digits" }),
+});
 
 export function ForgotPasswordForm({
   className,
@@ -68,21 +68,21 @@ export function ForgotPasswordForm({
   // const { mutate: verifyOTP, isPending: verifyOTPLoading } =
   //   useVerifyOTP(onSuccessVerifyOTP)
 
-  const [step, setStep] = useState<'email' | 'otp' | 'reset'>('email')
+  const [step, setStep] = useState<"email" | "otp" | "reset">("email");
 
   const emailForm = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { email: '' },
-  })
+    defaultValues: { email: "" },
+  });
 
   const otpForm = useForm<z.infer<typeof otpSchema>>({
     resolver: zodResolver(otpSchema),
-    defaultValues: { otp: '' },
-  })
+    defaultValues: { otp: "" },
+  });
 
   // // Step 1: Submit email
   function onSubmitEmail(data: any) {
-    console.log(data,"data")
+    console.log(data, "data");
     // createMutate({
     //   email: data?.email,
     // })
@@ -94,8 +94,7 @@ export function ForgotPasswordForm({
     //   email: verifyEmail,
     //   otp: data.otp,
     // })
-    console.log(data,"data")
-
+    console.log(data, "data");
   }
 
   // ✅ 3. Reset Password
@@ -108,44 +107,47 @@ export function ForgotPasswordForm({
 
   function onSubmitResetPassword(data: any) {
     // updatePassword({ newPassword: data.newPassword })
-    console.log(data,"data")
-
+    console.log(data, "data");
   }
 
   return (
     <>
-      {step === 'email' && (
+      {step === "email" && (
         <>
           <Form {...emailForm}>
             <form
               onSubmit={emailForm.handleSubmit(onSubmitEmail)}
-              className={cn('grid gap-2', className)}
+              className={cn("grid gap-2", className)}
               {...props}
             >
               <FormField
                 control={emailForm.control}
-                name='email'
+                name="email"
                 render={({ field }) => (
-                  <FormItem className='space-y-1'>
+                  <FormItem className="space-y-1 ">
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder='name@example.com' {...field} />
+                      <Input
+                        placeholder="name@example.com"
+                        {...field}
+                        className="bg-white text-black"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button className='mt-2' disabled={false}>
-               Continue
+              <Button className="mt-2" disabled={false}>
+                Continue
               </Button>
             </form>
           </Form>
 
           {/* ✅ Show Back to Login here */}
-          <div className='mt-4 text-center'>
+          <div className="mt-4 text-center">
             <button
               onClick={onBackToLogin}
-              className='text-sm font-medium text-[#2C1059] hover:underline'
+              className="text-sm font-medium text-[#fff] hover:underline"
             >
               Back to Login
             </button>
@@ -153,19 +155,19 @@ export function ForgotPasswordForm({
         </>
       )}
 
-      {step === 'otp' && (
+      {step === "otp" && (
         <>
           <Form {...otpForm}>
             <form
               onSubmit={otpForm.handleSubmit(onSubmitOtp)}
-              className={cn('grid gap-2', className)}
+              className={cn("grid gap-2", className)}
               {...props}
             >
               <FormField
                 control={otpForm.control}
-                name='otp'
+                name="otp"
                 render={({ field }) => (
-                  <FormItem className='space-y-1'>
+                  <FormItem className="space-y-1">
                     <FormControl>
                       <InputOTP
                         maxLength={6}
@@ -187,34 +189,34 @@ export function ForgotPasswordForm({
                   </FormItem>
                 )}
               />
-              <Button className='mt-2' disabled={false}>
+              <Button className="mt-2" disabled={false}>
                 Verify OTP
               </Button>
             </form>
           </Form>
 
           {/* ✅ Show Back to Email here */}
-          <div className='mt-4 text-center'>
+          <div className="mt-4 text-center">
             <button
-              onClick={() => setStep('email')}
-              className='text-sm font-medium text-[#2C1059] hover:underline'
+              onClick={() => setStep("email")}
+              className="text-sm font-medium text-[#2C1059] hover:underline"
             >
               Back to Email
             </button>
           </div>
         </>
       )}
-      {step === 'reset' && (
+      {step === "reset" && (
         <>
           <ResetPasswordForm
             onSubmit={onSubmitResetPassword}
             isSubmitting={true}
           />
 
-          <div className='mt-4 text-center'>
+          <div className="mt-4 text-center">
             <button
-              onClick={() => setStep('email')}
-              className='text-sm font-medium text-[#2C1059] hover:underline'
+              onClick={() => setStep("email")}
+              className="text-sm font-medium text-[#2C1059] hover:underline"
             >
               Back to Email
             </button>
@@ -222,5 +224,5 @@ export function ForgotPasswordForm({
         </>
       )}
     </>
-  )
+  );
 }
