@@ -1,5 +1,5 @@
-@import 'tailwindcss';
-@import 'tw-animate-css';
+@import "tailwindcss";
+@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -10,8 +10,8 @@
   --card-foreground: oklch(0.14 0 285.86);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.14 0 285.86);
-  --primary: #ff060a;
-  --primary-gradient: linear-gradient(135deg, #ff060a, #2c1059);
+  --primary: #e80339;
+  --primary-gradient: linear-gradient(135deg, #e80339, #000);
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0 0 0);
@@ -28,27 +28,27 @@
   --chart-3: oklch(0.4 0.07 227.18);
   --chart-4: oklch(0.83 0.17 81.03);
   --chart-5: oklch(0.77 0.17 65.36);
-  --sidebar: #2c1059;
-  --sidebar-foreground: #fff;
+  --sidebar: #fff;
+  --sidebar-foreground: #000;
   --sidebar-primary: oklch(0.21 0.01 285.93);
   --sidebar-primary-foreground: #fff;
-  --sidebar-accent: #ff060a;
-  --sidebar-accent-gradient: linear-gradient(135deg, #ff060a, #2c1059);
-  --sidebar-accent-foreground: #fff;
-  --sidebar-border: #2c1059;
-  --sidebar-ring: #2c1059;
+  --sidebar-accent: #e80339;
+  --sidebar-accent-gradient: linear-gradient(135deg, #e80339, #000);
+  --sidebar-accent-foreground: ##fff;
+  --sidebar-border: #000;
+  --sidebar-ring: #000;
 
   --font-sans:
-    'Geist', 'Geist Fallback', ui-sans-serif, system-ui, -apple-system,
-    BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
-    'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-    'Segoe UI Symbol', 'Noto Color Emoji';
+    "Geist", "Geist Fallback", ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
   --font-serif:
-    'Geist', 'Geist Fallback', ui-serif, Georgia, Cambria, 'Times New Roman',
+    "Geist", "Geist Fallback", ui-serif, Georgia, Cambria, "Times New Roman",
     Times, serif;
   --font-mono:
-    'Geist Mono', 'Geist Mono Fallback', ui-monospace, SFMono-Regular, Menlo,
-    Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    "Geist Mono", "Geist Mono Fallback", ui-monospace, SFMono-Regular, Menlo,
+    Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
   --radius: 0.625rem;
 
@@ -66,8 +66,8 @@
   --shadow-2xl: 0 1px 3px 0px oklch(0 0 0 / 0.25);
 
   /* Gradient utility classes */
-  --gradient-primary: linear-gradient(135deg, #ff060a, #2c1059);
-  --gradient-primary-hover: linear-gradient(135deg, #ff0a0e, #321265);
+  --gradient-primary: linear-gradient(135deg, #e80339, #000);
+  --gradient-primary-hover: linear-gradient(135deg, #e80339, #000);
 }
 
 .dark {
@@ -77,8 +77,8 @@
   --card-foreground: oklch(0.99 0 0);
   --popover: oklch(0.21 0.01 285.93);
   --popover-foreground: oklch(0.99 0 0);
-  --primary: #ff060a;
-  --primary-gradient: linear-gradient(135deg, #ff060a, #2c1059);
+  --primary: #e80339;
+  --primary-gradient: linear-gradient(135deg, #e80339, #000);
   --primary-foreground: oklch(0.99 0 0);
   --secondary: oklch(0.27 0.01 286.1);
   --secondary-foreground: oklch(0.99 0 0);
@@ -99,8 +99,8 @@
   --sidebar-foreground: oklch(0.99 0 0);
   --sidebar-primary: oklch(0.49 0.24 264.4);
   --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: #ff060a;
-  --sidebar-accent-gradient: linear-gradient(135deg, #ff060a, #2c1059);
+  --sidebar-accent: #e80339;
+  --sidebar-accent-gradient: linear-gradient(135deg, #e80339, #000);
   --sidebar-accent-foreground: oklch(0.99 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.55 0.02 285.93);
@@ -119,8 +119,8 @@
   --shadow-2xl: 0 1px 3px 0px oklch(0 0 0 / 0.25);
 
   /* Dark mode gradient variations */
-  --gradient-primary: linear-gradient(135deg, #ff060a, #2c1059);
-  --gradient-primary-hover: linear-gradient(135deg, #ff1a1e, #3a1a75);
+  --gradient-primary: linear-gradient(135deg, #e80339, #000);
+  --gradient-primary-hover: linear-gradient(135deg, #e80339, #000);
 }
 
 @theme inline {
@@ -151,8 +151,8 @@
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: #fff;
-  --color-sidebar-accent-foreground: #000;
+  --color-sidebar-accent: #000;
+  --color-sidebar-accent-foreground: #fff;
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
@@ -189,7 +189,7 @@
   }
 
   button:not(:disabled),
-  [role='button']:not(:disabled) {
+  [role="button"]:not(:disabled) {
     cursor: pointer;
   }
 
@@ -238,7 +238,7 @@
 .primary-button,
 .cta-button,
 .action-button,
-[data-variant='primary'] {
+[data-variant="primary"] {
   background: var(--primary-gradient) !important;
   color: white !important;
 }
@@ -249,7 +249,7 @@
 .primary-button:hover,
 .cta-button:hover,
 .action-button:hover,
-[data-variant='primary']:hover {
+[data-variant="primary"]:hover {
   background: var(--gradient-primary-hover) !important;
 }
 
@@ -278,10 +278,10 @@
 .CollapsibleContent {
   overflow: hidden;
 }
-.CollapsibleContent[data-state='open'] {
+.CollapsibleContent[data-state="open"] {
   animation: slideDown 300ms ease-out;
 }
-.CollapsibleContent[data-state='closed'] {
+.CollapsibleContent[data-state="closed"] {
   animation: slideUp 300ms ease-out;
 }
 
