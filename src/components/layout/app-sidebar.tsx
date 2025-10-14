@@ -34,10 +34,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="icon" variant="sidebar" {...props}>
-      <SidebarHeader className="cursor-pointer  !shadow-sm ">
+      <SidebarHeader className="cursor-pointer p-2  !shadow-sm ">
         <Link to="/">
           <img
-            className="h-20 w-full group-data-[state=collapsed]:h-10"
+            className="h-12 w-full group-data-[state=collapsed]:h-10"
             src={sidebarLogo}
             alt="klub Logo"
           />
