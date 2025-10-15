@@ -37,55 +37,55 @@ export const sidebarData: SidebarData = {
   navGroups: [
     {
       title: 'Overview',
-      requiredRoles: ['super_admin', 'venue_owner'],
+      requiredRoles: ['team_lead', 'admin'],
       items: [
         {
           title: 'Dashboard',
           url: '/',
           icon: Home,
-          requiredRoles: ['super_admin', 'venue_owner'],
+          requiredRoles: ['team_lead', 'venue_owner'],
         },
       ],
     },
     {
       title: 'Masters',
-      requiredRoles: ['super_admin', 'venue_owner'],
+      requiredRoles: ['team_lead', 'venue_owner'],
       items: [
         {
           title: 'Technology',
           url: '/technology',
           icon: IconAugmentedReality,
-          requiredRoles: ['super_admin'],
+          requiredRoles: ['team_lead'],
         },
         {
           title: 'Projects',
           url: '/projects',
           icon: IconUserScreen,
-          requiredRoles: ['super_admin'],
+          requiredRoles: ['team_lead'],
         },
         {
           title: 'Clients',
           url: '/clients',
           icon: IconBrandDatabricks,
-          requiredRoles: ['super_admin'],
+          requiredRoles: ['team_lead'],
         },
         {
           title: 'Users',
           url: '/users',
           icon: IconUsers,
-          requiredRoles: ['super_admin'],
+          requiredRoles: ['team_lead'],
         },
       ],
     },
     {
       title: 'Operations',
-      requiredRoles: ['super_admin', 'venue_owner'],
+      requiredRoles: ['team_lead', 'venue_owner'],
       items: [
         {
           title: ' Kanban Board',
           url: '/kanban-board',
           icon: IconSettings,
-          requiredRoles: ['super_admin','venue_owner'],
+          requiredRoles: ['team_lead','venue_owner'],
         },
       ],
     },

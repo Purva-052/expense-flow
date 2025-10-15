@@ -6,54 +6,63 @@ import {
 } from "@/components/ui/dialog";
 import { useUsersStore } from "../stores/useUsersStore";
 
-
-export function ViewCouponModal() {
+export function ViewUserModal() {
   const { open, setOpen, currentRow } = useUsersStore();
   if (open !== "view" || !currentRow) return null;
+
+  const joiningDate = currentRow.joiningDate
+    ? new Date(currentRow.joiningDate).toLocaleDateString("en-IN", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : "-";
 
   return (
     <Dialog open={open === "view"} onOpenChange={() => setOpen(null)}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Coupon Details</DialogTitle>
+          <DialogTitle>User Details</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <h3 className="text-sm font-medium">Venue</h3>
-            <p className="text-sm text-gray-600">{currentRow.venue?.name}</p>
+            <h3 className="text-sm font-medium">Full Name</h3>
+            <p className="text-sm text-gray-600">{currentRow.fullName}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium">Code</h3>
-            <p className="text-sm text-gray-600">{currentRow.code}</p>
+            <h3 className="text-sm font-medium">Email</h3>
+            <p className="text-sm text-gray-600">{currentRow.email}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium">Description</h3>
-            <p className="text-sm text-gray-600">{currentRow.description}</p>
+            <h3 className="text-sm font-medium">Role</h3>
+            <p className="text-sm text-gray-600 capitalize">{currentRow.role}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-medium">Technology</h3>
+            {currentRow.technology ? (
+              <>
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: currentRow.technology.color }}
+                />
+                <span className="text-sm text-gray-600">{currentRow.technology.name}</span>
+              </>
+            ) : (
+              <span className="text-sm text-gray-600">-</span>
+            )}
           </div>
           <div>
-            <h3 className="text-sm font-medium">Discount (%)</h3>
-            <p className="text-sm text-gray-600">
-              {currentRow.discountPercentage}%
-            </p>
-          </div>
-          <div>
-            <h3 className="text-sm font-medium">Max Discount</h3>
-            <p className="text-sm text-gray-600">
-              {currentRow.maxDiscountAmount}
-            </p>
-          </div>
-          <div>
-            <h3 className="text-sm font-medium">Min Order Amount</h3>
-            <p className="text-sm text-gray-600">{currentRow.minOrderAmount}</p>
+            <h3 className="text-sm font-medium">Joining Date</h3>
+            <p className="text-sm text-gray-600">{joiningDate}</p>
           </div>
           <div>
             <h3 className="text-sm font-medium">Status</h3>
             <p
               className={`text-sm font-medium ${
-                currentRow.isActive ? "text-green-600" : "text-red-600"
-              }`}
+                currentRow.status === "active" ? "text-green-600" : "text-red-600"
+              } capitalize`}
             >
-              {currentRow.isActive ? "Active" : "Inactive"}
+              {currentRow.status}
             </p>
           </div>
         </div>

@@ -1,91 +1,91 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from 'react'
-import useDebounce from '@/hooks/use-debaunce'
-import SimpleDropDownSearchable from '../shared/custome-simple-dropdown'
-import { Input } from '../ui/input'
-import DateRangeFilter from './custome-dateRange'
+import { useEffect, useState } from "react";
+import useDebounce from "@/hooks/use-debaunce";
+import SimpleDropDownSearchable from "../shared/custome-simple-dropdown";
+import { Input } from "../ui/input";
+import DateRangeFilter from "./custome-dateRange";
 
-type FilterType = 'select' | 'search' | 'dateRange'
+type FilterType = "select" | "search" | "dateRange";
 
 export interface FilterConfig {
-  type: FilterType
-  key: string
-  placeholder?: string
-  value?: any
-  options?: Option[]
-  onChange?: (value: string | undefined) => void
-  isLoading?: any
-  disable?: any
+  type: FilterType;
+  key: string;
+  placeholder?: string;
+  value?: any;
+  options?: Option[];
+  onChange?: (value: string | undefined) => void;
+  isLoading?: any;
+  disable?: any;
 }
 
 interface DataTableToolbarProps {
-  filters?: FilterConfig[]
-  className?: string
+  filters?: FilterConfig[];
+  className?: string;
 }
 
 export interface Option {
-  label: string
-  value: string
+  label: string;
+  value: string;
 }
 
 export function DataTableToolbarCompact({
   filters = [],
-  className = '',
+  className = "",
 }: Readonly<DataTableToolbarProps>) {
-  const searchFilter = filters.find((f) => f.type === 'search')
-  const [search, setSearch] = useState(searchFilter?.value ?? '')
-  const debouncedSearch = useDebounce(search, 300)
+  const searchFilter = filters.find((f) => f.type === "search");
+  const [search, setSearch] = useState(searchFilter?.value ?? "");
+  const debouncedSearch = useDebounce(search, 300);
 
   useEffect(() => {
     if (searchFilter?.onChange) {
-      searchFilter.onChange(debouncedSearch)
+      searchFilter.onChange(debouncedSearch);
     }
-  }, [debouncedSearch])
+  }, [debouncedSearch]);
 
   return (
     <div className={`flex items-center justify-between gap-4 ${className}`}>
-      <div className='flex flex-wrap items-center space-y-2 space-x-2'>
+      <div className="flex flex-wrap items-center gap-2">
         {filters.map((filter: any) => {
-          if (filter.type === 'search') {
+          if (filter.type === "search") {
             return (
               <Input
                 key={filter.key}
-                type='search'
-                placeholder={filter.placeholder ?? 'Search...'}
+                type="search"
+                placeholder={filter.placeholder ?? "Search..."}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className='w-[150px] lg:w-[350px]'
+                className="w-[150px] lg:w-[350px]"
               />
-            )
+            );
           }
 
-          if (filter.type === 'select') {
+          if (filter.type === "select") {
             return (
               <SimpleDropDownSearchable
                 key={filter.key}
                 options={filter.options ?? []}
                 value={filter.value}
-                placeholder={filter.placeholder ?? 'Select...'}
+                placeholder={filter.placeholder ?? "Select..."}
                 onChange={(val: any) => filter.onChange?.(val ?? undefined)}
-                className='w-[200px]'
+                className="w-[200px]"
                 disabled={filter.disable}
               />
-            )
+            );
           }
 
-          if (filter.type === 'dateRange') {
+          if (filter.type === "dateRange") {
             return (
               <DateRangeFilter
                 key={filter.key}
-                placeholder={filter.placeholder ?? 'Pick a date range'}
+                placeholder={filter.placeholder ?? "Pick a date range"}
                 onChange={filter.onChange}
               />
-            )
+            );
           }
 
-          return null
+          return null;
         })}
       </div>
     </div>
-  )
+  );
 }

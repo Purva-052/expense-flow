@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import PageLayout from "@/components/layout/layout-provider";
 import { GlobalTable } from "@/components/table/global-table";
@@ -6,9 +7,9 @@ import TablePageHeader from "@/components/table/table-page-header";
 import { FilterConfig } from "@/components/table/table-toolbar";
 import { ActionFormModal } from "./components/action";
 import { columns } from "./components/columns";
-import { ViewCouponModal } from "./components/view-model";
+import { ViewTechnologyModal } from "./components/view-model";
 import { useTechnologyStore } from "./stores/useTechnologyStore";
-// import { useGetCouponsData } from "./services";
+import { useGetTechnologyData } from "./services";
 
 const TechnologyPage = () => {
   const { open, setOpen } = useTechnologyStore();
@@ -18,20 +19,21 @@ const TechnologyPage = () => {
     search: "",
   });
 
-  // const apiParams = {
-  //   page: listParams.currentPage,
-  //   limit: listParams.pageSize,
-  //   search: listParams.search,
-  //   pagination: true,
-  // };
+  const apiParams = {
+    page: listParams.currentPage,
+    limit: listParams.pageSize,
+    search: listParams.search,
+    pagination: true,
+  };
 
-  // const { data: listData, isPending: loading } = useGetCouponsData(apiParams);
+  const { data: listData, isPending: loading } =
+    useGetTechnologyData(apiParams);
 
-  // const totalCount = (listData as any)?.metadata?.totalCount;
+  const totalCount = (listData as any)?.metadata?.totalCount;
 
-  // const handleSearch = (search: string | undefined) => {
-  //   setListParams({ ...listParams, search: search ?? "", currentPage: 1 });
-  // };
+  const handleSearch = (search: string | undefined) => {
+    setListParams({ ...listParams, search: search ?? "", currentPage: 1 });
+  };
 
   const handlePaginationChange = (newPagination: {
     pageIndex: number;
@@ -50,7 +52,7 @@ const TechnologyPage = () => {
       placeholder: "Search by name ...",
       key: "search",
       value: listParams.search,
-      // onChange: handleSearch,
+      onChange: handleSearch,
     },
   ];
 
@@ -71,17 +73,15 @@ const TechnologyPage = () => {
       <GlobalTable
         pageSize={listParams.pageSize}
         currentPage={listParams.currentPage}
-        // totalCount={totalCount ?? 0}
-        totalCount={0}
-        // data={(listData as any)?.data ?? []}
-        data={[]}
+        totalCount={totalCount ?? 0}
+        data={(listData as any)?.data ?? []}
         onPaginationChange={handlePaginationChange}
         columns={columns}
-        // loading={loading}
+        loading={loading}
         isPaginationEnabled
       />
       {open && <ActionFormModal />}
-      <ViewCouponModal />
+      <ViewTechnologyModal />
     </PageLayout>
   );
 };

@@ -19,14 +19,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     .filter((group: any) => {
       if (!group.requiredRoles) return true;
 
-      return group.requiredRoles.includes(user?.user?.role?.name || "");
+      return group.requiredRoles.includes(user?.user?.role || "");
     })
     // Also filter items inside groups by role
     .map((group) => ({
       ...group,
       items: group.items.filter((item: any) => {
         if (!item.requiredRoles) return true;
-        return item.requiredRoles.includes(user?.user?.role?.name || "");
+        return item.requiredRoles.includes(user?.user?.role || "");
       }),
     }))
     // Remove empty groups (in case all items got filtered out)
