@@ -1,36 +1,43 @@
-/* eslint-disable no-console */
 // src/features/coupons/components/ActionFormModal.tsx
 import { DeleteModal } from "@/components/model/delete-model";
 
-import { CouponActionForm } from "./action-form";
 import { useTechnologyStore } from "../stores/useTechnologyStore";
-import { TCouponFormSchema } from "../schema";
+import { TechnologyActionForm } from "./action-form";
+import { TTechnologyFormSchema } from "../schema";
+import {
+  useCreateTechnologyData,
+  useDeleteTechnologyData,
+  useUpdateTechnologyData,
+} from "../services";
 
 export function ActionFormModal() {
   const { open, setOpen, currentRow, setCurrentRow } = useTechnologyStore();
-  // const { mutateAsync: createMutate, isPending: isCreateLoading } =
-  //   useCreateCouponsData();
-  // const { mutateAsync: updateMutate, isPending: isUpdateLoading } =
-  //   useUpdateCouponsData(currentRow?.id || "");
-  // const { mutateAsync: deleteMutate, isPending: isDeleteLoading } =
-  //   useDeleteCouponsData(currentRow?.id || "");
+  const { mutateAsync: createMutate, isPending: isCreateLoading } =
+    useCreateTechnologyData();
+  const { mutateAsync: updateMutate, isPending: isUpdateLoading } =
+    useUpdateTechnologyData(currentRow?.id || "");
+  const { mutateAsync: deleteMutate, isPending: isDeleteLoading } =
+    useDeleteTechnologyData(currentRow?.id || "");
 
-  const handleCreate = (values: TCouponFormSchema) => {
-
-    console.log("🚀 ~ handleCreate ~ values:", values)
-
-    // createMutate(values);
+  const handleCreate = (values: TTechnologyFormSchema) => {
+    const payload = {
+      name: values.name,
+      color: values.color,
+    };
+    createMutate(payload);
   };
 
-  const handleEdit = (values: TCouponFormSchema) => {
+  const handleEdit = (values: TTechnologyFormSchema) => {
+    const payload = {
+      name: values.name,
+      color: values.color,
+    };
 
-    console.log("🚀 ~ handleEdit ~ values:", values)
-
-    // updateMutate(values);
+    updateMutate(payload);
   };
 
   const handleDelete = () => {
-    // deleteMutate();
+    deleteMutate();
   };
 
   const handleCloseDialog = () => {
@@ -42,31 +49,31 @@ export function ActionFormModal() {
 
   return (
     <>
-      <CouponActionForm
-        key="add-coupon"
+      <TechnologyActionForm
+        key="add-technology"
         open={open === "add"}
-        // loading={isCreateLoading}
+        loading={isCreateLoading}
         onOpenChange={(value) => setOpen(value ? "add" : null)}
         onSubmit={handleCreate}
       />
 
       {currentRow && (
         <>
-          <CouponActionForm
-            key={`coupon-edit-${currentRow.id}`}
+          <TechnologyActionForm
+            key={`technology-edit-${currentRow.id}`}
             open={open === "edit"}
             onSubmit={handleEdit}
-            // loading={isUpdateLoading}
+            loading={isUpdateLoading}
             onOpenChange={handleCloseDialog}
             currentRow={currentRow}
           />
           <DeleteModal
             onConfirm={handleDelete}
-            key={`coupon-delete-${currentRow.id}`}
+            key={`technology-delete-${currentRow.id}`}
             isOpen={open === "delete"}
             onClose={handleCloseDialog}
             itemName={currentRow.code}
-            // loading={isDeleteLoading}
+            loading={isDeleteLoading}
           />
         </>
       )}

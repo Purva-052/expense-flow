@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,91 +12,75 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useTechnologyStore } from "../stores/useTechnologyStore";
 
-// Small component for actions
-function CouponActions({ coupon }: any) {
-  const { setOpen, setCurrentRow } = useTechnologyStore();
 
-  const handleEdit = () => {
-    setOpen("edit");
-    setCurrentRow(coupon);
-  };
-
-  const handleDelete = () => {
-    setOpen("delete");
-    setCurrentRow(coupon);
-  };
-
-  const handleView = () => {
-    setOpen("view");
-    setCurrentRow(coupon);
-  };
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0">
-          <span className="sr-only">Open menu</span>
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleView}>View Coupons</DropdownMenuItem>
-        <DropdownMenuItem onClick={handleEdit}>Edit Coupons</DropdownMenuItem>
-        <DropdownMenuItem
-          className="text-red-600 focus:bg-red-50 focus:text-red-600"
-          onClick={handleDelete}
-        >
-          Delete Coupons
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
 
 export const columns: ColumnDef<any>[] = [
   {
-    accessorKey: "venue.name",
-    header: "Venue Name",
+    accessorKey: "name",
+    header: "Technology Name",
   },
   {
-    accessorKey: "code",
-    header: "Coupon Code",
-  },
-  {
-    accessorKey: "description",
-    header: "Coupon Description",
-  },
-  {
-    accessorKey: "discountPercentage",
-    header: "Discount (%)",
-  },
-  {
-    accessorKey: "maxDiscountAmount",
-    header: "Max Discount",
-  },
-  {
-    accessorKey: "minOrderAmount",
-    header: "Min Order",
-  },
-
-  {
-    id: "status",
-    header: "Status",
+    accessorKey: "color",
+    header: "Color",
     cell: ({ row }) => (
-      <Badge
-        variant={row.original.isActive ? "success" : "destructive"}
-        className="text-sm font-medium"
-      >
-        {row.original.isActive ? "Active" : "Inactive"}
-      </Badge>
+      <div className="flex items-center space-x-2">
+        <div
+          className="h-4 w-4 rounded-sm border"
+          style={{ backgroundColor: row.original.color }}
+        />
+        <span>{row.original.color}</span>
+      </div>
     ),
   },
   {
     id: "actions",
     header: "Actions",
-    cell: ({ row }) => <CouponActions coupon={row.original} />,
+    cell: function Cell({ row }) {
+      const operator = row.original;
+      const { setOpen, setCurrentRow } = useTechnologyStore();
+
+      const handleEdit = () => {
+        setOpen("edit");
+        setCurrentRow(operator);
+      };
+
+      const handleDelete = () => {
+        setOpen("delete");
+        setCurrentRow(operator);
+      };
+
+      const handleView = () => {
+        setOpen("view");
+        setCurrentRow(operator);
+      };
+
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleView}>
+              View Technology
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleEdit}>
+              Edit Technology
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-red-600 focus:bg-red-50 focus:text-red-600"
+              onClick={handleDelete}
+            >
+              Delete Technology
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    },
     enableSorting: false,
   },
 ];

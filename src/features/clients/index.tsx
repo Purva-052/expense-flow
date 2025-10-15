@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import PageLayout from "@/components/layout/layout-provider";
 import { GlobalTable } from "@/components/table/global-table";
@@ -6,9 +7,9 @@ import TablePageHeader from "@/components/table/table-page-header";
 import { FilterConfig } from "@/components/table/table-toolbar";
 import { ActionFormModal } from "./components/action";
 import { columns } from "./components/columns";
-import { ViewCouponModal } from "./components/view-model";
 import { useClientsStore } from "./stores/useClientsStore";
-// import { useGetCouponsData } from "./services";
+import { useGetClientsData } from "./services";
+import { ViewClientsModal } from "./components/view-model";
 
 const ClientsPage = () => {
   const { open, setOpen } = useClientsStore();
@@ -18,20 +19,20 @@ const ClientsPage = () => {
     search: "",
   });
 
-  // const apiParams = {
-  //   page: listParams.currentPage,
-  //   limit: listParams.pageSize,
-  //   search: listParams.search,
-  //   pagination: true,
-  // };
+  const apiParams = {
+    page: listParams.currentPage,
+    limit: listParams.pageSize,
+    search: listParams.search,
+    pagination: true,
+  };
 
-  // const { data: listData, isPending: loading } = useGetCouponsData(apiParams);
+  const { data: listData, isPending: loading } = useGetClientsData(apiParams);
 
-  // const totalCount = (listData as any)?.metadata?.totalCount;
+  const totalCount = (listData as any)?.metadata?.totalCount;
 
-  // const handleSearch = (search: string | undefined) => {
-  //   setListParams({ ...listParams, search: search ?? "", currentPage: 1 });
-  // };
+  const handleSearch = (search: string | undefined) => {
+    setListParams({ ...listParams, search: search ?? "", currentPage: 1 });
+  };
 
   const handlePaginationChange = (newPagination: {
     pageIndex: number;
@@ -50,7 +51,7 @@ const ClientsPage = () => {
       placeholder: "Search by name ...",
       key: "search",
       value: listParams.search,
-      // onChange: handleSearch,
+      onChange: handleSearch,
     },
   ];
 
@@ -71,17 +72,15 @@ const ClientsPage = () => {
       <GlobalTable
         pageSize={listParams.pageSize}
         currentPage={listParams.currentPage}
-        // totalCount={totalCount ?? 0}
-        totalCount={0}
-        // data={(listData as any)?.data ?? []}
-        data={[]}
+        totalCount={totalCount ?? 0}
+        data={(listData as any)?.data ?? []}
         onPaginationChange={handlePaginationChange}
         columns={columns}
-        // loading={loading}
+        loading={loading}
         isPaginationEnabled
       />
       {open && <ActionFormModal />}
-      <ViewCouponModal />
+      <ViewClientsModal />
     </PageLayout>
   );
 };

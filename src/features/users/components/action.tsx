@@ -1,35 +1,69 @@
 /* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/features/coupons/components/ActionFormModal.tsx
 import { DeleteModal } from "@/components/model/delete-model";
 
-import { CouponActionForm } from "./action-form";
-import { TCouponFormSchema } from "../schema";
 import { useUsersStore } from "../stores/useUsersStore";
+import { UserActionForm } from "./action-form";
+import {
+  useCreateUserData,
+  useDeleteUserData,
+  useUpdateUserData,
+} from "../services";
+import { useGetProjectsData } from "@/features/projects/services";
 
-export function ActionFormModal() {
+export function ActionFormModal({
+  technologyList,
+  technologyListLoading,
+  roleList,
+  roleListLoading,
+}: any) {
   const { open, setOpen, currentRow, setCurrentRow } = useUsersStore();
 
-  // const { mutateAsync: createMutate, isPending: isCreateLoading } =
-  //   useCreateCouponsData();
-  // const { mutateAsync: updateMutate, isPending: isUpdateLoading } =
-  //   useUpdateCouponsData(currentRow?.id || "");
-  // const { mutateAsync: deleteMutate, isPending: isDeleteLoading } =
-  //   useDeleteCouponsData(currentRow?.id || "");
+  const { mutateAsync: createMutate, isPending: isCreateLoading } =
+    useCreateUserData();
+  const { mutateAsync: updateMutate, isPending: isUpdateLoading } =
+    useUpdateUserData(currentRow?.id || "");
+  const { mutateAsync: deleteMutate, isPending: isDeleteLoading } =
+    useDeleteUserData(currentRow?.id || "");
+  const { data: projectList, isPending: projectListLoading }: any =
+    useGetProjectsData({
+      pagination: false,
+    });
 
-  const handleCreate = (values: TCouponFormSchema) => {
-    console.log("🚀 ~ handleCreate ~ values:", values);
+  const projectListdata = projectList?.data;
+  const technologyListData = technologyList?.data;
 
-    // createMutate(values);
+  const handleCreate = (values: any) => {
+    const payload = {
+      fullName: values.fullName,
+      email: values.email,
+      role: values.role,
+      technologyId: values.technologyId,
+      joiningDate: values.joiningDate,
+      status: values.status ? "active" : "inactive",
+    };
+
+    createMutate(payload);
   };
 
-  const handleEdit = (values: TCouponFormSchema) => {
+  const handleEdit = (values: any) => {
     console.log("🚀 ~ handleEdit ~ values:", values);
 
-    // updateMutate(values);
+    const payload = {
+      fullName: values.fullName,
+      email: values.email,
+      role: values.role,
+      technologyId: values.technologyId,
+      joiningDate: values.joiningDate,
+      status: values.status ? "active" : "inactive",
+      currentWorkingProjectId: values.currentWorkingProjectId,
+    };
+    updateMutate(payload);
   };
 
   const handleDelete = () => {
-    // deleteMutate();
+    deleteMutate();
   };
 
   const handleCloseDialog = () => {
@@ -41,31 +75,43 @@ export function ActionFormModal() {
 
   return (
     <>
-      <CouponActionForm
-        key="add-coupon"
+      <UserActionForm
+        key="add-user"
         open={open === "add"}
-        // loading={isCreateLoading}
+        loading={isCreateLoading}
         onOpenChange={(value) => setOpen(value ? "add" : null)}
         onSubmit={handleCreate}
+        projectListdata={projectListdata}
+        projectListLoading={projectListLoading}
+        technologyListData={technologyListData}
+        technologyListLoading={technologyListLoading}
+        roleList={roleList}
+        roleListLoading={roleListLoading}
       />
 
       {currentRow && (
         <>
-          <CouponActionForm
-            key={`coupon-edit-${currentRow.id}`}
+          <UserActionForm
+            key={`user-edit-${currentRow.id}`}
             open={open === "edit"}
             onSubmit={handleEdit}
-            // loading={isUpdateLoading}
+            loading={isUpdateLoading}
             onOpenChange={handleCloseDialog}
             currentRow={currentRow}
+            projectListdata={projectListdata}
+            projectListLoading={projectListLoading}
+            technologyListData={technologyListData}
+            technologyListLoading={technologyListLoading}
+            roleList={roleList}
+            roleListLoading={roleListLoading}
           />
           <DeleteModal
             onConfirm={handleDelete}
-            key={`coupon-delete-${currentRow.id}`}
+            key={`user-delete-${currentRow.id}`}
             isOpen={open === "delete"}
             onClose={handleCloseDialog}
             itemName={currentRow.code}
-            // loading={isDeleteLoading}
+            loading={isDeleteLoading}
           />
         </>
       )}

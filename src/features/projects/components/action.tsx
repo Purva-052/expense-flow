@@ -1,34 +1,66 @@
-/* eslint-disable no-console */
-// src/features/coupons/components/ActionFormModal.tsx
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { DeleteModal } from "@/components/model/delete-model";
-
-import { CouponActionForm } from "./action-form";
-import { TCouponFormSchema } from "../schema";
 import { useProjectsStore } from "../stores/useProjectsStore";
+import { TProjectFormSchema } from "../schema";
+import {
+  useCreateProjectsData,
+  useDeleteProjectsData,
+  useUpdateProjectsData,
+} from "../services";
+import { ProjectActionForm } from "./action-form";
 
-export function ActionFormModal() {
+export function ActionFormModal({
+  managerList,
+  managerListLoading,
+  teamLeaderList,
+  teamLeaderListLoading,
+  clientsList,
+  clientListLoading,
+}: any) {
   const { open, setOpen, currentRow, setCurrentRow } = useProjectsStore();
-  // const { mutateAsync: createMutate, isPending: isCreateLoading } =
-  //   useCreateCouponsData();
-  // const { mutateAsync: updateMutate, isPending: isUpdateLoading } =
-  //   useUpdateCouponsData(currentRow?.id || "");
-  // const { mutateAsync: deleteMutate, isPending: isDeleteLoading } =
-  //   useDeleteCouponsData(currentRow?.id || "");
+  const { mutateAsync: createMutate, isPending: isCreateLoading } =
+    useCreateProjectsData();
+  const { mutateAsync: updateMutate, isPending: isUpdateLoading } =
+    useUpdateProjectsData(currentRow?.id || "");
+  const { mutateAsync: deleteMutate, isPending: isDeleteLoading } =
+    useDeleteProjectsData(currentRow?.id || "");
 
-  const handleCreate = (values: TCouponFormSchema) => {
-    console.log("🚀 ~ handleCreate ~ values:", values);
+  const ClientListData = clientsList?.data;
 
-    // createMutate(values);
+  const ManagerListData = managerList?.data;
+
+  const teamLeaderListData = teamLeaderList?.data;
+  const handleCreate = (values: TProjectFormSchema) => {
+    const payload = {
+      name: values.name,
+      clientId: values.clientId,
+      startDate: values.startDate,
+      expectedCompletionDate: values.expectedCompletionDate,
+      managerId: values.managerId,
+      teamLeadId: values.teamLeadId,
+      percentageComplete: values.percentageComplete,
+      priority: values.priority,
+    };
+    createMutate(payload);
   };
 
-  const handleEdit = (values: TCouponFormSchema) => {
-    console.log("🚀 ~ handleEdit ~ values:", values);
+  const handleEdit = (values: TProjectFormSchema) => {
+    const payload = {
+      name: values.name,
+      clientId: values.clientId,
+      startDate: values.startDate,
+      expectedCompletionDate: values.expectedCompletionDate,
+      managerId: values.managerId,
+      teamLeadId: values.teamLeadId,
+      percentageComplete: values.percentageComplete,
+      priority: values.priority,
+    };
 
-    // updateMutate(values);
+    updateMutate(payload);
   };
 
   const handleDelete = () => {
-    // deleteMutate();
+    deleteMutate();
   };
 
   const handleCloseDialog = () => {
@@ -40,23 +72,35 @@ export function ActionFormModal() {
 
   return (
     <>
-      <CouponActionForm
+      <ProjectActionForm
         key="add-coupon"
         open={open === "add"}
-        // loading={isCreateLoading}
+        loading={isCreateLoading}
         onOpenChange={(value) => setOpen(value ? "add" : null)}
         onSubmit={handleCreate}
+        clientsList={ClientListData}
+        clientListLoading={clientListLoading}
+        ManagerListData={ManagerListData}
+        managerListLoading={managerListLoading}
+        teamLeaderListData={teamLeaderListData}
+        teamLeaderListLoading={teamLeaderListLoading}
       />
 
       {currentRow && (
         <>
-          <CouponActionForm
+          <ProjectActionForm
             key={`coupon-edit-${currentRow.id}`}
             open={open === "edit"}
             onSubmit={handleEdit}
-            // loading={isUpdateLoading}
+            loading={isUpdateLoading}
             onOpenChange={handleCloseDialog}
             currentRow={currentRow}
+            clientsList={ClientListData}
+            clientListLoading={clientListLoading}
+            ManagerListData={ManagerListData}
+            managerListLoading={managerListLoading}
+            teamLeaderListData={teamLeaderListData}
+            teamLeaderListLoading={teamLeaderListLoading}
           />
           <DeleteModal
             onConfirm={handleDelete}
@@ -64,7 +108,7 @@ export function ActionFormModal() {
             isOpen={open === "delete"}
             onClose={handleCloseDialog}
             itemName={currentRow.code}
-            // loading={isDeleteLoading}
+            loading={isDeleteLoading}
           />
         </>
       )}

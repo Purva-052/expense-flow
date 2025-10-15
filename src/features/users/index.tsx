@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import PageLayout from "@/components/layout/layout-provider";
 import { GlobalTable } from "@/components/table/global-table";
@@ -6,10 +7,10 @@ import TablePageHeader from "@/components/table/table-page-header";
 import { FilterConfig } from "@/components/table/table-toolbar";
 import { ActionFormModal } from "./components/action";
 import { columns } from "./components/columns";
-import { ViewCouponModal } from "./components/view-model";
+import { ViewUserModal } from "./components/view-model";
 import { useUsersStore } from "./stores/useUsersStore";
-
-// import { useGetCouponsData } from "./services";
+import { useGetUsersList, useGetUsersRoles } from "./services";
+import { useGetTechnologyData } from "../technology/services";
 
 const UsersPage = () => {
   const { open, setOpen } = useUsersStore();
@@ -17,22 +18,35 @@ const UsersPage = () => {
     pageSize: 10,
     currentPage: 1,
     search: "",
+    role: undefined,
+    technologyId: null,
+    status: undefined,
   });
 
-  // const apiParams = {
-  //   page: listParams.currentPage,
-  //   limit: listParams.pageSize,
-  //   search: listParams.search,
-  //   pagination: true,
-  // };
+  const apiParams = {
+    page: listParams.currentPage,
+    limit: listParams.pageSize,
+    search: listParams.search,
+    pagination: true,
+    role: listParams.role,
+    technologyId: listParams.technologyId,
+    status: listParams.status,
+  };
 
-  // const { data: listData, isPending: loading } = useGetCouponsData(apiParams);
+  const { data: listData, isPending: loading } = useGetUsersList(apiParams);
+  const { data: technologyList, isPending: technologyListLoading }: any =
+    useGetTechnologyData({
+      pagination: false,
+    });
 
-  // const totalCount = (listData as any)?.metadata?.totalCount;
+  const { data: roleList, isPending: roleListLoading }: any =
+    useGetUsersRoles();
 
-  // const handleSearch = (search: string | undefined) => {
-  //   setListParams({ ...listParams, search: search ?? "", currentPage: 1 });
-  // };
+  const totalCount = (listData as any)?.metadata?.totalCount;
+
+  const handleSearch = (search: string | undefined) => {
+    setListParams({ ...listParams, search: search ?? "", currentPage: 1 });
+  };
 
   const handlePaginationChange = (newPagination: {
     pageIndex: number;
@@ -45,13 +59,79 @@ const UsersPage = () => {
     });
   };
 
+  const handleTechnologyChange = (value: any) => {
+    setListParams({
+      ...listParams,
+      technologyId: value ?? null,
+      currentPage: 1,
+    });
+  };
+
+  const handleRoleChange = (value: any) => {
+    setListParams({
+      ...listParams,
+      role: value ?? undefined,
+      currentPage: 1,
+    });
+  };
+  const handleStatusChange = (value: any) => {
+    setListParams({
+      ...listParams,
+      status: value ?? undefined,
+      currentPage: 1,
+    });
+  };
+
   const filters: FilterConfig[] = [
     {
       type: "search",
       placeholder: "Search by name ...",
       key: "search",
       value: listParams.search,
-      // onChange: handleSearch,
+      onChange: handleSearch,
+    },
+    {
+      type: "select",
+      key: "role",
+      placeholder: "Filter by Role",
+      options: roleList?.data?.map((role: any) => ({
+        value: role,
+        label: role
+          .split("_")
+          .map((word: any) => word[0].toUpperCase() + word.slice(1))
+          .join(" "), // Converts "team_lead" -> "Team Lead"
+      })),
+      value: listParams.technologyId,
+      onChange: handleRoleChange,
+      isLoading: roleListLoading,
+    },
+    {
+      type: "select",
+      key: "technologyId",
+      placeholder: "Filter by Technology",
+      options: technologyList?.data?.map((technology: any) => {
+        return { value: technology.id, label: technology.name };
+      }),
+      value: listParams.technologyId, // 👈 pre-selects if set
+      onChange: handleTechnologyChange,
+      isLoading: technologyListLoading,
+    },
+    {
+      type: "select",
+      key: "status",
+      placeholder: "Filter by Status",
+      options: [
+        {
+          value: "active",
+          label: "Active",
+        },
+        {
+          value: "inactive",
+          label: "Inactive",
+        },
+      ],
+      value: listParams.status, // 👈 pre-selects if set
+      onChange: handleStatusChange,
     },
   ];
 
@@ -72,17 +152,22 @@ const UsersPage = () => {
       <GlobalTable
         pageSize={listParams.pageSize}
         currentPage={listParams.currentPage}
-        // totalCount={totalCount ?? 0}
-        totalCount={0}
-        // data={(listData as any)?.data ?? []}
-        data={[]}
+        totalCount={totalCount ?? 0}
+        data={(listData as any)?.data ?? []}
         onPaginationChange={handlePaginationChange}
         columns={columns}
-        // loading={loading}
+        loading={loading}
         isPaginationEnabled
       />
-      {open && <ActionFormModal />}
-      <ViewCouponModal />
+      {open && (
+        <ActionFormModal
+          technologyList={technologyList}
+          technologyListLoading={technologyListLoading}
+          roleList={roleList}
+          roleListLoading={roleListLoading}
+        />
+      )}
+      <ViewUserModal />
     </PageLayout>
   );
 };

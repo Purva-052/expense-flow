@@ -24,7 +24,9 @@ const useFetchData = <TData = unknown, TParams = Record<string, unknown>>({
       const response = await instance.get({
         url: `${url}${queryString}`,
       });
-      if (response?.statusCode === 200 || response?.statusCode === 201) {
+
+
+      if (response?.statusCode === 200 || response?.statusCode === 201 || response?.status === 200 ) {
         return response as TData;
       }
       throw new Error(response?.message || 'Failed to fetch data');
