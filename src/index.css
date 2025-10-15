@@ -233,14 +233,18 @@
 
 /* Apply gradient to primary elements */
 .bg-primary,
-.btn-primary,
-.button-primary,
 .primary-button,
 .cta-button,
 .action-button,
 [data-variant="primary"] {
   background: var(--primary-gradient) !important;
   color: white !important;
+}
+
+.bg-gradient-primary,
+.gradient-primary {
+  background: var(--primary);
+  color: white;
 }
 
 .bg-primary:hover,

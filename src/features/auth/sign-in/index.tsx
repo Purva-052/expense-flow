@@ -49,8 +49,8 @@ const AdminLogin = () => {
             Project Management
           </h1>
           <p className="mb-8 text-xl opacity-90">
-            Secure access to your Management system with advanced
-            security features
+            Secure access to your Management system with advanced security
+            features
           </p>
         </div>
       </div>
@@ -60,7 +60,7 @@ const AdminLogin = () => {
         <div className="w-full max-w-md">
           <div className="rounded-2xl border border-white/20 bg-white/5 p-8 shadow-2xl backdrop-blur-lg">
             <div className="mb-8 space-y-3 text-center">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#E80339] to-gray-800 shadow-lg">
+              <div className="mx-auto flex h-16 bg-gradient-primary w-16 items-center justify-center rounded-full bg-gra shadow-lg">
                 <Lock className="h-8 w-8 text-white" />
               </div>
               <h1 className="text-3xl font-bold text-white">
