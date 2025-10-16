@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import Dashboard from '@/features/dashboard'
+import Board from '@/features/kanban-board'
 import { createFileRoute } from '@tanstack/react-router'
 
 
@@ -7,5 +7,5 @@ import { createFileRoute } from '@tanstack/react-router'
 
 
 export const Route = createFileRoute('/_authenticated/')({
-  component: Dashboard,
+  component: Board,
 })

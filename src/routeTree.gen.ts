@@ -23,7 +23,6 @@ import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-p
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as AuthenticatedTechnologyIndexRouteImport } from './routes/_authenticated/technology/index'
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects/index'
-import { Route as AuthenticatedKanbanBoardIndexRouteImport } from './routes/_authenticated/kanban-board/index'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -97,12 +96,6 @@ const AuthenticatedProjectsIndexRoute =
     path: '/projects/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedKanbanBoardIndexRoute =
-  AuthenticatedKanbanBoardIndexRouteImport.update({
-    id: '/kanban-board/',
-    path: '/kanban-board/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedClientsIndexRoute =
   AuthenticatedClientsIndexRouteImport.update({
     id: '/clients/',
@@ -122,7 +115,6 @@ export interface FileRoutesByFullPath {
   '/unauthorized': typeof errorsUnauthorizedRoute
   '/': typeof AuthenticatedIndexRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
-  '/kanban-board': typeof AuthenticatedKanbanBoardIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
   '/technology': typeof AuthenticatedTechnologyIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
@@ -139,7 +131,6 @@ export interface FileRoutesByTo {
   '/unauthorized': typeof errorsUnauthorizedRoute
   '/': typeof AuthenticatedIndexRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
-  '/kanban-board': typeof AuthenticatedKanbanBoardIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
   '/technology': typeof AuthenticatedTechnologyIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
@@ -158,7 +149,6 @@ export interface FileRoutesById {
   '/(errors)/unauthorized': typeof errorsUnauthorizedRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
-  '/_authenticated/kanban-board/': typeof AuthenticatedKanbanBoardIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
   '/_authenticated/technology/': typeof AuthenticatedTechnologyIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
@@ -177,7 +167,6 @@ export interface FileRouteTypes {
     | '/unauthorized'
     | '/'
     | '/clients'
-    | '/kanban-board'
     | '/projects'
     | '/technology'
     | '/users'
@@ -194,7 +183,6 @@ export interface FileRouteTypes {
     | '/unauthorized'
     | '/'
     | '/clients'
-    | '/kanban-board'
     | '/projects'
     | '/technology'
     | '/users'
@@ -212,7 +200,6 @@ export interface FileRouteTypes {
     | '/(errors)/unauthorized'
     | '/_authenticated/'
     | '/_authenticated/clients/'
-    | '/_authenticated/kanban-board/'
     | '/_authenticated/projects/'
     | '/_authenticated/technology/'
     | '/_authenticated/users/'
@@ -331,13 +318,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/kanban-board/': {
-      id: '/_authenticated/kanban-board/'
-      path: '/kanban-board'
-      fullPath: '/kanban-board'
-      preLoaderRoute: typeof AuthenticatedKanbanBoardIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/clients/': {
       id: '/_authenticated/clients/'
       path: '/clients'
@@ -351,7 +331,6 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedClientsIndexRoute: typeof AuthenticatedClientsIndexRoute
-  AuthenticatedKanbanBoardIndexRoute: typeof AuthenticatedKanbanBoardIndexRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
   AuthenticatedTechnologyIndexRoute: typeof AuthenticatedTechnologyIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
@@ -360,7 +339,6 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedClientsIndexRoute: AuthenticatedClientsIndexRoute,
-  AuthenticatedKanbanBoardIndexRoute: AuthenticatedKanbanBoardIndexRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
   AuthenticatedTechnologyIndexRoute: AuthenticatedTechnologyIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,

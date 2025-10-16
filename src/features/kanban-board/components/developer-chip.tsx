@@ -1,74 +1,59 @@
-"use client"
+// src/components/developer-chip.tsx
 
-import { useSortable } from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
-import type { Developer } from "@/lib/types"
-import { techColorClasses } from "@/lib/tech-color"
-import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
+import { useSortable } from "@dnd-kit/sortable";
+import type { Developer } from "@/lib/types";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 export function DeveloperChip({
   developer,
   containerId,
-  onClick,
 }: {
-  developer: Developer
-  containerId: string
-  onClick?: () => void
+  developer: Developer;
+  containerId: string;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const { attributes, listeners, setNodeRef, isDragging } = useSortable({
     id: developer.id,
-    data: { containerId },
-  })
+    data: { containerId, developer },
+  });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  }
-
-  const { bg, text, ring } = techColorClasses(developer.technology)
-
-  const dueISO = developer.removalSchedule?.[containerId]
-  const daysLeft =
-    dueISO != null ? Math.max(0, Math.ceil((new Date(dueISO).getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : null
+  const techColor = developer?.technology?.color || "#e2e8f0";
+  const ringColor = techColor + "50";
 
   return (
     <div
       ref={setNodeRef}
-      style={style}
+      {...attributes}
+      {...listeners}
+      style={{
+        backgroundColor: techColor + "1A",
+        borderColor: techColor,
+        boxShadow: isDragging ? `0 0 0 3px ${ringColor}` : undefined,
+      }}
       className={cn(
-        "flex items-center gap-2 rounded-md border px-3 py-2 text-sm shadow-sm outline-none",
-        bg,
-        text,
-        ring,
-        isDragging && "opacity-70",
+        " w-fit flex items-center gap-4 justify-between rounded-md border px-3 py-2 text-sm shadow-sm outline-none transition-all duration-200 cursor-grab",
+        isDragging && "opacity-50"
       )}
     >
-      {/* Clickable area for opening dialog */}
-      <button
-        type="button"
-        onClick={onClick}
-        className="flex min-w-0 items-center gap-2"
-        aria-label={`Open ${developer.name} details`}
-      >
-        <span className="truncate font-medium">{developer.name}</span>
-        <Badge variant="secondary" className="text-xs">
-          {developer.technology}
-        </Badge>
-      </button>
+      {/* Left side: Developer info */}
+      <div className="flex flex-col gap-0.5 truncate w-full">
+        <span className="truncate font-medium">{developer.fullName}</span>
+        <span className="truncate text-xs text-gray-500">
+          {developer.email}
+        </span>
+      </div>
 
-      {/* Drag handle to prevent click-drag conflict */}
-      <button
-        type="button"
-        aria-label="Drag developer"
-        className="ml-auto h-5 w-5 cursor-grab rounded hover:bg-foreground/10 active:cursor-grabbing"
-        {...attributes}
-        {...listeners}
+      {/* Right side: Technology badge */}
+      <Badge
+        variant="secondary"
+        className="text-xs"
+        style={{
+          backgroundColor: techColor,
+          color: "#fff",
+        }}
       >
-        {"⋮"}
-      </button>
-
-      {daysLeft != null && <span className="text-xs opacity-80">{daysLeft} days</span>}
+        {developer?.technology?.name}
+      </Badge>
     </div>
-  )
+  );
 }
