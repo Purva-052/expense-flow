@@ -43,7 +43,7 @@ export function DeveloperDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle className={`${tech.text} flex items-center justify-between`}>
-            <span className="text-xl">{developer.name}</span>
+            <span className="text-xl">{developer.fullName}</span>
             <span className="text-base opacity-90">{developer.technology}</span>
           </DialogTitle>
           <DialogDescription>Manage assignment for this developer.</DialogDescription>
