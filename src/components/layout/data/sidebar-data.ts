@@ -37,43 +37,43 @@ export const sidebarData: SidebarData = {
   navGroups: [
     {
       title: 'Overview',
-      requiredRoles: ['team_lead', 'admin'],
+      requiredRoles:['admin', 'team_lead',"project_manager","developer"],
       items: [
         {
           title: ' Project Board',
           url: '/',
           icon: IconLayoutBoardFilled,
-          requiredRoles: ['team_lead', 'venue_owner'],
+          requiredRoles:['admin', 'team_lead',"project_manager","developer"],
         },
       ],
     },
     {
       title: 'Masters',
-      requiredRoles: ['team_lead', 'venue_owner'],
+      requiredRoles: ['admin', 'team_lead',"project_manager"],
       items: [
         {
           title: 'Technology',
           url: '/technology',
           icon: IconAugmentedReality,
-          requiredRoles: ['team_lead'],
+          requiredRoles: ['admin', 'team_lead',"project_manager"],
         },
         {
           title: 'Projects',
           url: '/projects',
           icon: IconUserScreen,
-          requiredRoles: ['team_lead'],
+          requiredRoles: ['admin', 'team_lead',"project_manager"],
         },
         {
           title: 'Clients',
           url: '/clients',
           icon: IconBrandDatabricks,
-          requiredRoles: ['team_lead'],
+          requiredRoles: ['admin', 'team_lead',"project_manager"],
         },
         {
           title: 'Users',
           url: '/users',
           icon: IconUsers,
-          requiredRoles: ['team_lead'],
+          requiredRoles: ['admin', 'team_lead',"project_manager"],
         },
       ],
     },

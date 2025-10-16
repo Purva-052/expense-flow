@@ -14,6 +14,7 @@ export type Project = {
   name: string
   expectedCompletionDate: string
   assignedDeveloperIds: string[]
+  currentStatus:any
 }
 
 export type ScheduleItem = {

@@ -1,5 +1,4 @@
 // src/components/developer-chip.tsx
-
 import { useSortable } from "@dnd-kit/sortable";
 import type { Developer } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -8,9 +7,11 @@ import { Badge } from "@/components/ui/badge";
 export function DeveloperChip({
   developer,
   containerId,
+  onClick,
 }: {
   developer: Developer;
   containerId: string;
+  onClick?: () => void; // Added optional onClick handler
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useSortable({
     id: developer.id,
@@ -25,6 +26,7 @@ export function DeveloperChip({
       ref={setNodeRef}
       {...attributes}
       {...listeners}
+      onClick={onClick} // Attach the onClick handler
       style={{
         backgroundColor: techColor + "1A",
         borderColor: techColor,
@@ -32,6 +34,7 @@ export function DeveloperChip({
       }}
       className={cn(
         " w-fit flex items-center gap-4 justify-between rounded-md border px-3 py-2 text-sm shadow-sm outline-none transition-all duration-200 cursor-grab",
+        onClick && "cursor-pointer", // Make it look clickable if handler is present
         isDragging && "opacity-50"
       )}
     >
