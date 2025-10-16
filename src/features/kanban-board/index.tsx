@@ -76,12 +76,14 @@ const Board = () => {
     const developerID = active?.id;
     const projectID = over?.id;
 
-    assignProject({
-      developerId: developerID,
-      projectId: projectID,
-      assignedBy: 2,
-      startDate: new Date().toISOString(), // sets current date & time
-    });
+    if (developerID && projectID) {
+      assignProject({
+        developerId: developerID,
+        projectId: projectID,
+        assignedBy: 2,
+        startDate: new Date().toISOString(), // sets current date & time
+      });
+    }
   }
 
   return (
