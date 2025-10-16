@@ -199,7 +199,7 @@ export function ForgotPasswordForm({
           <div className="mt-4 text-center">
             <button
               onClick={() => setStep("email")}
-              className="text-sm font-medium text-[#2C1059] hover:underline"
+              className="text-sm font-medium text-[#e80339] hover:underline"
             >
               Back to Email
             </button>
@@ -216,7 +216,7 @@ export function ForgotPasswordForm({
           <div className="mt-4 text-center">
             <button
               onClick={() => setStep("email")}
-              className="text-sm font-medium text-[#2C1059] hover:underline"
+              className="text-sm font-medium text-[#e80339] hover:underline"
             >
               Back to Email
             </button>

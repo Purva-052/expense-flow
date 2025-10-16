@@ -1,7 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export type Developer = {
   id: string
-  name: string
-  technology: string
+  fullName: string
+  role:string
+  email:string
+  technology: any
   assignedProjectIds: string[]
   removalSchedule?: Record<string, string> // projectId -> ISO date
 }
@@ -9,7 +12,7 @@ export type Developer = {
 export type Project = {
   id: string
   name: string
-  completionDate: string
+  expectedCompletionDate: string
   assignedDeveloperIds: string[]
 }
 

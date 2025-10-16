@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable no-console */
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -12,84 +11,46 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { DeveloperChip } from "./components/developer-chip";
-import React from "react";
 import {
   rectSortingStrategy,
   SortableContext,
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
-import { ProjectCard } from "./components/project-card";
-import { DeveloperDialog } from "./components/developer-dialog";
-import { Main } from "@/components/layout/main";
 
-// --- Static Data Definition ---
-const staticData = {
-  projects: [
-    {
-      id: "proj-1",
-      name: "E-commerce Platform Relaunch",
-      description: "Building the next generation of our online store.",
-      assignedDeveloperIds: ["dev-1", "dev-3"],
-    },
-    {
-      id: "proj-2",
-      name: "Mobile Banking App",
-      description: "A new native app for iOS and Android.",
-      assignedDeveloperIds: ["dev-2"],
-    },
-    {
-      id: "proj-3",
-      name: "Internal CRM Tool",
-      description: "A tool for managing customer relationships.",
-      assignedDeveloperIds: [],
-    },
-  ],
-  developers: [
-    {
-      id: "dev-1",
-      name: "Alice Johnson",
-      technology: "React",
-      assignedProjectIds: ["proj-1"],
-    },
-    {
-      id: "dev-2",
-      name: "Bob Williams",
-      technology: "Angular",
-      assignedProjectIds: ["proj-2"],
-    },
-    {
-      id: "dev-3",
-      name: "Charlie Brown",
-      technology: "Vue.js",
-      assignedProjectIds: ["proj-1"],
-    },
-    {
-      id: "dev-4",
-      name: "Diana Miller",
-      technology: "Node.js",
-      assignedProjectIds: [],
-    },
-    {
-      id: "dev-5",
-      name: "Ethan Davis",
-      technology: "Python",
-      assignedProjectIds: [],
-    },
-  ],
-};
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Main } from "@/components/layout/main";
+import { ProjectCard } from "./components/project-card";
+import { DeveloperChip } from "./components/developer-chip";
+import { useAssignDeveloper, useGetAvailableDeveloperList } from "./services";
+import type { Developer } from "@/lib/types"; // Make sure this import path is correct
+import { useGetProjectsData } from "../projects/services";
 
 const Board = () => {
-  // Use the static data directly
-  const data = staticData;
-  // Assume user has permission to manage for this static example
-  const canManage = true;
+  const {
+    data: AvailableDevelopers,
+    isPending: AvaliableDevelopersLoading,
+  }: any = useGetAvailableDeveloperList();
 
-  const [activeDevId, setActiveDevId] = React.useState<string | null>(null);
-  const [dialogProjectId, setDialogProjectId] = React.useState<string | null>(
-    null
+  const {
+    data: projectList,
+    isPending: projectListLoading,
+    refetch,
+  }: any = useGetProjectsData({
+    pagination: false,
+  });
+
+  const onsuccessAssignDeveloper = () => {
+    refetch();
+  };
+
+  const { mutateAsync: assignProject } = useAssignDeveloper(
+    onsuccessAssignDeveloper
   );
-  const [draggingDevId, setDraggingDevId] = React.useState<string | null>(null);
+
+  // State to hold the full Developer object being dragged
+  const [activeDeveloper, setActiveDeveloper] =
+    React.useState<Developer | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -98,95 +59,67 @@ const Board = () => {
 
   const availableDroppable = useDroppable({ id: "available" });
 
-  // Loading state is no longer needed with static data
-  // if (!data) return <div className="text-muted-foreground">Loading…</div>
-
-  const available = data.developers.filter(
-    (d: any) => d.assignedProjectIds.length === 0
-  );
-
+  // When a drag starts, find the developer object and store it in state.
   function onDragStart(event: DragStartEvent) {
-    const id = event.active.id?.toString();
-    if (id) setDraggingDevId(id);
+    const developer = event.active.data.current?.developer as Developer;
+    if (developer) {
+      setActiveDeveloper(developer);
+    }
   }
 
+  // When a drag ends, clear the active developer state and handle the logic.
   async function onDragEnd(event: DragEndEvent) {
-    setDraggingDevId(null);
-    if (!canManage) return;
+    setActiveDeveloper(null); // Always clear the active developer to hide the overlay
+
     const { active, over } = event;
-    if (!over) return;
-    const devId = active.id.toString();
 
-    const toContainerId =
-      (over.data?.current?.containerId as string | undefined) ??
-      over.id?.toString() ??
-      "";
+    const developerID = active?.id;
+    const projectID = over?.id;
 
-    let target = toContainerId;
-
-    if (over.id === "available") {
-      target = "available";
-    }
-
-    const sourceContainerId = active.data.current?.containerId as
-      | string
-      | undefined;
-    if (!sourceContainerId && target !== "available") {
-      // dragged from available to project; ok
-    }
-
-    if (target === sourceContainerId) return;
-
-    // NOTE: The data mutation logic for drag-and-drop would go here.
-    // For this example, we'll just log the action.
-    console.log(
-      `Developer ${devId} moved from ${sourceContainerId || "available"} to ${target}`
-    );
+    assignProject({
+      developerId: developerID,
+      projectId: projectID,
+      assignedBy: 2,
+      startDate: new Date().toISOString(), // sets current date & time
+    });
   }
-
-  const openDialog = (developerId: string, projectId: string) => {
-    setActiveDevId(developerId);
-    setDialogProjectId(projectId);
-  };
-
-  const closeDialog = () => {
-    setActiveDevId(null);
-    setDialogProjectId(null);
-  };
 
   return (
     <Main>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_320px]">
+        {/* The single, top-level DndContext provides context for the entire board */}
         <DndContext
           sensors={sensors}
           onDragStart={onDragStart}
           onDragEnd={onDragEnd}
+          onDragCancel={() => setActiveDeveloper(null)} // Clear on cancel as well
         >
-          <div className="space-y-4">
-            {data.projects.map((p: any) => (
-              <ProjectCard key={p.id} project={p}>
-                <SortableContext
-                  items={p.assignedDeveloperIds}
-                  strategy={rectSortingStrategy}
-                >
-                  <div className="flex flex-wrap gap-2">
-                    {p.assignedDeveloperIds.map((devId: any) => {
-                      const dev = data.developers.find((d) => d.id === devId);
-                      if (!dev) return null;
-                      return (
-                        <DeveloperChip
-                          key={dev.id + "-" + p.id}
-                          developer={dev}
-                          containerId={p.id}
-                          onClick={() => openDialog(dev.id, p.id)}
-                        />
-                      );
-                    })}
-                  </div>
-                </SortableContext>
-              </ProjectCard>
-            ))}
-          </div>
+          {projectListLoading ? (
+            "...loading"
+          ) : (
+            <div className="space-y-4">
+              {projectList?.data?.map((p: any) => (
+                <ProjectCard key={p?.id} project={p}>
+                  <SortableContext
+                    items={p?.developerAllocations}
+                    strategy={rectSortingStrategy}
+                  >
+                    <div className="flex flex-wrap gap-2">
+                      {p?.developerAllocations?.map((developer: any) => {
+                        return (
+                          <DeveloperChip
+                            key={developer.id}
+                            developer={developer?.developer}
+                            containerId={developer.id}
+                          />
+                        );
+                      })}
+                    </div>
+                  </SortableContext>
+                </ProjectCard>
+              ))}
+            </div>
+          )}
 
           <aside className="sticky top-4 h-fit">
             <Card
@@ -201,51 +134,68 @@ const Board = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <SortableContext
-                  items={available.map((d) => d.id)}
-                  strategy={rectSortingStrategy}
-                >
-                  <div className="flex flex-col gap-2">
-                    {available.map((dev) => (
-                      <DeveloperChip
-                        key={dev.id}
-                        developer={dev}
-                        containerId="available"
-                        onClick={() => openDialog(dev.id, "available")}
-                      />
-                    ))}
+                {AvaliableDevelopersLoading ? (
+                  <div className="flex flex-col justify-center items-center py-10 gap-3">
+                    <div className="w-10 h-10 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
+                    <span className="text-sm text-muted-foreground">
+                      Loading Resources...
+                    </span>
                   </div>
-                </SortableContext>
+                ) : (
+                  <SortableContext
+                    items={
+                      AvailableDevelopers?.data?.map((d: any) => d.id) ?? []
+                    }
+                    strategy={rectSortingStrategy}
+                  >
+                    <div className="flex flex-col gap-2">
+                      {AvailableDevelopers?.data?.map((dev: any) => (
+                        <DeveloperChip
+                          key={dev.id}
+                          developer={dev}
+                          containerId="available"
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+                )}
               </CardContent>
             </Card>
           </aside>
-
           <DragOverlay>
-            {draggingDevId
-              ? (() => {
-                  const dev = data.developers.find(
-                    (d) => d.id === draggingDevId
-                  );
-                  if (!dev) return null;
-                  return (
-                    <div className="pointer-events-none rounded-md border bg-card px-3 py-2 text-sm shadow-lg">
-                      {dev.name} —{" "}
-                      <span className="opacity-80">{dev.technology}</span>
-                    </div>
-                  );
-                })()
-              : null}
+            {activeDeveloper ? (
+              // This is the component that will be rendered while dragging
+              <div
+                className="pointer-events-none flex items-center justify-between gap-2 rounded-md border bg-card px-3 py-2 text-sm shadow-lg backdrop-blur-sm scale-105 opacity-95 transition-transform duration-150"
+                style={{
+                  backgroundColor:
+                    (activeDeveloper.technology?.color || "#e2e8f0") + "1A",
+                  borderColor: activeDeveloper.technology?.color || "#e2e8f0",
+                }}
+              >
+                <div className="flex flex-col gap-0.5 truncate">
+                  <span className="truncate font-medium">
+                    {activeDeveloper.fullName}
+                  </span>
+                  <span className="truncate text-xs text-gray-500">
+                    {activeDeveloper.role}
+                  </span>
+                </div>
+                <Badge
+                  variant="secondary"
+                  className="text-xs"
+                  style={{
+                    backgroundColor:
+                      activeDeveloper.technology?.color || "#e2e8f0",
+                    color: "#fff",
+                  }}
+                >
+                  {activeDeveloper.technology?.name}
+                </Badge>
+              </div>
+            ) : null}
           </DragOverlay>
         </DndContext>
-
-        <DeveloperDialog
-          open={!!activeDevId}
-          onOpenChange={(o) => !o && closeDialog()}
-          developer={data.developers.find((d) => d.id === activeDevId) || null}
-          projectId={dialogProjectId || "available"}
-          // The mutate() function is removed as we are not fetching data
-          afterChange={() => console.log("Data changed")}
-        />
       </div>
     </Main>
   );

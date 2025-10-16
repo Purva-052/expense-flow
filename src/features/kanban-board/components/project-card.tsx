@@ -22,7 +22,7 @@ export function ProjectCard({
             <div className="text-sm text-muted-foreground">Project Name</div>
             <div className="font-medium">{project.name}</div>
             <div className="mt-2 text-sm text-muted-foreground">Completion Date</div>
-            <div className="text-sm">{new Date(project.completionDate).toLocaleDateString()}</div>
+            <div className="text-sm">{new Date(project.expectedCompletionDate).toLocaleDateString()}</div>
           </div>
           <div className="min-h-12 rounded-md border border-dashed p-3">{children}</div>
         </div>

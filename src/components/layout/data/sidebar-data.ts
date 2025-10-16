@@ -1,14 +1,14 @@
 import {
   IconAugmentedReality,
   IconBrandDatabricks,
+  IconLayoutBoardFilled,
   IconPalette,
-  IconSettings,
   IconTool,
   IconUsers,
   IconUserScreen,
   
 } from '@tabler/icons-react'
-import { Command, Home } from 'lucide-react'
+import { Command} from 'lucide-react'
 import { type SidebarData } from '../types'
 
 export const sidebarData: SidebarData = {
@@ -40,9 +40,9 @@ export const sidebarData: SidebarData = {
       requiredRoles: ['team_lead', 'admin'],
       items: [
         {
-          title: 'Dashboard',
+          title: ' Project Board',
           url: '/',
-          icon: Home,
+          icon: IconLayoutBoardFilled,
           requiredRoles: ['team_lead', 'venue_owner'],
         },
       ],
@@ -77,17 +77,6 @@ export const sidebarData: SidebarData = {
         },
       ],
     },
-    {
-      title: 'Operations',
-      requiredRoles: ['team_lead', 'venue_owner'],
-      items: [
-        {
-          title: ' Kanban Board',
-          url: '/kanban-board',
-          icon: IconSettings,
-          requiredRoles: ['team_lead','venue_owner'],
-        },
-      ],
-    },
+   
   ],
 }
