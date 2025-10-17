@@ -1,3 +1,11 @@
+// --- MODIFICATION: Using your specific enum values for the type ---
+export enum ProjectPriority {
+  LOW = "low",
+  MEDIUM = "medium",
+  HIGH = "high",
+}
+
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type Developer = {
   id: string
@@ -15,6 +23,7 @@ export type Project = {
   expectedCompletionDate: string
   assignedDeveloperIds: string[]
   currentStatus:any
+  priority: ProjectPriority; // Use the enum here
 }
 
 export type ScheduleItem = {

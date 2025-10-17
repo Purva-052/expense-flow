@@ -1,4 +1,4 @@
-// src/pages/board.tsx (or wherever your Board component is)
+// src/pages/board.tsx
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import {
@@ -27,8 +27,12 @@ import { DeveloperDialog } from "./components/developer-dialog"; // Import the d
 import { useAssignDeveloper, useGetAvailableDeveloperList } from "./services";
 import type { Developer } from "@/lib/types";
 import { useGetProjectsData } from "../projects/services";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 const Board = () => {
+  const { user } = useAuthStore();
+  const isDeveloperView = user?.user?.role === "developer"; // Check if the user is a developer
+
   const {
     data: AvailableDevelopers,
     isPending: AvaliableDevelopersLoading,
@@ -68,6 +72,7 @@ const Board = () => {
   const availableDroppable = useDroppable({ id: "available" });
 
   function onDragStart(event: DragStartEvent) {
+    if (isDeveloperView) return; // Disable drag for developers
     const developer = event.active.data.current?.developer as Developer;
     if (developer) {
       setActiveDeveloper(developer);
@@ -75,6 +80,7 @@ const Board = () => {
   }
 
   async function onDragEnd(event: DragEndEvent) {
+    if (isDeveloperView) return; // Disable drop for developers
     setActiveDeveloper(null);
 
     const { active, over } = event;
@@ -117,30 +123,40 @@ const Board = () => {
             <div className="space-y-4">
               {projectList?.data?.map((p: any) => (
                 <ProjectCard key={p?.id} project={p}>
-                  <SortableContext
-                    items={
-                      p?.developerAllocations?.map(
-                        (da: any) => da.developer.id
-                      ) ?? []
-                    }
-                    strategy={rectSortingStrategy}
-                  >
-                    <div className="flex flex-wrap gap-2">
-                      {p?.developerAllocations?.map((allocation: any) => {
-                        return (
-                          <DeveloperChip
-                            key={allocation.developer.id}
-                            developer={allocation.developer}
-                            containerId={p.id}
-                            // Add the onClick handler ONLY for developers in projects
-                            onClick={() =>
-                              handleDeveloperClick(allocation.developer, p.id)
-                            }
-                          />
-                        );
-                      })}
-                    </div>
-                  </SortableContext>
+                  {p?.developerAllocations?.length !== 0 ? (
+                    <SortableContext
+                      items={
+                        p?.developerAllocations?.map(
+                          (da: any) => da.developer.id
+                        ) ?? []
+                      }
+                      strategy={rectSortingStrategy}
+                    >
+                      <div className="flex flex-wrap gap-2">
+                        {p?.developerAllocations?.map((allocation: any) => {
+                          return (
+                            <DeveloperChip
+                              key={allocation.developer.id}
+                              developer={allocation.developer}
+                              containerId={p.id}
+                              endDate={allocation.endDate}
+                              // Add the onClick handler ONLY for developers in projects
+                              onClick={
+                                !isDeveloperView
+                                  ? () =>
+                                      handleDeveloperClick(
+                                        allocation.developer,
+                                        p.id
+                                      )
+                                  : undefined
+                              }
+                              disabled={isDeveloperView} // Disable DeveloperChip for developers
+                            />
+                          );
+                        })}
+                      </div>
+                    </SortableContext>
+                  ) : null}
                 </ProjectCard>
               ))}
             </div>
@@ -171,6 +187,7 @@ const Board = () => {
                           key={dev.id}
                           developer={dev}
                           containerId="available"
+                          disabled={isDeveloperView} // Disable DeveloperChip for developers
                         />
                       ))}
                     </div>
