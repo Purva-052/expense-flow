@@ -41,6 +41,7 @@ export function ActionFormModal({
       role: values.role,
       technologyId: values.technologyId,
       joiningDate: values.joiningDate,
+      password: values.password,
       status: values.status ? "active" : "inactive",
     };
 

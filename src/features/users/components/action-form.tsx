@@ -113,6 +113,15 @@ export function UserActionForm({
                 placeholder="Enter email"
                 type="email"
               />{" "}
+              {!isEdit && (
+                <TextInputField
+                  control={form.control}
+                  name="password"
+                  label="Password"
+                  placeholder="Enter password"
+                  type="password"
+                />
+              )}
               <CustomDropDownSearchable
                 form={form}
                 name="role"
