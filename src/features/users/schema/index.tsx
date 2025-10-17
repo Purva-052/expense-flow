@@ -11,6 +11,11 @@ export const userFormSchema = z.object({
     .email({ message: "Invalid email address." })
     .max(100, { message: "Email cannot exceed 100 characters." })
     .trim(),
+  password: z
+    .string()
+    .min(6, { message: "Password must be at least 6 characters long." })
+    .max(100, { message: "Password cannot exceed 100 characters." })
+    .trim(),
   role: z
     .string()
     .min(3, { message: "Role is required." })
@@ -19,7 +24,7 @@ export const userFormSchema = z.object({
   technologyId: z
     .number({ invalid_type_error: "Technology is required." })
     .min(1, { message: "Please select a technology." }),
-  joiningDate: z.string().refine((val) => !isNaN(Date.parse(val)), {
+  joiningDate: z.any().refine((val) => !isNaN(Date.parse(val)), {
     message: "Invalid date format.",
   }),
   status: z.boolean(), // checkbox will map true = active, false = inactive

@@ -8,11 +8,12 @@ import { Badge } from "@/components/ui/badge";
 import { Project, ProjectPriority } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useDroppable } from "@dnd-kit/core";
-import { ArrowDown, ArrowRight, ArrowUp } from "lucide-react";
+// --- ✅ 1. IMPORT THE CALENDAR ICON ---
+import { ArrowDown, ArrowRight, ArrowUp, CalendarDays } from "lucide-react";
 
 type ProjectStatus = "active" | "on_hold" | "cancelled" | "completed";
 
-// --- REFINED: Status styles with semi-transparent backgrounds ---
+// --- Status styles (no changes) ---
 const statusStyles: Record<
   ProjectStatus,
   { label: string; className: string }
@@ -35,7 +36,7 @@ const statusStyles: Record<
   },
 };
 
-// --- REFINED: Priority styles with more detailed color properties for a better UI ---
+// --- Priority styles (no changes) ---
 const priorityStyles: Record<
   ProjectPriority,
   {
@@ -78,11 +79,11 @@ export function ProjectCard({
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: project.id });
 
-  const status =
-    statusStyles[project.currentStatus as ProjectStatus] ?? statusStyles.active;
+  const status = statusStyles[project.currentStatus as ProjectStatus];
   const priority =
     priorityStyles[project.priority] ?? priorityStyles[ProjectPriority.LOW];
-  const PriorityIcon = priority.icon;
+
+  const isActive = project.currentStatus === "active";
 
   return (
     <Card
@@ -97,55 +98,52 @@ export function ProjectCard({
           {/* Left Side: Project Details */}
           <div
             className={cn(
-              "flex flex-col gap-4 p-5 bg-secondary/50 border-l-4 h-full",
+              // --- ✅ 2. REDUCED PADDING AND GAP ---
+              "flex flex-col gap-3 p-4 bg-secondary/50 border-l-8 h-full",
               priority.borderColor
             )}
           >
-            {/* Header: Project Name & Status */}
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground font-medium">
-                  PROJECT
-                </span>
-                <Badge
-                  variant="outline"
-                  className={cn("text-xs font-bold", status.className)}
-                >
-                  {status.label}
-                </Badge>
+            {/* --- ✅ 3. RESTRUCTURED HEADER TO BE A SINGLE ROW --- */}
+            <div className="flex items-center gap-3">
+              {/* Status Indicator */}
+              <div className="flex h-6 items-center">
+                {isActive ? (
+                  <div title="Status: Active">
+                    <span className="relative flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+                    </span>
+                  </div>
+                ) : (
+                  status && (
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "text-xs font-bold whitespace-nowrap",
+                        status.className
+                      )}
+                    >
+                      {status.label}
+                    </Badge>
+                  )
+                )}
               </div>
-              <h3 className="text-xl font-bold text-card-foreground truncate">
+
+              {/* Project Name */}
+              <h3 className="text-lg font-bold text-card-foreground truncate">
                 {project.name}
               </h3>
             </div>
 
-            {/* Details: Priority & Completion Date */}
-            <div className="grid grid-cols-2 gap-4 mt-auto">
-              <div>
-                <div className="text-xs text-muted-foreground font-medium mb-1">
-                  PRIORITY
-                </div>
-                <Badge
-                  className={cn(
-                    "flex items-center gap-1.5 w-fit pl-2 pr-3 py-1 text-sm font-bold",
-                    priority.badgeClasses
-                  )}
-                >
-                  <PriorityIcon className="h-4 w-4" />
-                  {priority.label}
-                </Badge>
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground font-medium mb-1">
-                  TARGET DATE
-                </div>
-                <div className="text-sm font-semibold text-card-foreground">
-                  {new Date(project.expectedCompletionDate).toLocaleDateString(
-                    "en-GB", // Using a consistent date format
-                    { day: "2-digit", month: "short", year: "numeric" }
-                  )}
-                </div>
-              </div>
+            {/* --- ✅ 4. RESTYLED DATE (NO LONGER IN A GRID) --- */}
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-auto">
+              <CalendarDays className="h-3.5 w-3.5" />
+              <span>
+                {new Date(project.expectedCompletionDate).toLocaleDateString(
+                  "en-GB",
+                  { day: "2-digit", month: "short", year: "numeric" }
+                )}
+              </span>
             </div>
           </div>
 
@@ -153,7 +151,7 @@ export function ProjectCard({
           {children && (
             <div
               className={cn(
-                "p-5 min-h-[120px] transition-colors duration-300",
+                "p-4 min-h-[100px] transition-colors duration-300", // Reduced padding and min-height
                 isOver ? "bg-primary/10" : "bg-transparent"
               )}
             >

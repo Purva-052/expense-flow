@@ -10,7 +10,9 @@ import React from "react";
  * Calculates the difference in days between a future date and today.
  * Returns null if the date is in the past, null, or undefined.
  */
-const getDaysRemaining = (endDate: string | null | undefined): number | null => {
+const getDaysRemaining = (
+  endDate: string | null | undefined
+): number | null => {
   if (!endDate) return null;
 
   const end = new Date(endDate);
@@ -54,13 +56,18 @@ export function DeveloperChip({
 
   // Helper to generate the text content (e.g., "in 1 day", "today")
   const getReleaseText = (): React.ReactNode => {
-    if (daysRemaining === 0) {
-      return <>Releases <strong>today</strong></>;
-    }
     if (daysRemaining === 1) {
-      return <>Releases in <strong>1 day</strong></>;
+      return (
+        <>
+          <strong>1 day</strong>
+        </>
+      );
     }
-    return <>Releases in <strong>{daysRemaining} days</strong></>;
+    return (
+      <>
+        <strong>{daysRemaining} days</strong>
+      </>
+    );
   };
 
   const techColor = developer?.technology?.color || "#e2e8f0";
@@ -89,9 +96,15 @@ export function DeveloperChip({
           <span className="truncate font-bold text-card-foreground">
             {developer.fullName}
           </span>
-          <span className="truncate text-xs text-muted-foreground">
-            {developer.email}
-          </span>
+          {showReleaseWarning && (
+            <>
+              <hr className="border-dashed border-black/10 dark:border-white/10 my-1" />
+              <div className="flex items-center gap-2 text-orange-600 dark:text-orange-400 text-xs font-semibold animate-pulse">
+                <Clock className="h-4 w-4" />
+                <span>{getReleaseText()}</span>
+              </div>
+            </>
+          )}
         </div>
         <Badge
           className="text-xs text-white shrink-0" // prevent badge from shrinking
@@ -102,15 +115,6 @@ export function DeveloperChip({
       </div>
 
       {/* --- 3. Conditional UI for Release Warning --- */}
-      {showReleaseWarning && (
-        <>
-          <hr className="border-dashed border-black/10 dark:border-white/10 my-1" />
-          <div className="flex items-center gap-2 text-orange-600 dark:text-orange-400 text-xs font-semibold animate-pulse">
-            <Clock className="h-4 w-4" />
-            <span>{getReleaseText()}</span>
-          </div>
-        </>
-      )}
     </div>
   );
 }
