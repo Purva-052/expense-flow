@@ -11,7 +11,8 @@ const API = {
    create:"/users",
    delete:"/users",
    role:"/users/roles",
-   available_developers:"/users/available-developers"
+   available_developers:"/users/available-developers",
+   remove_developer_from_project:"/developer-allocations/remove"
   },
   technology:{
     list :"/technology",

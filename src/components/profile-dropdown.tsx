@@ -44,7 +44,7 @@ export function ProfileDropdown() {
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
               <p className="text-sm leading-none font-medium">
-                {user?.user?.name || ""}
+                {user?.user?.fullName || ""}
               </p>
               <p className="text-muted-foreground text-xs leading-none">
                 {user?.user?.email || "admin@gmail.com"}

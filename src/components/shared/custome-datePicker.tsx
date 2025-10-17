@@ -25,8 +25,10 @@ interface CustomDatePickerProps {
   name: string;
   label?: string;
   placeholder?: string;
-  disabled?: boolean;
+  disabled?: boolean; // Disables the trigger button
   dateFormat?: string;
+  // ✅ ADDED: New prop to pass a function for disabling specific dates
+  disabledDays?: (day: Date) => boolean;
 }
 
 export function CustomDatePicker({
@@ -36,8 +38,9 @@ export function CustomDatePicker({
   placeholder = "Pick a date",
   disabled = false,
   dateFormat = "PPP",
+  disabledDays, // ✅ ADDED: Destructure the new prop
 }: Readonly<CustomDatePickerProps>) {
-  const [open, setOpen] = useState(false); // ✅ Moved outside the callback
+  const [open, setOpen] = useState(false);
 
   return (
     <FormField
@@ -51,18 +54,18 @@ export function CustomDatePicker({
               <FormControl>
                 <Button
                   variant="outline"
-                  disabled={disabled}
+                  disabled={disabled} // This prop disables the button itself
                   className={cn(
-                    "pl-3 text-left font-normal",
+                    "w-full justify-start text-left font-normal",
                     !field.value && "text-muted-foreground"
                   )}
                 >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
                   {field.value ? (
                     format(field.value, dateFormat)
                   ) : (
                     <span>{placeholder}</span>
                   )}
-                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                 </Button>
               </FormControl>
             </PopoverTrigger>
@@ -74,9 +77,12 @@ export function CustomDatePicker({
                 onSelect={(date) => {
                   if (date) {
                     field.onChange(date);
-                    setOpen(false); // ✅ Close after selecting
+                    setOpen(false);
                   }
                 }}
+                // ✅ ADDED: Pass the disabling function to the Calendar component
+                disabled={disabledDays}
+                initialFocus
               />
             </PopoverContent>
           </Popover>
