@@ -13,7 +13,7 @@ export const useGetAvailableDeveloperList = (params?: any) => {
 export const useAssignDeveloper = (onsuccess: any) => {
   return usePostData({
     url: API.projects.assign_developers,
-    refetchQueries: [PROJECTS_API_URL],
+    refetchQueries: [GET_API_URL],
     onSuccess: () => {
       onsuccess();
     },

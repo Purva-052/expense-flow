@@ -36,6 +36,7 @@ const Board = () => {
   const {
     data: AvailableDevelopers,
     isPending: AvaliableDevelopersLoading,
+    refetch: refetchAvailableDevelopers,
   }: any = useGetAvailableDeveloperList();
 
   const {
@@ -240,6 +241,7 @@ const Board = () => {
         afterChange={() => {
           refetch(); // Refetch project data after a change is made
         }}
+        refetchAvailableDevelopers={refetchAvailableDevelopers}
       />
     </Main>
   );

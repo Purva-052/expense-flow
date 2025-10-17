@@ -27,6 +27,7 @@ export function DeveloperDialog({
   projectId,
   open,
   onOpenChange,
+  refetchAvailableDevelopers,
   afterChange,
 }: {
   developer: Developer | null;
@@ -34,11 +35,13 @@ export function DeveloperDialog({
   open: boolean;
   onOpenChange: (o: boolean) => void;
   afterChange: () => void;
+  refetchAvailableDevelopers: any;
 }) {
   const [view, setView] = React.useState<"initial" | "schedule">("initial");
   const canManage = true;
 
   const onsuccessRemoveDeveloper = () => {
+    refetchAvailableDevelopers();
     afterChange();
     onOpenChange(false);
   };
