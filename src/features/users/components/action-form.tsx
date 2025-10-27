@@ -12,7 +12,7 @@ import { Form } from "@/components/ui/form";
 import CustomButton from "@/components/shared/custom-button";
 import { TextInputField } from "@/components/shared/custom-input-field";
 import { Checkbox } from "@/components/ui/checkbox";
-import { TUserFormSchema, userFormSchema } from "../schema";
+import { addUserSchema, editUserSchema, TUserFormSchema } from "../schema";
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 
@@ -46,7 +46,7 @@ export function UserActionForm({
   const isEdit = !!currentRow;
 
   const form = useForm<TUserFormSchema>({
-    resolver: zodResolver(userFormSchema) as any,
+    resolver: zodResolver(isEdit ? editUserSchema : addUserSchema) as any,
     defaultValues: isEdit
       ? {
           fullName: currentRow?.fullName ?? "",
@@ -72,6 +72,7 @@ export function UserActionForm({
           technologyId: undefined,
           joiningDate: "",
           status: true,
+          password: "", // 👈 required only for add
         },
   });
 

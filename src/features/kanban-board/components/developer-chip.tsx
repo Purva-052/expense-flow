@@ -44,10 +44,12 @@ export function DeveloperChip({
   disabled?: boolean;
   endDate?: string | null; // This will come from the developer allocation
 }) {
+  const sortableId = `${containerId}-${developer.id}`;
+
   const { attributes, listeners, setNodeRef, isDragging } = useSortable({
-    id: developer.id,
+    id: sortableId,
     data: { containerId, developer },
-    disabled: disabled,
+    disabled,
   });
 
   // --- 2. Calculate remaining days and determine if the warning should be shown ---
@@ -113,8 +115,6 @@ export function DeveloperChip({
           {developer?.technology?.name}
         </Badge>
       </div>
-
-      {/* --- 3. Conditional UI for Release Warning --- */}
     </div>
   );
 }
