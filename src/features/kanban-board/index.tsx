@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 // src/pages/board.tsx
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -29,10 +29,51 @@ import { useAssignDeveloper, useGetAvailableDeveloperList } from "./services";
 import type { Developer } from "@/lib/types";
 import { useGetProjectsData } from "../projects/services";
 import { useAuthStore } from "@/stores/use-auth-store";
+import GlobalFilterSection from "@/components/table/global-table-filter";
+import { FilterConfig } from "@/components/table/table-toolbar";
+import { useGetUsersList } from "../users/services";
+import { useGetClientsData } from "../clients/services";
 
 const Board = () => {
   const { user } = useAuthStore();
   const isDeveloperView = user?.user?.role === "developer"; // Check if the user is a developer
+  const FILTER_STORAGE_KEY = "board_filters"; // ✅ LocalStorage key for filters
+  // ✅ Load saved filters from localStorage (if available)
+  const getInitialFilters = () => {
+    if (typeof window === "undefined")
+      return {
+        pagination: false,
+        clientId: null,
+        managerId: null,
+        priority: undefined,
+      };
+    const saved = localStorage.getItem(FILTER_STORAGE_KEY);
+    return saved
+      ? { pagination: false, ...JSON.parse(saved) }
+      : {
+          pagination: false,
+          clientId: null,
+          managerId: null,
+          priority: undefined,
+        };
+  };
+
+  const [listParams, setListParams] = useState(getInitialFilters);
+  // ✅ Save filters to localStorage whenever they change
+  useEffect(() => {
+    const { clientId, managerId, priority } = listParams;
+    localStorage.setItem(
+      FILTER_STORAGE_KEY,
+      JSON.stringify({ clientId, managerId, priority })
+    );
+  }, [listParams]);
+
+  const apiParams = {
+    pagination: false,
+    clientId: listParams.clientId,
+    managerId: listParams.managerId,
+    priority: listParams.priority,
+  };
 
   const {
     data: AvailableDevelopers,
@@ -44,9 +85,7 @@ const Board = () => {
     data: projectList,
     isPending: projectListLoading,
     refetch,
-  }: any = useGetProjectsData({
-    pagination: false,
-  });
+  }: any = useGetProjectsData(apiParams);
 
   const onsuccessAssignDeveloper = () => {
     refetch();
@@ -131,6 +170,63 @@ const Board = () => {
     setIsDialogOpen(true);
   }
 
+  // filter section
+  const { data: managerList, isPending: managerListLoading }: any =
+    useGetUsersList({
+      pagination: false,
+      role: "project_manager",
+    });
+
+  const { data: clientsList, isPending: clientListLoading }: any =
+    useGetClientsData({
+      pagination: false,
+    });
+
+  const handleClientChange = (value: any) =>
+    setListParams((prev: any) => ({ ...prev, clientId: value ?? null }));
+
+  const handleManagerChange = (value: any) =>
+    setListParams((prev: any) => ({ ...prev, managerId: value ?? null }));
+
+  const handlePriorityChange = (value: any) =>
+    setListParams((prev: any) => ({ ...prev, priority: value ?? undefined }));
+  const filters: FilterConfig[] = [
+    {
+      type: "select",
+      key: "clientId",
+      placeholder: "Filter by Client",
+      options: clientsList?.data?.map((value: any) => {
+        return { label: value?.name, value: value?.id };
+      }),
+      value: listParams.clientId, // 👈 pre-selects if set
+      onChange: handleClientChange,
+      isLoading: clientListLoading,
+    },
+    {
+      type: "select",
+      key: "managerId",
+      placeholder: "Filter by Manager",
+      options: managerList?.data?.map((value: any) => {
+        return { label: value?.fullName, value: value?.id };
+      }),
+      value: listParams.managerId, // 👈 pre-selects if set
+      onChange: handleManagerChange,
+      isLoading: managerListLoading,
+    },
+    {
+      type: "select",
+      key: "priority",
+      placeholder: "Filter by Priority",
+      options: [
+        { label: "Low", value: "low" },
+        { label: "Medium", value: "medium" },
+        { label: "High", value: "high" },
+      ],
+      value: listParams.priority, // 👈 pre-selects if set
+      onChange: handlePriorityChange,
+    },
+  ];
+
   return (
     <Main>
       {projectListLoading || AvaliableDevelopersLoading ? (
@@ -147,27 +243,26 @@ const Board = () => {
             onDragCancel={() => setActiveDeveloper(null)}
           >
             <div className="space-y-4">
-              {projectList?.data?.map((p: any) => (
-                <ProjectCard key={p?.id} project={p}>
-                  {p?.developerAllocations?.length !== 0 ? (
-                    <SortableContext
-                      id={`project-${p.id}`}
-                      items={
-                        p?.developerAllocations?.map(
-                          (da: any) => `${p.id}-${da.developer.id}`
-                        ) ?? []
-                      }
-                      strategy={rectSortingStrategy}
-                    >
-                      <div className="flex flex-wrap gap-2">
-                        {p?.developerAllocations?.map((allocation: any) => {
-                          return (
+              {projectList?.data?.length ? (
+                projectList?.data?.map((p: any) => (
+                  <ProjectCard key={p?.id} project={p}>
+                    {p?.developerAllocations?.length !== 0 ? (
+                      <SortableContext
+                        id={`project-${p.id}`}
+                        items={
+                          p?.developerAllocations?.map(
+                            (da: any) => `${p.id}-${da.developer.id}`
+                          ) ?? []
+                        }
+                        strategy={rectSortingStrategy}
+                      >
+                        <div className="flex flex-wrap gap-2">
+                          {p?.developerAllocations?.map((allocation: any) => (
                             <DeveloperChip
                               key={`project-${p.id}-${allocation.developer.id}`}
                               developer={allocation.developer}
                               containerId={p.id}
                               endDate={allocation.endDate}
-                              // Add the onClick handler ONLY for developers in projects
                               onClick={
                                 !isDeveloperView
                                   ? () =>
@@ -177,18 +272,29 @@ const Board = () => {
                                       )
                                   : undefined
                               }
-                              disabled={isDeveloperView} // Disable DeveloperChip for developers
+                              disabled={isDeveloperView}
                             />
-                          );
-                        })}
-                      </div>
-                    </SortableContext>
-                  ) : null}
-                </ProjectCard>
-              ))}
+                          ))}
+                        </div>
+                      </SortableContext>
+                    ) : null}
+                  </ProjectCard>
+                ))
+              ) : (
+                // 🧩 Fallback UI when there are no projects
+                <div className="flex flex-col items-center justify-center py-10 text-center border border-dashed rounded-lg">
+                  <h3 className="text-lg font-semibold text-muted-foreground">
+                    No projects available
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Try adjusting your filters or check back later.
+                  </p>
+                </div>
+              )}
             </div>
 
             <aside className="sticky top-4 h-fit">
+              <GlobalFilterSection filters={filters ?? []} />
               <Card
                 ref={availableDroppable.setNodeRef}
                 className={
