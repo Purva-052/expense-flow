@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-export const userFormSchema = z.object({
+// Base schema (common to both add and edit)
+const baseUserSchema = z.object({
   fullName: z
     .string()
     .min(2, { message: "Full name must be at least 2 characters long." })
@@ -10,11 +11,6 @@ export const userFormSchema = z.object({
     .string()
     .email({ message: "Invalid email address." })
     .max(100, { message: "Email cannot exceed 100 characters." })
-    .trim(),
-  password: z
-    .string()
-    .min(6, { message: "Password must be at least 6 characters long." })
-    .max(100, { message: "Password cannot exceed 100 characters." })
     .trim(),
   role: z
     .string()
@@ -27,8 +23,27 @@ export const userFormSchema = z.object({
   joiningDate: z.any().refine((val) => !isNaN(Date.parse(val)), {
     message: "Invalid date format.",
   }),
-  status: z.boolean(), // checkbox will map true = active, false = inactive
-  currentWorkingProjectId: z.any().optional(), // only for edit form
+  status: z.boolean(),
+  currentWorkingProjectId: z.any().optional(),
 });
 
-export type TUserFormSchema = z.infer<typeof userFormSchema>;
+// Separate field for add/edit mode
+const passwordField = z
+  .string()
+  .min(6, { message: "Password must be at least 6 characters long." })
+  .max(100, { message: "Password cannot exceed 100 characters." })
+  .trim();
+
+// For add user (password required)
+export const addUserSchema = baseUserSchema.extend({
+  password: passwordField,
+});
+
+// For edit user (password optional)
+export const editUserSchema = baseUserSchema.extend({
+  password: passwordField.optional(),
+});
+
+export type TUserFormSchema = z.infer<typeof baseUserSchema> & {
+  password?: string;
+};
