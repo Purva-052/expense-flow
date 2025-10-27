@@ -15,6 +15,7 @@ export type Developer = {
   technology: any
   assignedProjectIds: string[]
   removalSchedule?: Record<string, string> // projectId -> ISO date
+  isCurrentProject?: boolean
 }
 
 export type Project = {

@@ -57,13 +57,9 @@ export function UserActionForm({
             ? currentRow.joiningDate.slice(0, 10)
             : "",
           status: currentRow?.status === "active",
-          currentWorkingProjectId: Array.isArray(
-            currentRow?.currentWorkingProjectId
-          )
-            ? currentRow.currentWorkingProjectId
-            : currentRow?.currentWorkingProjectId
-              ? [currentRow.currentWorkingProjectId]
-              : [],
+          currentWorkingProjectId: currentRow?.currentProject?.id
+            ? currentRow?.currentProject?.id
+            : null,
         }
       : {
           fullName: "",
@@ -157,7 +153,6 @@ export function UserActionForm({
                   })}
                   isLoading={projectListLoading}
                   placeholder="Select Project"
-                  multiple
                 />
               )}
               <CustomDatePicker
