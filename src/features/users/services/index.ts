@@ -21,12 +21,17 @@ export const useCreateUserData = () => {
   })
 }
 
-export const useUpdateUserData = (id: string) => {
+export const useUpdateUserData = (id: string,onsuccess?:any) => {
   const { setOpen } = useUsersStore()
   return usePatchData({
     url: `${API.users.list}/${id}`,
     refetchQueries: [GET_API_URL],
-    onSuccess: () => setOpen(null), // <-- ✅ correct place
+    onSuccess: () => {
+      setOpen(null)
+      if(onsuccess){
+        onsuccess()
+      }
+    }, // <-- ✅ correct place
   })
 }
 

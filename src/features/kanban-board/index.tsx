@@ -154,7 +154,6 @@ const Board = () => {
       await assignProject({
         developerId,
         projectId,
-        assignedBy: 2,
         startDate: new Date().toISOString(),
       });
       console.log("✅ Developer assigned successfully!");
@@ -292,44 +291,48 @@ const Board = () => {
                 </div>
               )}
             </div>
-
-            <aside className="sticky top-4 h-fit">
-              <GlobalFilterSection filters={filters ?? []} />
-              <Card
-                ref={availableDroppable.setNodeRef}
-                className={
-                  availableDroppable.isOver ? "ring-2 ring-pink-500" : ""
-                }
-              >
-                <CardHeader>
-                  <CardTitle className="text-balance">
-                    Available Resources
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <SortableContext
-                    items={
-                      AvailableDevelopers?.data?.map(
-                        (d: any) => `available-${d.id}`
-                      ) ?? []
+              {
+                !isDeveloperView && (
+                  <aside className="sticky top-4 h-fit">
+                  <GlobalFilterSection filters={filters ?? []} />
+                  <Card
+                    ref={availableDroppable.setNodeRef}
+                    className={
+                      availableDroppable.isOver ? "ring-2 ring-pink-500" : ""
                     }
-                    strategy={rectSortingStrategy}
                   >
-                    <div className="flex flex-col gap-2">
-                      {AvailableDevelopers?.data?.map((dev: any) => (
-                        // No onClick handler for available developers
-                        <DeveloperChip
-                          key={`available-${dev.id}`}
-                          developer={dev}
-                          containerId="available"
-                          disabled={isDeveloperView} // Disable DeveloperChip for developers
-                        />
-                      ))}
-                    </div>
-                  </SortableContext>
-                </CardContent>
-              </Card>
-            </aside>
+                    <CardHeader>
+                      <CardTitle className="text-balance">
+                        Available Resources
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <SortableContext
+                        items={
+                          AvailableDevelopers?.data?.map(
+                            (d: any) => `available-${d.id}`
+                          ) ?? []
+                        }
+                        strategy={rectSortingStrategy}
+                      >
+                        <div className="flex flex-col gap-2">
+                          {AvailableDevelopers?.data?.map((dev: any) => (
+                            // No onClick handler for available developers
+                            <DeveloperChip
+                              key={`available-${dev.id}`}
+                              developer={dev}
+                              containerId="available"
+                              disabled={isDeveloperView} // Disable DeveloperChip for developers
+                            />
+                          ))}
+                        </div>
+                      </SortableContext>
+                    </CardContent>
+                  </Card>
+                </aside>
+                )
+              }
+          
             <DragOverlay>
               {activeDeveloper ? (
                 <div

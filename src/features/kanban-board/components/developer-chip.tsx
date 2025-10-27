@@ -95,9 +95,18 @@ export function DeveloperChip({
       {/* Top Part: Developer Info + Tech Badge */}
       <div className="flex items-start gap-3 justify-between w-full">
         <div className="flex flex-col gap-0.5 truncate">
-          <span className="truncate font-bold text-card-foreground">
-            {developer.fullName}
-          </span>
+        <div className="flex items-center gap-2">
+            {/* Conditionally render the green dot */}
+            {developer.isCurrentProject && (
+              <span
+                className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse shrink-0"
+                title="Currently working on this project"
+              />
+            )}
+            <span className="truncate font-bold text-card-foreground">
+              {developer.fullName}
+            </span>
+          </div>
           {showReleaseWarning && (
             <>
               <hr className="border-dashed border-black/10 dark:border-white/10 my-1" />
