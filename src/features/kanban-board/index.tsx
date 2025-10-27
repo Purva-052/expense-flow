@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // src/pages/board.tsx
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
@@ -85,17 +86,41 @@ const Board = () => {
     setActiveDeveloper(null);
 
     const { active, over } = event;
+    if (!active || !over) return;
 
-    const developerID = active?.id;
-    const projectID = over?.id;
+    const developerKey = String(active.id);
+    const projectKey = String(over.id);
 
-    if (developerID && projectID) {
-      assignProject({
-        developerId: developerID,
-        projectId: projectID,
+    // 🧩 Extract numeric IDs safely
+    const developerId = Number(developerKey.split("-").pop());
+    const projectId = Number(projectKey.split("-").pop());
+
+    console.log("🧩 Developer ID:", developerId);
+    console.log("🏗️ Project Key:", projectKey);
+
+    // 🛑 1. Don't call API if dropped on 'available' column
+    if (projectKey.startsWith("available")) {
+      console.log("⚠️ Dropped on available list — no assignment made.");
+      return;
+    }
+
+    // 🛑 2. Validate extracted IDs
+    if (!developerId || !projectId || isNaN(developerId) || isNaN(projectId)) {
+      console.warn("Invalid IDs:", { developerKey, projectKey });
+      return;
+    }
+
+    // ✅ 3. Safe API call only when dropped on project card
+    try {
+      await assignProject({
+        developerId,
+        projectId,
         assignedBy: 2,
         startDate: new Date().toISOString(),
       });
+      console.log("✅ Developer assigned successfully!");
+    } catch (error) {
+      console.error("❌ Error assigning developer:", error);
     }
   }
 
@@ -126,9 +151,10 @@ const Board = () => {
                 <ProjectCard key={p?.id} project={p}>
                   {p?.developerAllocations?.length !== 0 ? (
                     <SortableContext
+                      id={`project-${p.id}`}
                       items={
                         p?.developerAllocations?.map(
-                          (da: any) => da.developer.id
+                          (da: any) => `${p.id}-${da.developer.id}`
                         ) ?? []
                       }
                       strategy={rectSortingStrategy}
@@ -137,7 +163,7 @@ const Board = () => {
                         {p?.developerAllocations?.map((allocation: any) => {
                           return (
                             <DeveloperChip
-                              key={allocation.developer.id}
+                              key={`project-${p.id}-${allocation.developer.id}`}
                               developer={allocation.developer}
                               containerId={p.id}
                               endDate={allocation.endDate}
@@ -177,7 +203,9 @@ const Board = () => {
                 <CardContent>
                   <SortableContext
                     items={
-                      AvailableDevelopers?.data?.map((d: any) => d.id) ?? []
+                      AvailableDevelopers?.data?.map(
+                        (d: any) => `available-${d.id}`
+                      ) ?? []
                     }
                     strategy={rectSortingStrategy}
                   >
@@ -185,7 +213,7 @@ const Board = () => {
                       {AvailableDevelopers?.data?.map((dev: any) => (
                         // No onClick handler for available developers
                         <DeveloperChip
-                          key={dev.id}
+                          key={`available-${dev.id}`}
                           developer={dev}
                           containerId="available"
                           disabled={isDeveloperView} // Disable DeveloperChip for developers
@@ -199,6 +227,7 @@ const Board = () => {
             <DragOverlay>
               {activeDeveloper ? (
                 <div
+                  key={`overlay-${activeDeveloper.id}`} // 👈 unique overlay key
                   className="pointer-events-none flex items-center justify-between gap-2 rounded-md border bg-card px-3 py-2 text-sm shadow-lg backdrop-blur-sm scale-105 opacity-95 transition-transform duration-150"
                   style={{
                     backgroundColor:
