@@ -101,7 +101,7 @@ const UsersPage = () => {
           .map((word: any) => word[0].toUpperCase() + word.slice(1))
           .join(" "), // Converts "team_lead" -> "Team Lead"
       })),
-      value: listParams.technologyId,
+      value: listParams.role,
       onChange: handleRoleChange,
       isLoading: roleListLoading,
     },

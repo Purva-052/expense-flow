@@ -12,7 +12,9 @@ const API = {
    delete:"/users",
    role:"/users/roles",
    available_developers:"/users/available-developers",
-   remove_developer_from_project:"/developer-allocations/remove"
+   all_developers:"/users/all-developers",
+   remove_developer_from_project:"/developer-allocations/remove",
+   reallocate_developer:"/developer-allocations/reallocate"
   },
   technology:{
     list :"/technology",
