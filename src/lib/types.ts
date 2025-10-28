@@ -25,6 +25,7 @@ export type Project = {
   assignedDeveloperIds: string[]
   currentStatus:any
   priority: ProjectPriority; // Use the enum here
+  percentageComplete?: number // New field for completion percentage
 }
 
 export type ScheduleItem = {

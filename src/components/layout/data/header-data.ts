@@ -1,5 +1,5 @@
 export const URL_TO_TITLE_MAP: Record<string, string> = {
-  '/': 'Project Board',
+  '/': 'Dashboard',
   '/users': 'Users',
   '/technology': "Technology",
   '/kanban-board' :'Board',

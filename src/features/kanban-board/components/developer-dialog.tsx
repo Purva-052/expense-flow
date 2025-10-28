@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/components/developer-dialog.tsx
 import * as React from "react";
@@ -13,11 +14,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Developer } from "@/lib/types";
-import { Form, FormItem, FormLabel } from "@/components/ui/form"; // ✅ IMPORT THIS
+import { Form, FormItem, FormLabel } from "@/components/ui/form";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 import { useRemoveDeveloperFromProject } from "../services";
 import { Switch } from "@/components/ui/switch";
 import { useUpdateUserData } from "@/features/users/services";
+import { useAuthStore } from "@/stores/use-auth-store"; // ✅ IMPORT THIS
 
 // Define the shape of our form data
 type ScheduleFormData = {
@@ -39,8 +41,19 @@ export function DeveloperDialog({
   afterChange: () => void;
   refetchAvailableDevelopers: any;
 }) {
+  const { user } = useAuthStore(); // ✅ Get user context
+  const isDeveloperView = user?.user?.role === "developer";
+  const isMyDialog = developer?.id === user?.user?.id;
+
+  // A Project Manager/Admin can manage (remove/schedule) any developer.
+  // A Developer should not be able to manage assignments.
+  const canManage = !isDeveloperView; 
+  
+  // A developer can only change their 'Currently Working' status on their own dialog.
+  // PM/Admin can change anyone's status.
+  const canToggleStatus = canManage || isMyDialog;
+
   const [view, setView] = React.useState<"initial" | "schedule">("initial");
-  const canManage = true;
 
   const onsuccessUpdate = () => {
     afterChange();
@@ -87,6 +100,7 @@ export function DeveloperDialog({
   }
 
   function onSchedule(data: ScheduleFormData) {
+    console.log("🚀 ~ onSchedule ~ data.removalDate:", data.removalDate);
     removeDeveloper({
       developerId: developer?.id,
       projectId: projectId,
@@ -127,25 +141,29 @@ export function DeveloperDialog({
         <div className="pt-2">
           {view === "initial" && (
             <>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <Button
-                  variant="destructive"
-                  onClick={removeNow}
-                  disabled={!canManage || isProjectAvailable}
-                  className="h-12 text-base"
-                >
-                  Remove Now
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setView("schedule")}
-                  disabled={!canManage || isProjectAvailable}
-                  className="h-12 text-base"
-                >
-                  Schedule Removal
-                </Button>
-              </div>
-              <div className="mt-6">
+              {/* Only show removal buttons if the user can manage */}
+              {canManage && (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <Button
+                    variant="destructive"
+                    onClick={removeNow}
+                    disabled={!canManage || isProjectAvailable}
+                    className="h-12 text-base"
+                  >
+                    Remove Now
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setView("schedule")}
+                    disabled={!canManage || isProjectAvailable}
+                    className="h-12 text-base"
+                  >
+                    Schedule Removal
+                  </Button>
+                </div>
+              )}
+              {/* Adjust margin based on whether the buttons are shown */}
+              <div className={canManage ? "mt-6" : "mt-0"}>
                 <Form {...form}>
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                     <div className="space-y-0.5">
@@ -157,7 +175,8 @@ export function DeveloperDialog({
                     <Switch
                       checked={developer?.isCurrentProject}
                       onCheckedChange={handleStatusChange}
-                      disabled={updateCurrentWorkingProjectLoading}
+                      // Disable if loading or if the user cannot toggle status
+                      disabled={updateCurrentWorkingProjectLoading || !canToggleStatus}
                     />
                   </FormItem>
                 </Form>
@@ -165,8 +184,8 @@ export function DeveloperDialog({
             </>
           )}
 
-          {view === "schedule" && (
-            // ✅ WRAP your form elements with the <Form> component
+          {/* Only show schedule view if the user can manage */}
+          {view === "schedule" && canManage && (
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSchedule)}
@@ -178,13 +197,23 @@ export function DeveloperDialog({
                       control={form.control}
                       name="removalDate"
                       label="Select a removal date"
-                      disabledDays={(day: any) => day <= new Date()}
+                      disabledDays={(day: Date) => {
+                        const today = new Date();
+                        const tomorrow = new Date(today);
+                        tomorrow.setDate(today.getDate() ); 
+
+                        const fiveDaysLater = new Date(today);
+                        fiveDaysLater.setDate(today.getDate() + 5); 
+
+                        // disable everything before tomorrow and after 5 days later
+                        return day < tomorrow || day > fiveDaysLater;
+                      }}
                     />
                   </div>
                   <Button
-                    type="submit" // ✅ Use type="submit"
+                    type="submit" 
                     disabled={
-                      !canManage ||
+                      !canManage || // will always be true here, but keep for consistency
                       !form.watch("removalDate") ||
                       isProjectAvailable
                     }
@@ -194,7 +223,7 @@ export function DeveloperDialog({
                 </div>
 
                 <Button
-                  type="button" // Set type to button to prevent form submission
+                  type="button" 
                   variant="ghost"
                   onClick={() => setView("initial")}
                   className="w-full"
