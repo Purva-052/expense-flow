@@ -1,10 +1,9 @@
+
 const API = {
   auth: {
     login: '/auth/login',
-    register: 'auth/register',
-    sendOTP:"/admin/auth/send-otp",
-    verifyOTP:"/admin/auth/verify-otp",
-    resetPassword:"/admin/auth/reset-password"
+    forgotPassword:"/auth/forgot-password",
+    resetPassword:"/auth/change-password"
   },
   users: {
    list:"/users",

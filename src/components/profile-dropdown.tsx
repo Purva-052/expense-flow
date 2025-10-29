@@ -10,7 +10,6 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LogoutModal } from "./model/logout-model";
@@ -29,57 +28,58 @@ export function ProfileDropdown() {
     setLogoutModalOpen(false);
   };
 
+  const getInitials = (fullName?: string) => {
+    if (!fullName) return "U";
+    const parts = fullName.trim().split(" ");
+    if (parts.length === 1) return parts[0][0]?.toUpperCase() || "U";
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
+
+  const fullName = user?.user?.fullName || "";
+  const email = user?.user?.email || "admin@gmail.com";
+
   return (
     <>
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className="relative h-8 w-8 rounded-full">
             <Avatar className="h-8 w-8">
-              <AvatarImage src="/avatars/01.png" alt="@shadcn" />
-              <AvatarFallback>SN</AvatarFallback>
+              <AvatarImage
+                src={user?.user?.avatarUrl || "/avatars/01.png"}
+                alt={fullName}
+              />
+              <AvatarFallback>{getInitials(fullName)}</AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
+
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
-              <p className="text-sm leading-none font-medium">
-                {user?.user?.fullName || ""}
-              </p>
+              <p className="text-sm leading-none font-medium">{fullName}</p>
               <p className="text-muted-foreground text-xs leading-none">
-                {user?.user?.email || "admin@gmail.com"}
+                {email}
               </p>
             </div>
           </DropdownMenuLabel>
-          {/* <DropdownMenuSeparator /> */}
-          <DropdownMenuGroup>
-            {/* <DropdownMenuItem asChild>
-              <Link to='/profile'>
-                Profile
-                <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-              </Link>
-            </DropdownMenuItem> */}
-            {/* <DropdownMenuItem asChild>
-            <Link to='/settings'>
-              Billing
-              <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link to='/settings'>
-              Settings
-              <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem>New Team</DropdownMenuItem> */}
-          </DropdownMenuGroup>
+
+          <DropdownMenuGroup />
           <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={() =>
+              navigate({
+                to: "/profile",
+              })
+            }
+            className="cursor-pointer"
+          >
+            Profile
+          </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => setLogoutModalOpen(true)}
             className="cursor-pointer"
           >
             Log out
-            <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

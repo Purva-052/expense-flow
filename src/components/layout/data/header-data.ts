@@ -5,4 +5,5 @@ export const URL_TO_TITLE_MAP: Record<string, string> = {
   '/kanban-board' :'Board',
   '/projects' :'Projects',
   '/clients' :'Clients',
+  '/profile' :'Profile',
 }

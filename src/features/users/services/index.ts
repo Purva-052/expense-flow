@@ -39,6 +39,11 @@ export const useGetUsersList = (params?: any) => {
   return useFetchData({ url: GET_API_URL, params })
 }
 
+export const useGetUserDetails = (id: string) => {
+  return useFetchData({ url: `${GET_API_URL}/${id}`, enabled: !!id })
+
+}
+
 export const useGetUsersRoles = (params?: any) => {
   return useFetchData({ url: GET_ROLES_API_URL, params })
 }
