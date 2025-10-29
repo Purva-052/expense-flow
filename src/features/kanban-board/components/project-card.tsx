@@ -12,9 +12,11 @@ import {
   ArrowUp,
   CalendarDays,
   Info,
+  UserSquare,
 } from "lucide-react";
 import { useState } from "react";
 import { ProjectDetailsDialog } from "./ProjectDetailsDialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // --- Priority styles (assuming this remains the same) ---
 const priorityStyles: Record<
@@ -109,11 +111,40 @@ export function ProjectCard({
 
                 {/* --- Icon to trigger the dialog --- */}
                 <div className="shrink-0">
-                  <Info
-                    className="h-4 w-4 cursor-pointer text-muted-foreground"
-                    onClick={() => setDialogOpen(true)}
-                  />
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info
+                          className="h-4 w-4 cursor-pointer text-muted-foreground"
+                          onClick={() => setDialogOpen(true)}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-sm">
+                        Project History
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
+              </div>
+              <div className="flex flex-col gap-2 mt-1">
+                {/* Project Manager */}
+                {project.manager?.fullName && (
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <UserSquare className="h-4 w-4 shrink-0" />
+                    <span className="font-semibold">Manager:</span>
+                    <span className="truncate">{project.manager.fullName}</span>
+                  </div>
+                )}
+                {/* Team Lead */}
+                {project.teamLead?.fullName && (
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <UserSquare className="h-4 w-4 shrink-0" />
+                    <span className="font-semibold">Lead:</span>
+                    <span className="truncate">
+                      {project.teamLead.fullName}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Date */}

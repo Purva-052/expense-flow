@@ -20,6 +20,8 @@ export type Project = {
   currentStatus:any
   priority: ProjectPriority; // Use the enum here
   percentageComplete?: number // New field for completion percentage
+  manager: any
+  teamLead: any
 }
 
 export type ScheduleItem = {
