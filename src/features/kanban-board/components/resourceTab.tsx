@@ -5,7 +5,7 @@ import GlobalFilterSection from "@/components/table/global-table-filter";
 import { GlobalTable } from "@/components/table/global-table";
 import { useState } from "react";
 import { FilterConfig } from "@/components/table/table-toolbar";
-import { columns } from "./column";
+import { ResourceColumn } from "./ResourceColumn";
 
 const ResourceTab = () => {
   //   const { open, setOpen } = useBoardStore();
@@ -66,7 +66,7 @@ const ResourceTab = () => {
         // data={(listData as any)?.data ?? []}
         data={[]}
         onPaginationChange={handlePaginationChange}
-        columns={columns}
+        columns={ResourceColumn}
         // loading={loading}
         isPaginationEnabled
       />

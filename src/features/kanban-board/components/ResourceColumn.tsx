@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useBoardStore } from "../store/useBoardStore";
 
-export const columns: ColumnDef<any>[] = [
+export const ResourceColumn: ColumnDef<any>[] = [
   {
     accessorKey: "name",
     header: " Name",

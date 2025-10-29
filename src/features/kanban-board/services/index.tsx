@@ -11,6 +11,14 @@ export const useGetAvailableDeveloperList = (params?: any) => {
   return useFetchData({ url: GET_API_URL, params });
 };
 
+export const useGetProjectHistoryData = (id: any, isOpen: boolean, params?: any) => {
+  return useFetchData({
+    url: `${PROJECTS_API_URL}/${id}/developershistory`,
+    params,
+    enabled: isOpen && !!id,
+  });
+};
+
 export const useGetAllDevelopers = (params?: any) => {
   return useFetchData({ url: GET_ALL_DEVELOPER_API_URL, params });
 };
