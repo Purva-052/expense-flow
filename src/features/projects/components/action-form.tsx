@@ -61,11 +61,11 @@ export function ProjectActionForm({
         }
       : {
           name: "",
-          clientId: 0,
+          clientId: null,
           startDate: "",
           expectedCompletionDate: "",
-          managerId: 0,
-          teamLeadId: 0,
+          managerId: null,
+          teamLeadId: null,
           percentageComplete: 0,
           priority: "",
         },

@@ -1,17 +1,30 @@
-import { z } from 'zod'
+import { z } from "zod";
 
 export const projectFormSchema = z.object({
-  name: z.string().min(2, 'Project name must be at least 2 characters').max(100),
-  clientId: z.number({ invalid_type_error: 'Client is required' }),
+  name: z
+    .string()
+    .min(2, "Project name must be at least 2 characters")
+    .max(100),
+  clientId: z.number({ invalid_type_error: "Client is required" }),
   startDate: z.any(),
   expectedCompletionDate: z.any(),
-  managerId: z.number({ invalid_type_error: 'Manager is required' }),
-  teamLeadId: z.number({ invalid_type_error: 'Team Lead is required' }),
+
+  // ✅ Made optional
+  managerId: z
+    .number({ invalid_type_error: "Manager must be a number" })
+    .optional()
+    .nullable(),
+
+  teamLeadId: z
+    .number({ invalid_type_error: "Team Lead must be a number" })
+    .optional()
+    .nullable(),
+
   percentageComplete: z.preprocess(
-    val => (val === '' || val == null ? 0 : Number(val)),
+    (val) => (val === "" || val == null ? 0 : Number(val)),
     z.number().min(0).max(100)
   ),
-  priority: z.enum(['low', 'medium', 'high']),
-})
+  priority: z.enum(["low", "medium", "high"]),
+});
 
-export type TProjectFormSchema = z.infer<typeof projectFormSchema>
+export type TProjectFormSchema = z.infer<typeof projectFormSchema>;

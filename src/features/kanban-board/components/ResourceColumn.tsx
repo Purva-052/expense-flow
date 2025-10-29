@@ -10,31 +10,28 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useClientsStore } from "../stores/useClientsStore";
+import { useBoardStore } from "../store/useBoardStore";
 
-export const columns: ColumnDef<any>[] = [
+export const ResourceColumn: ColumnDef<any>[] = [
   {
     accessorKey: "name",
-    header: "Name",
+    header: " Name",
   },
   {
-    accessorKey: "company",
-    header: "Company",
+    accessorKey: "email",
+    header: " Email",
   },
   {
-    accessorKey: "country",
-    header: "Country",
+    accessorKey: "technology",
+    header: "Technology",
   },
-  {
-    accessorKey: "timezone",
-    header: "Timezone",
-  },
+
   {
     id: "actions",
     header: "Actions",
     cell: function Cell({ row }) {
       const operator = row.original;
-      const { setOpen, setCurrentRow } = useClientsStore();
+      const { setOpen, setCurrentRow } = useBoardStore();
 
       const handleEdit = () => {
         setOpen("edit");
@@ -63,16 +60,16 @@ export const columns: ColumnDef<any>[] = [
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleView}>
-              View Client
+              View Technology
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleEdit}>
-              Edit Client
+              Edit Technology
             </DropdownMenuItem>
             <DropdownMenuItem
               className="text-red-600 focus:bg-red-50 focus:text-red-600"
               onClick={handleDelete}
             >
-              Delete Client
+              Delete Technology
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

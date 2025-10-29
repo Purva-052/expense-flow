@@ -16,7 +16,10 @@ import { Badge } from "@/components/ui/badge";
 import type { Developer } from "@/lib/types";
 import { Form, FormItem, FormLabel } from "@/components/ui/form";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
-import { useRemoveDeveloperFromProject } from "../services";
+import {
+  useReallocateDeveloperTOProject,
+  useRemoveDeveloperFromProject,
+} from "../services";
 import { Switch } from "@/components/ui/switch";
 import { useUpdateUserData } from "@/features/users/services";
 import { useAuthStore } from "@/stores/use-auth-store"; // ✅ IMPORT THIS
@@ -43,12 +46,12 @@ export function DeveloperDialog({
 }) {
   const { user } = useAuthStore(); // ✅ Get user context
   const isDeveloperView = user?.user?.role === "developer";
-  const isMyDialog = developer?.id === user?.user?.id;
+  const isMyDialog = developer?.developer?.id === user?.user?.id;
 
   // A Project Manager/Admin can manage (remove/schedule) any developer.
   // A Developer should not be able to manage assignments.
-  const canManage = !isDeveloperView; 
-  
+  const canManage = !isDeveloperView;
+
   // A developer can only change their 'Currently Working' status on their own dialog.
   // PM/Admin can change anyone's status.
   const canToggleStatus = canManage || isMyDialog;
@@ -63,7 +66,7 @@ export function DeveloperDialog({
   const {
     mutateAsync: updateCurrentWorkingProject,
     isPending: updateCurrentWorkingProjectLoading,
-  } = useUpdateUserData(developer?.id || "", onsuccessUpdate);
+  } = useUpdateUserData(developer?.developer?.id || "", onsuccessUpdate);
 
   const onsuccessRemoveDeveloper = () => {
     refetchAvailableDevelopers();
@@ -74,6 +77,15 @@ export function DeveloperDialog({
   const { mutateAsync: removeDeveloper }: any = useRemoveDeveloperFromProject(
     onsuccessRemoveDeveloper
   );
+
+  const onSuccessReallocateDeveloper = () => {
+    refetchAvailableDevelopers();
+    afterChange();
+    onOpenChange(false);
+  };
+
+  const { mutateAsync: reAllocateDeveloper }: any =
+    useReallocateDeveloperTOProject(onSuccessReallocateDeveloper);
 
   const form = useForm<ScheduleFormData>({
     defaultValues: {
@@ -90,21 +102,34 @@ export function DeveloperDialog({
 
   if (!developer) return null;
 
-  const techColor = developer?.technology?.color || "#64748b";
+  const techColor = developer?.developer?.technology?.color || "#64748b";
 
   async function removeNow() {
     removeDeveloper({
-      developerId: developer?.id,
+      developerId: developer?.developer?.id,
       projectId: projectId,
     });
   }
 
   function onSchedule(data: ScheduleFormData) {
-    console.log("🚀 ~ onSchedule ~ data.removalDate:", data.removalDate);
+    const localDate = data.removalDate;
+
+    if (!localDate) {
+      console.error("Removal date is not defined.");
+      return;
+    }
+
+    const year = localDate.getFullYear();
+    const month = localDate.getMonth(); // 0-indexed (0 for January)
+    const day = localDate.getDate();
+    const utcDate = new Date(Date.UTC(year, month, day));
+
+    const endDateForPayload = utcDate.toISOString();
+
     removeDeveloper({
-      developerId: developer?.id,
+      developerId: developer?.developer?.id,
       projectId: projectId,
-      endDate: data.removalDate,
+      endDate: endDateForPayload,
     });
   }
 
@@ -116,12 +141,19 @@ export function DeveloperDialog({
 
   const isProjectAvailable = projectId === "available";
 
+  function handleReallocate() {
+    reAllocateDeveloper({
+      developerId: developer?.developer?.id,
+      projectId: projectId,
+    });
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between mt-6">
-            <span className="text-xl">{developer?.fullName}</span>
+            <span className="text-xl">{developer?.developer?.fullName}</span>
             <Badge
               style={{
                 backgroundColor: `${techColor}1A`,
@@ -130,7 +162,7 @@ export function DeveloperDialog({
               }}
               className="text-base font-medium"
             >
-              {developer?.technology?.name}
+              {developer?.developer?.technology?.name}
             </Badge>
           </DialogTitle>
           <DialogDescription>
@@ -160,6 +192,15 @@ export function DeveloperDialog({
                   >
                     Schedule Removal
                   </Button>
+                  {developer?.endDate && (
+                    <Button
+                      variant="secondary"
+                      onClick={() => handleReallocate()}
+                      className="col-span-2 h-12 text-black"
+                    >
+                      Reallocate
+                    </Button>
+                  )}
                 </div>
               )}
               {/* Adjust margin based on whether the buttons are shown */}
@@ -173,10 +214,12 @@ export function DeveloperDialog({
                       </p>
                     </div>
                     <Switch
-                      checked={developer?.isCurrentProject}
+                      checked={developer?.developer?.isCurrentProject}
                       onCheckedChange={handleStatusChange}
                       // Disable if loading or if the user cannot toggle status
-                      disabled={updateCurrentWorkingProjectLoading || !canToggleStatus}
+                      disabled={
+                        updateCurrentWorkingProjectLoading || !canToggleStatus
+                      }
                     />
                   </FormItem>
                 </Form>
@@ -200,10 +243,10 @@ export function DeveloperDialog({
                       disabledDays={(day: Date) => {
                         const today = new Date();
                         const tomorrow = new Date(today);
-                        tomorrow.setDate(today.getDate() ); 
+                        tomorrow.setDate(today.getDate());
 
                         const fiveDaysLater = new Date(today);
-                        fiveDaysLater.setDate(today.getDate() + 5); 
+                        fiveDaysLater.setDate(today.getDate() + 5);
 
                         // disable everything before tomorrow and after 5 days later
                         return day < tomorrow || day > fiveDaysLater;
@@ -211,7 +254,7 @@ export function DeveloperDialog({
                     />
                   </div>
                   <Button
-                    type="submit" 
+                    type="submit"
                     disabled={
                       !canManage || // will always be true here, but keep for consistency
                       !form.watch("removalDate") ||
@@ -223,7 +266,7 @@ export function DeveloperDialog({
                 </div>
 
                 <Button
-                  type="button" 
+                  type="button"
                   variant="ghost"
                   onClick={() => setView("initial")}
                   className="w-full"

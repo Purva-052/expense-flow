@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/components/developer-chip.tsx
 import { useSortable } from "@dnd-kit/sortable";
-import type { Developer } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Clock } from "lucide-react"; // Using an icon for better UI
@@ -38,7 +38,7 @@ export function DeveloperChip({
   disabled, // This prop now correctly *only* disables DND
   endDate,
 }: {
-  developer: Developer;
+  developer: any;
   containerId: string;
   onClick?: () => void;
   disabled?: boolean;
@@ -61,7 +61,7 @@ export function DeveloperChip({
     if (daysRemaining === 1)
       return (
         <>
-          <strong>1 day</strong>
+          <strong>1 </strong>
         </>
       );
     return (

@@ -1,10 +1,9 @@
+
 const API = {
   auth: {
     login: '/auth/login',
-    register: 'auth/register',
-    sendOTP:"/admin/auth/send-otp",
-    verifyOTP:"/admin/auth/verify-otp",
-    resetPassword:"/admin/auth/reset-password"
+    forgotPassword:"/auth/forgot-password",
+    resetPassword:"/auth/change-password"
   },
   users: {
    list:"/users",
@@ -12,7 +11,9 @@ const API = {
    delete:"/users",
    role:"/users/roles",
    available_developers:"/users/available-developers",
-   remove_developer_from_project:"/developer-allocations/remove"
+   all_developers:"/users/all-developers",
+   remove_developer_from_project:"/developer-allocations/remove",
+   reallocate_developer:"/developer-allocations/reallocate"
   },
   technology:{
     list :"/technology",

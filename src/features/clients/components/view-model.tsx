@@ -25,6 +25,15 @@ export function ViewClientsModal() {
             <h3 className='text-sm font-medium'>Company</h3>
             <p className='text-sm text-gray-600'>{currentRow.company}</p>
           </div>
+          <div>
+            <h3 className='text-sm font-medium'>Country</h3>
+            <p className='text-sm text-gray-600'>{currentRow.country}</p>
+          </div>
+          <div>
+            <h3 className='text-sm font-medium'>Timezone</h3>
+            <p className='text-sm text-gray-600'>{currentRow.timezone}</p>
+          </div>
+
         </div>
       </DialogContent>
     </Dialog>

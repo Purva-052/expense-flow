@@ -8,14 +8,8 @@ export enum ProjectPriority {
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type Developer = {
-  id: string
-  fullName: string
-  role:string
-  email:string
-  technology: any
-  assignedProjectIds: string[]
-  removalSchedule?: Record<string, string> // projectId -> ISO date
-  isCurrentProject?: boolean
+ developer:any
+ endDate: any 
 }
 
 export type Project = {
@@ -26,6 +20,8 @@ export type Project = {
   currentStatus:any
   priority: ProjectPriority; // Use the enum here
   percentageComplete?: number // New field for completion percentage
+  manager: any
+  teamLead: any
 }
 
 export type ScheduleItem = {

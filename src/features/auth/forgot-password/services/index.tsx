@@ -1,23 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import API from '@/config/api/api'
-import usePostData from '@/hooks/use-post-data'
+import API from "@/config/api/api";
+import usePostData from "@/hooks/use-post-data";
 
-export const useSendOTP = (onsuccess: any) => {
+export const useForgotPassword = (onsuccess: any) => {
   return usePostData({
-    url: API.auth.sendOTP,
-    //   refetchQueries: [GET_API_URL],
+    url: API.auth.forgotPassword,
     onSuccess: (data) => {
-      onsuccess(data)
+      onsuccess(data);
     },
-  })
-}
+  });
+};
 
-export const useVerifyOTP = (onsuccess: any) => {
+export const useResetPassword = (onsuccess: any) => {
   return usePostData({
-    url: API.auth.verifyOTP,
-    //   refetchQueries: [GET_API_URL],
+    url: API.auth.resetPassword,
     onSuccess: (data) => {
-      onsuccess(data)
+      onsuccess(data);
     },
-  })
-}
+  });
+};
