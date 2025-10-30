@@ -59,7 +59,7 @@ export function DeveloperChip({
       {...listeners}
       onClick={onClick}
       className={cn(
-        "max-w-[250px] flex flex-col gap-2 rounded-lg border p-3 text-sm shadow-sm outline-none transition-all duration-200",
+        "max-w-[250px] bg-white flex flex-col gap-2 rounded-lg border p-3 text-sm shadow-sm outline-none transition-all duration-200",
         // ✅ CHANGE: Conditionally apply background color based on variant
         variant === "default" && "bg-secondary/50",
         onClick && "cursor-pointer hover:shadow-md",
