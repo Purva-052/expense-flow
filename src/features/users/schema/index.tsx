@@ -19,7 +19,8 @@ const baseUserSchema = z.object({
     .trim(),
   technologyId: z
     .number({ invalid_type_error: "Technology is required." })
-    .min(1, { message: "Please select a technology." }),
+    .min(1, { message: "Please select a technology." })
+    .optional(),
   joiningDate: z.any().refine((val) => !isNaN(Date.parse(val)), {
     message: "Invalid date format.",
   }),
