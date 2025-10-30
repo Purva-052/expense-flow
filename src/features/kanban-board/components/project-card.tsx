@@ -133,21 +133,11 @@ export function ProjectCard({
               </div>
               <div className="flex flex-col gap-2 mt-1">
                 {/* Project Manager */}
-                {project.manager?.fullName && (
+                {project.projectHandler?.fullName && (
                   <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                     <UserSquare className="h-4 w-4 shrink-0" />
-                    <span className="font-semibold">Manager:</span>
-                    <span className="truncate">{project.manager.fullName}</span>
-                  </div>
-                )}
-                {/* Team Lead */}
-                {project.teamLead?.fullName && (
-                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                    <UserSquare className="h-4 w-4 shrink-0" />
-                    <span className="font-semibold">Lead:</span>
-                    <span className="truncate">
-                      {project.teamLead.fullName}
-                    </span>
+                    <span className="font-semibold"> Handler:</span>
+                    <span className="truncate">{project.projectHandler.fullName}</span>
                   </div>
                 )}
               </div>

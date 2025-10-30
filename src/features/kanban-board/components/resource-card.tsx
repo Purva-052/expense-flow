@@ -13,8 +13,14 @@ export const ResourceCard = ({ developer }: { developer: any }) => {
         <div className="grid grid-cols-1 items-start lg:grid-cols-[230px_1fr]">
           {/* Left Side: Developer Details */}
           <div
-            className="flex flex-col gap-3 p-4 bg-secondary/50 border-l-8 h-full"
-            style={{ borderColor: techColor }} // Use tech color for the border
+            className={`flex flex-col gap-3 p-4 bg-secondary/50 h-full ${
+              developer?.technology?.color ? "border-l-8" : ""
+            }`}
+            style={
+              developer?.technology?.color
+                ? { borderColor: developer.technology.color }
+                : undefined
+            }
           >
             {/* Header Info */}
             <div className="flex w-full items-start justify-between ">
@@ -22,14 +28,16 @@ export const ResourceCard = ({ developer }: { developer: any }) => {
                 <h3 className="text-lg font-bold text-card-foreground wrap-break-word leading-tight">
                   {developer.fullName}
                 </h3>
-                <div className="mt-auto flex justify-start">
-                  <Badge
-                    className="text-xs text-white"
-                    style={{ backgroundColor: techColor }}
-                  >
-                    {developer?.technology?.name}
-                  </Badge>
-                </div>
+                {developer?.technology && (
+                  <div className="mt-auto flex justify-start">
+                    <Badge
+                      className="text-xs text-white"
+                      style={{ backgroundColor: techColor }}
+                    >
+                      {developer?.technology?.name}
+                    </Badge>
+                  </div>
+                )}
               </div>
             </div>
             {/* Technology Badge (at the bottom) */}
@@ -37,9 +45,17 @@ export const ResourceCard = ({ developer }: { developer: any }) => {
 
           {/* Right Side: Assigned Projects */}
           <div className="p-4 min-h-[100px] bg-transparent">
-            {developer?.activeProjects?.length > 0 ? (
+            {developer?.activeProjects &&
+            developer?.activeProjects?.length > 0 ? (
               <div className="flex flex-wrap gap-2">
                 {developer?.activeProjects?.map((project: any) => (
+                  <ProjectChip key={project.id} project={project} />
+                ))}
+              </div>
+            ) : developer?.handledProjects &&
+              developer?.handledProjects?.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {developer?.handledProjects?.map((project: any) => (
                   <ProjectChip key={project.id} project={project} />
                 ))}
               </div>

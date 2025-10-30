@@ -13,7 +13,8 @@ const API = {
    available_developers:"/users/available-developers",
    all_developers:"/users/resources",
    remove_developer_from_project:"/developer-allocations/remove",
-   reallocate_developer:"/developer-allocations/reallocate"
+   reallocate_developer:"/developer-allocations/reallocate",
+   project_handler:"/users/handled-projects",
   },
   technology:{
     list :"/technology",

@@ -6,12 +6,17 @@ import usePostData from "@/hooks/use-post-data";
 const GET_API_URL = API.users.available_developers;
 const PROJECTS_API_URL = API.projects.list;
 const GET_ALL_DEVELOPER_API_URL = API.users.all_developers;
+const GET_PROJECT_HANDLER_API_URL = API.users.project_handler;
 
 export const useGetAvailableDeveloperList = (params?: any) => {
   return useFetchData({ url: GET_API_URL, params });
 };
 
-export const useGetProjectHistoryData = (id: any, isOpen: boolean, params?: any) => {
+export const useGetProjectHistoryData = (
+  id: any,
+  isOpen: boolean,
+  params?: any
+) => {
   return useFetchData({
     url: `${PROJECTS_API_URL}/${id}/developershistory`,
     params,
@@ -21,6 +26,17 @@ export const useGetProjectHistoryData = (id: any, isOpen: boolean, params?: any)
 
 export const useGetAllDevelopers = (params?: any) => {
   return useFetchData({ url: GET_ALL_DEVELOPER_API_URL, params });
+};
+
+export const useGetProjectHandlerProjectsAPI = (
+  isenabled: any,
+  params?: any
+) => {
+  return useFetchData({
+    url: GET_PROJECT_HANDLER_API_URL,
+    enabled: isenabled,
+    params,
+  });
 };
 
 export const useAssignDeveloper = (onsuccess: any) => {
