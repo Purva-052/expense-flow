@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,10 +25,8 @@ interface Props {
   onSubmit: (values: TProjectFormSchema) => void;
   clientsList?: { id: number; name: string }[];
   clientListLoading?: boolean;
-  ManagerListData?: { id: number; fullName: string }[];
-  managerListLoading?: boolean;
-  teamLeaderListData?: { id: number; fullName: string }[];
-  teamLeaderListLoading?: boolean;
+  projecthandler?: any;
+  projecthandlerLoading?: boolean;
 }
 
 export function ProjectActionForm({
@@ -38,11 +37,16 @@ export function ProjectActionForm({
   loading,
   clientsList,
   clientListLoading,
-  ManagerListData,
-  managerListLoading,
-  teamLeaderListData,
-  teamLeaderListLoading,
+  projecthandler,
+  projecthandlerLoading,
 }: Readonly<Props>) {
+  console.log(
+    "🚀 ~ ProjectActionForm ~ projecthandlerLoading:",
+    projecthandlerLoading
+  );
+
+  console.log("🚀 ~ ProjectActionForm ~ projecthandler:", projecthandler);
+
   const isEdit = !!currentRow;
 
   const form = useForm<TProjectFormSchema>({
@@ -54,8 +58,7 @@ export function ProjectActionForm({
           clientId: currentRow.clientId ?? 0,
           startDate: currentRow.startDate ?? "",
           expectedCompletionDate: currentRow.expectedCompletionDate ?? "",
-          managerId: currentRow.managerId ?? 0,
-          teamLeadId: currentRow.teamLeadId ?? 0,
+          handlerId: currentRow.projectHandler?.id ?? 0,
           percentageComplete: currentRow.percentageComplete ?? 0,
           priority: currentRow.priority ?? "",
         }
@@ -65,8 +68,7 @@ export function ProjectActionForm({
           clientId: null,
           startDate: "",
           expectedCompletionDate: "",
-          managerId: null,
-          teamLeadId: null,
+          handlerId: undefined,
           percentageComplete: 0,
           priority: "",
         },
@@ -133,29 +135,15 @@ export function ProjectActionForm({
               {/* Manager */}
               <CustomDropDownSearchable
                 form={form}
-                name="managerId"
-                label="Manager"
-                options={ManagerListData?.map((manager) => ({
-                  value: manager.id,
-                  label: manager.fullName,
+                name="handlerId"
+                label="Project Handler"
+                options={projecthandler?.data?.map((handler: any) => ({
+                  value: handler.id,
+                  label: handler.fullName,
                 }))}
-                isLoading={managerListLoading}
-                placeholder="Select Manager"
+                isLoading={projecthandlerLoading}
+                placeholder="Select Handler"
               />
-
-              {/* Team Leader */}
-              <CustomDropDownSearchable
-                form={form}
-                name="teamLeadId"
-                label="Team Leader"
-                options={teamLeaderListData?.map((tl) => ({
-                  value: tl.id,
-                  label: tl.fullName,
-                }))}
-                isLoading={teamLeaderListLoading}
-                placeholder="Select Team Leader"
-              />
-
               {/* Dates */}
               <CustomDatePicker
                 control={form.control}

@@ -65,7 +65,7 @@ const SimpleDropDownSearchable = ({
   );
 
   const exactMatchExists = options?.some(
-    (o) => o.label.toLowerCase() === searchValue.toLowerCase()
+    (o) => o?.label?.toLowerCase() === searchValue.toLowerCase()
   );
 
   const handleCreate = async () => {

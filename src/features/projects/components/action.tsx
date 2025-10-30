@@ -10,12 +10,10 @@ import {
 import { ProjectActionForm } from "./action-form";
 
 export function ActionFormModal({
-  managerList,
-  managerListLoading,
-  teamLeaderList,
-  teamLeaderListLoading,
   clientsList,
   clientListLoading,
+  projecthandler,
+  projecthandlerLoading,
 }: any) {
   const { open, setOpen, currentRow, setCurrentRow } = useProjectsStore();
   const { mutateAsync: createMutate, isPending: isCreateLoading } =
@@ -27,9 +25,6 @@ export function ActionFormModal({
 
   const ClientListData = clientsList?.data;
 
-  const ManagerListData = managerList?.data;
-
-  const teamLeaderListData = teamLeaderList?.data;
   const handleCreate = (values: TProjectFormSchema) => {
     const payload = {
       name: values.name,
@@ -37,8 +32,7 @@ export function ActionFormModal({
       clientId: values.clientId,
       startDate: values.startDate,
       expectedCompletionDate: values.expectedCompletionDate,
-      managerId: values.managerId ? values.managerId : undefined,
-      teamLeadId: values.teamLeadId ? values.teamLeadId : undefined,
+      handlerId:values.handlerId ? values.handlerId : undefined,
       percentageComplete: values.percentageComplete,
       priority: values.priority,
     };
@@ -52,8 +46,7 @@ export function ActionFormModal({
       clientId: values.clientId,
       startDate: values.startDate,
       expectedCompletionDate: values.expectedCompletionDate,
-      managerId: values.managerId ? values.managerId : undefined,
-      teamLeadId: values.teamLeadId ? values.teamLeadId : undefined,
+      handlerId:values.handlerId ? values.handlerId : undefined,
       percentageComplete: values.percentageComplete,
       priority: values.priority,
     };
@@ -82,10 +75,8 @@ export function ActionFormModal({
         onSubmit={handleCreate}
         clientsList={ClientListData}
         clientListLoading={clientListLoading}
-        ManagerListData={ManagerListData}
-        managerListLoading={managerListLoading}
-        teamLeaderListData={teamLeaderListData}
-        teamLeaderListLoading={teamLeaderListLoading}
+        projecthandler={projecthandler}
+        projecthandlerLoading={projecthandlerLoading}
       />
 
       {currentRow && (
@@ -99,10 +90,8 @@ export function ActionFormModal({
             currentRow={currentRow}
             clientsList={ClientListData}
             clientListLoading={clientListLoading}
-            ManagerListData={ManagerListData}
-            managerListLoading={managerListLoading}
-            teamLeaderListData={teamLeaderListData}
-            teamLeaderListLoading={teamLeaderListLoading}
+            projecthandler={projecthandler}
+            projecthandlerLoading={projecthandlerLoading}
           />
           <DeleteModal
             onConfirm={handleDelete}

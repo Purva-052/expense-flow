@@ -44,12 +44,8 @@ export const columns: ColumnDef<any>[] = [
     header: "Client",
   },
   {
-    accessorKey: "manager.fullName",
-    header: "Manager",
-  },
-  {
-    accessorKey: "teamLead.fullName",
-    header: "Team Lead",
+    accessorKey: "projectHandler.fullName",
+    header: "Project Handler",
   },
   {
     accessorKey: "percentageComplete",

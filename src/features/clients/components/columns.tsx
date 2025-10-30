@@ -11,6 +11,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useClientsStore } from "../stores/useClientsStore";
+import { useEffect, useState } from "react";
+import { formatInTimeZone } from "date-fns-tz";
 
 export const columns: ColumnDef<any>[] = [
   {
@@ -27,7 +29,29 @@ export const columns: ColumnDef<any>[] = [
   },
   {
     accessorKey: "timezone",
-    header: "Timezone",
+    header: "Timezone (Local Time)",
+    cell: function Cell({ row }) {
+      const timezone = row.original.timezone;
+      const [currentTime, setCurrentTime] = useState(
+        formatInTimeZone(new Date(), timezone, "hh:mm a")
+      );
+
+      // ⏱️ Update every 60 seconds
+      useEffect(() => {
+        const interval = setInterval(() => {
+          setCurrentTime(formatInTimeZone(new Date(), timezone, "hh:mm a"));
+        }, 60000);
+
+        return () => clearInterval(interval);
+      }, [timezone]);
+
+      return timezone ? (
+        <div className="flex flex-col ">
+          <span className="text-md ">{currentTime}</span>
+          <span className="text-xs text-muted-foreground">{timezone}</span>
+        </div>
+      ) : null;
+    },
   },
   {
     id: "actions",

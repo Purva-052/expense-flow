@@ -10,8 +10,8 @@ import { columns } from "./components/columns";
 import { useProjectsStore } from "./stores/useProjectsStore";
 import { ViewProjectModal } from "./components/view-model";
 import { useGetProjectsData } from "./services";
-import { useGetUsersList } from "../users/services";
 import { useGetClientsData } from "../clients/services";
+import { useGetUsersList } from "../users/services";
 
 const ProjectsPage = () => {
   const { open, setOpen } = useProjectsStore();
@@ -20,8 +20,8 @@ const ProjectsPage = () => {
     currentPage: 1,
     search: "",
     clientId: undefined,
-    managerId: undefined,
     priority: undefined,
+    handlerId: undefined,
   });
 
   const apiParams = {
@@ -30,20 +30,14 @@ const ProjectsPage = () => {
     search: listParams.search,
     pagination: true,
     clientId: listParams.clientId,
-    managerId: listParams.managerId,
     priority: listParams.priority,
+    handlerId: listParams.handlerId,
   };
 
   const { data: listData, isPending: loading } = useGetProjectsData(apiParams);
-  const { data: managerList, isPending: managerListLoading }: any =
+  const { data: projecthandler, isPending: projecthandlerLoading }: any =
     useGetUsersList({
-      pagination: false,
-      role: "project_manager",
-    });
-  const { data: teamLeaderList, isPending: teamLeaderListLoading }: any =
-    useGetUsersList({
-      pagination: false,
-      role: "team_lead",
+      role: ["project_manager", "team_lead"],
     });
 
   const { data: clientsList, isPending: clientListLoading }: any =
@@ -55,6 +49,10 @@ const ProjectsPage = () => {
 
   const handleSearch = (search: string | undefined) => {
     setListParams({ ...listParams, search: search ?? "", currentPage: 1 });
+  };
+
+  const handleProjectHandleChange = (value: any) => {
+    setListParams({ ...listParams, handlerId: value ?? null, currentPage: 1 });
   };
 
   const handlePaginationChange = (newPagination: {
@@ -70,10 +68,6 @@ const ProjectsPage = () => {
 
   const handleClientChange = (value: any) => {
     setListParams({ ...listParams, clientId: value ?? null, currentPage: 1 });
-  };
-
-  const handleManagerChange = (value: any) => {
-    setListParams({ ...listParams, managerId: value ?? null, currentPage: 1 });
   };
 
   const handlePriorityChange = (value: any) => {
@@ -103,16 +97,17 @@ const ProjectsPage = () => {
       onChange: handleClientChange,
       isLoading: clientListLoading,
     },
+
     {
       type: "select",
-      key: "managerId",
-      placeholder: "Filter by Manager",
-      options: managerList?.data?.map((value: any) => {
+      key: "handlerId",
+      placeholder: "Filter by  Handler",
+      options: projecthandler?.data?.map((value: any) => {
         return { label: value?.fullName, value: value?.id };
       }),
-      value: listParams.managerId, // 👈 pre-selects if set
-      onChange: handleManagerChange,
-      isLoading: managerListLoading,
+      value: listParams.handlerId, // 👈 pre-selects if set
+      onChange: handleProjectHandleChange,
+      isLoading: projecthandlerLoading,
     },
     {
       type: "select",
@@ -154,12 +149,10 @@ const ProjectsPage = () => {
       />
       {open && (
         <ActionFormModal
-          managerList={managerList}
-          managerListLoading={managerListLoading}
-          teamLeaderList={teamLeaderList}
-          teamLeaderListLoading={teamLeaderListLoading}
           clientsList={clientsList}
           clientListLoading={clientListLoading}
+          projecthandler={projecthandler}
+          projecthandlerLoading={projecthandlerLoading}
         />
       )}
       <ViewProjectModal />

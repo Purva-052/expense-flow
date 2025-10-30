@@ -14,13 +14,8 @@ export const projectFormSchema = z.object({
   startDate: z.any(),
   expectedCompletionDate: z.any(),
 
-  managerId: z
+  handlerId: z
     .number({ invalid_type_error: "Manager must be a number" })
-    .optional()
-    .nullable(),
-
-  teamLeadId: z
-    .number({ invalid_type_error: "Team Lead must be a number" })
     .optional()
     .nullable(),
 

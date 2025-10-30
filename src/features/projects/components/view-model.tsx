@@ -35,19 +35,11 @@ export function ViewProjectModal() {
           </div>
 
           <div>
-            <h3 className="text-sm font-medium">Manager</h3>
+            <h3 className="text-sm font-medium">Project Handler</h3>
             <p className="text-sm text-gray-600">
-              {currentRow.manager?.fullName}
+              {currentRow.projectHandler?.fullName}
             </p>
           </div>
-
-          <div>
-            <h3 className="text-sm font-medium">Team Lead</h3>
-            <p className="text-sm text-gray-600">
-              {currentRow.teamLead?.fullName}
-            </p>
-          </div>
-
           <div>
             <h3 className="text-sm font-medium">Start Date</h3>
             <p className="text-sm text-gray-600">
