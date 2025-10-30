@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { SubmitHandler, useForm, Controller } from "react-hook-form";
+import { SubmitHandler, useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
@@ -57,9 +57,7 @@ export function UserActionForm({
             ? currentRow.joiningDate.slice(0, 10)
             : "",
           status: currentRow?.status === "active",
-          currentWorkingProjectId: currentRow?.currentProject?.id
-            ? currentRow?.currentProject?.id
-            : null,
+          currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
         }
       : {
           fullName: "",
@@ -68,9 +66,20 @@ export function UserActionForm({
           technologyId: undefined,
           joiningDate: "",
           status: true,
-          password: "", // 👈 required only for add
+          password: "",
         },
   });
+
+  // ✅ Watch the "role" field
+  const selectedRole = useWatch({
+    control: form.control,
+    name: "role",
+  });
+
+  // 🧹 Auto-clear technology when role = "project_manager"
+  if (selectedRole === "project_manager" && form.getValues("technologyId")) {
+    form.setValue("technologyId", undefined);
+  }
 
   const onSubmit: SubmitHandler<TUserFormSchema> = (values: any) => {
     onSubmitValues(values);
@@ -96,20 +105,21 @@ export function UserActionForm({
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-4 p-0.5"
             >
-              {" "}
               <TextInputField
                 control={form.control}
                 name="fullName"
                 label="Full Name"
                 placeholder="Enter full name"
-              />{" "}
+              />
+
               <TextInputField
                 control={form.control}
                 name="email"
                 label="Email"
                 placeholder="Enter email"
                 type="email"
-              />{" "}
+              />
+
               {!isEdit && (
                 <TextInputField
                   control={form.control}
@@ -119,6 +129,8 @@ export function UserActionForm({
                   type="password"
                 />
               )}
+
+              {/* Role Dropdown */}
               <CustomDropDownSearchable
                 form={form}
                 name="role"
@@ -128,56 +140,64 @@ export function UserActionForm({
                   label: role
                     .split("_")
                     .map((word: any) => word[0].toUpperCase() + word.slice(1))
-                    .join(" "), // Converts "team_lead" -> "Team Lead"
+                    .join(" "),
                 }))}
                 placeholder="Select role"
                 isLoading={roleListLoading}
               />
+
+              {/* Technology Dropdown (disabled for project_manager) */}
               <CustomDropDownSearchable
                 form={form}
                 name="technologyId"
                 label="Technology"
-                options={technologyListData?.map((technology) => {
-                  return { value: technology.id, label: technology.name };
-                })}
+                options={technologyListData?.map((technology) => ({
+                  value: technology.id,
+                  label: technology.name,
+                }))}
                 isLoading={technologyListLoading}
                 placeholder="Select Technology"
+                disabled={selectedRole === "project_manager"}
               />
+
               {isEdit && (
                 <CustomDropDownSearchable
                   form={form}
                   name="currentWorkingProjectId"
                   label="Current Working Project"
-                  options={projectListdata?.map((project) => {
-                    return { value: project.id, label: project.name };
-                  })}
+                  options={projectListdata?.map((project) => ({
+                    value: project.id,
+                    label: project.name,
+                  }))}
                   isLoading={projectListLoading}
                   placeholder="Select Project"
                 />
               )}
+
               <CustomDatePicker
                 control={form.control}
                 name="joiningDate"
                 label="Joining Date"
               />
-              {/* ✅ Status Checkbox */}{" "}
+
+              {/* ✅ Status Checkbox */}
               <Controller
                 control={form.control}
                 name="status"
                 render={({ field }) => (
                   <div className="flex items-center space-x-2">
-                    {" "}
                     <Checkbox
                       checked={field.value}
                       onCheckedChange={field.onChange}
-                    />{" "}
-                    <label className="text-sm font-medium">Active</label>{" "}
+                    />
+                    <label className="text-sm font-medium">Active</label>
                   </div>
                 )}
-              />{" "}
+              />
             </form>
           </Form>
         </div>
+
         <DialogFooter>
           <CustomButton type="submit" loading={loading} form="user-form">
             Save Changes
