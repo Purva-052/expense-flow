@@ -34,12 +34,10 @@ export const ProjectChip = ({ project }: { project: any }) => {
           <span className="truncate font-bold text-card-foreground">
             {project.name}
           </span>
+          <span className="text-sm font-semibold text-muted-foreground shrink-0">
+            ({completion}%)
+          </span>
         </div>
-
-        {/* --- Completion Percentage Below Project Name --- */}
-        <span className="text-xs text-muted-foreground ml-6">
-          {completion}% Complete
-        </span>
       </div>
     </div>
   );

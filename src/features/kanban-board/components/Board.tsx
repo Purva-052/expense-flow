@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 // src/pages/board.tsx
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -24,24 +24,32 @@ import type { Developer } from "@/lib/types";
 import { useAuthStore } from "@/stores/use-auth-store";
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import { FilterConfig } from "@/components/table/table-toolbar";
-import { Users } from "lucide-react";
+import { ChevronDown, Users } from "lucide-react";
 import { useGetProjectsData } from "@/features/projects/services";
-import {
-  useAssignDeveloper,
-  useGetAllDevelopers,
-  useGetAvailableDeveloperList,
-} from "../services";
+import { useAssignDeveloper, useGetAllDevelopers } from "../services";
 import { useGetUsersList } from "@/features/users/services";
 import { useGetClientsData } from "@/features/clients/services";
 import { ProjectCard } from "./project-card";
 import { DeveloperChip } from "./developer-chip";
 import { DeveloperDialog } from "./developer-dialog";
 import { Switch } from "@/components/ui/switch";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+
+// Helper type for our grouped developers
+type GroupedDevelopers = {
+  technologyName: string;
+  resources: Developer[];
+  technologyColor?: string;
+}[];
 
 const Board = () => {
   const { user } = useAuthStore();
   const isDeveloperView = user?.user?.role === "developer";
-  const currentUserId = user?.user?.id; // ✅ Get the logged-in user ID
+  const currentUserId = user?.user?.id;
   const FILTER_STORAGE_KEY = "board_filters";
 
   const getInitialFilters = () => {
@@ -65,6 +73,8 @@ const Board = () => {
 
   const [listParams, setListParams] = useState(getInitialFilters);
   const [showAllDevelopers, setShowAllDevelopers] = useState(false);
+  // ✅ State now holds a single string for the open technology
+  const [openTechnology, setOpenTechnology] = useState<string>("");
 
   useEffect(() => {
     const { clientId, managerId, priority } = listParams;
@@ -82,21 +92,23 @@ const Board = () => {
   };
 
   const {
-    data: AvailableDevelopers,
-    isPending: AvaliableDevelopersLoading,
-    refetch: refetchAvailableDevelopers,
-  }: any = useGetAvailableDeveloperList();
+    data: AllDevelopersResponse,
+    isPending: AllDevelopersLoading,
+    refetch: AllDevelopersRefetch,
+  }: any = useGetAllDevelopers({
+    available: showAllDevelopers ? undefined : true,
+  });
 
-  const { data: AllDevelopers, isPending: AllDevelopersLoading }: any =
-    useGetAllDevelopers();
+  const groupedDevelopers: GroupedDevelopers = useMemo(() => {
+    if (!AllDevelopersResponse?.data) return [];
+    return AllDevelopersResponse.data;
+  }, [AllDevelopersResponse]);
 
-  const developerList = showAllDevelopers
-    ? (AllDevelopers?.data ?? [])
-    : (AvailableDevelopers?.data ?? []);
-
-  const developerListLoading = showAllDevelopers
-    ? AllDevelopersLoading
-    : AvaliableDevelopersLoading;
+  const allDeveloperIds = useMemo(() => {
+    return groupedDevelopers.flatMap((group) =>
+      group.resources.map((dev: any) => `available-${dev?.id}`)
+    );
+  }, [groupedDevelopers]);
 
   const {
     data: projectList,
@@ -112,10 +124,7 @@ const Board = () => {
     onsuccessAssignDeveloper
   );
 
-  // State for the dragged item
   const [activeDeveloper, setActiveDeveloper] = React.useState<any>(null);
-
-  // State for the dialog
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [selectedDeveloper, setSelectedDeveloper] =
     React.useState<Developer | null>(null);
@@ -129,7 +138,7 @@ const Board = () => {
   const availableDroppable = useDroppable({ id: "available" });
 
   function onDragStart(event: DragStartEvent) {
-    if (isDeveloperView) return; // Disable drag for developers
+    if (isDeveloperView) return;
     const developer = event.active.data.current?.developer as any;
     if (developer) {
       setActiveDeveloper(developer);
@@ -137,7 +146,7 @@ const Board = () => {
   }
 
   async function onDragEnd(event: DragEndEvent) {
-    if (isDeveloperView) return; // Disable drop for developers
+    if (isDeveloperView) return;
     setActiveDeveloper(null);
 
     const { active, over } = event;
@@ -145,36 +154,25 @@ const Board = () => {
 
     const developerKey = String(active.id);
     const developerId = Number(developerKey.split("-").pop());
-
     let projectId: number | null = null;
 
-    // Case 1: Dropped onto a DeveloperChip inside a project.
     if (
       over.data.current?.containerId &&
       over.data.current.containerId !== "available"
     ) {
       projectId = Number(over.data.current.containerId);
-    }
-    // Case 2: Dropped directly onto a ProjectCard (which is a droppable).
-    else if (typeof over.id === "number") {
+    } else if (typeof over.id === "number") {
       projectId = over.id;
-    }
-    // Case 3: Dropped onto the "Available Resources" droppable area.
-    else if (over.id === "available") {
+    } else if (over.id === "available") {
       console.log("⚠️ Dropped on available list — no assignment made.");
       return;
     }
 
-    console.log("🧩 Developer ID:", developerId);
-    console.log("🏗️ Project ID:", projectId);
-
-    // Validate extracted IDs before making the API call
     if (!developerId || !projectId || isNaN(developerId) || isNaN(projectId)) {
       console.warn("Invalid IDs:", { developerKey, overId: over.id });
       return;
     }
 
-    // Safe API call
     try {
       await assignProject({
         developerId,
@@ -187,19 +185,15 @@ const Board = () => {
     }
   }
 
-  // Handler to open the dialog with the correct developer and project context
   function handleDeveloperClick(developer: any, projectId: string) {
-    // ✅ NEW CHECK: Only allow click if not a developer, OR if it's the logged-in developer's chip.
     if (isDeveloperView && developer?.developer?.id !== currentUserId) {
       return;
     }
-
     setSelectedDeveloper(developer);
     setSelectedProjectId(projectId);
     setIsDialogOpen(true);
   }
 
-  // filter section
   const { data: managerList, isPending: managerListLoading }: any =
     useGetUsersList({
       pagination: false,
@@ -213,20 +207,20 @@ const Board = () => {
 
   const handleClientChange = (value: any) =>
     setListParams((prev: any) => ({ ...prev, clientId: value ?? null }));
-
   const handleManagerChange = (value: any) =>
     setListParams((prev: any) => ({ ...prev, managerId: value ?? null }));
-
   const handlePriorityChange = (value: any) =>
     setListParams((prev: any) => ({ ...prev, priority: value ?? undefined }));
+
   const filters: FilterConfig[] = [
     {
       type: "select",
       key: "clientId",
       placeholder: "Filter by Client",
-      options: clientsList?.data?.map((value: any) => {
-        return { label: value?.name, value: value?.id };
-      }),
+      options: clientsList?.data?.map((value: any) => ({
+        label: value?.name,
+        value: value?.id,
+      })),
       value: listParams.clientId,
       onChange: handleClientChange,
       isLoading: clientListLoading,
@@ -235,9 +229,10 @@ const Board = () => {
       type: "select",
       key: "managerId",
       placeholder: "Filter by Manager",
-      options: managerList?.data?.map((value: any) => {
-        return { label: value?.fullName, value: value?.id };
-      }),
+      options: managerList?.data?.map((value: any) => ({
+        label: value?.fullName,
+        value: value?.id,
+      })),
       value: listParams.managerId,
       onChange: handleManagerChange,
       isLoading: managerListLoading,
@@ -256,31 +251,24 @@ const Board = () => {
     },
   ];
 
-  return projectListLoading || AvaliableDevelopersLoading ? (
+  return projectListLoading ? (
     <div className="flex flex-col justify-center items-center py-10 gap-3 h-full">
       <div className="w-10 h-10 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
       <span className="text-sm text-muted-foreground">Loading ...</span>
     </div>
   ) : (
     <>
-      {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        {/* Filters */}
         <GlobalFilterSection filters={filters ?? []} />
-
-        {/* Priority legend */}
         <div className="flex flex-wrap items-center gap-3 mb-4">
-          {/* High */}
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-orange-500"></span>
             <span className="text-sm font-medium">High </span>
           </div>
-          {/* Medium */}
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
             <span className="text-sm font-medium">Medium </span>
           </div>
-          {/* Low */}
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-teal-500"></span>
             <span className="text-sm font-medium">Low </span>
@@ -288,16 +276,14 @@ const Board = () => {
         </div>
       </div>
 
-      {/* Main Grid */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_320px]">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_320px] ">
         <DndContext
           sensors={sensors}
           onDragStart={onDragStart}
           onDragEnd={onDragEnd}
           onDragCancel={() => setActiveDeveloper(null)}
         >
-          {/* Project List */}
-          <div className="space-y-4">
+          <div className="space-y-4 max-h-[74dvh] overflow-auto p-2">
             {projectList?.data?.length ? (
               projectList?.data?.map((p: any) => (
                 <ProjectCard key={p?.id} project={p}>
@@ -315,7 +301,6 @@ const Board = () => {
                         {p?.developerAllocations?.map((allocation: any) => {
                           const isMyChip =
                             allocation.developer.id === currentUserId;
-                          // Allow click if not developer OR if it's the developer's own chip
                           const canClick = !isDeveloperView || isMyChip;
 
                           return (
@@ -329,7 +314,6 @@ const Board = () => {
                                   ? () => handleDeveloperClick(allocation, p.id)
                                   : undefined
                               }
-                              // DND is still disabled for all developers
                               disabled={isDeveloperView}
                             />
                           );
@@ -340,7 +324,6 @@ const Board = () => {
                 </ProjectCard>
               ))
             ) : (
-              // 🧩 Fallback UI when there are no projects
               <div className="flex flex-col items-center justify-center py-10 text-center border border-dashed rounded-lg">
                 <h3 className="text-lg font-semibold text-muted-foreground">
                   No projects available
@@ -352,9 +335,8 @@ const Board = () => {
             )}
           </div>
 
-          {/* Available Developers */}
           {!isDeveloperView && (
-            <aside className="sticky top-4 h-fit">
+            <aside className="top-4 h-fit">
               <Card
                 ref={availableDroppable.setNodeRef}
                 className={
@@ -376,29 +358,74 @@ const Board = () => {
                   </CardTitle>
                 </CardHeader>
 
-                <CardContent>
-                  {developerListLoading ? (
+                <CardContent className=" max-h-[62dvh] overflow-auto p-2">
+                  {AllDevelopersLoading ? (
                     <div className="flex flex-col justify-center items-center py-10 gap-3">
                       <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
                       <span className="text-sm text-muted-foreground">
                         Loading developers...
                       </span>
                     </div>
-                  ) : developerList?.length ? (
+                  ) : groupedDevelopers.length > 0 ? (
                     <SortableContext
-                      items={
-                        developerList.map((d: any) => `available-${d.id}`) ?? []
-                      }
+                      items={allDeveloperIds}
                       strategy={rectSortingStrategy}
                     >
-                      <div className="flex flex-col gap-2">
-                        {developerList.map((dev: any) => (
-                          <DeveloperChip
-                            key={`available-${dev.id}`}
-                            developer={dev}
-                            containerId="available"
-                            disabled={isDeveloperView}
-                          />
+                      <div className="space-y-2">
+                        {groupedDevelopers.map((group) => (
+                          <Collapsible
+                            key={group.technologyName}
+                            // ✅ Check against the single open technology string
+                            open={openTechnology === group.technologyName}
+                            // ✅ Update state to show only one at a time
+                            onOpenChange={(isOpen) => {
+                              setOpenTechnology(
+                                isOpen ? group.technologyName : ""
+                              );
+                            }}
+                            className="rounded-md border px-2 py-2 bg-secondary/50"
+                          >
+                            <CollapsibleTrigger asChild>
+                              <div className="flex w-full cursor-pointer items-center justify-between p-2 hover:bg-muted/50 rounded-sm">
+                                <div className="flex items-center gap-3">
+                                  <span className="font-semibold">
+                                    {group.technologyName}
+                                  </span>
+                                  <Badge
+                                    variant="secondary"
+                                    style={{
+                                      backgroundColor:
+                                        group.technologyColor || "#e2e8f0",
+                                      color: "#fff",
+                                    }}
+                                  >
+                                    {group.resources.length}
+                                  </Badge>
+                                </div>
+                                <ChevronDown
+                                  className={`h-5 w-5 transform transition-transform duration-200 ${
+                                    // ✅ Update chevron rotation check
+                                    openTechnology === group.technologyName
+                                      ? "rotate-180"
+                                      : ""
+                                  }`}
+                                />
+                              </div>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                              <div className="flex flex-col gap-2 pt-2">
+                                {group.resources.map((dev: any) => (
+                                  <DeveloperChip
+                                    key={`available-${dev.id}`}
+                                    developer={dev}
+                                    containerId="available"
+                                    disabled={isDeveloperView}
+                                    variant="compact" // ✅ ADD THIS PROP
+                                  />
+                                ))}
+                              </div>
+                            </CollapsibleContent>
+                          </Collapsible>
                         ))}
                       </div>
                     </SortableContext>
@@ -420,8 +447,7 @@ const Board = () => {
             </aside>
           )}
 
-          {/* Drag Overlay */}
-          <DragOverlay>
+          <DragOverlay dropAnimation={null}>
             {activeDeveloper ? (
               <div
                 key={`overlay-${activeDeveloper.id}`}
@@ -457,7 +483,6 @@ const Board = () => {
         </DndContext>
       </div>
 
-      {/* Developer Dialog */}
       <DeveloperDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
@@ -466,7 +491,7 @@ const Board = () => {
         afterChange={() => {
           refetch();
         }}
-        refetchAvailableDevelopers={refetchAvailableDevelopers}
+        refetchAvailableDevelopers={AllDevelopersRefetch}
       />
     </>
   );
