@@ -12,6 +12,8 @@ import { Form } from "@/components/ui/form";
 import CustomButton from "@/components/shared/custom-button";
 import { TextInputField } from "@/components/shared/custom-input-field";
 import { clientFormSchema, TClientFormSchema } from "../schema";
+import { useTimezoneSelect, allTimezones } from "react-timezone-select";
+import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 
 interface Props {
   currentRow?: any;
@@ -28,6 +30,17 @@ export function ClientActionForm({
   onSubmit: onSubmitValues,
   loading,
 }: Readonly<Props>) {
+  const labelStyle = "original";
+  const timezones = {
+    ...allTimezones,
+    "Europe/Berlin": "Frankfurt",
+  };
+
+  const { options } = useTimezoneSelect({
+    labelStyle,
+    timezones,
+  });
+
   const isEdit = !!currentRow;
 
   const form = useForm<TClientFormSchema>({
@@ -62,7 +75,7 @@ export function ClientActionForm({
     >
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{isEdit ? "Edit Company" : "Add Company"}</DialogTitle>
+          <DialogTitle>{isEdit ? "Edit Client" : "Add Client"}</DialogTitle>
         </DialogHeader>
 
         <div className="h-fit w-full overflow-y-auto py-1">
@@ -90,11 +103,15 @@ export function ClientActionForm({
                 label="Country"
                 placeholder="Enter country"
               />
-              <TextInputField
-                control={form.control}
+              <CustomDropDownSearchable
+                form={form}
                 name="timezone"
                 label="Timezone"
-                placeholder="Enter timezone (e.g. Asia/Kolkata)"
+                options={options?.map((opt) => {
+                  return { value: opt.value, label: opt.label };
+                })}
+                placeholder="Select Timezone"
+                searchEnabled={false}
               />
             </form>
           </Form>

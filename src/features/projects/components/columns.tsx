@@ -18,6 +18,28 @@ export const columns: ColumnDef<any>[] = [
     header: "Project Name",
   },
   {
+    accessorKey: "description",
+    header: "Description",
+    cell: ({ row }) => {
+      const description = row.original.description;
+
+      if (!description) return "-";
+
+      return (
+        <div
+          className=" whitespace-pre-wrap break-words"
+          style={{
+            maxWidth: "300px", // fixed width for consistency
+            whiteSpace: "pre-wrap", // respects new lines
+            wordBreak: "break-word", // wrap long words
+          }}
+        >
+          {description}
+        </div>
+      );
+    },
+  },
+  {
     accessorKey: "client.name",
     header: "Client",
   },
@@ -47,7 +69,7 @@ export const columns: ColumnDef<any>[] = [
         year: "numeric",
       });
 
-      return formattedDate; 
+      return formattedDate;
     },
   },
   {

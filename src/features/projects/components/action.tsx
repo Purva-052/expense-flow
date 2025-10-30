@@ -33,11 +33,12 @@ export function ActionFormModal({
   const handleCreate = (values: TProjectFormSchema) => {
     const payload = {
       name: values.name,
+      description: values.description,
       clientId: values.clientId,
       startDate: values.startDate,
       expectedCompletionDate: values.expectedCompletionDate,
-      managerId: values.managerId,
-      teamLeadId: values.teamLeadId,
+      managerId: values.managerId ? values.managerId : undefined,
+      teamLeadId: values.teamLeadId ? values.teamLeadId : undefined,
       percentageComplete: values.percentageComplete,
       priority: values.priority,
     };
@@ -47,11 +48,12 @@ export function ActionFormModal({
   const handleEdit = (values: TProjectFormSchema) => {
     const payload = {
       name: values.name,
+      description: values.description,
       clientId: values.clientId,
       startDate: values.startDate,
       expectedCompletionDate: values.expectedCompletionDate,
-      managerId: values.managerId,
-      teamLeadId: values.teamLeadId,
+      managerId: values.managerId ? values.managerId : undefined,
+      teamLeadId: values.teamLeadId ? values.teamLeadId : undefined,
       percentageComplete: values.percentageComplete,
       priority: values.priority,
     };

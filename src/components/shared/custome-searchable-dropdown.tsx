@@ -35,6 +35,7 @@ interface CustomDropDownProps {
   loadingText?: string;
   onChangeValue?: any;
   multiple?: boolean; // ✅ new prop
+  searchEnabled?: boolean; // ✅ new prop
 }
 
 const CustomDropDownSearchable = ({
@@ -52,6 +53,7 @@ const CustomDropDownSearchable = ({
   loadingText = "Loading...",
   onChangeValue,
   multiple = false, // default false
+  searchEnabled = true,
 }: CustomDropDownProps) => {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [popoverWidth, setPopoverWidth] = useState<string | number>("auto");
@@ -161,12 +163,15 @@ const CustomDropDownSearchable = ({
                   align="start"
                 >
                   <Command shouldFilter={false} className="overflow-hidden">
-                    <CommandInput
-                      placeholder="Search..."
-                      value={searchValue}
-                      onValueChange={setSearchValue}
-                      disabled={isLoading}
-                    />
+                    {searchEnabled && (
+                      <CommandInput
+                        placeholder="Search..."
+                        value={searchValue}
+                        onValueChange={setSearchValue}
+                        disabled={isLoading}
+                      />
+                    )}
+
                     <div style={{ maxHeight: `${maxHeight}px` }}>
                       <CommandList
                         onWheel={(e) => e.stopPropagation()}

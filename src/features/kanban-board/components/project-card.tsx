@@ -16,7 +16,12 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { ProjectDetailsDialog } from "./ProjectDetailsDialog";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // --- Priority styles (assuming this remains the same) ---
 const priorityStyles: Record<
@@ -163,7 +168,7 @@ export function ProjectCard({
             {children && (
               <div
                 className={cn(
-                  "p-4 min-h-[100px] transition-colors duration-300",
+                  "p-4 h-full transition-colors duration-300",
                   isOver ? "bg-primary/10" : "bg-transparent"
                 )}
               >

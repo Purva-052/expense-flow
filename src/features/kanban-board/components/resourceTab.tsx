@@ -81,7 +81,7 @@ const ResourceTab = () => {
             </div>
           ) : usersList?.data?.length > 0 ? (
             // --- Resource Grid ---
-            <div className="space-y-4">
+            <div className="space-y-4 max-h-[72dvh] overflow-auto p-2">
               {usersList?.data?.map((dev: any) => (
                 <ResourceCard key={dev?.id} developer={dev} />
               ))}

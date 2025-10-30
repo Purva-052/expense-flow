@@ -19,8 +19,8 @@ const ProjectsPage = () => {
     pageSize: 10,
     currentPage: 1,
     search: "",
-    clientId: null,
-    managerId: null,
+    clientId: undefined,
+    managerId: undefined,
     priority: undefined,
   });
 

@@ -5,11 +5,15 @@ export const projectFormSchema = z.object({
     .string()
     .min(2, "Project name must be at least 2 characters")
     .max(100),
+  description: z
+    .string()
+    .max(500, "Description must be under 500 characters")
+    .optional()
+    .nullable(),
   clientId: z.number({ invalid_type_error: "Client is required" }),
   startDate: z.any(),
   expectedCompletionDate: z.any(),
 
-  // ✅ Made optional
   managerId: z
     .number({ invalid_type_error: "Manager must be a number" })
     .optional()
