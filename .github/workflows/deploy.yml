@@ -30,7 +30,7 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           source: "dist/*"
-          target: "/var/www/html/Devstree-Project-Management/dist/"
+          target: "/var/www/html/Devstree-Project-Management/"
 
       - name: Restart Apache on EC2
         uses: appleboy/ssh-action@v0.1.10
