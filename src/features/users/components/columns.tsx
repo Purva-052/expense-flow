@@ -52,10 +52,10 @@ export const columns: ColumnDef<any>[] = [
     },
   },
   {
-    accessorKey: "joiningDate",
-    header: "Joining Date",
+    accessorKey: "careerStartDate",
+    header: "Career Start Date",
     cell: ({ row }) => {
-      const date = new Date(row.original.joiningDate);
+      const date = new Date(row.original.careerStartDate);
       return date.toLocaleDateString("en-IN", {
         year: "numeric",
         month: "short",

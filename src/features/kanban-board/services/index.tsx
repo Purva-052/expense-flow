@@ -42,17 +42,25 @@ export const useGetProjectHandlerProjectsAPI = (
 export const useAssignDeveloper = (onsuccess: any) => {
   return usePostData({
     url: API.projects.assign_developers,
-    refetchQueries: [GET_API_URL],
+    refetchQueries: [GET_ALL_DEVELOPER_API_URL, PROJECTS_API_URL],
     onSuccess: () => {
       onsuccess();
     },
   });
 };
 
+export const useProjectStatusChange = () => {
+  return usePostData({
+    url: API.projects.status_change,
+    refetchQueries: [PROJECTS_API_URL],
+    onSuccess: () => {},
+  });
+};
+
 export const useRemoveDeveloperFromProject = (onsuccess: any) => {
   return usePostData({
     url: API.users.remove_developer_from_project,
-    refetchQueries: [PROJECTS_API_URL],
+    refetchQueries: [PROJECTS_API_URL, GET_ALL_DEVELOPER_API_URL],
     onSuccess: () => {
       onsuccess();
     },

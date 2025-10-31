@@ -118,6 +118,22 @@ export function ProjectActionForm({
                   className="resize-none"
                 />
               </div>
+              {!isEdit && (
+                <CustomDropDownSearchable
+                  form={form}
+                  name="status"
+                  label="Status"
+                  options={[
+                    { value: "active-discovery", label: "Active" },
+                    { value: "running", label: "Running" },
+                    { value: "slow", label: "Slow" },
+                    { value: "stop", label: "Stop" },
+                    { value: "completed", label: "Completed" },
+                  ]}
+                  placeholder="Select Status"
+                  searchEnabled={false}
+                />
+              )}
 
               {/* Client Dropdown */}
               <CustomDropDownSearchable
@@ -136,13 +152,13 @@ export function ProjectActionForm({
               <CustomDropDownSearchable
                 form={form}
                 name="handlerId"
-                label="Project Handler"
+                label="Project Coordinator"
                 options={projecthandler?.data?.map((handler: any) => ({
                   value: handler.id,
                   label: handler.fullName,
                 }))}
                 isLoading={projecthandlerLoading}
-                placeholder="Select Handler"
+                placeholder="Select Coordinator"
               />
               {/* Dates */}
               <CustomDatePicker
@@ -177,6 +193,7 @@ export function ProjectActionForm({
                   { value: "high", label: "High" },
                 ]}
                 placeholder="Select Priority"
+                searchEnabled={false}
               />
             </form>
           </Form>

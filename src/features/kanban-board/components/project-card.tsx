@@ -22,6 +22,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Form, FormProvider, useForm } from "react-hook-form";
+import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
+import { useProjectStatusChange } from "../services";
 
 // --- Priority styles (assuming this remains the same) ---
 const priorityStyles: Record<
@@ -66,6 +69,20 @@ export function ProjectCard({
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: project.id });
   const [isDialogOpen, setDialogOpen] = useState(false); // State is now managed here
+
+  const { mutateAsync: ProjectStatusChange } = useProjectStatusChange();
+
+  const form = useForm({
+    defaultValues: { status: project.currentStatus },
+  });
+
+  const handleStatusChange = (value: string) => {
+    ProjectStatusChange({
+      projectId: project.id,
+      status: value,
+      effectiveDate: new Date().toISOString(),
+    });
+  };
 
   const priority =
     priorityStyles[project.priority] ?? priorityStyles[ProjectPriority.LOW];
@@ -136,10 +153,36 @@ export function ProjectCard({
                 {project.projectHandler?.fullName && (
                   <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                     <UserSquare className="h-4 w-4 shrink-0" />
-                    <span className="font-semibold"> Handler:</span>
-                    <span className="truncate">{project.projectHandler.fullName}</span>
+                    <span className="font-semibold"> Coordinator:</span>
+                    <span className="truncate">
+                      {project.projectHandler.fullName}
+                    </span>
                   </div>
                 )}
+                {/* ✅ Project Status Dropdown */}
+                <div className="mt-1">
+                  <FormProvider {...form}>
+                    <Form {...form}>
+                      <CustomDropDownSearchable
+                        form={form}
+                        className="text-muted-foreground"
+                        name="status"
+                        label="Project Status"
+                        options={[
+                          { value: "active-discovery", label: "Active" },
+                          { value: "running", label: "Running" },
+                          { value: "slow", label: "Slow" },
+                          { value: "stop", label: "Stop" },
+                          { value: "completed", label: "Completed" },
+                        ]}
+                        placeholder="Select Status"
+                        searchEnabled={false}
+                        onChangeValue={handleStatusChange}
+                        showClearButton={false}
+                      />
+                    </Form>
+                  </FormProvider>
+                </div>
               </div>
 
               {/* Date */}

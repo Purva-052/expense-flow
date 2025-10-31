@@ -35,7 +35,7 @@ export function ViewProjectModal() {
           </div>
 
           <div>
-            <h3 className="text-sm font-medium">Project Handler</h3>
+            <h3 className="text-sm font-medium">Project Coordinator</h3>
             <p className="text-sm text-gray-600">
               {currentRow.projectHandler?.fullName}
             </p>
@@ -65,6 +65,13 @@ export function ViewProjectModal() {
             <h3 className="text-sm font-medium">Priority</h3>
             <p className="text-sm text-gray-600 capitalize">
               {currentRow.priority}
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-medium">Project Status</h3>
+            <p className="text-sm text-gray-600 capitalize">
+              {currentRow.currentStatus || "Not specified"}
             </p>
           </div>
         </div>
