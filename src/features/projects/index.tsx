@@ -101,7 +101,7 @@ const ProjectsPage = () => {
     {
       type: "select",
       key: "handlerId",
-      placeholder: "Filter by  Handler",
+      placeholder: "Filter by  Coordinator",
       options: projecthandler?.data?.map((value: any) => {
         return { label: value?.fullName, value: value?.id };
       }),

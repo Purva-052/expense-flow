@@ -40,7 +40,7 @@ export function ActionFormModal({
       email: values.email,
       role: values.role,
       technologyId: values.technologyId,
-      joiningDate: values.joiningDate,
+      careerStartDate: values.careerStartDate,
       password: values.password,
       status: values.status ? "active" : "inactive",
     };
@@ -56,7 +56,7 @@ export function ActionFormModal({
       email: values.email,
       role: values.role,
       technologyId: values.technologyId,
-      joiningDate: values.joiningDate,
+      careerStartDate: values.careerStartDate,
       status: values.status ? "active" : "inactive",
       currentWorkingProjectId: values.currentWorkingProjectId,
     };

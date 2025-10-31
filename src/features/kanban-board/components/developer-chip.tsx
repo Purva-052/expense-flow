@@ -19,6 +19,29 @@ const getDaysRemaining = (
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 };
 
+const getYearsOfExperience = (
+  startDate: string | null | undefined
+): string | null => {
+  if (!startDate) return null;
+
+  const start = new Date(startDate);
+  const now = new Date();
+
+  const diffInMs = now.getTime() - start.getTime();
+  const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+  const diffInYears = diffInDays / 365.25;
+  const diffInMonths = diffInDays / 30.44; // avg days per month
+
+  if (diffInYears < 1) {
+    const months = Math.floor(diffInMonths);
+    return `${months} month${months !== 1 ? "s" : ""}`;
+  } else {
+    const years =
+      diffInYears < 10 ? diffInYears.toFixed(1) : Math.round(diffInYears);
+    return `${years} year${Number(years) > 1 ? "s" : ""}`;
+  }
+};
+
 export function DeveloperChip({
   developer,
   containerId,
@@ -51,6 +74,8 @@ export function DeveloperChip({
   };
 
   const techColor = developer?.technology?.color || "#e2e8f0";
+  // ✅ Calculate years of experience
+  const experience = getYearsOfExperience(developer?.careerStartDate);
 
   return (
     <div
@@ -86,8 +111,16 @@ export function DeveloperChip({
                 <span>{getReleaseText()}</span>
               </div>
             )}
+
+            {/* ✅ Show Years of Experience */}
+            {experience && (
+              <span className="text-xs text-muted-foreground">
+                {experience} of experience
+              </span>
+            )}
           </div>
         </div>
+
         {/* ✅ CHANGE: Conditionally render the badge based on variant */}
         {variant === "default" && (
           <Badge

@@ -74,7 +74,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
         <ProfileDetailRow
           icon={Calendar}
           label="Joining Date"
-          value={formatDate(user?.joiningDate)}
+          value={formatDate(user?.careerStartDate)}
         />
         <ProfileDetailRow
           icon={Code}

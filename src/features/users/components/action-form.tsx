@@ -53,8 +53,8 @@ export function UserActionForm({
           email: currentRow?.email ?? "",
           role: currentRow?.role ?? "",
           technologyId: currentRow?.technology?.id ?? undefined,
-          joiningDate: currentRow?.joiningDate
-            ? currentRow.joiningDate.slice(0, 10)
+          careerStartDate: currentRow?.careerStartDate
+            ? currentRow.careerStartDate.slice(0, 10)
             : "",
           status: currentRow?.status === "active",
           currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
@@ -64,7 +64,7 @@ export function UserActionForm({
           email: "",
           role: "",
           technologyId: undefined,
-          joiningDate: "",
+          careerStartDate: "",
           status: true,
           password: "",
         },
@@ -176,8 +176,8 @@ export function UserActionForm({
 
               <CustomDatePicker
                 control={form.control}
-                name="joiningDate"
-                label="Joining Date"
+                name="careerStartDate"
+                label="Career Start Date"
               />
 
               {/* ✅ Status Checkbox */}

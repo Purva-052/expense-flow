@@ -3,10 +3,10 @@
 import { cn } from "@/lib/utils";
 import { Briefcase } from "lucide-react";
 
+// This component is now PURELY for display. It has no drag-and-drop code.
 export const ProjectChip = ({ project }: { project: any }) => {
   const completion = project.percentageComplete ?? 0;
 
-  // Dynamically set border color based on completion status
   const getBorderColor = () => {
     if (completion === 100) return "border-green-500"; // Completed
     if (project.currentStatus === "active") return "border-blue-500"; // Active
@@ -21,7 +21,6 @@ export const ProjectChip = ({ project }: { project: any }) => {
       )}
     >
       <div className="flex flex-col gap-1">
-        {/* --- Top Row: Dot + Icon + Project Name --- */}
         <div className="flex items-center gap-2 truncate">
           {project.isCurrentProject && (
             <span
@@ -29,7 +28,6 @@ export const ProjectChip = ({ project }: { project: any }) => {
               title="Currently working on this project"
             />
           )}
-
           <Briefcase className="h-4 w-4 text-muted-foreground shrink-0" />
           <span className="truncate font-bold text-card-foreground">
             {project.name}

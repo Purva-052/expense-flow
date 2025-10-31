@@ -36,6 +36,7 @@ interface CustomDropDownProps {
   onChangeValue?: any;
   multiple?: boolean; // ✅ new prop
   searchEnabled?: boolean; // ✅ new prop
+  showClearButton?: boolean;
 }
 
 const CustomDropDownSearchable = ({
@@ -49,6 +50,7 @@ const CustomDropDownSearchable = ({
   maxHeight = 200,
   allowCreate = false,
   onCreateOption,
+  showClearButton = true,
   isLoading = false,
   loadingText = "Loading...",
   onChangeValue,
@@ -245,7 +247,7 @@ const CustomDropDownSearchable = ({
               </Popover>
 
               {/* Clear button */}
-              {valueArray.length > 0 && (
+              {valueArray.length > 0 && showClearButton && (
                 <X
                   className="absolute top-1/2 right-9 h-4 w-4 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-red-500"
                   onClick={() => {

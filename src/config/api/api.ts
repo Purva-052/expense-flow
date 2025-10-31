@@ -31,6 +31,7 @@ const API = {
     create:"/projects",
     delete:"/projects",
     assign_developers:"/developer-allocations",
+    status_change:"project-status-logs"
   }
 }
 
