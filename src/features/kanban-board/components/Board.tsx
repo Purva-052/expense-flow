@@ -59,7 +59,7 @@ const Board = ({ activeTab }: any) => {
       return {
         pagination: false,
         clientId: null,
-        managerId: null,
+        handlerId: undefined,
         priority: undefined,
       };
     const saved = localStorage.getItem(FILTER_STORAGE_KEY);
@@ -68,7 +68,7 @@ const Board = ({ activeTab }: any) => {
       : {
           pagination: false,
           clientId: null,
-          managerId: null,
+          handlerId: undefined,
           priority: undefined,
         };
   };
@@ -89,7 +89,7 @@ const Board = ({ activeTab }: any) => {
   const apiParams = {
     pagination: false,
     clientId: listParams.clientId,
-    managerId: listParams.managerId,
+    handlerId: listParams.handlerId,
     priority: listParams.priority,
     status: isInactiveTab ? "inactive" : "active",
   };
@@ -197,10 +197,9 @@ const Board = ({ activeTab }: any) => {
     setIsDialogOpen(true);
   }
 
-  const { data: managerList, isPending: managerListLoading }: any =
+  const { data: projecthandler, isPending: projecthandlerLoading }: any =
     useGetUsersList({
-      pagination: false,
-      role: "project_manager",
+      role: ["project_manager", "team_lead"],
     });
 
   const { data: clientsList, isPending: clientListLoading }: any =
@@ -210,8 +209,9 @@ const Board = ({ activeTab }: any) => {
 
   const handleClientChange = (value: any) =>
     setListParams((prev: any) => ({ ...prev, clientId: value ?? null }));
-  const handleManagerChange = (value: any) =>
-    setListParams((prev: any) => ({ ...prev, managerId: value ?? null }));
+  const handleProjectHandleChange = (value: any) => {
+    setListParams({ ...listParams, handlerId: value ?? null, currentPage: 1 });
+  };
   const handlePriorityChange = (value: any) =>
     setListParams((prev: any) => ({ ...prev, priority: value ?? undefined }));
 
@@ -230,15 +230,14 @@ const Board = ({ activeTab }: any) => {
     },
     {
       type: "select",
-      key: "managerId",
-      placeholder: "Filter by Manager",
-      options: managerList?.data?.map((value: any) => ({
-        label: value?.fullName,
-        value: value?.id,
-      })),
-      value: listParams.managerId,
-      onChange: handleManagerChange,
-      isLoading: managerListLoading,
+      key: "handlerId",
+      placeholder: "Filter by  Coordinator",
+      options: projecthandler?.data?.map((value: any) => {
+        return { label: value?.fullName, value: value?.id };
+      }),
+      value: listParams.handlerId, // 👈 pre-selects if set
+      onChange: handleProjectHandleChange,
+      isLoading: projecthandlerLoading,
     },
     {
       type: "select",
