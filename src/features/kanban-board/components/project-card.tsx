@@ -162,7 +162,7 @@ export function ProjectCard({
                 {/* ✅ Project Status Dropdown */}
                 <div className="mt-1">
                   <FormProvider {...form}>
-                    <Form {...form}>
+                    <Form>
                       <CustomDropDownSearchable
                         form={form}
                         className="text-muted-foreground"
