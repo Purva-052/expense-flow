@@ -145,7 +145,7 @@ const ResourceTab = ({ activeTab }: any) => {
                 resources.
               </p>
             </div>
-          ) : usersList?.data?.length > 0 ? (
+          ) : userDetails?.data?.length > 0 ? (
             <div
               className={`grid grid-cols-1 gap-4 ${
                 !isProjectHandler ? "md:grid-cols-[1fr_320px]" : ""
@@ -203,10 +203,12 @@ const ResourceTab = ({ activeTab }: any) => {
           ) : (
             <div className="flex flex-col items-center justify-center py-10 text-center border border-dashed rounded-lg mt-4">
               <h3 className="text-lg font-semibold text-muted-foreground">
-                No resources found
+                {isProjectHandler ? "No Handler found" : "No resources found"}
               </h3>
               <p className="text-sm text-muted-foreground mt-1">
-                There are no developers available for the selected technology.
+                {isProjectHandler
+                  ? "There are no Handlers available"
+                  : "There are no developers available for the selected technology."}
               </p>
             </div>
           )}

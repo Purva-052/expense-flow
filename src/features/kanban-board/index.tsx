@@ -9,28 +9,28 @@ const ProjectBoard = () => {
   const [activeTab, setActiveTab] = useState("board");
   const { user } = useAuthStore();
   const userRole = user?.user?.role;
-
-            console.log("🚀 ~ ProjectBoard ~ Board:", Board)
-
   return (
     <Main>
       {userRole === "developer" ? (
-        <Board />
+        <Board activeTab={activeTab} />
       ) : (
         // 🧭 Others see tabbed layout
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           {/* Tab Headers */}
-          <TabsList className="grid grid-cols-3 w-[430px] mb-2">
+          <TabsList className="grid grid-cols-4 w-[570px] mb-2">
             <TabsTrigger value="board">Projects</TabsTrigger>
             <TabsTrigger value="resources">Resources</TabsTrigger>
             <TabsTrigger value="Project Coordinator">
               Project Coordinator
             </TabsTrigger>
+            <TabsTrigger value="Inactive Projects">
+              Inactive Projects
+            </TabsTrigger>
           </TabsList>
 
           {/* Board Tab */}
           <TabsContent value="board">
-            <Board />
+            <Board activeTab={activeTab} />
           </TabsContent>
 
           {/* Resources Tab */}
@@ -40,6 +40,10 @@ const ProjectBoard = () => {
 
           <TabsContent value="Project Coordinator">
             <ResourceTab activeTab={activeTab} />
+          </TabsContent>
+
+          <TabsContent value="Inactive Projects">
+            <Board activeTab={activeTab} />
           </TabsContent>
         </Tabs>
       )}

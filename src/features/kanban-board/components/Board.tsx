@@ -46,7 +46,9 @@ type GroupedDevelopers = {
   technologyColor?: string;
 }[];
 
-const Board = () => {
+const Board = ({ activeTab }: any) => {
+  const isInactiveTab = activeTab === "Inactive Projects" ? true : false;
+
   const { user } = useAuthStore();
   const isDeveloperView = user?.user?.role === "developer";
   const currentUserId = user?.user?.id;
@@ -89,6 +91,7 @@ const Board = () => {
     clientId: listParams.clientId,
     managerId: listParams.managerId,
     priority: listParams.priority,
+    status: isInactiveTab ? "inactive" : "active",
   };
 
   const {
