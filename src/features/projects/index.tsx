@@ -9,7 +9,7 @@ import { ActionFormModal } from "./components/action";
 import { columns } from "./components/columns";
 import { useProjectsStore } from "./stores/useProjectsStore";
 import { ViewProjectModal } from "./components/view-model";
-import { useGetProjectsData } from "./services";
+import { useGetProjectListForListView } from "./services";
 import { useGetClientsData } from "../clients/services";
 import { useGetUsersList } from "../users/services";
 
@@ -34,7 +34,8 @@ const ProjectsPage = () => {
     handlerId: listParams.handlerId,
   };
 
-  const { data: listData, isPending: loading } = useGetProjectsData(apiParams);
+  const { data: listData, isPending: loading } =
+    useGetProjectListForListView(apiParams);
   const { data: projecthandler, isPending: projecthandlerLoading }: any =
     useGetUsersList({
       role: ["project_manager", "team_lead"],
