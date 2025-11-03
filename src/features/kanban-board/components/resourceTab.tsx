@@ -145,7 +145,7 @@ const ResourceTab = ({ activeTab }: any) => {
                 resources.
               </p>
             </div>
-          ) : userDetails?.data?.length > 0 ? (
+          ) : userDetails?.length > 0 ? (
             <div
               className={`grid grid-cols-1 gap-4 ${
                 !isProjectHandler ? "md:grid-cols-[1fr_320px]" : ""
