@@ -2,6 +2,7 @@
 // src/pages/board.tsx
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useMemo, useState } from "react";
+import { useInView } from "react-intersection-observer"; // 👈 Import useInView
 import {
   DndContext,
   DragEndEvent,
@@ -77,6 +78,7 @@ const Board = ({ activeTab }: any) => {
   const [showAllDevelopers, setShowAllDevelopers] = useState(false);
   // ✅ State now holds a single string for the open technology
   const [openTechnology, setOpenTechnology] = useState<string>("");
+  const scrollContainerRef = React.useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const { clientId, managerId, priority } = listParams;
@@ -87,7 +89,7 @@ const Board = ({ activeTab }: any) => {
   }, [listParams]);
 
   const apiParams = {
-    pagination: false,
+    pagination: true,
     clientId: listParams.clientId,
     handlerId: listParams.handlerId,
     priority: listParams.priority,
@@ -114,10 +116,32 @@ const Board = ({ activeTab }: any) => {
   }, [groupedDevelopers]);
 
   const {
-    data: projectList,
+    data: projectPages,
     isPending: projectListLoading,
     refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
   }: any = useGetProjectsData(apiParams);
+
+  // 👇 2. FLATTEN the pages into a single project list
+  const projectList = useMemo(
+    () => projectPages?.pages?.flatMap((page: any) => page.data) ?? [],
+    [projectPages]
+  );
+
+  // 👇 3. SETUP the intersection observer
+  const { ref: loadMoreRef, inView } = useInView({
+    root: scrollContainerRef.current, // 👈 important!
+    rootMargin: "500px", // trigger before hitting bottom
+    threshold: 0,
+  });
+
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage]);
 
   const onsuccessAssignDeveloper = () => {
     refetch();
@@ -285,45 +309,51 @@ const Board = ({ activeTab }: any) => {
           onDragEnd={onDragEnd}
           onDragCancel={() => setActiveDeveloper(null)}
         >
-          <div className="space-y-4 max-h-[74dvh] overflow-auto p-2">
-            {projectList?.data?.length ? (
-              projectList?.data?.map((p: any) => (
-                <ProjectCard key={p?.id} project={p}>
-                  {p?.developerAllocations?.length !== 0 ? (
-                    <SortableContext
-                      id={`project-${p.id}`}
-                      items={
-                        p?.developerAllocations?.map(
-                          (da: any) => `${p.id}-${da.developer.id}`
-                        ) ?? []
-                      }
-                      strategy={rectSortingStrategy}
-                    >
-                      <div className="flex flex-wrap gap-2">
-                        {p?.developerAllocations?.map((allocation: any) => {
-                          const isMyChip =
-                            allocation.developer.id === currentUserId;
-                          const canClick = !isDeveloperView || isMyChip;
+          <div
+            ref={scrollContainerRef}
+            className="space-y-4 max-h-[74dvh] overflow-auto p-2"
+          >
+            {projectList?.length ? (
+              projectList?.map((p: any) => (
+                <>
+                  <ProjectCard key={p?.id} project={p}>
+                    {p?.developerAllocations?.length !== 0 ? (
+                      <SortableContext
+                        id={`project-${p.id}`}
+                        items={
+                          p?.developerAllocations?.map(
+                            (da: any) => `${p.id}-${da.developer.id}`
+                          ) ?? []
+                        }
+                        strategy={rectSortingStrategy}
+                      >
+                        <div className="flex flex-wrap gap-2">
+                          {p?.developerAllocations?.map((allocation: any) => {
+                            const isMyChip =
+                              allocation.developer.id === currentUserId;
+                            const canClick = !isDeveloperView || isMyChip;
 
-                          return (
-                            <DeveloperChip
-                              key={`project-${p.id}-${allocation.developer.id}`}
-                              developer={allocation.developer}
-                              containerId={p.id}
-                              endDate={allocation.endDate}
-                              onClick={
-                                canClick
-                                  ? () => handleDeveloperClick(allocation, p.id)
-                                  : undefined
-                              }
-                              disabled={isDeveloperView}
-                            />
-                          );
-                        })}
-                      </div>
-                    </SortableContext>
-                  ) : null}
-                </ProjectCard>
+                            return (
+                              <DeveloperChip
+                                key={`project-${p.id}-${allocation.developer.id}`}
+                                developer={allocation.developer}
+                                containerId={p.id}
+                                endDate={allocation.endDate}
+                                onClick={
+                                  canClick
+                                    ? () =>
+                                        handleDeveloperClick(allocation, p.id)
+                                    : undefined
+                                }
+                                disabled={isDeveloperView}
+                              />
+                            );
+                          })}
+                        </div>
+                      </SortableContext>
+                    ) : null}
+                  </ProjectCard>
+                </>
               ))
             ) : (
               <div className="flex flex-col items-center justify-center py-10 text-center border border-dashed rounded-lg">
@@ -333,6 +363,12 @@ const Board = ({ activeTab }: any) => {
                 <p className="text-sm text-muted-foreground mt-1">
                   Try adjusting your filters or check back later.
                 </p>
+              </div>
+            )}
+            <div ref={loadMoreRef} className="h-2" />
+            {isFetchingNextPage && (
+              <div className="flex justify-center items-center py-4">
+                <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
               </div>
             )}
           </div>
