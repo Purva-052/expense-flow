@@ -11,12 +11,16 @@ export const projectFormSchema = z.object({
     .optional()
     .nullable(),
   clientId: z.number({ invalid_type_error: "Client is required" }),
-  startDate: z
-    .string({
-      required_error: "Start date is required",
-      invalid_type_error: "Start date must be a valid date",
-    })
-    .min(1, "Start date is required"),
+  startDate: z.preprocess(
+    (val) => {
+      if (val instanceof Date) {
+        return val.toISOString().split("T")[0]; // convert Date -> "YYYY-MM-DD"
+      }
+      if (typeof val === "string") return val;
+      return "";
+    },
+    z.string().min(1, "Start date is required")
+  ),
   expectedCompletionDate: z.any(),
 
   handlerId: z
@@ -31,7 +35,13 @@ export const projectFormSchema = z.object({
       .min(0, "Progress cannot be negative")
       .max(100, "Progress cannot exceed 100")
   ),
-  priority: z.enum(["low", "medium", "high"]),
+  priority: z.preprocess(
+    (val) => (val === "" ? undefined : val),
+    z.enum(["low", "medium", "high"], {
+      required_error: "Priority is required",
+      invalid_type_error: "Priority is required",
+    })
+  ),
 });
 
 export type TProjectFormSchema = z.infer<typeof projectFormSchema>;
