@@ -118,6 +118,7 @@ export function UserActionForm({
                 label="Email"
                 placeholder="Enter email"
                 type="email"
+                autoComplete="new-email" // 👈 disables auto-fill
               />
 
               {!isEdit && (
@@ -127,6 +128,7 @@ export function UserActionForm({
                   label="Password"
                   placeholder="Enter password"
                   type="password"
+                  autoComplete="new-password" // 👈 disables Chrome’s “suggested password”
                 />
               )}
 
@@ -157,7 +159,9 @@ export function UserActionForm({
                 }))}
                 isLoading={technologyListLoading}
                 placeholder="Select Technology"
-                disabled={selectedRole === "project_manager"}
+                disabled={
+                  selectedRole === "project_manager" || selectedRole === "admin"
+                }
               />
 
               {isEdit && (

@@ -32,9 +32,10 @@ export function ActionFormModal({
       clientId: values.clientId,
       startDate: values.startDate,
       expectedCompletionDate: values.expectedCompletionDate,
-      handlerId:values.handlerId ? values.handlerId : undefined,
+      handlerId: values.handlerId ? values.handlerId : undefined,
       percentageComplete: values.percentageComplete,
       priority: values.priority,
+      status: values.status,
     };
     createMutate(payload);
   };
@@ -46,7 +47,7 @@ export function ActionFormModal({
       clientId: values.clientId,
       startDate: values.startDate,
       expectedCompletionDate: values.expectedCompletionDate,
-      handlerId:values.handlerId ? values.handlerId : undefined,
+      handlerId: values.handlerId ? values.handlerId : undefined,
       percentageComplete: values.percentageComplete,
       priority: values.priority,
     };

@@ -25,6 +25,7 @@ import {
 import { Form, FormProvider, useForm } from "react-hook-form";
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import { useProjectStatusChange } from "../services";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 // --- Priority styles (assuming this remains the same) ---
 const priorityStyles: Record<
@@ -69,6 +70,9 @@ export function ProjectCard({
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: project.id });
   const [isDialogOpen, setDialogOpen] = useState(false); // State is now managed here
+  const { user } = useAuthStore();
+  const userRole = user?.user?.role;
+  const isDeveloperView = userRole === "developer";
 
   const { mutateAsync: ProjectStatusChange } = useProjectStatusChange();
 
@@ -159,42 +163,48 @@ export function ProjectCard({
                     </span>
                   </div>
                 )}
-                {/* ✅ Project Status Dropdown */}
-                <div className="mt-1">
-                  <FormProvider {...form}>
-                    <Form>
-                      <CustomDropDownSearchable
-                        form={form}
-                        className="text-muted-foreground"
-                        name="status"
-                        label="Project Status"
-                        options={[
-                          { value: "active-discovery", label: "Active" },
-                          { value: "running", label: "Running" },
-                          { value: "slow", label: "Slow" },
-                          { value: "stop", label: "Stop" },
-                          { value: "completed", label: "Completed" },
-                        ]}
-                        placeholder="Select Status"
-                        searchEnabled={false}
-                        onChangeValue={handleStatusChange}
-                        showClearButton={false}
-                      />
-                    </Form>
-                  </FormProvider>
-                </div>
+                {!isDeveloperView && (
+                  <div className="mt-1">
+                    <FormProvider {...form}>
+                      <Form>
+                        <CustomDropDownSearchable
+                          form={form}
+                          className="text-muted-foreground"
+                          name="status"
+                          label="Project Status"
+                          options={[
+                            { value: "active-discovery", label: "Active" },
+                            { value: "running", label: "Running" },
+                            { value: "slow", label: "Slow" },
+                            { value: "stop", label: "Stop" },
+                            { value: "completed", label: "Completed" },
+                          ]}
+                          placeholder="Select Status"
+                          searchEnabled={false}
+                          onChangeValue={handleStatusChange}
+                          showClearButton={false}
+                        />
+                      </Form>
+                    </FormProvider>
+                  </div>
+                )}
               </div>
 
               {/* Date */}
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-auto">
-                <CalendarDays className="h-3.5 w-3.5" />
-                <span>
-                  {new Date(project.expectedCompletionDate).toLocaleDateString(
-                    "en-GB",
-                    { day: "2-digit", month: "short", year: "numeric" }
-                  )}
-                </span>
-              </div>
+              {project?.expectedCompletionDate && (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-auto">
+                  <CalendarDays className="h-3.5 w-3.5" />
+                  <span>
+                    {new Date(
+                      project.expectedCompletionDate
+                    ).toLocaleDateString("en-GB", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Right Side: Developer Drop Zone */}
