@@ -5,17 +5,19 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '../ui/form'
-import { Input } from '../ui/input'
+} from "../ui/form";
+import { Input } from "../ui/input";
 
 export interface TextInputFieldProps {
-  control: any
-  name: string
-  label: string
-  placeholder: string
-  type?: React.HTMLInputTypeAttribute // 👈 add this
-  className?: string
-  valueAsNumber?: boolean // 👈 add this
+  control: any;
+  name: string;
+  label: string;
+  placeholder: string;
+  type?: React.HTMLInputTypeAttribute; // 👈 add this
+  className?: string;
+  valueAsNumber?: boolean; // 👈 add this
+  min?: number;
+  max?: number;
 }
 
 export function TextInputField({
@@ -24,7 +26,9 @@ export function TextInputField({
   label,
   placeholder,
   className,
-  type = 'text', // 👈 default to text
+  min,
+  max,
+  type = "text", // 👈 default to text
   valueAsNumber = false, // 👈 default false
 }: Readonly<TextInputFieldProps>) {
   return (
@@ -32,23 +36,25 @@ export function TextInputField({
       control={control}
       name={name}
       render={({ field }) => (
-        <FormItem className='flex flex-col'>
-          <FormLabel className='text-right'>{label}</FormLabel>
+        <FormItem className="flex flex-col">
+          <FormLabel className="text-right">{label}</FormLabel>
           <div>
             <FormControl>
               <Input
                 placeholder={placeholder}
                 className={`p-5 ${className}`}
                 type={type} // 👈 use type here
-                autoComplete='off'
+                autoComplete="off"
+                min={min}
+                max={max}
                 {...field}
                 {...(valueAsNumber ? { valueAsNumber: true } : {})} // 👈 forward valueAsNumber
               />
             </FormControl>
-            <FormMessage className='col-start-3' />
+            <FormMessage className="col-start-3" />
           </div>
         </FormItem>
       )}
     />
-  )
+  );
 }
