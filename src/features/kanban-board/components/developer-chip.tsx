@@ -36,16 +36,12 @@ const getYearsOfExperience = (
   const diffInMs = now.getTime() - start.getTime();
   const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
   const diffInYears = diffInDays / 365.25;
-  const diffInMonths = diffInDays / 30.44; // avg days per month
 
-  if (diffInYears < 1) {
-    const months = Math.floor(diffInMonths);
-    return `${months} month${months !== 1 ? "s" : ""}`;
-  } else {
-    const years =
-      diffInYears < 10 ? diffInYears.toFixed(1) : Math.round(diffInYears);
-    return `${years} year${Number(years) > 1 ? "s" : ""}`;
-  }
+  // Always show experience in years with one decimal place
+  const formattedYears =
+    diffInYears < 10 ? diffInYears.toFixed(1) : Math.round(diffInYears);
+
+  return `${formattedYears} Year`;
 };
 
 export function DeveloperChip({
@@ -129,7 +125,7 @@ export function DeveloperChip({
 
               {experience && (
                 <span className="text-xs text-muted-foreground">
-                  {experience} of experience
+                  {experience}
                 </span>
               )}
             </div>

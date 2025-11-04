@@ -165,6 +165,7 @@ export function ProjectActionForm({
                 control={form.control}
                 name="startDate"
                 label="Start Date"
+                
               />
               <CustomDatePicker
                 control={form.control}
@@ -178,6 +179,8 @@ export function ProjectActionForm({
                 name="percentageComplete"
                 type="number"
                 label="Progress (%)"
+                min={0}
+                max={100}
                 placeholder="Enter progress percentage"
                 valueAsNumber
               />
