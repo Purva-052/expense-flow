@@ -40,11 +40,14 @@ export function ProjectActionForm({
   projecthandler,
   projecthandlerLoading,
 }: Readonly<Props>) {
-
   const isEdit = !!currentRow;
 
+  const schema = isEdit
+    ? projectFormSchema.omit({ status: true }) // remove status when editing
+    : projectFormSchema; // keep status required when adding
+
   const form = useForm<TProjectFormSchema>({
-    resolver: zodResolver(projectFormSchema) as any,
+    resolver: zodResolver(schema) as any,
     defaultValues: isEdit
       ? {
           name: currentRow.name ?? "",
