@@ -235,6 +235,7 @@ const Board = ({ activeTab }: any) => {
   const { data: projecthandler, isPending: projecthandlerLoading }: any =
     useGetUsersList({
       role: ["project_manager", "team_lead"],
+      pagination: false,
     });
 
   const { data: clientsList, isPending: clientListLoading }: any =
