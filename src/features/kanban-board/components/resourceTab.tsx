@@ -35,7 +35,7 @@ const ResourceTab = ({ activeTab }: any) => {
   const scrollContainerRef = React.useRef<HTMLDivElement | null>(null);
 
   const apiParams = {
-    pagination: true,
+    pagination: false,
     technologyId: listParams.technologyId,
   };
 

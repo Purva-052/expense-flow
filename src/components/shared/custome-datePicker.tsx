@@ -3,7 +3,11 @@
 
 import { useState } from "react";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  CalendarIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Popover,
@@ -25,9 +29,8 @@ interface CustomDatePickerProps {
   name: string;
   label?: string;
   placeholder?: string;
-  disabled?: boolean; // Disables the trigger button
+  disabled?: boolean;
   dateFormat?: string;
-  // ✅ ADDED: New prop to pass a function for disabling specific dates
   disabledDays?: (day: Date) => boolean;
 }
 
@@ -38,9 +41,16 @@ export function CustomDatePicker({
   placeholder = "Pick a date",
   disabled = false,
   dateFormat = "PPP",
-  disabledDays, // ✅ ADDED: Destructure the new prop
+  disabledDays,
 }: Readonly<CustomDatePickerProps>) {
   const [open, setOpen] = useState(false);
+  const [month, setMonth] = useState(new Date());
+
+  const handleMonthChange = (offset: number) => {
+    const newMonth = new Date(month);
+    newMonth.setMonth(month.getMonth() + offset);
+    setMonth(newMonth);
+  };
 
   return (
     <FormField
@@ -54,7 +64,7 @@ export function CustomDatePicker({
               <FormControl>
                 <Button
                   variant="outline"
-                  disabled={disabled} // This prop disables the button itself
+                  disabled={disabled}
                   className={cn(
                     "w-full justify-start text-left font-normal",
                     !field.value && "text-muted-foreground"
@@ -70,9 +80,60 @@ export function CustomDatePicker({
               </FormControl>
             </PopoverTrigger>
 
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent
+              className="w-auto rounded-lg border p-3 shadow-md"
+              align="start"
+            >
+              {/* ✅ Custom Calendar Header */}
+              <div className="flex items-center justify-between px-2 pb-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() => handleMonthChange(-1)}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+
+                <div className="flex items-center space-x-2">
+                  <span className="font-medium">
+                    {format(month, "MMMM")}
+                  </span>
+                  <select
+                    className="rounded-md border bg-transparent px-1 py-0.5 text-sm focus:outline-none"
+                    value={month.getFullYear()}
+                    onChange={(e) => {
+                      const newYear = parseInt(e.target.value, 10);
+                      const newDate = new Date(month);
+                      newDate.setFullYear(newYear);
+                      setMonth(newDate);
+                    }}
+                  >
+                    {Array.from({ length: 61 }, (_, i) => 1990 + i).map(
+                      (year) => (
+                        <option  key={year} value={year}>
+                          {year}
+                        </option>
+                      )
+                    )}
+                  </select>
+                </div>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() => handleMonthChange(1)}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* ✅ Calendar Component */}
               <Calendar
                 mode="single"
+                month={month}
+                onMonthChange={setMonth}
                 selected={field.value}
                 onSelect={(date) => {
                   if (date) {
@@ -80,7 +141,6 @@ export function CustomDatePicker({
                     setOpen(false);
                   }
                 }}
-                // ✅ ADDED: Pass the disabling function to the Calendar component
                 disabled={disabledDays}
                 initialFocus
               />
