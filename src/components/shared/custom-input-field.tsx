@@ -18,6 +18,7 @@ export interface TextInputFieldProps {
   valueAsNumber?: boolean; // 👈 add this
   min?: number;
   max?: number;
+  autoComplete?: string; // ✅ add this prop
 }
 
 export function TextInputField({
@@ -30,6 +31,7 @@ export function TextInputField({
   max,
   type = "text", // 👈 default to text
   valueAsNumber = false, // 👈 default false
+  autoComplete = "off", // ✅ default to off
 }: Readonly<TextInputFieldProps>) {
   return (
     <FormField
@@ -44,10 +46,10 @@ export function TextInputField({
                 placeholder={placeholder}
                 className={`p-5 ${className}`}
                 type={type} // 👈 use type here
-                autoComplete="off"
                 min={min}
                 max={max}
                 {...field}
+                autoComplete={autoComplete} // ✅ pass down to input
                 {...(valueAsNumber ? { valueAsNumber: true } : {})} // 👈 forward valueAsNumber
               />
             </FormControl>

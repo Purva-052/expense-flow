@@ -10,7 +10,7 @@ import {
   useDeleteUserData,
   useUpdateUserData,
 } from "../services";
-import { useGetProjectsData } from "@/features/projects/services";
+import { useGetProjectListForListView } from "@/features/projects/services";
 
 export function ActionFormModal({
   technologyList,
@@ -27,7 +27,7 @@ export function ActionFormModal({
   const { mutateAsync: deleteMutate, isPending: isDeleteLoading } =
     useDeleteUserData(currentRow?.id || "");
   const { data: projectList, isPending: projectListLoading }: any =
-    useGetProjectsData({
+    useGetProjectListForListView({
       pagination: false,
     });
 

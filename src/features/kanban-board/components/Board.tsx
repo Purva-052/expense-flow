@@ -1,8 +1,8 @@
 /* eslint-disable no-console */
 // src/pages/board.tsx
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useMemo, useState } from "react";
-import { useInView } from "react-intersection-observer"; // 👈 Import useInView
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useInView } from "react-intersection-observer";
 import {
   DndContext,
   DragEndEvent,
@@ -40,7 +40,6 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 
-// Helper type for our grouped developers
 type GroupedDevelopers = {
   technologyName: string;
   resources: Developer[];
@@ -78,7 +77,6 @@ const Board = ({ activeTab }: any) => {
 
   const [listParams, setListParams] = useState(getInitialFilters);
   const [showAllDevelopers, setShowAllDevelopers] = useState(false);
-  // ✅ State now holds a single string for the open technology
   const [openTechnology, setOpenTechnology] = useState<string>("");
   const scrollContainerRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -132,20 +130,30 @@ const Board = ({ activeTab }: any) => {
     () => projectPages?.pages?.flatMap((page: any) => page.data) ?? [],
     [projectPages]
   );
+  const fetchingLock = useRef(false);
 
-  // 👇 3. SETUP the intersection observer
-  const { ref: loadMoreRef, inView } = useInView({
-    root: scrollContainerRef.current, // 👈 important!
-    rootMargin: "500px", // trigger before hitting bottom
+  const { ref: loadMoreRef } = useInView({
+    root: scrollContainerRef.current,
     threshold: 0,
+    rootMargin: "300px",
+    onChange: (inView) => {
+      if (
+        inView &&
+        hasNextPage &&
+        !isFetchingNextPage &&
+        !fetchingLock.current
+      ) {
+        fetchingLock.current = true;
+        fetchNextPage();
+      }
+    },
   });
 
   useEffect(() => {
-    if (inView && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
+    if (!isFetchingNextPage) {
+      fetchingLock.current = false;
     }
-  }, [inView, hasNextPage, isFetchingNextPage]);
-
+  }, [isFetchingNextPage]);
   const onsuccessAssignDeveloper = () => {
     refetch();
   };
