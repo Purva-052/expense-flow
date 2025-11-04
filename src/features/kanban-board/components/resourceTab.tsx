@@ -1,6 +1,6 @@
 // src/components/resource-tab.tsx
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Users } from "lucide-react";
 import { useGetTechnologyData } from "@/features/technology/services";
 import { ResourceCard } from "./resource-card";
@@ -25,20 +25,46 @@ import { useGetProjectsData } from "@/features/projects/services";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProjectChip } from "./project-chip";
 import { DraggableProjectChip } from "./drragable-projectChip";
+import { useInView } from "react-intersection-observer";
 
 const ResourceTab = ({ activeTab }: any) => {
   const isProjectHandler = activeTab === "Project Coordinator" ? true : false;
   const [selectedTech, setSelectedTech] = useState<string | null>(null);
   const [listParams, setListParams] = useState({ technologyId: null });
   const [activeProject, setActiveProject] = useState<any | null>(null);
+  const scrollContainerRef = React.useRef<HTMLDivElement | null>(null);
 
   const apiParams = {
-    pagination: false,
+    pagination: true,
     technologyId: listParams.technologyId,
   };
 
-  const { data: projectList, isPending: projectListLoading }: any =
-    useGetProjectsData({ pagination: false });
+  const {
+    data: projectPages,
+    isPending: projectListLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  }: any = useGetProjectsData(apiParams);
+
+  // 👇 2. FLATTEN the pages into a single project list
+  const projectList = useMemo(
+    () => projectPages?.pages?.flatMap((page: any) => page.data) ?? [],
+    [projectPages]
+  );
+
+  // 👇 3. SETUP the intersection observer
+  const { ref: loadMoreRef, inView } = useInView({
+    root: scrollContainerRef.current, // 👈 important!
+    rootMargin: "500px", // trigger before hitting bottom
+    threshold: 0,
+  });
+
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage]);
 
   const {
     data: usersList,
@@ -175,8 +201,8 @@ const ResourceTab = ({ activeTab }: any) => {
                             Loading Projects...
                           </span>
                         </div>
-                      ) : projectList?.data?.length > 0 ? (
-                        projectList.data.map((project: any) => (
+                      ) : projectList?.length > 0 ? (
+                        projectList?.map((project: any) => (
                           <DraggableProjectChip
                             key={`draggable-${project.id}`}
                             project={project}
@@ -193,6 +219,12 @@ const ResourceTab = ({ activeTab }: any) => {
                           <p className="text-sm text-muted-foreground/70 mt-1">
                             There are currently no projects to display.
                           </p>
+                        </div>
+                      )}
+                      <div ref={loadMoreRef} className="h-2" />
+                      {isFetchingNextPage && (
+                        <div className="flex justify-center items-center py-4">
+                          <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
                         </div>
                       )}
                     </CardContent>

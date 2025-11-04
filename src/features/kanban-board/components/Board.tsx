@@ -58,19 +58,21 @@ const Board = ({ activeTab }: any) => {
   const getInitialFilters = () => {
     if (typeof window === "undefined")
       return {
-        pagination: false,
+        pagination: true,
         clientId: null,
         handlerId: undefined,
         priority: undefined,
+        Search: "",
       };
     const saved = localStorage.getItem(FILTER_STORAGE_KEY);
     return saved
-      ? { pagination: false, ...JSON.parse(saved) }
+      ? { pagination: true, ...JSON.parse(saved) }
       : {
-          pagination: false,
+          pagination: true,
           clientId: null,
           handlerId: undefined,
           priority: undefined,
+          search: "",
         };
   };
 
@@ -94,6 +96,7 @@ const Board = ({ activeTab }: any) => {
     handlerId: listParams.handlerId,
     priority: listParams.priority,
     status: isInactiveTab ? "inactive" : "active",
+    search: listParams.search,
   };
 
   const {
@@ -239,7 +242,18 @@ const Board = ({ activeTab }: any) => {
   const handlePriorityChange = (value: any) =>
     setListParams((prev: any) => ({ ...prev, priority: value ?? undefined }));
 
+  const handleSearch = (search: string | undefined) => {
+    setListParams((prev: any) => ({ ...prev, search: search ?? "" }));
+  };
+
   const filters: FilterConfig[] = [
+    {
+      type: "search",
+      placeholder: "Search by Project name ...",
+      key: "search",
+      value: listParams.search,
+      onChange: handleSearch,
+    },
     {
       type: "select",
       key: "clientId",
