@@ -35,6 +35,9 @@ export const projectFormSchema = z.object({
       .min(0, "Progress cannot be negative")
       .max(100, "Progress cannot exceed 100")
   ),
+  status: z
+    .string({ required_error: "Status is required" })
+    .min(1, "Status is required"),
   priority: z.preprocess(
     (val) => (val === "" ? undefined : val),
     z.enum(["low", "medium", "high"], {

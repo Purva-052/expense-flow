@@ -191,15 +191,20 @@ export function ProjectCard({
               </div>
 
               {/* Date */}
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-auto">
-                <CalendarDays className="h-3.5 w-3.5" />
-                <span>
-                  {new Date(project.expectedCompletionDate).toLocaleDateString(
-                    "en-GB",
-                    { day: "2-digit", month: "short", year: "numeric" }
-                  )}
-                </span>
-              </div>
+              {project?.expectedCompletionDate && (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-auto">
+                  <CalendarDays className="h-3.5 w-3.5" />
+                  <span>
+                    {new Date(
+                      project.expectedCompletionDate
+                    ).toLocaleDateString("en-GB", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Right Side: Developer Drop Zone */}

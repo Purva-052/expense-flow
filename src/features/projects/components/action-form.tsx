@@ -40,12 +40,6 @@ export function ProjectActionForm({
   projecthandler,
   projecthandlerLoading,
 }: Readonly<Props>) {
-  console.log(
-    "🚀 ~ ProjectActionForm ~ projecthandlerLoading:",
-    projecthandlerLoading
-  );
-
-  console.log("🚀 ~ ProjectActionForm ~ projecthandler:", projecthandler);
 
   const isEdit = !!currentRow;
 
@@ -61,6 +55,7 @@ export function ProjectActionForm({
           handlerId: currentRow.projectHandler?.id ?? 0,
           percentageComplete: currentRow.percentageComplete ?? 0,
           priority: currentRow.priority ?? "",
+          status: currentRow.status,
         }
       : {
           name: "",
@@ -71,6 +66,7 @@ export function ProjectActionForm({
           handlerId: undefined,
           percentageComplete: 0,
           priority: "",
+          status: undefined,
         },
   });
 
@@ -165,7 +161,6 @@ export function ProjectActionForm({
                 control={form.control}
                 name="startDate"
                 label="Start Date"
-                
               />
               <CustomDatePicker
                 control={form.control}

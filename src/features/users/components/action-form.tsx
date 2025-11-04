@@ -159,7 +159,9 @@ export function UserActionForm({
                 }))}
                 isLoading={technologyListLoading}
                 placeholder="Select Technology"
-                disabled={selectedRole === "project_manager"}
+                disabled={
+                  selectedRole === "project_manager" || selectedRole === "admin"
+                }
               />
 
               {isEdit && (
