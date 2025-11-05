@@ -123,7 +123,10 @@ const Board = ({ activeTab }: any) => {
   }: any = useGetAllDevelopers({
     available: showAllDevelopers ? undefined : true,
     search: debouncedSearchTech,
+    technologyId: selectedTech.length > 0 ? selectedTech : undefined,
   });
+
+  const { data: DevelopersResponseAll }: any = useGetAllDevelopers({});
 
   const groupedDevelopers: GroupedDevelopers = useMemo(() => {
     if (!AllDevelopersResponse?.data) return [];
@@ -335,21 +338,13 @@ const Board = ({ activeTab }: any) => {
 
   // Options for the multi-select dropdown, derived from available developers
   const techOptions = useMemo(() => {
-    return groupedDevelopers.map((group) => ({
-      value: group.technologyName,
-      label: group.technologyName,
-    }));
-  }, [groupedDevelopers]);
-
-  // Filter the list of developers based on the selected technologies
-  const filteredDevelopers = useMemo(() => {
-    if (selectedTech.length === 0) {
-      return groupedDevelopers;
-    }
-    return groupedDevelopers.filter((group) =>
-      selectedTech.includes(group.technologyName)
+    return (
+      DevelopersResponseAll?.data.map((group: any) => ({
+        value: group.technologyId,
+        label: group.technologyName,
+      })) ?? []
     );
-  }, [groupedDevelopers, selectedTech]);
+  }, [DevelopersResponseAll]);
 
   return (
     <>
@@ -489,14 +484,14 @@ const Board = ({ activeTab }: any) => {
                         Loading developers...
                       </span>
                     </div>
-                  ) : filteredDevelopers.length > 0 ? (
+                  ) : groupedDevelopers?.length > 0 ? (
                     <SortableContext
                       items={allDeveloperIds}
                       strategy={rectSortingStrategy}
                     >
                       <div className="space-y-2">
                         {/* Render the filtered list of developers */}
-                        {filteredDevelopers.map((group) => (
+                        {groupedDevelopers?.map((group) => (
                           <Collapsible
                             key={group.technologyName}
                             open={openTechnology === group.technologyName}
