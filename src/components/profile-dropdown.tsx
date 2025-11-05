@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { useState } from "react";
 import { useRouter } from "@tanstack/react-router";
 import { useAuthStore } from "@/stores/use-auth-store";
@@ -24,11 +25,27 @@ export function ProfileDropdown() {
 
   const handleLogoutConfirm = async () => {
     setLoading(true);
-    await logout();
-    navigate({ to: "/sign-in" });
+    // Clear caches and close modal immediately for snappy UX
     queryClient.clear();
-    setLoading(false);
     setLogoutModalOpen(false);
+    // Fire-and-forget logout to backend without blocking navigation
+    try {
+      // Do not await to avoid delaying navigation
+      void logout();
+    } catch {
+      console.log("error comes on logout");
+    }
+    // Navigate immediately (client-side) and enforce with hard replace
+    navigate({ to: "/sign-in", replace: true });
+    setTimeout(() => {
+      if (
+        typeof window !== "undefined" &&
+        window.location.pathname !== "/sign-in"
+      ) {
+        window.location.replace("/sign-in");
+      }
+    }, 0);
+    setLoading(false);
   };
 
   const getInitials = (fullName?: string) => {

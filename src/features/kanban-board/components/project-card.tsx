@@ -82,6 +82,14 @@ export function ProjectCard({
     defaultValues: { status: project.currentStatus },
   });
 
+  const statusOptions = [
+    { value: "active-discovery", label: "Active Discovery" },
+    { value: "running", label: "Running" },
+    { value: "slow", label: "Slow" },
+    { value: "stop", label: "Stop" },
+    { value: "completed", label: "Completed" },
+  ];
+
   const handleStatusChange = (value: string) => {
     ProjectStatusChange({
       projectId: project.id,
@@ -97,13 +105,18 @@ export function ProjectCard({
   // Determines if the status dropdown should be visible
   const canUpdateStatus = isProjectHandler || isAdmin;
 
-  // Determines if the status dropdown should be disabled
+  // Determines if the status can be edited or shown as read-only text
   const isHandlerAssigned = !!project?.projectHandler?.id;
   const isCurrentUserAssignedHandler =
     isHandlerAssigned && project?.projectHandler?.id === user?.user?.id;
-  const isStatusDisabled = isHandlerAssigned
-    ? !isCurrentUserAssignedHandler // when a handler is assigned, only that handler can edit
-    : !(isProjectHandler || isAdmin); // when no handler, allow handlers and admins
+  const canEditStatus =
+    isAdmin ||
+    (!isHandlerAssigned && isProjectHandler) ||
+    (isHandlerAssigned && isCurrentUserAssignedHandler);
+
+  const currentStatusLabel =
+    statusOptions.find((o) => o.value === project.currentStatus)?.label ||
+    project.currentStatus;
 
   return (
     <>
@@ -177,31 +190,28 @@ export function ProjectCard({
                 )}
                 {canUpdateStatus && (
                   <div className="mt-1">
-                    <FormProvider {...form}>
-                      <Form>
-                        <CustomDropDownSearchable
-                          form={form}
-                          className="text-muted-foreground"
-                          name="status"
-                          label="Project Status"
-                          options={[
-                            {
-                              value: "active-discovery",
-                              label: "Active Discovery",
-                            },
-                            { value: "running", label: "Running" },
-                            { value: "slow", label: "Slow" },
-                            { value: "stop", label: "Stop" },
-                            { value: "completed", label: "Completed" },
-                          ]}
-                          placeholder="Select Status"
-                          searchEnabled={false}
-                          onChangeValue={handleStatusChange}
-                          showClearButton={false}
-                          disabled={isStatusDisabled}
-                        />
-                      </Form>
-                    </FormProvider>
+                    {canEditStatus ? (
+                      <FormProvider {...form}>
+                        <Form>
+                          <CustomDropDownSearchable
+                            form={form}
+                            className="text-muted-foreground"
+                            name="status"
+                            label="Project Status"
+                            options={statusOptions}
+                            placeholder="Select Status"
+                            searchEnabled={false}
+                            onChangeValue={handleStatusChange}
+                            showClearButton={false}
+                          />
+                        </Form>
+                      </FormProvider>
+                    ) : (
+                      <div className="text-sm text-muted-foreground">
+                        <span className="font-semibold mr-1">Project Status:</span>
+                        <span>{currentStatusLabel}</span>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
