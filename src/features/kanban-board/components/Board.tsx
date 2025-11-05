@@ -1,8 +1,22 @@
 /* eslint-disable no-console */
 // src/pages/board.tsx
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useInView } from "react-intersection-observer";
+import { CustomMultiSelect } from "@/components/shared/custom-multiselect";
+import GlobalFilterSection from "@/components/table/global-table-filter";
+import { FilterConfig } from "@/components/table/table-toolbar";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { Switch } from "@/components/ui/switch";
+import { useGetClientsData } from "@/features/clients/services";
+import { useGetProjectsData } from "@/features/projects/services";
+import { useGetUsersList } from "@/features/users/services";
+import type { Developer } from "@/lib/types";
+import { useAuthStore } from "@/stores/use-auth-store";
 import {
   DndContext,
   DragEndEvent,
@@ -19,26 +33,16 @@ import {
   SortableContext,
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import type { Developer } from "@/lib/types";
-import { useAuthStore } from "@/stores/use-auth-store";
-import GlobalFilterSection from "@/components/table/global-table-filter";
-import { FilterConfig } from "@/components/table/table-toolbar";
 import { ChevronDown, Users } from "lucide-react";
-import { useGetProjectsData } from "@/features/projects/services";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useInView } from "react-intersection-observer";
 import { useAssignDeveloper, useGetAllDevelopers } from "../services";
-import { useGetUsersList } from "@/features/users/services";
-import { useGetClientsData } from "@/features/clients/services";
-import { ProjectCard } from "./project-card";
 import { DeveloperChip } from "./developer-chip";
 import { DeveloperDialog } from "./developer-dialog";
-import { Switch } from "@/components/ui/switch";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { ProjectCard } from "./project-card";
+import { Input } from "@/components/ui/input";
+import useDebounce from "@/hooks/use-debaunce";
+import { useGetProjectTypes } from "@/features/Project-type/services";
 
 type GroupedDevelopers = {
   technologyName: string;
@@ -50,9 +54,18 @@ const Board = ({ activeTab }: any) => {
   const isInactiveTab = activeTab === "Archive Projects" ? true : false;
 
   const { user } = useAuthStore();
-  const isDeveloperView = user?.user?.role === "developer";
+  const Role = user?.user?.role;
+  const isDeveloperView = Role === "developer";
+  const isCoordinatorView = Role === "project_manager" || Role === "team_lead";
   const currentUserId = user?.user?.id;
   const FILTER_STORAGE_KEY = "board_filters";
+  const [searchTech, setSearchTech] = useState<string>("");
+  const debouncedSearchTech = useDebounce(searchTech, 500);
+
+  const { data: ProjectType, isPending: LoadingProjectType }: any =
+    useGetProjectTypes({
+      pagination: false,
+    });
 
   const getInitialFilters = () => {
     if (typeof window === "undefined")
@@ -62,15 +75,27 @@ const Board = ({ activeTab }: any) => {
         handlerId: undefined,
         priority: undefined,
         Search: "",
+        projectTypeId: undefined,
+        status: isInactiveTab ? "inactive" : "active",
       };
     const saved = localStorage.getItem(FILTER_STORAGE_KEY);
     return saved
-      ? { pagination: true, ...JSON.parse(saved) }
+      ? {
+          search: "",
+          pagination: true,
+          priority: "high",
+          status: isInactiveTab ? "inactive" : "active",
+          projectTypeId: undefined,
+          handlerId: isCoordinatorView ? currentUserId : undefined,
+          ...JSON.parse(saved),
+        }
       : {
           pagination: true,
           clientId: null,
-          handlerId: undefined,
-          priority: undefined,
+          status: isInactiveTab ? "inactive" : "active",
+          handlerId: isCoordinatorView ? currentUserId : undefined,
+          priority: "high",
+          projectTypeId: undefined,
           search: "",
         };
   };
@@ -80,6 +105,9 @@ const Board = ({ activeTab }: any) => {
   const [openTechnology, setOpenTechnology] = useState<string>("");
   const scrollContainerRef = React.useRef<HTMLDivElement | null>(null);
 
+  // State for the multi-select technology filter
+  const [selectedTech, setSelectedTech] = useState<string[]>([]);
+
   useEffect(() => {
     const { clientId, managerId, priority } = listParams;
     localStorage.setItem(
@@ -88,21 +116,13 @@ const Board = ({ activeTab }: any) => {
     );
   }, [listParams]);
 
-  const apiParams = {
-    pagination: true,
-    clientId: listParams.clientId,
-    handlerId: listParams.handlerId,
-    priority: listParams.priority,
-    status: isInactiveTab ? "inactive" : "active",
-    search: listParams.search,
-  };
-
   const {
     data: AllDevelopersResponse,
     isPending: AllDevelopersLoading,
     refetch: AllDevelopersRefetch,
   }: any = useGetAllDevelopers({
     available: showAllDevelopers ? undefined : true,
+    search: debouncedSearchTech,
   });
 
   const groupedDevelopers: GroupedDevelopers = useMemo(() => {
@@ -123,9 +143,8 @@ const Board = ({ activeTab }: any) => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  }: any = useGetProjectsData(apiParams);
+  }: any = useGetProjectsData(listParams);
 
-  // 👇 2. FLATTEN the pages into a single project list
   const projectList = useMemo(
     () => projectPages?.pages?.flatMap((page: any) => page.data) ?? [],
     [projectPages]
@@ -154,6 +173,7 @@ const Board = ({ activeTab }: any) => {
       fetchingLock.current = false;
     }
   }, [isFetchingNextPage]);
+
   const onsuccessAssignDeveloper = () => {
     refetch();
   };
@@ -201,13 +221,9 @@ const Board = ({ activeTab }: any) => {
       projectId = Number(over.data.current.containerId);
     } else if (typeof over.id === "number") {
       projectId = over.id;
-    } else if (over.id === "available") {
-      console.log("⚠️ Dropped on available list — no assignment made.");
-      return;
     }
 
     if (!developerId || !projectId || isNaN(developerId) || isNaN(projectId)) {
-      console.warn("Invalid IDs:", { developerKey, overId: over.id });
       return;
     }
 
@@ -217,9 +233,8 @@ const Board = ({ activeTab }: any) => {
         projectId,
         startDate: new Date().toISOString(),
       });
-      console.log("✅ Developer assigned successfully!");
     } catch (error) {
-      console.error("❌ Error assigning developer:", error);
+      console.error("Error assigning developer:", error);
     }
   }
 
@@ -248,9 +263,15 @@ const Board = ({ activeTab }: any) => {
   const handleProjectHandleChange = (value: any) => {
     setListParams({ ...listParams, handlerId: value ?? null, currentPage: 1 });
   };
+
+  const handleProjectTypeChange = (value: any) => {
+    setListParams({
+      ...listParams,
+      projectTypeId: value ?? undefined,
+    });
+  };
   const handlePriorityChange = (value: any) =>
     setListParams((prev: any) => ({ ...prev, priority: value ?? undefined }));
-
   const handleSearch = (search: string | undefined) => {
     setListParams((prev: any) => ({ ...prev, search: search ?? "" }));
   };
@@ -278,11 +299,12 @@ const Board = ({ activeTab }: any) => {
     {
       type: "select",
       key: "handlerId",
-      placeholder: "Filter by  Coordinator",
-      options: projecthandler?.data?.map((value: any) => {
-        return { label: value?.fullName, value: value?.id };
-      }),
-      value: listParams.handlerId, // 👈 pre-selects if set
+      placeholder: "Filter by Coordinator",
+      options: projecthandler?.data?.map((value: any) => ({
+        label: value?.fullName,
+        value: value?.id,
+      })),
+      value: listParams.handlerId,
       onChange: handleProjectHandleChange,
       isLoading: projecthandlerLoading,
     },
@@ -298,7 +320,36 @@ const Board = ({ activeTab }: any) => {
       value: listParams.priority,
       onChange: handlePriorityChange,
     },
+    {
+      type: "select",
+      key: "projectTypeId",
+      placeholder: "Filter by Project Type",
+      options: ProjectType?.data?.map((value: any) => {
+        return { label: value?.name, value: value?.id };
+      }),
+      value: listParams.projectTypeId,
+      onChange: handleProjectTypeChange,
+      isLoading: LoadingProjectType,
+    },
   ];
+
+  // Options for the multi-select dropdown, derived from available developers
+  const techOptions = useMemo(() => {
+    return groupedDevelopers.map((group) => ({
+      value: group.technologyName,
+      label: group.technologyName,
+    }));
+  }, [groupedDevelopers]);
+
+  // Filter the list of developers based on the selected technologies
+  const filteredDevelopers = useMemo(() => {
+    if (selectedTech.length === 0) {
+      return groupedDevelopers;
+    }
+    return groupedDevelopers.filter((group) =>
+      selectedTech.includes(group.technologyName)
+    );
+  }, [groupedDevelopers, selectedTech]);
 
   return (
     <>
@@ -307,20 +358,20 @@ const Board = ({ activeTab }: any) => {
         <div className="flex flex-wrap items-center gap-3 mb-4">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-orange-500"></span>
-            <span className="text-sm font-medium">High </span>
+            <span className="text-sm font-medium">High</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
-            <span className="text-sm font-medium">Medium </span>
+            <span className="text-sm font-medium">Medium</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-teal-500"></span>
-            <span className="text-sm font-medium">Low </span>
+            <span className="text-sm font-medium">Low</span>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_320px] ">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_320px]">
         <DndContext
           sensors={sensors}
           onDragStart={onDragStart}
@@ -340,45 +391,41 @@ const Board = ({ activeTab }: any) => {
               </div>
             ) : projectList?.length ? (
               projectList?.map((p: any) => (
-                <>
-                  <ProjectCard key={p?.id} project={p}>
-                    {p?.developerAllocations?.length !== 0 ? (
-                      <SortableContext
-                        id={`project-${p.id}`}
-                        items={
-                          p?.developerAllocations?.map(
-                            (da: any) => `${p.id}-${da.developer.id}`
-                          ) ?? []
-                        }
-                        strategy={rectSortingStrategy}
-                      >
-                        <div className="flex flex-wrap gap-2">
-                          {p?.developerAllocations?.map((allocation: any) => {
-                            const isMyChip =
-                              allocation.developer.id === currentUserId;
-                            const canClick = !isDeveloperView || isMyChip;
-
-                            return (
-                              <DeveloperChip
-                                key={`project-${p.id}-${allocation.developer.id}`}
-                                developer={allocation.developer}
-                                containerId={p.id}
-                                endDate={allocation.endDate}
-                                onClick={
-                                  canClick
-                                    ? () =>
-                                        handleDeveloperClick(allocation, p.id)
-                                    : undefined
-                                }
-                                disabled={isDeveloperView}
-                              />
-                            );
-                          })}
-                        </div>
-                      </SortableContext>
-                    ) : null}
-                  </ProjectCard>
-                </>
+                <ProjectCard key={p?.id} project={p}>
+                  {p?.developerAllocations?.length !== 0 && (
+                    <SortableContext
+                      id={`project-${p.id}`}
+                      items={
+                        p?.developerAllocations?.map(
+                          (da: any) => `${p.id}-${da.developer.id}`
+                        ) ?? []
+                      }
+                      strategy={rectSortingStrategy}
+                    >
+                      <div className="flex flex-wrap gap-2">
+                        {p?.developerAllocations?.map((allocation: any) => {
+                          const isMyChip =
+                            allocation.developer.id === currentUserId;
+                          const canClick = !isDeveloperView || isMyChip;
+                          return (
+                            <DeveloperChip
+                              key={`project-${p.id}-${allocation.developer.id}`}
+                              developer={allocation.developer}
+                              containerId={p.id}
+                              endDate={allocation.endDate}
+                              onClick={
+                                canClick
+                                  ? () => handleDeveloperClick(allocation, p.id)
+                                  : undefined
+                              }
+                              disabled={isDeveloperView}
+                            />
+                          );
+                        })}
+                      </div>
+                    </SortableContext>
+                  )}
+                </ProjectCard>
               ))
             ) : (
               <div className="flex flex-col items-center justify-center py-10 text-center border border-dashed rounded-lg">
@@ -419,9 +466,22 @@ const Board = ({ activeTab }: any) => {
                       />
                     </div>
                   </CardTitle>
+                  <Input
+                    value={searchTech}
+                    onChange={(e) => setSearchTech(e.target.value)}
+                    placeholder="Search developers..."
+                    className="w-full"
+                  />
+                  <CustomMultiSelect
+                    options={techOptions}
+                    selected={selectedTech}
+                    onChange={setSelectedTech}
+                    placeholder="Filter by technologies..."
+                    className="w-full"
+                  />
                 </CardHeader>
 
-                <CardContent className=" max-h-[62dvh] overflow-auto p-2">
+                <CardContent className="max-h-[62dvh] overflow-y-auto [scrollbar-gutter:stable]">
                   {AllDevelopersLoading ? (
                     <div className="flex flex-col justify-center items-center py-10 gap-3">
                       <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
@@ -429,18 +489,17 @@ const Board = ({ activeTab }: any) => {
                         Loading developers...
                       </span>
                     </div>
-                  ) : groupedDevelopers.length > 0 ? (
+                  ) : filteredDevelopers.length > 0 ? (
                     <SortableContext
                       items={allDeveloperIds}
                       strategy={rectSortingStrategy}
                     >
                       <div className="space-y-2">
-                        {groupedDevelopers.map((group) => (
+                        {/* Render the filtered list of developers */}
+                        {filteredDevelopers.map((group) => (
                           <Collapsible
                             key={group.technologyName}
-                            // ✅ Check against the single open technology string
                             open={openTechnology === group.technologyName}
-                            // ✅ Update state to show only one at a time
                             onOpenChange={(isOpen) => {
                               setOpenTechnology(
                                 isOpen ? group.technologyName : ""
@@ -467,7 +526,6 @@ const Board = ({ activeTab }: any) => {
                                 </div>
                                 <ChevronDown
                                   className={`h-5 w-5 transform transition-transform duration-200 ${
-                                    // ✅ Update chevron rotation check
                                     openTechnology === group.technologyName
                                       ? "rotate-180"
                                       : ""
@@ -483,7 +541,7 @@ const Board = ({ activeTab }: any) => {
                                     developer={dev}
                                     containerId="available"
                                     disabled={isDeveloperView}
-                                    variant="compact" // ✅ ADD THIS PROP
+                                    variant="compact"
                                   />
                                 ))}
                               </div>
@@ -493,7 +551,7 @@ const Board = ({ activeTab }: any) => {
                       </div>
                     </SortableContext>
                   ) : (
-                    <div className="flex flex-col items-center justify-center py-10 text-center transition-all duration-300 hover:bg-muted/30">
+                    <div className="flex flex-col items-center justify-center py-10 text-center transition-all duration-300">
                       <div className="mb-3 p-3 rounded-full bg-muted">
                         <Users className="h-8 w-8 text-muted-foreground/70" />
                       </div>
@@ -501,7 +559,7 @@ const Board = ({ activeTab }: any) => {
                         No developers found
                       </h3>
                       <p className="text-sm text-muted-foreground/70 mt-1">
-                        Try switching the toggle or check again later!
+                        Try adjusting your filters or check again later.
                       </p>
                     </div>
                   )}

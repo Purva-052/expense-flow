@@ -26,6 +26,8 @@ interface Props {
   clientListLoading?: boolean;
   projecthandler?: any;
   projecthandlerLoading?: boolean;
+  projectTypes?: any;
+  projectTypesLoading?: boolean;
 }
 
 export function ProjectActionForm({
@@ -38,6 +40,8 @@ export function ProjectActionForm({
   clientListLoading,
   projecthandler,
   projecthandlerLoading,
+  projectTypes,
+  projectTypesLoading,
 }: Readonly<Props>) {
   const isEdit = !!currentRow;
 
@@ -58,6 +62,7 @@ export function ProjectActionForm({
           percentageComplete: currentRow.percentageComplete ?? 0,
           priority: currentRow.priority ?? "",
           status: currentRow.status,
+          projectTypeId: currentRow.projectTypeId ?? undefined,
         }
       : {
           name: "",
@@ -69,6 +74,7 @@ export function ProjectActionForm({
           percentageComplete: 0,
           priority: "",
           status: undefined,
+          projectTypeId: undefined,
         },
   });
 
@@ -144,6 +150,17 @@ export function ProjectActionForm({
                 }))}
                 isLoading={clientListLoading}
                 placeholder="Select Client"
+              />
+              <CustomDropDownSearchable
+                form={form}
+                name="projectTypeId"
+                label="Project Type"
+                options={projectTypes?.map((type: any) => ({
+                  value: type.id,
+                  label: type.name,
+                }))}
+                isLoading={projectTypesLoading}
+                placeholder="Select Project Type"
               />
 
               {/* Manager */}

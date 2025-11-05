@@ -12,6 +12,7 @@ import { ViewProjectModal } from "./components/view-model";
 import { useGetProjectListForListView } from "./services";
 import { useGetClientsData } from "../clients/services";
 import { useGetUsersList } from "../users/services";
+import { useGetProjectTypes } from "../Project-type/services";
 
 const ProjectsPage = () => {
   const { open, setOpen } = useProjectsStore();
@@ -22,6 +23,7 @@ const ProjectsPage = () => {
     clientId: undefined,
     priority: undefined,
     handlerId: undefined,
+    projectTypeId: undefined,
   });
 
   const apiParams = {
@@ -32,10 +34,15 @@ const ProjectsPage = () => {
     clientId: listParams.clientId,
     priority: listParams.priority,
     handlerId: listParams.handlerId,
+    projectTypeId: listParams.projectTypeId,
   };
 
   const { data: listData, isPending: loading } =
     useGetProjectListForListView(apiParams);
+  const { data: ProjectType, isPending: LoadingProjectType }: any =
+    useGetProjectTypes({
+      pagination: false,
+    });
   const { data: projecthandler, isPending: projecthandlerLoading }: any =
     useGetUsersList({
       role: ["project_manager", "team_lead"],
@@ -80,6 +87,14 @@ const ProjectsPage = () => {
     });
   };
 
+  const handleProjectTypeChange = (value: any) => {
+    setListParams({
+      ...listParams,
+      projectTypeId: value ?? undefined,
+      currentPage: 1,
+    });
+  };
+
   const filters: FilterConfig[] = [
     {
       type: "search",
@@ -120,8 +135,19 @@ const ProjectsPage = () => {
         { label: "Medium", value: "medium" },
         { label: "High", value: "high" },
       ],
-      value: listParams.priority, // 👈 pre-selects if set
+      value: listParams.priority,
       onChange: handlePriorityChange,
+    },
+    {
+      type: "select",
+      key: "projectTypeId",
+      placeholder: "Filter by Project Type",
+      options: ProjectType?.data?.map((value: any) => {
+        return { label: value?.name, value: value?.id };
+      }),
+      value: listParams.projectTypeId,
+      onChange: handleProjectTypeChange,
+      isLoading: LoadingProjectType,
     },
   ];
 
@@ -153,6 +179,8 @@ const ProjectsPage = () => {
         <ActionFormModal
           clientsList={clientsList}
           clientListLoading={clientListLoading}
+          projectTypes={ProjectType?.data}
+          projectTypesLoading={LoadingProjectType}
           projecthandler={projecthandler}
           projecthandlerLoading={projecthandlerLoading}
         />
