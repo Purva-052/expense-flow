@@ -13,17 +13,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LogoutModal } from "./model/logout-model";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function ProfileDropdown() {
   const { logout, user } = useAuthStore();
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { navigate } = useRouter();
+  const queryClient = useQueryClient();
 
   const handleLogoutConfirm = async () => {
     setLoading(true);
     await logout();
     navigate({ to: "/sign-in" });
+    queryClient.clear();
     setLoading(false);
     setLogoutModalOpen(false);
   };

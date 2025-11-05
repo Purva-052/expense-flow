@@ -22,6 +22,7 @@ const ProjectsPage = () => {
     clientId: undefined,
     priority: undefined,
     handlerId: undefined,
+    projectTypeId: undefined,
   });
 
   const apiParams = {
@@ -32,6 +33,7 @@ const ProjectsPage = () => {
     clientId: listParams.clientId,
     priority: listParams.priority,
     handlerId: listParams.handlerId,
+    projectTypeId: listParams.projectTypeId,
   };
 
   const { data: listData, isPending: loading } =
@@ -80,6 +82,14 @@ const ProjectsPage = () => {
     });
   };
 
+  const handleProjectTypeChange = (value: any) => {
+    setListParams({
+      ...listParams,
+      projectTypeId: value ?? undefined,
+      currentPage: 1,
+    });
+  };
+
   const filters: FilterConfig[] = [
     {
       type: "search",
@@ -120,8 +130,20 @@ const ProjectsPage = () => {
         { label: "Medium", value: "medium" },
         { label: "High", value: "high" },
       ],
-      value: listParams.priority, // 👈 pre-selects if set
+      value: listParams.priority,
       onChange: handlePriorityChange,
+    },
+    {
+      type: "select",
+      key: "projectTypeId",
+      placeholder: "Filter by Project Type",
+      options: [
+        { label: "Fixed", value: 1 },
+        { label: "Dedicated", value: 2 },
+      ],
+      value: listParams.projectTypeId,
+      onChange: handleProjectTypeChange,
+      isLoading: false,
     },
   ];
 

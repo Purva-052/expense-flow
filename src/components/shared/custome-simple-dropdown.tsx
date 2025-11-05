@@ -95,10 +95,13 @@ const SimpleDropDownSearchable = ({
               )}
               disabled={disabled || isLoading}
             >
-              {value
-                ? options?.find((item) => String(item.value) === String(value))
-                    ?.label
-                : placeholder || "Select an option"}
+              <span className="block truncate">
+                {value
+                  ? options?.find(
+                      (item) => String(item.value) === String(value)
+                    )?.label
+                  : placeholder || "Select an option"}
+              </span>
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
@@ -172,7 +175,7 @@ const SimpleDropDownSearchable = ({
 
         {value && (
           <X
-            className="absolute top-1/2 right-9 h-4 w-4 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-red-500"
+            className="absolute top-1/2 right-8 h-4 w-4 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-red-500"
             onClick={() => onChange?.(null)}
           />
         )}
