@@ -72,7 +72,9 @@ export function ProjectCard({
   const [isDialogOpen, setDialogOpen] = useState(false); // State is now managed here
   const { user } = useAuthStore();
   const userRole = user?.user?.role;
-  const isDeveloperView = userRole === "developer";
+  const isProjectHandler =
+    userRole === "project_manager" || userRole === "team_lead";
+  const isAdmin = userRole === "admin";
 
   const { mutateAsync: ProjectStatusChange } = useProjectStatusChange();
 
@@ -92,6 +94,16 @@ export function ProjectCard({
     priorityStyles[project.priority] ?? priorityStyles[ProjectPriority.LOW];
   const isActive = project.currentStatus === "active";
   const completion = project.percentageComplete ?? 0;
+  // Determines if the status dropdown should be visible
+  const canUpdateStatus = isProjectHandler || isAdmin;
+
+  // Determines if the status dropdown should be disabled
+  const isHandlerAssigned = !!project?.projectHandler?.id;
+  const isCurrentUserAssignedHandler =
+    isHandlerAssigned && project?.projectHandler?.id === user?.user?.id;
+  const isStatusDisabled = isHandlerAssigned
+    ? !isCurrentUserAssignedHandler // when a handler is assigned, only that handler can edit
+    : !(isProjectHandler || isAdmin); // when no handler, allow handlers and admins
 
   return (
     <>
@@ -163,7 +175,7 @@ export function ProjectCard({
                     </span>
                   </div>
                 )}
-                {!isDeveloperView && (
+                {canUpdateStatus && (
                   <div className="mt-1">
                     <FormProvider {...form}>
                       <Form>
@@ -173,7 +185,10 @@ export function ProjectCard({
                           name="status"
                           label="Project Status"
                           options={[
-                            { value: "active-discovery", label: "Active Discovery" },
+                            {
+                              value: "active-discovery",
+                              label: "Active Discovery",
+                            },
                             { value: "running", label: "Running" },
                             { value: "slow", label: "Slow" },
                             { value: "stop", label: "Stop" },
@@ -183,6 +198,7 @@ export function ProjectCard({
                           searchEnabled={false}
                           onChangeValue={handleStatusChange}
                           showClearButton={false}
+                          disabled={isStatusDisabled}
                         />
                       </Form>
                     </FormProvider>

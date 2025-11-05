@@ -29,7 +29,7 @@ const usePatchData = <TData = unknown, TVariables = unknown>({
   return useMutation<TData, Error, TVariables>({
     mutationFn: async (variables: TVariables): Promise<TData> => {
       const response = await instance.patch({ url, data: variables, headers })
-      if (response?.statusCode === 200) {
+      if (response?.statusCode === 200 || response?.statusCode === 201) {
         toast.success(response?.message??'Data updated successfully',{
           position:'top-right'
         })

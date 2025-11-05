@@ -47,7 +47,7 @@ type GroupedDevelopers = {
 }[];
 
 const Board = ({ activeTab }: any) => {
-  const isInactiveTab = activeTab === "Inactive Projects" ? true : false;
+  const isInactiveTab = activeTab === "Archive Projects" ? true : false;
 
   const { user } = useAuthStore();
   const isDeveloperView = user?.user?.role === "developer";
@@ -524,9 +524,6 @@ const Board = ({ activeTab }: any) => {
                 <div className="flex flex-col gap-0.5 truncate">
                   <span className="truncate font-medium">
                     {activeDeveloper.fullName}
-                  </span>
-                  <span className="truncate text-xs text-gray-500">
-                    {activeDeveloper.role}
                   </span>
                 </div>
                 <Badge
