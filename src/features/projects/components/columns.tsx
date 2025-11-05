@@ -44,7 +44,7 @@ function StatusCell({ row }: any) {
             name="status"
             label=""
             options={[
-              { value: "active-discovery", label: "Active" },
+              { value: "active-discovery", label: "Active Discovery" },
               { value: "running", label: "Running" },
               { value: "slow", label: "Slow" },
               { value: "stop", label: "Stop" },
