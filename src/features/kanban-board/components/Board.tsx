@@ -300,12 +300,7 @@ const Board = ({ activeTab }: any) => {
     },
   ];
 
-  return projectListLoading ? (
-    <div className="flex flex-col justify-center items-center py-10 gap-3 h-full">
-      <div className="w-10 h-10 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
-      <span className="text-sm text-muted-foreground">Loading ...</span>
-    </div>
-  ) : (
+  return (
     <>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <GlobalFilterSection filters={filters ?? []} />
@@ -336,7 +331,14 @@ const Board = ({ activeTab }: any) => {
             ref={scrollContainerRef}
             className="space-y-4 max-h-[74dvh] overflow-auto p-2"
           >
-            {projectList?.length ? (
+            {projectListLoading ? (
+              <div className="flex flex-col justify-center items-center py-10 gap-3">
+                <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
+                <span className="text-sm text-muted-foreground">
+                  Loading Projects...
+                </span>
+              </div>
+            ) : projectList?.length ? (
               projectList?.map((p: any) => (
                 <>
                   <ProjectCard key={p?.id} project={p}>

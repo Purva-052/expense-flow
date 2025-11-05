@@ -3,11 +3,7 @@
 
 import { useState } from "react";
 import { format } from "date-fns";
-import {
-  ChevronLeft,
-  ChevronRight,
-  CalendarIcon,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Popover,
@@ -96,9 +92,7 @@ export function CustomDatePicker({
                 </Button>
 
                 <div className="flex items-center space-x-2">
-                  <span className="font-medium">
-                    {format(month, "MMMM")}
-                  </span>
+                  <span className="font-medium">{format(month, "MMMM")}</span>
                   <select
                     className="rounded-md border bg-transparent px-1 py-0.5 text-sm focus:outline-none"
                     value={month.getFullYear()}
@@ -111,7 +105,7 @@ export function CustomDatePicker({
                   >
                     {Array.from({ length: 61 }, (_, i) => 1990 + i).map(
                       (year) => (
-                        <option  key={year} value={year}>
+                        <option key={year} value={year}>
                           {year}
                         </option>
                       )
@@ -129,21 +123,23 @@ export function CustomDatePicker({
                 </Button>
               </div>
 
-              {/* ✅ Calendar Component */}
-              <Calendar
-                mode="single"
-                month={month}
-                onMonthChange={setMonth}
-                selected={field.value}
-                onSelect={(date) => {
-                  if (date) {
-                    field.onChange(date);
-                    setOpen(false);
-                  }
-                }}
-                disabled={disabledDays}
-                initialFocus
-              />
+              {/* ✅ Fixed-height container for calendar */}
+              <div className="h-[340px] overflow-hidden">
+                <Calendar
+                  mode="single"
+                  month={month}
+                  onMonthChange={setMonth}
+                  selected={field.value}
+                  onSelect={(date) => {
+                    if (date) {
+                      field.onChange(date);
+                      setOpen(false);
+                    }
+                  }}
+                  disabled={disabledDays}
+                  initialFocus
+                />
+              </div>
             </PopoverContent>
           </Popover>
           <FormMessage />
