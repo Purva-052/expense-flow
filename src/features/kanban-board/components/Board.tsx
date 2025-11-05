@@ -42,6 +42,7 @@ import { DeveloperDialog } from "./developer-dialog";
 import { ProjectCard } from "./project-card";
 import { Input } from "@/components/ui/input";
 import useDebounce from "@/hooks/use-debaunce";
+import { useGetProjectTypes } from "@/features/Project-type/services";
 
 type GroupedDevelopers = {
   technologyName: string;
@@ -61,6 +62,11 @@ const Board = ({ activeTab }: any) => {
   const [searchTech, setSearchTech] = useState<string>("");
   const debouncedSearchTech = useDebounce(searchTech, 500);
 
+  const { data: ProjectType, isPending: LoadingProjectType }: any =
+    useGetProjectTypes({
+      pagination: false,
+    });
+
   const getInitialFilters = () => {
     if (typeof window === "undefined")
       return {
@@ -69,6 +75,7 @@ const Board = ({ activeTab }: any) => {
         handlerId: undefined,
         priority: undefined,
         Search: "",
+        projectTypeId: undefined,
         status: isInactiveTab ? "inactive" : "active",
       };
     const saved = localStorage.getItem(FILTER_STORAGE_KEY);
@@ -78,6 +85,7 @@ const Board = ({ activeTab }: any) => {
           pagination: true,
           priority: "high",
           status: isInactiveTab ? "inactive" : "active",
+          projectTypeId: undefined,
           handlerId: isCoordinatorView ? currentUserId : undefined,
           ...JSON.parse(saved),
         }
@@ -87,6 +95,7 @@ const Board = ({ activeTab }: any) => {
           status: isInactiveTab ? "inactive" : "active",
           handlerId: isCoordinatorView ? currentUserId : undefined,
           priority: "high",
+          projectTypeId: undefined,
           search: "",
         };
   };
@@ -254,6 +263,13 @@ const Board = ({ activeTab }: any) => {
   const handleProjectHandleChange = (value: any) => {
     setListParams({ ...listParams, handlerId: value ?? null, currentPage: 1 });
   };
+
+  const handleProjectTypeChange = (value: any) => {
+    setListParams({
+      ...listParams,
+      projectTypeId: value ?? undefined,
+    });
+  };
   const handlePriorityChange = (value: any) =>
     setListParams((prev: any) => ({ ...prev, priority: value ?? undefined }));
   const handleSearch = (search: string | undefined) => {
@@ -303,6 +319,17 @@ const Board = ({ activeTab }: any) => {
       ],
       value: listParams.priority,
       onChange: handlePriorityChange,
+    },
+    {
+      type: "select",
+      key: "projectTypeId",
+      placeholder: "Filter by Project Type",
+      options: ProjectType?.data?.map((value: any) => {
+        return { label: value?.name, value: value?.id };
+      }),
+      value: listParams.projectTypeId,
+      onChange: handleProjectTypeChange,
+      isLoading: LoadingProjectType,
     },
   ];
 

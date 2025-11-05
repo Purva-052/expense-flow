@@ -12,6 +12,8 @@ import { ProjectActionForm } from "./action-form";
 export function ActionFormModal({
   clientsList,
   clientListLoading,
+  projectTypes,
+  projectTypesLoading,
   projecthandler,
   projecthandlerLoading,
 }: any) {
@@ -36,6 +38,7 @@ export function ActionFormModal({
       percentageComplete: values.percentageComplete,
       priority: values.priority,
       status: values.status,
+      projectTypeId: values.projectTypeId,
     };
     createMutate(payload);
   };
@@ -50,6 +53,7 @@ export function ActionFormModal({
       handlerId: values.handlerId ? values.handlerId : undefined,
       percentageComplete: values.percentageComplete,
       priority: values.priority,
+      projectTypeId: values.projectTypeId,
     };
 
     updateMutate(payload);
@@ -74,6 +78,8 @@ export function ActionFormModal({
         loading={isCreateLoading}
         onOpenChange={(value) => setOpen(value ? "add" : null)}
         onSubmit={handleCreate}
+        projectTypes={projectTypes}
+        projectTypesLoading={projectTypesLoading}
         clientsList={ClientListData}
         clientListLoading={clientListLoading}
         projecthandler={projecthandler}
@@ -89,6 +95,8 @@ export function ActionFormModal({
             loading={isUpdateLoading}
             onOpenChange={handleCloseDialog}
             currentRow={currentRow}
+            projectTypes={projectTypes}
+            projectTypesLoading={projectTypesLoading}
             clientsList={ClientListData}
             clientListLoading={clientListLoading}
             projecthandler={projecthandler}

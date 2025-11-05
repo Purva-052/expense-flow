@@ -35,6 +35,13 @@ export function ViewProjectModal() {
           </div>
 
           <div>
+            <h3 className="text-sm font-medium">Project Type</h3>
+            <p className="text-sm text-gray-600">
+              {currentRow?.projectType?.name ?? "-"}
+            </p>
+          </div>
+
+          <div>
             <h3 className="text-sm font-medium">Project Coordinator</h3>
             <p className="text-sm text-gray-600">
               {currentRow.projectHandler?.fullName}
