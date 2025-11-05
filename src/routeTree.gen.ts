@@ -25,6 +25,8 @@ import { Route as AuthenticatedTechnologyIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects/index'
 import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authenticated/profile/index'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
+import { Route as AuthenticatedProjectTypeIndexRouteImport } from './routes/_authenticated/Project-type/index'
+import { Route as AuthenticatedProjectModuleIndexRouteImport } from './routes/_authenticated/Project-module/index'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -109,6 +111,18 @@ const AuthenticatedClientsIndexRoute =
     path: '/clients/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedProjectTypeIndexRoute =
+  AuthenticatedProjectTypeIndexRouteImport.update({
+    id: '/Project-type/',
+    path: '/Project-type/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProjectModuleIndexRoute =
+  AuthenticatedProjectModuleIndexRouteImport.update({
+    id: '/Project-module/',
+    path: '/Project-module/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/forgot-password': typeof authForgotPasswordRoute
@@ -121,6 +135,8 @@ export interface FileRoutesByFullPath {
   '/503': typeof errors503Route
   '/unauthorized': typeof errorsUnauthorizedRoute
   '/': typeof AuthenticatedIndexRoute
+  '/Project-module': typeof AuthenticatedProjectModuleIndexRoute
+  '/Project-type': typeof AuthenticatedProjectTypeIndexRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
   '/profile': typeof AuthenticatedProfileIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
@@ -138,6 +154,8 @@ export interface FileRoutesByTo {
   '/503': typeof errors503Route
   '/unauthorized': typeof errorsUnauthorizedRoute
   '/': typeof AuthenticatedIndexRoute
+  '/Project-module': typeof AuthenticatedProjectModuleIndexRoute
+  '/Project-type': typeof AuthenticatedProjectTypeIndexRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
   '/profile': typeof AuthenticatedProfileIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
@@ -157,6 +175,8 @@ export interface FileRoutesById {
   '/(errors)/503': typeof errors503Route
   '/(errors)/unauthorized': typeof errorsUnauthorizedRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/Project-module/': typeof AuthenticatedProjectModuleIndexRoute
+  '/_authenticated/Project-type/': typeof AuthenticatedProjectTypeIndexRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
   '/_authenticated/profile/': typeof AuthenticatedProfileIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
@@ -176,6 +196,8 @@ export interface FileRouteTypes {
     | '/503'
     | '/unauthorized'
     | '/'
+    | '/Project-module'
+    | '/Project-type'
     | '/clients'
     | '/profile'
     | '/projects'
@@ -193,6 +215,8 @@ export interface FileRouteTypes {
     | '/503'
     | '/unauthorized'
     | '/'
+    | '/Project-module'
+    | '/Project-type'
     | '/clients'
     | '/profile'
     | '/projects'
@@ -211,6 +235,8 @@ export interface FileRouteTypes {
     | '/(errors)/503'
     | '/(errors)/unauthorized'
     | '/_authenticated/'
+    | '/_authenticated/Project-module/'
+    | '/_authenticated/Project-type/'
     | '/_authenticated/clients/'
     | '/_authenticated/profile/'
     | '/_authenticated/projects/'
@@ -345,11 +371,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClientsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/Project-type/': {
+      id: '/_authenticated/Project-type/'
+      path: '/Project-type'
+      fullPath: '/Project-type'
+      preLoaderRoute: typeof AuthenticatedProjectTypeIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/Project-module/': {
+      id: '/_authenticated/Project-module/'
+      path: '/Project-module'
+      fullPath: '/Project-module'
+      preLoaderRoute: typeof AuthenticatedProjectModuleIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedProjectModuleIndexRoute: typeof AuthenticatedProjectModuleIndexRoute
+  AuthenticatedProjectTypeIndexRoute: typeof AuthenticatedProjectTypeIndexRoute
   AuthenticatedClientsIndexRoute: typeof AuthenticatedClientsIndexRoute
   AuthenticatedProfileIndexRoute: typeof AuthenticatedProfileIndexRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
@@ -359,6 +401,8 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedProjectModuleIndexRoute: AuthenticatedProjectModuleIndexRoute,
+  AuthenticatedProjectTypeIndexRoute: AuthenticatedProjectTypeIndexRoute,
   AuthenticatedClientsIndexRoute: AuthenticatedClientsIndexRoute,
   AuthenticatedProfileIndexRoute: AuthenticatedProfileIndexRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,

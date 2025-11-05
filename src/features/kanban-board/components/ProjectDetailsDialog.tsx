@@ -12,6 +12,8 @@ import { useGetProjectHistoryData } from "../services";
 import { GlobalTable } from "@/components/table/global-table";
 import { useState } from "react";
 import { ProjectDetailsColumn } from "./ProjectDetailsColumn";
+import GlobalFilterSection from "@/components/table/global-table-filter";
+import { FilterConfig } from "@/components/table/table-toolbar";
 
 // --- Props for the Dialog Component ---
 interface ProjectDetailsDialogProps {
@@ -28,12 +30,14 @@ export function ProjectDetailsDialog({
   const [listParams, setListParams] = useState({
     pageSize: 10,
     currentPage: 1,
+    search: "",
   });
 
   const apiParams = {
     page: listParams.currentPage,
     limit: listParams.pageSize,
     pagination: true,
+    search: listParams.search,
   };
 
   const { data: projectDetails, isLoading: projectDetailsLoading }: any =
@@ -52,6 +56,20 @@ export function ProjectDetailsDialog({
     });
   };
 
+  const handleSearch = (search: string | undefined) => {
+    setListParams({ ...listParams, search: search ?? "", currentPage: 1 });
+  };
+
+  const filters: FilterConfig[] = [
+    {
+      type: "search",
+      placeholder: "Search by name ...",
+      key: "search",
+      value: listParams.search,
+      onChange: handleSearch,
+    },
+  ];
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl lg:max-w-5xl w-full">
@@ -60,6 +78,7 @@ export function ProjectDetailsDialog({
           <DialogDescription>
             Detailed information about the Assigned developers in this project.
           </DialogDescription>
+          <GlobalFilterSection filters={filters ?? []} />
         </DialogHeader>
         {projectDetailsLoading ? (
           <div className="flex flex-col justify-center items-center py-10 gap-3 h-full">

@@ -30,7 +30,10 @@ import { useInView } from "react-intersection-observer";
 const ResourceTab = ({ activeTab }: any) => {
   const isProjectHandler = activeTab === "Project Coordinator" ? true : false;
   const [selectedTech, setSelectedTech] = useState<string | null>(null);
-  const [listParams, setListParams] = useState({ technologyId: null });
+  const [listParams, setListParams] = useState<any>({
+    technologyId: null,
+    search: undefined,
+  });
   const [activeProject, setActiveProject] = useState<any | null>(null);
   const scrollContainerRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -45,7 +48,10 @@ const ResourceTab = ({ activeTab }: any) => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  }: any = useGetProjectsData(apiParams);
+  }: any = useGetProjectsData({
+    pagination: false,
+    search: listParams.search,
+  });
 
   // 👇 2. FLATTEN the pages into a single project list
   const projectList = useMemo(
@@ -95,6 +101,10 @@ const ResourceTab = ({ activeTab }: any) => {
     onsuccessAssignDeveloper
   );
 
+  const handleSearch = (search: string | undefined) => {
+    setListParams({ ...listParams, search: search ?? undefined });
+  };
+
   const filters: FilterConfig[] = [
     {
       type: "select",
@@ -107,6 +117,17 @@ const ResourceTab = ({ activeTab }: any) => {
       value: selectedTech,
       onChange: handleTechnologyChange,
       isLoading: techLoading,
+    },
+  ];
+
+  const ProjectFilter: FilterConfig[] = [
+    {
+      type: "search",
+      placeholder: "Search by name ...",
+      key: "search",
+      value: listParams.search,
+      onChange: handleSearch,
+      className: "w-[280px]",
     },
   ];
 
@@ -187,10 +208,11 @@ const ResourceTab = ({ activeTab }: any) => {
               {/* Project List Sidebar — hidden when isProjectHandler is true */}
               {!isProjectHandler && (
                 <aside className="top-4 h-fit">
-                  <Card>
+                  <Card className="!gap-0">
                     <CardHeader>
-                      <CardTitle className="w-full text-balance flex items-center justify-between">
+                      <CardTitle className="w-full text-balance">
                         Project List
+                        <GlobalFilterSection filters={ProjectFilter} />
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="max-h-[62dvh] overflow-auto p-2 space-y-2">

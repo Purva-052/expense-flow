@@ -16,6 +16,7 @@ export interface FilterConfig {
   onChange?: (value: string | undefined) => void;
   isLoading?: any;
   disable?: any;
+  className?: any;
 }
 
 interface DataTableToolbarProps {
@@ -54,7 +55,7 @@ export function DataTableToolbarCompact({
                 placeholder={filter.placeholder ?? "Search..."}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-[150px] lg:w-[350px]"
+                className={filter.className ?? "w-[150px] lg:w-[350px]"}
               />
             );
           }

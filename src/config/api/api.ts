@@ -32,6 +32,18 @@ const API = {
     delete:"/projects",
     assign_developers:"/developer-allocations",
     status_change:"project-status-logs"
+  },
+  project_types:{
+    list : "/project-types",
+    create : "/project-types",
+    update:"/project-types",
+    delete : "/project-types"
+  },
+  project_modules:{
+    list : "/modules",
+    create : "/modules",
+    update:"/modules",
+    delete : "/modules"
   }
 }
 

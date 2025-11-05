@@ -32,7 +32,7 @@ const useDeleteData = <TData = unknown>({
       console.log("🚀 ~ useDeleteData ~ response:", response)
 
 
-      if (response?.statusCode === 200 || response?.statusCode === 202) {
+      if (response?.statusCode === 200 || response?.statusCode === 202 || response?.statusCode === 201) {
         toast.success('Data deleted successfully', {
           duration: 3000,
           position: 'top-right',

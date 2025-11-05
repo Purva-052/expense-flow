@@ -1,6 +1,8 @@
 import {
+  IconAlignBoxBottomCenter,
   IconAugmentedReality,
   IconBrandDatabricks,
+  IconHexagons,
   IconLayoutBoardFilled,
   IconPalette,
   IconTool,
@@ -61,6 +63,18 @@ export const sidebarData: SidebarData = {
           title: 'Projects',
           url: '/projects',
           icon: IconUserScreen,
+          requiredRoles: ['admin', 'team_lead',"project_manager"],
+        },
+        {
+          title: 'Projects Type',
+          url: '/Project-type',
+          icon: IconAlignBoxBottomCenter,
+          requiredRoles: ['admin', 'team_lead',"project_manager"],
+        },
+        {
+          title: 'Projects Module',
+          url: '/Project-module',
+          icon: IconHexagons,
           requiredRoles: ['admin', 'team_lead',"project_manager"],
         },
         {

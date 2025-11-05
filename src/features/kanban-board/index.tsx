@@ -23,8 +23,8 @@ const ProjectBoard = () => {
             <TabsTrigger value="Project Coordinator">
               Project Coordinator
             </TabsTrigger>
-            <TabsTrigger value="Inactive Projects">
-              Inactive Projects
+            <TabsTrigger value="Archive Projects">
+            Archive Projects
             </TabsTrigger>
           </TabsList>
 
@@ -42,7 +42,7 @@ const ProjectBoard = () => {
             <ResourceTab activeTab={activeTab} />
           </TabsContent>
 
-          <TabsContent value="Inactive Projects">
+          <TabsContent value="Archive Projects">
             <Board activeTab={activeTab} />
           </TabsContent>
         </Tabs>
