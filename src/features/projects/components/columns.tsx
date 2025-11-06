@@ -78,6 +78,10 @@ function ActionsCell({ row }: any) {
     setOpen("view");
     setCurrentRow(operator);
   };
+  const handleViewHistory = () => {
+    setOpen("history");
+    setCurrentRow(operator);
+  };
 
   return (
     <DropdownMenu>
@@ -91,6 +95,9 @@ function ActionsCell({ row }: any) {
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleView}>View project</DropdownMenuItem>
+        <DropdownMenuItem onClick={handleViewHistory}>
+          View history
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={handleEdit}>Edit project</DropdownMenuItem>
         <DropdownMenuItem
           className="text-red-600 focus:bg-red-50 focus:text-red-600"
