@@ -5,7 +5,7 @@ import { useAuthStore } from '@/stores/use-auth-store'
 
 export function requireRole(roles: any) {
   const { user } = useAuthStore.getState()
-  if (!user || !roles.includes(user?.user?.role?.name || '')) {
+  if (!user || !roles.includes(user?.user?.role || '')) {
     throw redirect({ to: '/unauthorized' })
   }
 }
