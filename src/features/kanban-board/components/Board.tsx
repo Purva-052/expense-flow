@@ -279,7 +279,7 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
   const filters: FilterConfig[] = [
     {
       type: "search",
-      placeholder: "Search by Project name ...",
+      placeholder: "Search by project name ...",
       key: "search",
       value: listParams.search,
       onChange: handleSearch,
@@ -300,7 +300,7 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
           },
         ]
       : []),
-  
+
     {
       type: "select",
       key: "handlerId",
@@ -465,7 +465,7 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
                   <Input
                     value={searchTech}
                     onChange={(e) => setSearchTech(e.target.value)}
-                    placeholder="Search developer..."
+                    placeholder="Search developers..."
                     className="w-full"
                   />
                   <CustomMultiSelect

@@ -1,4 +1,3 @@
-// src/components/resource-tab.tsx
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import { FilterConfig } from "@/components/table/table-toolbar";
@@ -27,18 +26,25 @@ import { ProjectChip } from "./project-chip";
 import { ResourceCard } from "./resource-card";
 
 const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
-  const isProjectHandler = activeTab === "Project Coordinator" ? true : false;
+  const isProjectHandler = activeTab === "Project Coordinator";
   const [selectedTech, setSelectedTech] = useState<string | null>(null);
+
+  // Separate search states for resources and projects
+  const [resourceSearch, setResourceSearch] = useState<string | undefined>();
+  const [projectSearch, setProjectSearch] = useState<string | undefined>();
+
   const [listParams, setListParams] = useState<any>({
     technologyId: null,
     search: undefined,
   });
+
   const [activeProject, setActiveProject] = useState<any | null>(null);
   const scrollContainerRef = React.useRef<HTMLDivElement | null>(null);
 
   const apiParams = {
     pagination: false,
     technologyId: listParams.technologyId,
+    search: resourceSearch,
   };
 
   const {
@@ -49,19 +55,17 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
     isFetchingNextPage,
   }: any = useGetProjectsData({
     pagination: false,
-    search: listParams.search,
+    search: projectSearch, // 👈 separate search for project list
   });
 
-  // 👇 2. FLATTEN the pages into a single project list
   const projectList = useMemo(
     () => projectPages?.pages?.flatMap((page: any) => page.data) ?? [],
     [projectPages]
   );
 
-  // 👇 3. SETUP the intersection observer
   const { ref: loadMoreRef, inView } = useInView({
-    root: scrollContainerRef.current, // 👈 important!
-    rootMargin: "500px", // trigger before hitting bottom
+    root: scrollContainerRef.current,
+    rootMargin: "500px",
     threshold: 0,
   });
 
@@ -97,11 +101,23 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
     onsuccessAssignDeveloper
   );
 
-  const handleSearch = (search: string | undefined) => {
-    setListParams({ ...listParams, search: search ?? undefined });
+  // Separate search handlers
+  const handleResourceSearch = (search: string | undefined) => {
+    setResourceSearch(search ?? undefined);
   };
 
-  const filters: FilterConfig[] = [
+  const handleProjectSearch = (search: string | undefined) => {
+    setProjectSearch(search ?? undefined);
+  };
+
+  const resourceFilters: FilterConfig[] = [
+    {
+      type: "search",
+      placeholder: "Search by name ...",
+      key: "search",
+      value: resourceSearch,
+      onChange: handleResourceSearch,
+    },
     {
       type: "select",
       key: "technologyId",
@@ -116,14 +132,14 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
     },
   ];
 
-  const ProjectFilter: FilterConfig[] = [
+  const projectFilters: FilterConfig[] = [
     {
       type: "search",
-      placeholder: "Search by name ...",
+      placeholder: "Search by project name ...",
       key: "search",
-      value: listParams.search,
-      onChange: handleSearch,
-      className: "w-[280px]",
+      value: projectSearch,
+      onChange: handleProjectSearch,
+      className: "w-[292px]",
     },
   ];
 
@@ -156,7 +172,7 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
     }
   }
 
-  const headingFilter = isProjectHandler ? [] : filters;
+  const headingFilter = isProjectHandler ? [] : resourceFilters;
   const isLoading =
     techLoading ||
     (isProjectHandler ? handledProjectsLoading : usersListLoading);
@@ -167,6 +183,7 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
     >
+      <GlobalFilterSection filters={headingFilter} />
       {isLoading ? (
         <div className="flex flex-col justify-center items-center py-10 gap-3 h-full">
           <div className="w-10 h-10 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
@@ -174,7 +191,6 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          <GlobalFilterSection filters={headingFilter} />
           {!isProjectHandler && !selectedTech ? (
             <div className="flex flex-col items-center justify-center py-10 text-center border border-dashed rounded-lg mt-4">
               <div className="mb-3 p-3 rounded-full bg-muted">
@@ -201,15 +217,15 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
                 ))}
               </div>
 
-              {/* Project List Sidebar — hidden when isProjectHandler is true */}
+              {/* Project List Sidebar */}
               {!isProjectHandler && (
                 <aside className="top-4 h-fit">
                   <Card className="!gap-0">
-                    <CardHeader>
-                      <CardTitle className="w-full text-balance">
+                    <CardHeader className="!ps-2 ">
+                      <CardTitle className="w-full text-balance flex items-center justify-between ps-2">
                         Project List
-                        <GlobalFilterSection filters={ProjectFilter} />
                       </CardTitle>
+                      <GlobalFilterSection filters={projectFilters} />
                     </CardHeader>
                     <CardContent className="max-h-[62dvh] overflow-auto p-2 space-y-2">
                       {projectListLoading ? (
@@ -220,7 +236,7 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
                           </span>
                         </div>
                       ) : projectList?.length > 0 ? (
-                        projectList?.map((project: any) => (
+                        projectList.map((project: any) => (
                           <DraggableProjectChip
                             key={`draggable-${project.id}`}
                             project={project}

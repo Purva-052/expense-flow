@@ -1,11 +1,18 @@
-import { DataTableToolbarCompact, FilterConfig } from './table-toolbar'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { DataTableToolbarCompact, FilterConfig } from "./table-toolbar";
 
-const GlobalFilterSection = ({ filters }: { filters: FilterConfig[] }) => {
+const GlobalFilterSection = ({
+  filters,
+  className = "my-4",
+}: {
+  filters: FilterConfig[];
+  className?: any;
+}) => {
   return (
-    <div className='my-4'>
+    <div className={className}>
       <DataTableToolbarCompact filters={filters} />
     </div>
-  )
-}
+  );
+};
 
-export default GlobalFilterSection
+export default GlobalFilterSection;

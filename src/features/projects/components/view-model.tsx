@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Dialog,
   DialogContent,
@@ -40,7 +41,23 @@ export function ViewProjectModal() {
               {currentRow?.projectType?.name ?? "-"}
             </p>
           </div>
-
+          <div>
+            <h3 className="text-sm font-medium">Technologies</h3>
+            {currentRow.technologies && currentRow.technologies.length > 0 ? (
+              <div className="flex flex-wrap gap-2 mt-1">
+                {currentRow.technologies.map((tech: any) => (
+                  <span
+                    key={tech.id || tech}
+                    className="px-2 py-1 text-xs rounded-md bg-gray-100 text-gray-700 border"
+                  >
+                    {tech.name ?? tech}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-600">No technologies listed</p>
+            )}
+          </div>
           <div>
             <h3 className="text-sm font-medium">Project Coordinator</h3>
             <p className="text-sm text-gray-600">

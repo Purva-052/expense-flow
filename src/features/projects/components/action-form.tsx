@@ -28,6 +28,8 @@ interface Props {
   projecthandlerLoading?: boolean;
   projectTypes?: any;
   projectTypesLoading?: boolean;
+  technologyList?: any;
+  technologyListLoading?: boolean;
 }
 
 export function ProjectActionForm({
@@ -42,6 +44,8 @@ export function ProjectActionForm({
   projecthandlerLoading,
   projectTypes,
   projectTypesLoading,
+  technologyList,
+  technologyListLoading,
 }: Readonly<Props>) {
   const isEdit = !!currentRow;
 
@@ -55,7 +59,8 @@ export function ProjectActionForm({
       ? {
           name: currentRow.name ?? "",
           description: currentRow.description ?? "",
-          clientId: currentRow.clientId ?? 0,
+          clientId: currentRow.clientId ?? null,
+          technologyId: currentRow.technologyId ?? null,
           startDate: currentRow.startDate ?? "",
           expectedCompletionDate: currentRow.expectedCompletionDate ?? "",
           handlerId: currentRow.projectHandler?.id ?? 0,
@@ -68,6 +73,7 @@ export function ProjectActionForm({
           name: "",
           description: "",
           clientId: null,
+          technologyId: null,
           startDate: "",
           expectedCompletionDate: "",
           handlerId: undefined,
@@ -162,7 +168,17 @@ export function ProjectActionForm({
                 isLoading={projectTypesLoading}
                 placeholder="Select Project Type"
               />
-
+              <CustomDropDownSearchable
+                form={form}
+                name="technologyId"
+                label="Project Technologies"
+                options={technologyList?.data?.map((technology: any) => {
+                  return { value: technology.id, label: technology.name };
+                })}
+                isLoading={technologyListLoading}
+                placeholder="Select Technologies"
+                multiple
+              />
               {/* Manager */}
               <CustomDropDownSearchable
                 form={form}

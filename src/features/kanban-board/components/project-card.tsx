@@ -250,6 +250,7 @@ export function ProjectCard({
       {/* --- Render the Dialog Component --- */}
       {/* It will be invisible until isDialogOpen is true */}
       <ProjectDetailsDialog
+      project={project}
         projectId={project?.id}
         isOpen={isDialogOpen}
         onOpenChange={setDialogOpen}

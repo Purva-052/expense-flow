@@ -136,16 +136,35 @@ const CustomDropDownSearchable = ({
                       disabled={disabled || isLoading}
                     >
                       {valueArray.length > 0 ? (
-                        <span className="flex flex-wrap gap-1">
-                          {valueArray
-                            .map(
+                        <span className="flex flex-wrap gap-1 items-center">
+                          {(() => {
+                            const labels = valueArray.map(
                               (val: any) =>
                                 options?.find(
                                   (opt: any) =>
                                     String(opt.value) === String(val)
                                 )?.label ?? val
-                            )
-                            .join(", ")}
+                            );
+
+                            const shownLabels = labels.slice(0, 3);
+                            const remainingCount = labels.length - 3;
+
+                            return (
+                              <>
+                                {shownLabels.map((label: any, i: any) => (
+                                  <span key={i}>
+                                    {label}
+                                    {i < shownLabels.length - 1 && ","}
+                                  </span>
+                                ))}
+                                {remainingCount > 0 && (
+                                  <span className="text-muted-foreground ml-1">
+                                    +{remainingCount} more
+                                  </span>
+                                )}
+                              </>
+                            );
+                          })()}
                         </span>
                       ) : (
                         <span>

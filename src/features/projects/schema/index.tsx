@@ -11,6 +11,9 @@ export const projectFormSchema = z.object({
     .optional()
     .nullable(),
   clientId: z.number({ invalid_type_error: "Client is required" }),
+  technologyId: z
+    .array(z.number(), { invalid_type_error: "Technologies are required" })
+    .nonempty("At least one technology is required"), 
   projectTypeId: z.number({ invalid_type_error: "Project Type is required" }),
   startDate: z.preprocess(
     (val) => {

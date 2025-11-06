@@ -13,6 +13,7 @@ import { useGetProjectListForListView } from "./services";
 import { useGetClientsData } from "../clients/services";
 import { useGetUsersList } from "../users/services";
 import { useGetProjectTypes } from "../Project-type/services";
+import { useGetTechnologyData } from "../technology/services";
 
 const ProjectsPage = () => {
   const { open, setOpen } = useProjectsStore();
@@ -24,6 +25,7 @@ const ProjectsPage = () => {
     priority: undefined,
     handlerId: undefined,
     projectTypeId: undefined,
+    technologyId: undefined,
   });
 
   const apiParams = {
@@ -35,6 +37,7 @@ const ProjectsPage = () => {
     priority: listParams.priority,
     handlerId: listParams.handlerId,
     projectTypeId: listParams.projectTypeId,
+    technologyId: listParams.technologyId,
   };
 
   const { data: listData, isPending: loading } =
@@ -46,6 +49,11 @@ const ProjectsPage = () => {
   const { data: projecthandler, isPending: projecthandlerLoading }: any =
     useGetUsersList({
       role: ["project_manager", "team_lead"],
+      pagination: false,
+    });
+
+  const { data: technologyList, isPending: technologyListLoading }: any =
+    useGetTechnologyData({
       pagination: false,
     });
 
@@ -95,6 +103,14 @@ const ProjectsPage = () => {
     });
   };
 
+  const handleTechnologyChange = (value: any) => {
+    setListParams({
+      ...listParams,
+      technologyId: value ?? null,
+      currentPage: 1,
+    });
+  };
+
   const filters: FilterConfig[] = [
     {
       type: "search",
@@ -114,7 +130,17 @@ const ProjectsPage = () => {
       onChange: handleClientChange,
       isLoading: clientListLoading,
     },
-
+    {
+      type: "select",
+      key: "technologyId",
+      placeholder: "Filter by Technology",
+      options: technologyList?.data?.map((technology: any) => {
+        return { value: technology.id, label: technology.name };
+      }),
+      value: listParams.technologyId, // 👈 pre-selects if set
+      onChange: handleTechnologyChange,
+      isLoading: technologyListLoading,
+    },
     {
       type: "select",
       key: "handlerId",
@@ -183,6 +209,8 @@ const ProjectsPage = () => {
           projectTypesLoading={LoadingProjectType}
           projecthandler={projecthandler}
           projecthandlerLoading={projecthandlerLoading}
+          technologyList={technologyList}
+          technologyListLoading={technologyListLoading}
         />
       )}
       <ViewProjectModal />

@@ -16,6 +16,8 @@ export function ActionFormModal({
   projectTypesLoading,
   projecthandler,
   projecthandlerLoading,
+  technologyList,
+  technologyListLoading,
 }: any) {
   const { open, setOpen, currentRow, setCurrentRow } = useProjectsStore();
   const { mutateAsync: createMutate, isPending: isCreateLoading } =
@@ -39,6 +41,7 @@ export function ActionFormModal({
       priority: values.priority,
       status: values.status,
       projectTypeId: values.projectTypeId,
+      technologyId: values.technologyId,
     };
     createMutate(payload);
   };
@@ -54,6 +57,7 @@ export function ActionFormModal({
       percentageComplete: values.percentageComplete,
       priority: values.priority,
       projectTypeId: values.projectTypeId,
+      technologyId: values.technologyId,
     };
 
     updateMutate(payload);
@@ -84,6 +88,8 @@ export function ActionFormModal({
         clientListLoading={clientListLoading}
         projecthandler={projecthandler}
         projecthandlerLoading={projecthandlerLoading}
+        technologyList={technologyList}
+        technologyListLoading={technologyListLoading}
       />
 
       {currentRow && (
@@ -101,6 +107,8 @@ export function ActionFormModal({
             clientListLoading={clientListLoading}
             projecthandler={projecthandler}
             projecthandlerLoading={projecthandlerLoading}
+            technologyList={technologyList}
+            technologyListLoading={technologyListLoading}
           />
           <DeleteModal
             onConfirm={handleDelete}
