@@ -49,11 +49,13 @@ export const useAssignDeveloper = (onsuccess: any) => {
   });
 };
 
-export const useProjectStatusChange = () => {
+export const useProjectStatusChange = (onsuccess?: () => void) => {
   return usePostData({
     url: API.projects.status_change,
     refetchQueries: [PROJECTS_API_URL],
-    onSuccess: () => {},
+    onSuccess: () => {
+      if (typeof onsuccess === "function") onsuccess();
+    },
   });
 };
 

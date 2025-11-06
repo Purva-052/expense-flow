@@ -417,7 +417,7 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
               </div>
             ) : projectList?.length ? (
               projectList?.map((p: any) => (
-                <ProjectCard key={p?.id} project={p}>
+                <ProjectCard key={p?.id} project={p} onStatusChanged={refetch}>
                   {p?.developerAllocations?.length !== 0 && (
                     <SortableContext
                       id={`project-${p.id}`}

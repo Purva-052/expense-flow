@@ -16,8 +16,13 @@ import CustomDropDownSearchable from "@/components/shared/custome-searchable-dro
 import { Form, FormProvider, useForm } from "react-hook-form";
 import { useProjectStatusChange } from "@/features/kanban-board/services";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { useState } from "react";
+import { ReasonDialog } from "@/features/kanban-board/components/status-reason-dialog";
 
 function StatusCell({ row }: any) {
+  const [isReasonDialogOpen, setReasonDialogOpen] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<string | null>(null);
+
   const { mutateAsync: ProjectStatusChange } = useProjectStatusChange();
   const { user } = useAuthStore();
   const userRole = user?.user?.role;
@@ -35,12 +40,42 @@ function StatusCell({ row }: any) {
     { value: "completed", label: "Completed" },
   ];
 
-  const handleChange = (value: string) => {
-    ProjectStatusChange({
-      projectId: project.id,
-      status: value,
-      effectiveDate: new Date().toISOString(),
-    });
+  const handleChange = async (value: string) => {
+    if (value === "slow") {
+      setPendingStatus(value);
+      setReasonDialogOpen(true);
+    } else {
+      await ProjectStatusChange({
+        projectId: project.id,
+        status: value,
+        effectiveDate: new Date().toISOString(),
+      });
+      form.setValue("status", value);
+    }
+  };
+
+  const handleStatusChangeWithReason = async (reason: string) => {
+    if (pendingStatus) {
+      await ProjectStatusChange({
+        projectId: project.id,
+        status: pendingStatus,
+        reason: reason,
+        effectiveDate: new Date().toISOString(),
+      });
+      form.setValue("status", pendingStatus);
+      setPendingStatus(null);
+      setReasonDialogOpen(false);
+    }
+  };
+
+  const handleReasonDialogChange = (isOpen: boolean) => {
+    // If the dialog is closing and a status change was pending
+    if (!isOpen && pendingStatus) {
+      // Revert the form state to the original project status
+      form.setValue("status", project.currentStatus);
+      setPendingStatus(null); // Clear the pending state
+    }
+    setReasonDialogOpen(isOpen);
   };
 
   // --- Role & permission logic (same as ProjectCard) ---
@@ -65,28 +100,35 @@ function StatusCell({ row }: any) {
     return <div className="text-muted-foreground text-sm italic">-</div>;
 
   return (
-    <div className="w-[180px]">
-      {canEditStatus ? (
-        <FormProvider {...form}>
-          <Form {...form}>
-            <CustomDropDownSearchable
-              form={form}
-              name="status"
-              label=""
-              options={statusOptions}
-              placeholder="Select Status"
-              searchEnabled={false}
-              onChangeValue={handleChange}
-              showClearButton={false}
-            />
-          </Form>
-        </FormProvider>
-      ) : (
-        <div className="text-sm text-muted-foreground">
-          <span>{currentStatusLabel}</span>
-        </div>
-      )}
-    </div>
+    <>
+      <div className="w-[180px]">
+        {canEditStatus ? (
+          <FormProvider {...form}>
+            <Form {...form}>
+              <CustomDropDownSearchable
+                form={form}
+                name="status"
+                label=""
+                options={statusOptions}
+                placeholder="Select Status"
+                searchEnabled={false}
+                onChangeValue={handleChange}
+                showClearButton={false}
+              />
+            </Form>
+          </FormProvider>
+        ) : (
+          <div className="text-sm text-muted-foreground">
+            <span>{currentStatusLabel}</span>
+          </div>
+        )}
+      </div>
+      <ReasonDialog
+        isOpen={isReasonDialogOpen}
+        onOpenChange={handleReasonDialogChange} // <-- USE THE NEW HANDLER
+        onSubmit={handleStatusChangeWithReason}
+      />
+    </>
   );
 }
 

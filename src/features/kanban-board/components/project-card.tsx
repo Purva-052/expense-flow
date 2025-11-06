@@ -65,9 +65,11 @@ const priorityStyles: Record<
 export function ProjectCard({
   project,
   children,
+  onStatusChanged,
 }: {
   project: Project;
   children: any;
+  onStatusChanged?: () => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: project.id });
   const [isDialogOpen, setDialogOpen] = useState(false);
@@ -80,7 +82,9 @@ export function ProjectCard({
     userRole === "project_manager" || userRole === "team_lead";
   const isAdmin = userRole === "admin";
 
-  const { mutateAsync: ProjectStatusChange } = useProjectStatusChange();
+  const { mutateAsync: ProjectStatusChange } = useProjectStatusChange(() => {
+    onStatusChanged?.();
+  });
 
   const form = useForm({
     defaultValues: { status: project.currentStatus },
@@ -94,28 +98,31 @@ export function ProjectCard({
     { value: "completed", label: "Completed" },
   ];
 
-  const handleStatusChange = (value: string) => {
+  const handleStatusChange = async (value: string) => {
     if (value === "slow") {
       setPendingStatus(value);
       setReasonDialogOpen(true);
     } else {
-      ProjectStatusChange({
+      await ProjectStatusChange({
         projectId: project.id,
         status: value,
         effectiveDate: new Date().toISOString(),
       });
+      form.setValue("status", value);
     }
   };
 
-  const handleStatusChangeWithReason = (reason: string) => {
+  const handleStatusChangeWithReason = async (reason: string) => {
     if (pendingStatus) {
-      ProjectStatusChange({
+      await ProjectStatusChange({
         projectId: project.id,
         status: pendingStatus,
         reason: reason,
         effectiveDate: new Date().toISOString(),
       });
-      setPendingStatus(null); // Clear pending status after successful submission
+      form.setValue("status", pendingStatus);
+      setPendingStatus(null);
+      setReasonDialogOpen(false);
     }
   };
 
