@@ -107,7 +107,7 @@ export function GlobalTable<TData>({
                     return (
                       <th
                         key={header.id}
-                        className={`h-12  !bg-gray-100 z-50 border-b   px-4 text-left align-middle font-medium text-muted-foreground sticky top-0`}
+                        className={`h-12 !bg-gray-100 text-black z-50 border-b   px-4 text-left align-middle font-medium  sticky top-0`}
                         style={{ width: header.getSize?.() }}
                       >
                         <div className="flex items-center gap-1.5  whitespace-nowrap">
