@@ -28,13 +28,10 @@ export const useGetAllDevelopers = (params?: any) => {
   return useFetchData({ url: GET_ALL_DEVELOPER_API_URL, params });
 };
 
-export const useGetProjectHandlerProjectsAPI = (
-  isenabled: any,
-  params?: any
-) => {
+export const useGetProjectHandlerProjectsAPI = (params: any) => {
   return useFetchData({
     url: GET_PROJECT_HANDLER_API_URL,
-    enabled: isenabled,
+    enabled: params?.enabled,
     params,
   });
 };
@@ -49,11 +46,13 @@ export const useAssignDeveloper = (onsuccess: any) => {
   });
 };
 
-export const useProjectStatusChange = () => {
+export const useProjectStatusChange = (onsuccess?: () => void) => {
   return usePostData({
     url: API.projects.status_change,
     refetchQueries: [PROJECTS_API_URL],
-    onSuccess: () => {},
+    onSuccess: () => {
+      if (typeof onsuccess === "function") onsuccess();
+    },
   });
 };
 

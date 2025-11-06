@@ -26,8 +26,9 @@ import { Form, FormProvider, useForm } from "react-hook-form";
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import { useProjectStatusChange } from "../services";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { ReasonDialog } from "./status-reason-dialog";
 
-// --- Priority styles (assuming this remains the same) ---
+// --- Priority styles remain the same ---
 const priorityStyles: Record<
   ProjectPriority,
   {
@@ -64,19 +65,26 @@ const priorityStyles: Record<
 export function ProjectCard({
   project,
   children,
+  onStatusChanged,
 }: {
   project: Project;
   children: any;
+  onStatusChanged?: () => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: project.id });
-  const [isDialogOpen, setDialogOpen] = useState(false); // State is now managed here
+  const [isDialogOpen, setDialogOpen] = useState(false);
+  const [isReasonDialogOpen, setReasonDialogOpen] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<string | null>(null);
+
   const { user } = useAuthStore();
   const userRole = user?.user?.role;
   const isProjectHandler =
     userRole === "project_manager" || userRole === "team_lead";
   const isAdmin = userRole === "admin";
 
-  const { mutateAsync: ProjectStatusChange } = useProjectStatusChange();
+  const { mutateAsync: ProjectStatusChange } = useProjectStatusChange(() => {
+    onStatusChanged?.();
+  });
 
   const form = useForm({
     defaultValues: { status: project.currentStatus },
@@ -90,22 +98,51 @@ export function ProjectCard({
     { value: "completed", label: "Completed" },
   ];
 
-  const handleStatusChange = (value: string) => {
-    ProjectStatusChange({
-      projectId: project.id,
-      status: value,
-      effectiveDate: new Date().toISOString(),
-    });
+  const handleStatusChange = async (value: string) => {
+    if (value === "slow") {
+      setPendingStatus(value);
+      setReasonDialogOpen(true);
+    } else {
+      await ProjectStatusChange({
+        projectId: project.id,
+        status: value,
+        effectiveDate: new Date().toISOString(),
+      });
+      form.setValue("status", value);
+    }
+  };
+
+  const handleStatusChangeWithReason = async (reason: string) => {
+    if (pendingStatus) {
+      await ProjectStatusChange({
+        projectId: project.id,
+        status: pendingStatus,
+        reason: reason,
+        effectiveDate: new Date().toISOString(),
+      });
+      form.setValue("status", pendingStatus);
+      setPendingStatus(null);
+      setReasonDialogOpen(false);
+    }
+  };
+
+  // --- NEW: Handler to revert dropdown if reason dialog is cancelled ---
+  const handleReasonDialogChange = (isOpen: boolean) => {
+    // If the dialog is closing and a status change was pending
+    if (!isOpen && pendingStatus) {
+      // Revert the form state to the original project status
+      form.setValue("status", project.currentStatus);
+      setPendingStatus(null); // Clear the pending state
+    }
+    setReasonDialogOpen(isOpen);
   };
 
   const priority =
     priorityStyles[project.priority] ?? priorityStyles[ProjectPriority.LOW];
   const isActive = project.currentStatus === "active";
   const completion = project.percentageComplete ?? 0;
-  // Determines if the status dropdown should be visible
   const canUpdateStatus = isProjectHandler || isAdmin;
 
-  // Determines if the status can be edited or shown as read-only text
   const isHandlerAssigned = !!project?.projectHandler?.id;
   const isCurrentUserAssignedHandler =
     isHandlerAssigned && project?.projectHandler?.id === user?.user?.id;
@@ -207,7 +244,9 @@ export function ProjectCard({
                       </FormProvider>
                     ) : (
                       <div className="text-sm text-muted-foreground">
-                        <span className="font-semibold mr-1">Project Status:</span>
+                        <span className="font-semibold mr-1">
+                          Project Status:
+                        </span>
                         <span>{currentStatusLabel}</span>
                       </div>
                     )}
@@ -248,11 +287,18 @@ export function ProjectCard({
       </Card>
 
       {/* --- Render the Dialog Component --- */}
-      {/* It will be invisible until isDialogOpen is true */}
       <ProjectDetailsDialog
+        project={project}
         projectId={project?.id}
         isOpen={isDialogOpen}
         onOpenChange={setDialogOpen}
+      />
+
+      {/* --- Render the new Reason Dialog Component --- */}
+      <ReasonDialog
+        isOpen={isReasonDialogOpen}
+        onOpenChange={handleReasonDialogChange} // <-- USE THE NEW HANDLER
+        onSubmit={handleStatusChangeWithReason}
       />
     </>
   );

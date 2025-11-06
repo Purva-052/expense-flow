@@ -50,8 +50,11 @@ export const UserProfileCard = ({ user }: { user: any }) => {
     });
   };
 
-  const capitalize = (str: string = "") =>
-    str.charAt(0).toUpperCase() + str.slice(1);
+  const formatRole = (str: string = "") =>
+    str
+      .split("_") // break apart by underscores
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1)) // capitalize each
+      .join(" "); // join with spaces
 
   return (
     <Card className="w-full max-w-xl">
@@ -69,11 +72,11 @@ export const UserProfileCard = ({ user }: { user: any }) => {
         <ProfileDetailRow
           icon={Briefcase}
           label="Role"
-          value={capitalize(user?.role)}
+          value={formatRole(user?.role)}
         />
         <ProfileDetailRow
           icon={Calendar}
-          label="Joining Date"
+          label="Career Start Date"
           value={formatDate(user?.careerStartDate)}
         />
         <ProfileDetailRow

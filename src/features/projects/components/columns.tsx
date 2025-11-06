@@ -15,51 +15,123 @@ import { useProjectsStore } from "../stores/useProjectsStore";
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import { Form, FormProvider, useForm } from "react-hook-form";
 import { useProjectStatusChange } from "@/features/kanban-board/services";
+import { useAuthStore } from "@/stores/use-auth-store";
+import { useState } from "react";
+import { ReasonDialog } from "@/features/kanban-board/components/status-reason-dialog";
 
 function StatusCell({ row }: any) {
-  const { mutateAsync: ProjectStatusChange } = useProjectStatusChange();
-  const form = useForm({
-    defaultValues: { status: row.original.currentStatus },
-  });
-  const status = row.original.currentStatus;
+  const [isReasonDialogOpen, setReasonDialogOpen] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<string | null>(null);
 
-  const handleChange = (value: string) => {
-    console.log("🚀 ~ handleChange ~ value:", value);
-    ProjectStatusChange({
-      projectId: row.original.id,
-      status: value,
-      effectiveDate: new Date().toISOString(),
-    });
+  const { mutateAsync: ProjectStatusChange } = useProjectStatusChange();
+  const { user } = useAuthStore();
+  const userRole = user?.user?.role;
+
+  const project = row.original;
+  const form = useForm({
+    defaultValues: { status: project.currentStatus },
+  });
+
+  const statusOptions = [
+    { value: "active-discovery", label: "Active Discovery" },
+    { value: "running", label: "Running" },
+    { value: "slow", label: "Slow" },
+    { value: "stop", label: "Stop" },
+    { value: "completed", label: "Completed" },
+  ];
+
+  const handleChange = async (value: string) => {
+    if (value === "slow") {
+      setPendingStatus(value);
+      setReasonDialogOpen(true);
+    } else {
+      await ProjectStatusChange({
+        projectId: project.id,
+        status: value,
+        effectiveDate: new Date().toISOString(),
+      });
+      form.setValue("status", value);
+    }
   };
 
-  if (!status)
+  const handleStatusChangeWithReason = async (reason: string) => {
+    if (pendingStatus) {
+      await ProjectStatusChange({
+        projectId: project.id,
+        status: pendingStatus,
+        reason: reason,
+        effectiveDate: new Date().toISOString(),
+      });
+      form.setValue("status", pendingStatus);
+      setPendingStatus(null);
+      setReasonDialogOpen(false);
+    }
+  };
+
+  const handleReasonDialogChange = (isOpen: boolean) => {
+    // If the dialog is closing and a status change was pending
+    if (!isOpen && pendingStatus) {
+      // Revert the form state to the original project status
+      form.setValue("status", project.currentStatus);
+      setPendingStatus(null); // Clear the pending state
+    }
+    setReasonDialogOpen(isOpen);
+  };
+
+  // --- Role & permission logic (same as ProjectCard) ---
+  const isAdmin = userRole === "admin";
+  const isProjectHandler =
+    userRole === "project_manager" || userRole === "team_lead";
+
+  const isHandlerAssigned = !!project?.projectHandler?.id;
+  const isCurrentUserAssignedHandler =
+    isHandlerAssigned && project?.projectHandler?.id === user?.user?.id;
+
+  const canEditStatus =
+    isAdmin ||
+    (!isHandlerAssigned && isProjectHandler) ||
+    (isHandlerAssigned && isCurrentUserAssignedHandler);
+
+  const currentStatusLabel =
+    statusOptions.find((o) => o.value === project.currentStatus)?.label ||
+    project.currentStatus;
+
+  if (!project.currentStatus)
     return <div className="text-muted-foreground text-sm italic">-</div>;
 
   return (
-    <div className="w-[180px]">
-      <FormProvider {...form}>
-        <Form {...form}>
-          <CustomDropDownSearchable
-            form={form}
-            name="status"
-            label=""
-            options={[
-              { value: "active-discovery", label: "Active Discovery" },
-              { value: "running", label: "Running" },
-              { value: "slow", label: "Slow" },
-              { value: "stop", label: "Stop" },
-              { value: "completed", label: "Completed" },
-            ]}
-            placeholder="Select Status"
-            searchEnabled={false}
-            onChangeValue={handleChange}
-            showClearButton={false}
-          />
-        </Form>
-      </FormProvider>
-    </div>
+    <>
+      <div className="w-[180px]">
+        {canEditStatus ? (
+          <FormProvider {...form}>
+            <Form {...form}>
+              <CustomDropDownSearchable
+                form={form}
+                name="status"
+                label=""
+                options={statusOptions}
+                placeholder="Select Status"
+                searchEnabled={false}
+                onChangeValue={handleChange}
+                showClearButton={false}
+              />
+            </Form>
+          </FormProvider>
+        ) : (
+          <div className="text-sm text-muted-foreground">
+            <span>{currentStatusLabel}</span>
+          </div>
+        )}
+      </div>
+      <ReasonDialog
+        isOpen={isReasonDialogOpen}
+        onOpenChange={handleReasonDialogChange} // <-- USE THE NEW HANDLER
+        onSubmit={handleStatusChangeWithReason}
+      />
+    </>
   );
 }
+
 function ActionsCell({ row }: any) {
   const operator = row.original;
   const { setOpen, setCurrentRow } = useProjectsStore();
@@ -78,6 +150,10 @@ function ActionsCell({ row }: any) {
     setOpen("view");
     setCurrentRow(operator);
   };
+  const handleViewHistory = () => {
+    setOpen("history");
+    setCurrentRow(operator);
+  };
 
   return (
     <DropdownMenu>
@@ -91,6 +167,9 @@ function ActionsCell({ row }: any) {
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleView}>View project</DropdownMenuItem>
+        <DropdownMenuItem onClick={handleViewHistory}>
+          View history
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={handleEdit}>Edit project</DropdownMenuItem>
         <DropdownMenuItem
           className="text-red-600 focus:bg-red-50 focus:text-red-600"

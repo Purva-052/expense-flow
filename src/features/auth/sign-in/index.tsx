@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Navigate } from "@tanstack/react-router";
-import { Lock, Shield } from "lucide-react";
+import { Lock } from "lucide-react";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { ForgotPasswordForm } from "../forgot-password/components/forgot-password-form";
 import { FloatingParticles } from "./components/floating-particles";
@@ -39,16 +39,18 @@ const AdminLogin = () => {
 
       {/* Left visual panel */}
       <div className="relative hidden w-1/2 lg:flex">
-        <div className="relative z-10 m-auto max-w-lg p-10 text-center">
-          <div className="mb-8 animate-pulse">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-white/20 bg-white/10 backdrop-blur-sm">
-              <Shield className="h-10 w-10 text-white" />
-            </div>
+        <div className="relative z-10 m-auto p-10 ">
+          <div className="mb-8 ">
+            <img
+              src="/src/assets/devstree-squre-white-text-logo.svg" // 👈 use your image path here
+              alt="Project Management Logo"
+              className="object-contain h-16 w-fit"
+            />
           </div>
-          <h1 className="mb-6 bg-gradient-to-r from-[#E80339] to-white bg-clip-text text-4xl font-bold text-transparent">
+          <h1 className="mb-5 bg-gradient-to-r from-[#E80339] to-white bg-clip-text text-4xl font-bold text-transparent">
             Project Management
           </h1>
-          <p className="mb-8 text-xl opacity-90">
+          <p className="mb-8 text-md opacity-90">
             Secure access to your Management system with advanced security
             features
           </p>

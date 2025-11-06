@@ -43,6 +43,7 @@ import { ProjectCard } from "./project-card";
 import { Input } from "@/components/ui/input";
 import useDebounce from "@/hooks/use-debaunce";
 import { useGetProjectTypes } from "@/features/Project-type/services";
+import { useGetTechnologyData } from "@/features/technology/services";
 
 type GroupedDevelopers = {
   technologyName: string;
@@ -77,6 +78,7 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
         Search: "",
         projectTypeId: undefined,
         status: isInactiveTab ? "inactive" : "active",
+        technologyId: undefined,
       };
     const saved = localStorage.getItem(FILTER_STORAGE_KEY);
     return saved
@@ -86,6 +88,7 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
           status: isInactiveTab ? "inactive" : "active",
           projectTypeId: undefined,
           handlerId: isCoordinatorView ? currentUserId : undefined,
+          technologyId: undefined,
           ...JSON.parse(saved),
         }
       : {
@@ -93,6 +96,7 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
           clientId: null,
           status: isInactiveTab ? "inactive" : "active",
           handlerId: isCoordinatorView ? currentUserId : undefined,
+          technologyId: undefined,
           priority: "high",
           projectTypeId: undefined,
           search: "",
@@ -258,6 +262,11 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
       pagination: false,
     });
 
+  const { data: technologyList, isPending: technologyListLoading }: any =
+    useGetTechnologyData({
+      pagination: false,
+    });
+
   const handleClientChange = (value: any) =>
     setListParams((prev: any) => ({ ...prev, clientId: value ?? null }));
   const handleProjectHandleChange = (value: any) => {
@@ -270,6 +279,15 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
       projectTypeId: value ?? undefined,
     });
   };
+
+  const handleTechnologyChange = (value: any) => {
+    setListParams({
+      ...listParams,
+      technologyId: value ?? null,
+      currentPage: 1,
+    });
+  };
+
   const handlePriorityChange = (value: any) =>
     setListParams((prev: any) => ({ ...prev, priority: value ?? undefined }));
   const handleSearch = (search: string | undefined) => {
@@ -279,23 +297,40 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
   const filters: FilterConfig[] = [
     {
       type: "search",
-      placeholder: "Search by Project name ...",
+      placeholder: "Search by project name ...",
       key: "search",
       value: listParams.search,
       onChange: handleSearch,
     },
+    ...(!isDeveloperView
+      ? [
+          {
+            type: "select",
+            key: "clientId",
+            placeholder: "Filter by Client",
+            options: clientsList?.data?.map((value: any) => ({
+              label: value?.name,
+              value: value?.id,
+            })),
+            value: listParams.clientId,
+            onChange: handleClientChange,
+            isLoading: clientListLoading,
+          },
+        ]
+      : []),
+
     {
       type: "select",
-      key: "clientId",
-      placeholder: "Filter by Client",
-      options: clientsList?.data?.map((value: any) => ({
-        label: value?.name,
-        value: value?.id,
-      })),
-      value: listParams.clientId,
-      onChange: handleClientChange,
-      isLoading: clientListLoading,
+      key: "technologyId",
+      placeholder: "Filter by Technology",
+      options: technologyList?.data?.map((technology: any) => {
+        return { value: technology.id, label: technology.name };
+      }),
+      value: listParams.technologyId, // 👈 pre-selects if set
+      onChange: handleTechnologyChange,
+      isLoading: technologyListLoading,
     },
+
     {
       type: "select",
       key: "handlerId",
@@ -382,7 +417,7 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
               </div>
             ) : projectList?.length ? (
               projectList?.map((p: any) => (
-                <ProjectCard key={p?.id} project={p}>
+                <ProjectCard key={p?.id} project={p} onStatusChanged={refetch}>
                   {p?.developerAllocations?.length !== 0 && (
                     <SortableContext
                       id={`project-${p.id}`}
@@ -460,7 +495,7 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
                   <Input
                     value={searchTech}
                     onChange={(e) => setSearchTech(e.target.value)}
-                    placeholder="Search developer..."
+                    placeholder="Search developers..."
                     className="w-full"
                   />
                   <CustomMultiSelect
