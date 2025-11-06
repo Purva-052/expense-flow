@@ -50,7 +50,7 @@ type GroupedDevelopers = {
   technologyColor?: string;
 }[];
 
-const Board = ({ activeTab }: any) => {
+const Board = ({ technologies, techLoading, activeTab }: any) => {
   const isInactiveTab = activeTab === "Archive Projects" ? true : false;
 
   const { user } = useAuthStore();
@@ -83,7 +83,6 @@ const Board = ({ activeTab }: any) => {
       ? {
           search: "",
           pagination: true,
-          priority: "high",
           status: isInactiveTab ? "inactive" : "active",
           projectTypeId: undefined,
           handlerId: isCoordinatorView ? currentUserId : undefined,
@@ -125,8 +124,6 @@ const Board = ({ activeTab }: any) => {
     search: debouncedSearchTech,
     technologyId: selectedTech.length > 0 ? selectedTech : undefined,
   });
-
-  const { data: DevelopersResponseAll }: any = useGetAllDevelopers({});
 
   const groupedDevelopers: GroupedDevelopers = useMemo(() => {
     if (!AllDevelopersResponse?.data) return [];
@@ -336,15 +333,14 @@ const Board = ({ activeTab }: any) => {
     },
   ];
 
-  // Options for the multi-select dropdown, derived from available developers
   const techOptions = useMemo(() => {
     return (
-      DevelopersResponseAll?.data.map((group: any) => ({
-        value: group.technologyId,
-        label: group.technologyName,
+      technologies?.data.map((group: any) => ({
+        value: group.id,
+        label: group.name,
       })) ?? []
     );
-  }, [DevelopersResponseAll]);
+  }, [technologies]);
 
   return (
     <>
@@ -464,14 +460,15 @@ const Board = ({ activeTab }: any) => {
                   <Input
                     value={searchTech}
                     onChange={(e) => setSearchTech(e.target.value)}
-                    placeholder="Search developers..."
+                    placeholder="Search developer..."
                     className="w-full"
                   />
                   <CustomMultiSelect
                     options={techOptions}
                     selected={selectedTech}
                     onChange={setSelectedTech}
-                    placeholder="Filter by technologies..."
+                    loading={techLoading}
+                    placeholder="Filter by technology..."
                     className="w-full"
                   />
                 </CardHeader>

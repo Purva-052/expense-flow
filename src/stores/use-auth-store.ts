@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/store/auth-store.ts
 import { LoginUser } from "@/features/auth/sign-in/types";
+import { StorageEnum } from "@/types";
+import { setItem } from "@/utils/storage";
+import Cookies from "js-cookie";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -25,7 +28,14 @@ export const useAuthStore = create<AuthState>()(
           user,
           isAuthenticated: true,
         })),
-      logout: () => localStorage.removeItem("auth-storage"),
+      logout: () => {
+        set(() => ({
+          user: null,
+          isAuthenticated: false,
+        }));
+        setItem(StorageEnum.TOKEN, null);
+        Cookies.remove("token");
+      },
       verify: (data: any) =>
         set(() => ({
           isAuthenticated: false,
