@@ -5,10 +5,10 @@ import SimpleDropDownSearchable from "../shared/custome-simple-dropdown";
 import { Input } from "../ui/input";
 import DateRangeFilter from "./custome-dateRange";
 
-type FilterType = "select" | "search" | "dateRange";
+// type FilterType = "select" | "search" | "dateRange";
 
 export interface FilterConfig {
-  type: FilterType;
+  type: any;
   key: string;
   placeholder?: string;
   value?: any;

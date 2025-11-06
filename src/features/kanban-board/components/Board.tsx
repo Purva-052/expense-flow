@@ -287,18 +287,23 @@ const Board = ({ activeTab }: any) => {
       value: listParams.search,
       onChange: handleSearch,
     },
-    {
-      type: "select",
-      key: "clientId",
-      placeholder: "Filter by Client",
-      options: clientsList?.data?.map((value: any) => ({
-        label: value?.name,
-        value: value?.id,
-      })),
-      value: listParams.clientId,
-      onChange: handleClientChange,
-      isLoading: clientListLoading,
-    },
+    ...(!isDeveloperView
+      ? [
+          {
+            type: "select",
+            key: "clientId",
+            placeholder: "Filter by Client",
+            options: clientsList?.data?.map((value: any) => ({
+              label: value?.name,
+              value: value?.id,
+            })),
+            value: listParams.clientId,
+            onChange: handleClientChange,
+            isLoading: clientListLoading,
+          },
+        ]
+      : []),
+  
     {
       type: "select",
       key: "handlerId",
