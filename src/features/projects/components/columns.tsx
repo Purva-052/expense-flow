@@ -15,51 +15,81 @@ import { useProjectsStore } from "../stores/useProjectsStore";
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import { Form, FormProvider, useForm } from "react-hook-form";
 import { useProjectStatusChange } from "@/features/kanban-board/services";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 function StatusCell({ row }: any) {
   const { mutateAsync: ProjectStatusChange } = useProjectStatusChange();
+  const { user } = useAuthStore();
+  const userRole = user?.user?.role;
+
+  const project = row.original;
   const form = useForm({
-    defaultValues: { status: row.original.currentStatus },
+    defaultValues: { status: project.currentStatus },
   });
-  const status = row.original.currentStatus;
+
+  const statusOptions = [
+    { value: "active-discovery", label: "Active Discovery" },
+    { value: "running", label: "Running" },
+    { value: "slow", label: "Slow" },
+    { value: "stop", label: "Stop" },
+    { value: "completed", label: "Completed" },
+  ];
 
   const handleChange = (value: string) => {
-    console.log("🚀 ~ handleChange ~ value:", value);
     ProjectStatusChange({
-      projectId: row.original.id,
+      projectId: project.id,
       status: value,
       effectiveDate: new Date().toISOString(),
     });
   };
 
-  if (!status)
+  // --- Role & permission logic (same as ProjectCard) ---
+  const isAdmin = userRole === "admin";
+  const isProjectHandler =
+    userRole === "project_manager" || userRole === "team_lead";
+
+  const isHandlerAssigned = !!project?.projectHandler?.id;
+  const isCurrentUserAssignedHandler =
+    isHandlerAssigned && project?.projectHandler?.id === user?.user?.id;
+
+  const canEditStatus =
+    isAdmin ||
+    (!isHandlerAssigned && isProjectHandler) ||
+    (isHandlerAssigned && isCurrentUserAssignedHandler);
+
+  const currentStatusLabel =
+    statusOptions.find((o) => o.value === project.currentStatus)?.label ||
+    project.currentStatus;
+
+  if (!project.currentStatus)
     return <div className="text-muted-foreground text-sm italic">-</div>;
 
   return (
     <div className="w-[180px]">
-      <FormProvider {...form}>
-        <Form {...form}>
-          <CustomDropDownSearchable
-            form={form}
-            name="status"
-            label=""
-            options={[
-              { value: "active-discovery", label: "Active Discovery" },
-              { value: "running", label: "Running" },
-              { value: "slow", label: "Slow" },
-              { value: "stop", label: "Stop" },
-              { value: "completed", label: "Completed" },
-            ]}
-            placeholder="Select Status"
-            searchEnabled={false}
-            onChangeValue={handleChange}
-            showClearButton={false}
-          />
-        </Form>
-      </FormProvider>
+      {canEditStatus ? (
+        <FormProvider {...form}>
+          <Form {...form}>
+            <CustomDropDownSearchable
+              form={form}
+              name="status"
+              label=""
+              options={statusOptions}
+              placeholder="Select Status"
+              searchEnabled={false}
+              onChangeValue={handleChange}
+              showClearButton={false}
+            />
+          </Form>
+        </FormProvider>
+      ) : (
+        <div className="text-sm text-muted-foreground">
+          <span>{currentStatusLabel}</span>
+        </div>
+      )}
     </div>
   );
 }
+
 function ActionsCell({ row }: any) {
   const operator = row.original;
   const { setOpen, setCurrentRow } = useProjectsStore();

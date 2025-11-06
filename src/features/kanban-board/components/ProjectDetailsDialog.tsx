@@ -123,7 +123,6 @@ export function ProjectDetailsDialog({
               columns={ProjectDetailsColumn}
               loading={projectDetailsLoading}
               isPaginationEnabled
-              rowsToShow={7}
             />
           )}
         </div>
