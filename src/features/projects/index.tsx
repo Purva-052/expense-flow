@@ -13,6 +13,7 @@ import { useGetProjectListForListView } from "./services";
 import { useGetClientsData } from "../clients/services";
 import { useGetUsersList } from "../users/services";
 import { useGetProjectTypes } from "../Project-type/services";
+import { HistoryProjectModal } from "./components/history-modal";
 
 const ProjectsPage = () => {
   const { open, setOpen } = useProjectsStore();
@@ -186,6 +187,7 @@ const ProjectsPage = () => {
         />
       )}
       <ViewProjectModal />
+      <HistoryProjectModal />
     </PageLayout>
   );
 };
