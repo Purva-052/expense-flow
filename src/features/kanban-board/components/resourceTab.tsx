@@ -1,16 +1,10 @@
 // src/components/resource-tab.tsx
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useMemo, useState } from "react";
-import { Users } from "lucide-react";
-import { useGetTechnologyData } from "@/features/technology/services";
-import { ResourceCard } from "./resource-card";
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import { FilterConfig } from "@/components/table/table-toolbar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useGetProjectsData } from "@/features/projects/services";
 import { useGetUsersList } from "@/features/users/services";
-import {
-  useAssignDeveloper,
-  useGetProjectHandlerProjectsAPI,
-} from "../services";
 import {
   DndContext,
   DragEndEvent,
@@ -21,13 +15,18 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { useGetProjectsData } from "@/features/projects/services";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ProjectChip } from "./project-chip";
-import { DraggableProjectChip } from "./drragable-projectChip";
+import { Users } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useInView } from "react-intersection-observer";
+import {
+  useAssignDeveloper,
+  useGetProjectHandlerProjectsAPI,
+} from "../services";
+import { DraggableProjectChip } from "./drragable-projectChip";
+import { ProjectChip } from "./project-chip";
+import { ResourceCard } from "./resource-card";
 
-const ResourceTab = ({ activeTab }: any) => {
+const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
   const isProjectHandler = activeTab === "Project Coordinator" ? true : false;
   const [selectedTech, setSelectedTech] = useState<string | null>(null);
   const [listParams, setListParams] = useState<any>({
@@ -84,9 +83,6 @@ const ResourceTab = ({ activeTab }: any) => {
   const userDetails = isProjectHandler
     ? (handledProjects?.data ?? [])
     : (usersList?.data ?? []);
-
-  const { data: technologies, isPending: techLoading }: any =
-    useGetTechnologyData({ pagination: false });
 
   const handleTechnologyChange = (value: any) => {
     setSelectedTech(value ?? null);

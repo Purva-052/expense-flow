@@ -24,6 +24,7 @@ type MultiSelectProps = {
   maxHeight?: number;
   fullWidth?: boolean;
   maxSelectedShow?: number;
+  loading?: boolean;
 };
 
 export function CustomMultiSelect({
@@ -34,6 +35,7 @@ export function CustomMultiSelect({
   placeholder = "Select...",
   maxHeight = 200,
   maxSelectedShow = 2,
+  loading,
 }: MultiSelectProps) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [open, setOpen] = React.useState(false);
@@ -64,7 +66,7 @@ export function CustomMultiSelect({
   const selectables = options.filter(
     (option) =>
       !selected.includes(option.value) &&
-      option.label.toLowerCase().includes(inputValue.toLowerCase())
+      option?.label?.toLowerCase().includes(inputValue?.toLowerCase())
   );
 
   const clearAll = (e: React.MouseEvent) => {
@@ -139,6 +141,14 @@ export function CustomMultiSelect({
                 placeholder={placeholder}
                 autoFocus
               />
+              {loading && (
+                <div className="flex flex-col justify-center items-center py-10 gap-3">
+                  <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
+                  <span className="text-sm text-muted-foreground">
+                    Loading...
+                  </span>
+                </div>
+              )}
               {selectables?.length === 0 && (
                 <CommandEmpty>No option found.</CommandEmpty>
               )}

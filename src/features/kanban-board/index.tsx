@@ -4,11 +4,15 @@ import { Main } from "@/components/layout/main";
 import ResourceTab from "./components/resourceTab";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { useState } from "react";
+import { useGetTechnologyData } from "../technology/services";
 
 const ProjectBoard = () => {
   const [activeTab, setActiveTab] = useState("board");
   const { user } = useAuthStore();
   const userRole = user?.user?.role;
+  const { data: technologies, isPending: techLoading } = useGetTechnologyData({
+    pagination: false,
+  });
   return (
     <Main>
       {userRole === "developer" ? (
@@ -23,23 +27,33 @@ const ProjectBoard = () => {
             <TabsTrigger value="Project Coordinator">
               Project Coordinator
             </TabsTrigger>
-            <TabsTrigger value="Archive Projects">
-            Archive Projects
-            </TabsTrigger>
+            <TabsTrigger value="Archive Projects">Archive Projects</TabsTrigger>
           </TabsList>
 
           {/* Board Tab */}
           <TabsContent value="board">
-            <Board activeTab={activeTab} />
+            <Board
+              technologies={technologies}
+              techLoading={techLoading}
+              activeTab={activeTab}
+            />
           </TabsContent>
 
           {/* Resources Tab */}
           <TabsContent value="resources">
-            <ResourceTab activeTab={activeTab} />
+            <ResourceTab
+              technologies={technologies}
+              techLoading={techLoading}
+              activeTab={activeTab}
+            />
           </TabsContent>
 
           <TabsContent value="Project Coordinator">
-            <ResourceTab activeTab={activeTab} />
+            <ResourceTab
+              technologies={technologies}
+              techLoading={techLoading}
+              activeTab={activeTab}
+            />
           </TabsContent>
 
           <TabsContent value="Archive Projects">
