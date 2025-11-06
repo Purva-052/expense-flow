@@ -32,6 +32,9 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
   // Separate search states for resources and projects
   const [resourceSearch, setResourceSearch] = useState<string | undefined>();
   const [projectSearch, setProjectSearch] = useState<string | undefined>();
+  const [projectHandlerSearch, setProjectHandlerSearch] = useState<
+    string | undefined
+  >();
 
   const [listParams, setListParams] = useState<any>({
     technologyId: null,
@@ -44,7 +47,7 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
   const apiParams = {
     pagination: false,
     technologyId: listParams.technologyId,
-    search: resourceSearch,
+    search: isProjectHandler ? projectHandlerSearch : resourceSearch,
   };
 
   const {
@@ -82,7 +85,10 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
   }: any = useGetUsersList(apiParams);
 
   const { data: handledProjects, isPending: handledProjectsLoading }: any =
-    useGetProjectHandlerProjectsAPI(isProjectHandler);
+    useGetProjectHandlerProjectsAPI({
+      enabled: isProjectHandler,
+      search: projectHandlerSearch,
+    });
 
   const userDetails = isProjectHandler
     ? (handledProjects?.data ?? [])
@@ -104,6 +110,10 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
   // Separate search handlers
   const handleResourceSearch = (search: string | undefined) => {
     setResourceSearch(search ?? undefined);
+  };
+
+  const handleHandlerSearch = (search: string | undefined) => {
+    setProjectHandlerSearch(search ?? undefined);
   };
 
   const handleProjectSearch = (search: string | undefined) => {
@@ -129,6 +139,16 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
       value: selectedTech,
       onChange: handleTechnologyChange,
       isLoading: techLoading,
+    },
+  ];
+
+  const ProjectHandlerFilter: FilterConfig[] = [
+    {
+      type: "search",
+      placeholder: "Search by name ...",
+      key: "search",
+      value: projectHandlerSearch,
+      onChange: handleHandlerSearch,
     },
   ];
 
@@ -172,7 +192,9 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
     }
   }
 
-  const headingFilter = isProjectHandler ? [] : resourceFilters;
+  const headingFilter = isProjectHandler
+    ? ProjectHandlerFilter
+    : resourceFilters;
   const isLoading =
     techLoading ||
     (isProjectHandler ? handledProjectsLoading : usersListLoading);

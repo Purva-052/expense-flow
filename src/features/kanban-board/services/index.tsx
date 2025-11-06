@@ -28,13 +28,10 @@ export const useGetAllDevelopers = (params?: any) => {
   return useFetchData({ url: GET_ALL_DEVELOPER_API_URL, params });
 };
 
-export const useGetProjectHandlerProjectsAPI = (
-  isenabled: any,
-  params?: any
-) => {
+export const useGetProjectHandlerProjectsAPI = (params: any) => {
   return useFetchData({
     url: GET_PROJECT_HANDLER_API_URL,
-    enabled: isenabled,
+    enabled: params?.enabled,
     params,
   });
 };
