@@ -1,7 +1,4 @@
 /* eslint-disable no-console */
-import { useState } from "react";
-import { useRouter } from "@tanstack/react-router";
-import { useAuthStore } from "@/stores/use-auth-store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,39 +10,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogoutModal } from "./model/logout-model";
+import { useAuthStore } from "@/stores/use-auth-store";
 import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import { LogoutModal } from "./model/logout-model";
 
 export function ProfileDropdown() {
   const { logout, user } = useAuthStore();
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { navigate } = useRouter();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const handleLogoutConfirm = async () => {
     setLoading(true);
-    // Clear caches and close modal immediately for snappy UX
-    queryClient.clear();
+    logout();
     setLogoutModalOpen(false);
-    // Fire-and-forget logout to backend without blocking navigation
-    try {
-      // Do not await to avoid delaying navigation
-      void logout();
-    } catch {
-      console.log("error comes on logout");
-    }
-    // Navigate immediately (client-side) and enforce with hard replace
-    navigate({ to: "/sign-in", replace: true });
-    setTimeout(() => {
-      if (
-        typeof window !== "undefined" &&
-        window.location.pathname !== "/sign-in"
-      ) {
-        window.location.replace("/sign-in");
-      }
-    }, 0);
     setLoading(false);
+    queryClient.clear();
   };
 
   const getInitials = (fullName?: string) => {
