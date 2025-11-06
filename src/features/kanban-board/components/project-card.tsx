@@ -182,7 +182,6 @@ export function ProjectCard({
                 {project.projectHandler?.fullName && (
                   <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                     <UserSquare className="h-4 w-4 shrink-0" />
-                    <span className="font-semibold"> Coordinator:</span>
                     <span className="truncate">
                       {project.projectHandler.fullName}
                     </span>
