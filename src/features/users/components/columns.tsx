@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useUsersStore } from "../stores/useUsersStore";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { formatRole } from "@/utils/commonFunctions";
 
 // 🎯 Columns
 export const columns: ColumnDef<any>[] = [
@@ -32,7 +33,7 @@ export const columns: ColumnDef<any>[] = [
         variant="outline"
         className="capitalize font-medium text-xs px-2 py-1"
       >
-        {row.original.role}
+        {formatRole(row.original.role)}
       </Badge>
     ),
   },

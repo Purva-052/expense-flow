@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { DialogTrigger } from "@/components/ui/dialog";
+import { formatRole } from "@/utils/commonFunctions";
 import { AtSign, Briefcase, Calendar, Code, KeyRound } from "lucide-react";
 
 const ProfileDetailRow = ({
@@ -49,12 +50,6 @@ export const UserProfileCard = ({ user }: { user: any }) => {
       day: "numeric",
     });
   };
-
-  const formatRole = (str: string = "") =>
-    str
-      .split("_") // break apart by underscores
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1)) // capitalize each
-      .join(" "); // join with spaces
 
   return (
     <Card className="w-full max-w-xl">
