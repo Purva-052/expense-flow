@@ -482,11 +482,11 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
               <Card
                 ref={availableDroppable.setNodeRef}
                 className={cn(
-                  "!h-full",
+                  "!h-full !gap-2",
                   availableDroppable.isOver && "ring-2 ring-pink-500"
                 )}
               >
-                <CardHeader className="flex flex-col gap-3">
+                <CardHeader className="flex flex-col gap-2 ">
                   <CardTitle className="w-full text-balance flex items-center justify-between">
                     {showAllDevelopers
                       ? "All Developers"
@@ -503,7 +503,7 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
                     value={searchTech}
                     onChange={(e) => setSearchTech(e.target.value)}
                     placeholder="Search developers..."
-                    className="w-full"
+                    className="w-full h-16"
                   />
                   <CustomMultiSelect
                     options={techOptions}

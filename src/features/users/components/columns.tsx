@@ -12,6 +12,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useUsersStore } from "../stores/useUsersStore";
+import { useAuthStore } from "@/stores/use-auth-store";
+import { formatRole } from "@/utils/commonFunctions";
 
 // 🎯 Columns
 export const columns: ColumnDef<any>[] = [
@@ -31,7 +33,7 @@ export const columns: ColumnDef<any>[] = [
         variant="outline"
         className="capitalize font-medium text-xs px-2 py-1"
       >
-        {row.original.role}
+        {formatRole(row.original.role)}
       </Badge>
     ),
   },
@@ -81,6 +83,8 @@ export const columns: ColumnDef<any>[] = [
     cell: function Cell({ row }) {
       const operator = row.original;
       const { setOpen, setCurrentRow } = useUsersStore();
+      const user = useAuthStore((state) => state.user);
+      const UserRole = user?.user?.role;
 
       const handleEdit = () => {
         setOpen("edit");
@@ -109,13 +113,19 @@ export const columns: ColumnDef<any>[] = [
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleView}>View User</DropdownMenuItem>
-            <DropdownMenuItem onClick={handleEdit}>Edit User</DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-red-600 focus:bg-red-50 focus:text-red-600"
-              onClick={handleDelete}
-            >
-              Delete User
-            </DropdownMenuItem>
+            {(UserRole === "admin" || UserRole === "project_manager") && (
+              <>
+                <DropdownMenuItem onClick={handleEdit}>
+                  Edit User
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="text-red-600 focus:bg-red-50 focus:text-red-600"
+                  onClick={handleDelete}
+                >
+                  Delete User
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       );

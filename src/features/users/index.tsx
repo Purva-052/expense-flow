@@ -11,9 +11,12 @@ import { ViewUserModal } from "./components/view-model";
 import { useUsersStore } from "./stores/useUsersStore";
 import { useGetUsersList, useGetUsersRoles } from "./services";
 import { useGetTechnologyDropdownList } from "../technology/services";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 const UsersPage = () => {
   const { open, setOpen } = useUsersStore();
+  const user = useAuthStore((state) => state.user);
+  const UserRole = user?.user?.role;
   const [listParams, setListParams] = useState({
     pageSize: 10,
     currentPage: 1,
@@ -143,6 +146,9 @@ const UsersPage = () => {
         title="Users"
         buttonText="Add User"
         onButtonClick={handleAdd}
+        showActionButton={
+          UserRole === "admin" || UserRole === "project_manager" ? true : false
+        }
       >
         Manage your Users here.
       </TablePageHeader>
