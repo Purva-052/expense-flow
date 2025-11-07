@@ -123,7 +123,7 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
   const resourceFilters: FilterConfig[] = [
     {
       type: "search",
-      placeholder: "Search by name ...",
+      placeholder: "Search by resource name ...",
       key: "search",
       value: resourceSearch,
       onChange: handleResourceSearch,
