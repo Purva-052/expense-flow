@@ -43,7 +43,7 @@ const AdminLogin = () => {
         <div className="relative z-10 m-auto p-10 ">
           <div className="mb-8 ">
             <img
-              src={DevstreeLogo} // 👈 use your image path here
+              src={DevstreeLogo}
               alt="Project Management Logo"
               className="object-contain h-16 w-fit"
             />

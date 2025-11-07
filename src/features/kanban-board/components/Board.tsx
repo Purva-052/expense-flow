@@ -242,14 +242,14 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
     }
   }
 
-  function handleDeveloperClick(developer: any, projectId: string) {
+  const handleDeveloperClick = (developer: any, projectId: string) => {
     if (isDeveloperView && developer?.developer?.id !== currentUserId) {
       return;
     }
     setSelectedDeveloper(developer);
     setSelectedProjectId(projectId);
     setIsDialogOpen(true);
-  }
+  };
 
   const { data: projecthandler, isPending: projecthandlerLoading }: any =
     useGetUsersList({
@@ -397,7 +397,7 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_320px]">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_320px] h-[calc(100dvh-30dvh)]">
         <DndContext
           sensors={sensors}
           onDragStart={onDragStart}
@@ -406,7 +406,7 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
         >
           <div
             ref={scrollContainerRef}
-            className="space-y-4 max-h-[74dvh] overflow-auto p-2"
+            className="space-y-4 h-full overflow-auto p-2"
           >
             {projectListLoading ? (
               <div className="flex flex-col justify-center items-center py-10 gap-3">
@@ -508,7 +508,7 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
                   />
                 </CardHeader>
 
-                <CardContent className="max-h-[62dvh] overflow-y-auto [scrollbar-gutter:stable]">
+                <CardContent className="max-h-[50dvh] overflow-y-auto [scrollbar-gutter:stable]">
                   {AllDevelopersLoading ? (
                     <div className="flex flex-col justify-center items-center py-10 gap-3">
                       <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>

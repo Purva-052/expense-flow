@@ -1,10 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import type React from "react";
+import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Project, ProjectPriority } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/stores/use-auth-store";
 import { useDroppable } from "@dnd-kit/core";
 import {
   ArrowDown,
@@ -14,18 +21,11 @@ import {
   Info,
   UserSquare,
 } from "lucide-react";
+import type React from "react";
 import { useState } from "react";
-import { ProjectDetailsDialog } from "./ProjectDetailsDialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { Form, FormProvider, useForm } from "react-hook-form";
-import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import { useProjectStatusChange } from "../services";
-import { useAuthStore } from "@/stores/use-auth-store";
+import ProjectDetailsDialog from "./ProjectDetailsDialog";
 import { ReasonDialog } from "./status-reason-dialog";
 
 // --- Priority styles remain the same ---
