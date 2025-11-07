@@ -7,68 +7,67 @@ import {
   IconTool,
   IconUsers,
   IconUserScreen,
-  
-} from '@tabler/icons-react'
-import { Command} from 'lucide-react'
-import { type SidebarData } from '../types'
+} from "@tabler/icons-react";
+import { Command } from "lucide-react";
+import { type SidebarData } from "../types";
 
 export const sidebarData: SidebarData = {
   user: {
-    name: 'satnaing',
-    email: 'satnaingdev@gmail.com',
-    avatar: '/avatars/shadcn.jpg',
+    name: "satnaing",
+    email: "satnaingdev@gmail.com",
+    avatar: "/avatars/shadcn.jpg",
   },
   teams: [
     {
-      name: 'Shadcn Admin',
+      name: "Shadcn Admin",
       logo: Command,
-      plan: 'Vite + ShadcnUI',
+      plan: "Vite + ShadcnUI",
     },
     {
-      name: 'Acme Inc',
+      name: "Acme Inc",
       logo: IconTool,
-      plan: 'Enterprise',
+      plan: "Enterprise",
     },
     {
-      name: 'Acme Corp.',
+      name: "Acme Corp.",
       logo: IconPalette,
-      plan: 'Startup',
+      plan: "Startup",
     },
   ],
   navGroups: [
     {
-      title: 'Overview',
-      requiredRoles:['admin', 'team_lead',"project_manager","developer"],
+      title: "Overview",
+      requiredRoles: ["admin", "team_lead", "project_manager", "developer"],
       items: [
         {
-          title: ' Project Board',
-          url: '/',
+          title: "Dashboard",
+          url: "/",
           icon: IconLayoutBoardFilled,
-          requiredRoles:['admin', 'team_lead',"project_manager","developer"],
+          requiredRoles: ["admin", "team_lead", "project_manager", "developer"],
         },
       ],
     },
     {
-      title: 'Masters',
-      requiredRoles: ['admin', 'team_lead',"project_manager"],
+      title: "Masters",
+      requiredRoles: ["admin", "team_lead", "project_manager"],
       items: [
         {
-          title: 'Technology',
-          url: '/technology',
+          title: "Technology",
+          url: "/technology",
           icon: IconAugmentedReality,
-          requiredRoles: ['admin', 'team_lead',"project_manager"],
+          requiredRoles: ["admin", "team_lead", "project_manager"],
         },
         {
-          title: 'Projects',
-          url: '/projects',
+          title: "Projects",
+          url: "/projects",
           icon: IconUserScreen,
-          requiredRoles: ['admin', 'team_lead',"project_manager"],
+          requiredRoles: ["admin", "team_lead", "project_manager"],
         },
         {
-          title: 'Projects Type',
-          url: '/Project-type',
+          title: "Projects Type",
+          url: "/Project-type",
           icon: IconAlignBoxBottomCenter,
-          requiredRoles: ['admin', 'team_lead',"project_manager"],
+          requiredRoles: ["admin", "team_lead", "project_manager"],
         },
         // {
         //   title: 'Projects Module',
@@ -77,19 +76,18 @@ export const sidebarData: SidebarData = {
         //   requiredRoles: ['admin', 'team_lead',"project_manager"],
         // },
         {
-          title: 'Clients',
-          url: '/clients',
+          title: "Clients",
+          url: "/clients",
           icon: IconBrandDatabricks,
-          requiredRoles: ['admin', 'team_lead',"project_manager"],
+          requiredRoles: ["admin", "team_lead", "project_manager"],
         },
         {
-          title: 'Users',
-          url: '/users',
+          title: "Users",
+          url: "/users",
           icon: IconUsers,
-          requiredRoles: ['admin', 'team_lead',"project_manager"],
+          requiredRoles: ["admin", "team_lead", "project_manager"],
         },
       ],
     },
-   
   ],
-}
+};

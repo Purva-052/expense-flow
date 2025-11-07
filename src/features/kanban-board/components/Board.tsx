@@ -44,6 +44,7 @@ import { Input } from "@/components/ui/input";
 import useDebounce from "@/hooks/use-debaunce";
 import { useGetProjectTypes } from "@/features/Project-type/services";
 import { useGetTechnologyData } from "@/features/technology/services";
+import { cn } from "@/lib/utils";
 
 type GroupedDevelopers = {
   technologyName: string;
@@ -397,7 +398,7 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_320px] h-[calc(100dvh-30dvh)]">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_320px] h-[71dvh]">
         <DndContext
           sensors={sensors}
           onDragStart={onDragStart}
@@ -406,7 +407,7 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
         >
           <div
             ref={scrollContainerRef}
-            className="space-y-4 h-full overflow-auto p-2"
+            className="space-y-4 !h-full overflow-y-auto p-2 [scrollbar-gutter:stable] rounded-md border"
           >
             {projectListLoading ? (
               <div className="flex flex-col justify-center items-center py-10 gap-3">
@@ -463,21 +464,22 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
                 </p>
               </div>
             )}
-            <div ref={loadMoreRef} className="h-2" />
             {isFetchingNextPage && (
               <div className="flex justify-center items-center py-4">
                 <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
               </div>
             )}
+            <div ref={loadMoreRef} className="h-2" />
           </div>
 
           {!isDeveloperView && (
-            <aside className="top-4 h-fit">
+            <aside className="top-4 !h-full">
               <Card
                 ref={availableDroppable.setNodeRef}
-                className={
-                  availableDroppable.isOver ? "ring-2 ring-pink-500" : ""
-                }
+                className={cn(
+                  "!h-full",
+                  availableDroppable.isOver && "ring-2 ring-pink-500"
+                )}
               >
                 <CardHeader className="flex flex-col gap-3">
                   <CardTitle className="w-full text-balance flex items-center justify-between">
@@ -508,7 +510,7 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
                   />
                 </CardHeader>
 
-                <CardContent className="max-h-[50dvh] overflow-y-auto [scrollbar-gutter:stable]">
+                <CardContent className="h-[50dvh] overflow-y-auto [scrollbar-gutter:stable] pr-2">
                   {AllDevelopersLoading ? (
                     <div className="flex flex-col justify-center items-center py-10 gap-3">
                       <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
