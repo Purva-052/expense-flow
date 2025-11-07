@@ -35,12 +35,12 @@ interface ProjectDetailsDialogProps {
   project: any;
 }
 
-export function ProjectDetailsDialog({
+const ProjectDetailsDialog = ({
   projectId,
   isOpen,
   project,
   onOpenChange,
-}: ProjectDetailsDialogProps) {
+}: ProjectDetailsDialogProps) => {
   const [listParams, setListParams] = useState({
     pageSize: 10,
     currentPage: 1,
@@ -58,7 +58,7 @@ export function ProjectDetailsDialog({
     useGetProjectHistoryData(projectId, isOpen, apiParams);
 
   const { data: projectHistory, isFetching: projectHistoryLoading }: any =
-    useGetProjectsHistoryData(projectId);
+    useGetProjectsHistoryData(isOpen ? projectId : undefined);
 
   const timelineData =
     projectHistory?.data?.map((item: any) => ({
@@ -270,4 +270,6 @@ export function ProjectDetailsDialog({
       </DialogContent>
     </Dialog>
   );
-}
+};
+
+export default ProjectDetailsDialog;
