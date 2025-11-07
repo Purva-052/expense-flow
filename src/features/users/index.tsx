@@ -10,10 +10,13 @@ import { columns } from "./components/columns";
 import { ViewUserModal } from "./components/view-model";
 import { useUsersStore } from "./stores/useUsersStore";
 import { useGetUsersList, useGetUsersRoles } from "./services";
-import { useGetTechnologyData } from "../technology/services";
+import { useGetTechnologyDropdownList } from "../technology/services";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 const UsersPage = () => {
   const { open, setOpen } = useUsersStore();
+  const user = useAuthStore((state) => state.user);
+  const UserRole = user?.user?.role;
   const [listParams, setListParams] = useState({
     pageSize: 10,
     currentPage: 1,
@@ -35,9 +38,7 @@ const UsersPage = () => {
 
   const { data: listData, isPending: loading } = useGetUsersList(apiParams);
   const { data: technologyList, isPending: technologyListLoading }: any =
-    useGetTechnologyData({
-      pagination: false,
-    });
+    useGetTechnologyDropdownList();
 
   const { data: roleList, isPending: roleListLoading }: any =
     useGetUsersRoles();
@@ -145,6 +146,9 @@ const UsersPage = () => {
         title="Users"
         buttonText="Add User"
         onButtonClick={handleAdd}
+        showActionButton={
+          UserRole === "admin" || UserRole === "project_manager" ? true : false
+        }
       >
         Manage your Users here.
       </TablePageHeader>

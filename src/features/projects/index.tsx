@@ -9,12 +9,15 @@ import { ActionFormModal } from "./components/action";
 import { columns } from "./components/columns";
 import { useProjectsStore } from "./stores/useProjectsStore";
 import { ViewProjectModal } from "./components/view-model";
-import { useGetProjectListForListView } from "./services";
-import { useGetClientsData } from "../clients/services";
-import { useGetUsersList } from "../users/services";
-import { useGetProjectTypes } from "../Project-type/services";
+import {
+  useGetProjectListForListView,
+  useGetProjectPriorityDropdownList,
+} from "./services";
+import { useGetClientsDropdownList } from "../clients/services";
+import { useGetUserDropdownList } from "../users/services";
+import { useGetProjectTypesDropdownList } from "../Project-type/services";
 import { HistoryProjectModal } from "./components/history-modal";
-import { useGetTechnologyData } from "../technology/services";
+import { useGetTechnologyDropdownList } from "../technology/services";
 
 const ProjectsPage = () => {
   const { open, setOpen } = useProjectsStore();
@@ -44,24 +47,16 @@ const ProjectsPage = () => {
   const { data: listData, isPending: loading } =
     useGetProjectListForListView(apiParams);
   const { data: ProjectType, isPending: LoadingProjectType }: any =
-    useGetProjectTypes({
-      pagination: false,
-    });
+    useGetProjectTypesDropdownList();
   const { data: projecthandler, isPending: projecthandlerLoading }: any =
-    useGetUsersList({
-      role: ["project_manager", "team_lead"],
-      pagination: false,
-    });
-
+    useGetUserDropdownList();
+  const { data: PriorityList, isPending: PriorityListLoading }: any =
+    useGetProjectPriorityDropdownList();
   const { data: technologyList, isPending: technologyListLoading }: any =
-    useGetTechnologyData({
-      pagination: false,
-    });
+    useGetTechnologyDropdownList();
 
   const { data: clientsList, isPending: clientListLoading }: any =
-    useGetClientsData({
-      pagination: false,
-    });
+    useGetClientsDropdownList();
 
   const totalCount = (listData as any)?.metadata?.totalCount;
 
@@ -157,13 +152,13 @@ const ProjectsPage = () => {
       type: "select",
       key: "priority",
       placeholder: "Filter by Priority",
-      options: [
-        { label: "Low", value: "low" },
-        { label: "Medium", value: "medium" },
-        { label: "High", value: "high" },
-      ],
+      options: PriorityList?.data?.map((value: any) => ({
+        label: value,
+        value: value,
+      })),
       value: listParams.priority,
       onChange: handlePriorityChange,
+      isLoading: PriorityListLoading,
     },
     {
       type: "select",

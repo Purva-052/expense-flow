@@ -51,6 +51,7 @@ export function DeveloperChip({
   disabled,
   endDate,
   variant = "default",
+  showAssignedProject,
 }: {
   developer: any;
   containerId: string;
@@ -58,7 +59,9 @@ export function DeveloperChip({
   disabled?: boolean;
   endDate?: string | null;
   variant?: "default" | "compact";
+  showAssignedProject?: boolean;
 }) {
+
   const sortableId = `${containerId}-${developer.id}`;
 
   const { attributes, listeners, setNodeRef, isDragging } = useSortable({
@@ -77,6 +80,8 @@ export function DeveloperChip({
 
   const techColor = developer?.technology?.color || "#e2e8f0";
   const experience = getYearsOfExperience(developer?.careerStartDate);
+
+  const activeProjects: string[] = developer?.activeProjects || [];
 
   return (
     // 👇 2. Wrap the component with TooltipProvider for context
@@ -111,8 +116,33 @@ export function DeveloperChip({
                     {developer.fullName}
                   </span>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>{developer.fullName}</p>
+                <TooltipContent className="max-w-xs">
+                  {showAssignedProject && activeProjects.length > 0 ? (
+                    <div className="space-y-1">
+                      <p className="font-semibold text-sm">
+                        Assigned Projects:
+                      </p>
+                      <ul className="list-disc list-inside text-xs text-muted-foreground">
+                        {activeProjects.map((project: any) => (
+                          <li key={project.id}>
+                            <span className="font-medium">{project.name}</span>
+                            {project.isCurrentProject && (
+                              <span className="text-green-600 ml-1">
+                                (Current)
+                              </span>
+                            )}
+                            {typeof project.percentageComplete === "number" && (
+                              <span className="ml-1 text-[10px] text-gray-500">
+                                {project.percentageComplete}%
+                              </span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : (
+                    <p>{developer.fullName}</p>
+                  )}
                 </TooltipContent>
               </Tooltip>
 

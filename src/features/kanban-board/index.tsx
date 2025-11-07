@@ -4,15 +4,14 @@ import { Main } from "@/components/layout/main";
 import ResourceTab from "./components/resourceTab";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { useState } from "react";
-import { useGetTechnologyData } from "../technology/services";
+import { useGetTechnologyDropdownList } from "../technology/services";
 
 const ProjectBoard = () => {
   const [activeTab, setActiveTab] = useState("board");
   const { user } = useAuthStore();
   const userRole = user?.user?.role;
-  const { data: technologies, isPending: techLoading } = useGetTechnologyData({
-    pagination: false,
-  });
+  const { data: technologies, isPending: techLoading } =
+    useGetTechnologyDropdownList();
   return (
     <Main className="h-screen overflow-auto  flex flex-col">
       {userRole === "developer" ? (

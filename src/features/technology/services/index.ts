@@ -7,6 +7,7 @@ import usePatchData from "@/hooks/use-patch-data";
 import useDeleteData from "@/hooks/use-delete-data";
 
 const GET_API_URL = API.technology.list;
+const GET_TECHNOLOGY_DROPDOWN = API.dropdown_api.technology
 
 export const useCreateTechnologyData = () => {
   const { setOpen } = useTechnologyStore()
@@ -30,6 +31,10 @@ export const useUpdateTechnologyData = (id: string) => {
 
 export const useGetTechnologyData = (params?: any) => {
   return useFetchData({ url: GET_API_URL, params })
+}
+
+export const useGetTechnologyDropdownList = (params?: any) => {
+  return useFetchData({ url: GET_TECHNOLOGY_DROPDOWN, params })
 }
 
 export const useDeleteTechnologyData = (id: string) => {

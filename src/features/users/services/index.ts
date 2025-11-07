@@ -9,6 +9,7 @@ import useDeleteData from '@/hooks/use-delete-data'
 
 const GET_API_URL = API.users.list
 const GET_ROLES_API_URL = API.users.role
+const GET_USER_DROPDOWN = API.dropdown_api.users
 
 export const useCreateUserData = () => {
   const { setOpen } = useUsersStore()
@@ -41,12 +42,17 @@ export const useGetUsersList = (params?: any) => {
 
 export const useGetUserDetails = (id: string) => {
   return useFetchData({ url: `${GET_API_URL}/${id}`, enabled: !!id })
+}
 
+export const useGetUserDropdownList = (params?: any) => {
+  return useFetchData({  url: GET_USER_DROPDOWN, params })
 }
 
 export const useGetUsersRoles = (params?: any) => {
   return useFetchData({ url: GET_ROLES_API_URL, params })
 }
+
+
 
 export const useDeleteUserData = (id: string) => {
   const { setOpen } = useUsersStore()
