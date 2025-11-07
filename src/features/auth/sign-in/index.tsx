@@ -5,6 +5,7 @@ import { useAuthStore } from "@/stores/use-auth-store";
 import { ForgotPasswordForm } from "../forgot-password/components/forgot-password-form";
 import { FloatingParticles } from "./components/floating-particles";
 import { LoginForm } from "./components/user-auth-form";
+import DevstreeLogo from "@/assets/devstree-squre-white-text-logo.svg";
 
 // ✅ your component
 
@@ -42,7 +43,7 @@ const AdminLogin = () => {
         <div className="relative z-10 m-auto p-10 ">
           <div className="mb-8 ">
             <img
-              src="/src/assets/devstree-squre-white-text-logo.svg" // 👈 use your image path here
+              src={DevstreeLogo} // 👈 use your image path here
               alt="Project Management Logo"
               className="object-contain h-16 w-fit"
             />
