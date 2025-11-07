@@ -49,7 +49,7 @@ const API = {
     project_types:"/project-types/dropdown",
     technology:"/technology/dropdown",
     users:"/users/dropdown",
-    priority :"/project/priority-dropdown",
+    priority :"/projects/priority-dropdown",
     client:"/clients/dropdown"
   }
 };
