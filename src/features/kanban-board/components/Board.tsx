@@ -13,7 +13,10 @@ import {
 } from "@/components/ui/collapsible";
 import { Switch } from "@/components/ui/switch";
 import { useGetClientsDropdownList } from "@/features/clients/services";
-import { useGetProjectsData } from "@/features/projects/services";
+import {
+  useGetProjectPriorityDropdownList,
+  useGetProjectsData,
+} from "@/features/projects/services";
 import { useGetUserDropdownList } from "@/features/users/services";
 import type { Developer } from "@/lib/types";
 import { useAuthStore } from "@/stores/use-auth-store";
@@ -253,6 +256,9 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
   const { data: projecthandler, isPending: projecthandlerLoading }: any =
     useGetUserDropdownList();
 
+  const { data: PriorityList, isPending: PriorityListLoading }: any =
+    useGetProjectPriorityDropdownList();
+
   const { data: clientsList, isPending: clientListLoading }: any =
     useGetClientsDropdownList();
 
@@ -353,13 +359,13 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
       type: "select",
       key: "priority",
       placeholder: "Filter by Priority",
-      options: [
-        { label: "Low", value: "low" },
-        { label: "Medium", value: "medium" },
-        { label: "High", value: "high" },
-      ],
+      options: PriorityList?.data?.map((value: any) => ({
+        label: value,
+        value: value,
+      })),
       value: listParams.priority,
       onChange: handlePriorityChange,
+      isLoading: PriorityListLoading,
     },
     {
       type: "select",

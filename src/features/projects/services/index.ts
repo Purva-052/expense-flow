@@ -11,7 +11,7 @@ import { useAuthStore } from "@/stores/use-auth-store";
 import useFetchData from "@/hooks/use-fetch-data";
 
 const GET_API_URL = API.projects.list;
-const GET_PROJECT_DROPDOWN = API.dropdown_api.project
+const GET_PRIORITY_DROPDOWN = API.dropdown_api.priority
 
 export const useCreateProjectsData = () => {
   const { setOpen } = useProjectsStore();
@@ -73,8 +73,8 @@ export const useGetProjectListForListView = (params?: any) => {
   return useFetchData({ url: GET_API_URL, params });
 };
 
-export const useGetProjectDropdownList = (params?: any) => {
-  return useFetchData({ url: GET_PROJECT_DROPDOWN, params });
+export const useGetProjectPriorityDropdownList = (params?: any) => {
+  return useFetchData({ url: GET_PRIORITY_DROPDOWN, params });
 };
 
 export const useDeleteProjectsData = (id: string) => {

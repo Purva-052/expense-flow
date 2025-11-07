@@ -9,7 +9,10 @@ import { ActionFormModal } from "./components/action";
 import { columns } from "./components/columns";
 import { useProjectsStore } from "./stores/useProjectsStore";
 import { ViewProjectModal } from "./components/view-model";
-import { useGetProjectListForListView } from "./services";
+import {
+  useGetProjectListForListView,
+  useGetProjectPriorityDropdownList,
+} from "./services";
 import { useGetClientsDropdownList } from "../clients/services";
 import { useGetUserDropdownList } from "../users/services";
 import { useGetProjectTypesDropdownList } from "../Project-type/services";
@@ -47,7 +50,8 @@ const ProjectsPage = () => {
     useGetProjectTypesDropdownList();
   const { data: projecthandler, isPending: projecthandlerLoading }: any =
     useGetUserDropdownList();
-
+  const { data: PriorityList, isPending: PriorityListLoading }: any =
+    useGetProjectPriorityDropdownList();
   const { data: technologyList, isPending: technologyListLoading }: any =
     useGetTechnologyDropdownList();
 
@@ -148,13 +152,13 @@ const ProjectsPage = () => {
       type: "select",
       key: "priority",
       placeholder: "Filter by Priority",
-      options: [
-        { label: "Low", value: "low" },
-        { label: "Medium", value: "medium" },
-        { label: "High", value: "high" },
-      ],
+      options: PriorityList?.data?.map((value: any) => ({
+        label: value,
+        value: value,
+      })),
       value: listParams.priority,
       onChange: handlePriorityChange,
+      isLoading: PriorityListLoading,
     },
     {
       type: "select",
