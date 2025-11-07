@@ -48,6 +48,7 @@ import useDebounce from "@/hooks/use-debaunce";
 import { useGetProjectTypesDropdownList } from "@/features/Project-type/services";
 import { useGetTechnologyDropdownList } from "@/features/technology/services";
 import { cn } from "@/lib/utils";
+import { capitalizeFirstLetter } from "@/utils/commonFunctions";
 
 type GroupedDevelopers = {
   technologyName: string;
@@ -360,7 +361,7 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
       key: "priority",
       placeholder: "Filter by Priority",
       options: PriorityList?.data?.map((value: any) => ({
-        label: value,
+        label: capitalizeFirstLetter(value),
         value: value,
       })),
       value: listParams.priority,
