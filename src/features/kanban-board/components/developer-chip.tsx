@@ -51,7 +51,6 @@ export function DeveloperChip({
   disabled,
   endDate,
   variant = "default",
-  showAssignedProject,
 }: {
   developer: any;
   containerId: string;
@@ -59,9 +58,7 @@ export function DeveloperChip({
   disabled?: boolean;
   endDate?: string | null;
   variant?: "default" | "compact";
-  showAssignedProject?: boolean;
 }) {
-
   const sortableId = `${containerId}-${developer.id}`;
 
   const { attributes, listeners, setNodeRef, isDragging } = useSortable({
@@ -86,91 +83,87 @@ export function DeveloperChip({
   return (
     // 👇 2. Wrap the component with TooltipProvider for context
     <TooltipProvider>
-      <div
-        ref={setNodeRef}
-        {...attributes}
-        {...listeners}
-        onClick={onClick}
-        className={cn(
-          "max-w-[250px] bg-white flex flex-col gap-2 rounded-lg border p-3 text-sm shadow-sm outline-none transition-all duration-200",
-          variant === "default" && "bg-secondary/50",
-          onClick && "cursor-pointer hover:shadow-md",
-          !disabled && "cursor-grab",
-          isDragging && "ring-2 opacity-50 ring-offset-2",
-          isDragging && { ringColor: techColor }
-        )}
-      >
-        <div className="flex items-start gap-3 justify-between">
-          <div className="flex flex-col gap-0.5 truncate">
-            <div className="flex items-center gap-2">
-              {developer.isCurrentProject && (
-                <span
-                  className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse shrink-0"
-                  title="Currently working on this project"
-                />
-              )}
-              {/* 👇 3. Wrap the developer's name with the Tooltip components */}
-              <Tooltip>
-                <TooltipTrigger asChild>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div
+            ref={setNodeRef}
+            {...attributes}
+            {...listeners}
+            onClick={onClick}
+            className={cn(
+              "max-w-[250px] bg-white flex flex-col gap-2 rounded-lg border p-3 text-sm shadow-sm outline-none transition-all duration-200",
+              variant === "default" && "bg-secondary/50",
+              onClick && "cursor-pointer hover:shadow-md",
+              !disabled && "cursor-grab",
+              isDragging && "ring-2 opacity-50 ring-offset-2",
+              isDragging && { ringColor: techColor }
+            )}
+          >
+            <div className="flex items-start gap-3 justify-between">
+              <div className="flex flex-col gap-0.5 truncate">
+                <div className="flex items-center gap-2">
+                  {developer.isCurrentProject && (
+                    <span
+                      className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse shrink-0"
+                      title="Currently working on this project"
+                    />
+                  )}
+                  {/* 👇 3. Wrap the developer's name with the Tooltip components */}
                   <span className="truncate font-bold text-card-foreground">
                     {developer.fullName}
                   </span>
-                </TooltipTrigger>
-                <TooltipContent className="max-w-xs">
-                  {showAssignedProject && activeProjects.length > 0 ? (
-                    <div className="space-y-1">
-                      <p className="font-semibold text-sm">
-                        Assigned Projects:
-                      </p>
-                      <ul className="list-disc list-inside text-xs text-muted-foreground">
-                        {activeProjects.map((project: any) => (
-                          <li key={project.id}>
-                            <span className="font-medium">{project.name}</span>
-                            {project.isCurrentProject && (
-                              <span className="text-green-600 ml-1">
-                                (Current)
-                              </span>
-                            )}
-                            {typeof project.percentageComplete === "number" && (
-                              <span className="ml-1 text-[10px] text-gray-500">
-                                {project.percentageComplete}%
-                              </span>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
+
+                  {showReleaseWarning && (
+                    <div className="flex items-center gap-1 text-orange-600 dark:text-orange-400 text-xs font-semibold animate-pulse">
+                      <Clock className="h-3 w-3" />
+                      <span>{getReleaseText()}</span>
                     </div>
-                  ) : (
-                    <p>{developer.fullName}</p>
                   )}
-                </TooltipContent>
-              </Tooltip>
 
-              {showReleaseWarning && (
-                <div className="flex items-center gap-1 text-orange-600 dark:text-orange-400 text-xs font-semibold animate-pulse">
-                  <Clock className="h-3 w-3" />
-                  <span>{getReleaseText()}</span>
+                  {experience && (
+                    <span className="text-xs text-muted-foreground">
+                      {experience}
+                    </span>
+                  )}
                 </div>
-              )}
+              </div>
 
-              {experience && (
-                <span className="text-xs text-muted-foreground">
-                  {experience}
-                </span>
+              {variant === "default" && (
+                <Badge
+                  className="text-xs text-white shrink-0"
+                  style={{ backgroundColor: techColor }}
+                >
+                  {developer?.technology?.name}
+                </Badge>
               )}
             </div>
           </div>
-
-          {variant === "default" && (
-            <Badge
-              className="text-xs text-white shrink-0"
-              style={{ backgroundColor: techColor }}
-            >
-              {developer?.technology?.name}
-            </Badge>
+        </TooltipTrigger>
+        <TooltipContent className="max-w-xs">
+          {activeProjects.length > 0 ? (
+            <div className="space-y-1">
+              <p className="font-semibold text-sm">Assigned Projects:</p>
+              <ul className="list-disc list-inside text-xs text-muted-foreground">
+                {activeProjects.map((project: any) => (
+                  <li key={project.id}>
+                    <span className="font-medium">{project.name}</span>
+                    {project.isCurrentProject && (
+                      <span className="text-green-600 ml-1">(Current)</span>
+                    )}
+                    {typeof project.percentageComplete === "number" && (
+                      <span className="ml-1 text-[10px] text-gray-500">
+                        {project.percentageComplete}%
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <p>{developer.fullName}</p>
           )}
-        </div>
-      </div>
+        </TooltipContent>
+      </Tooltip>
     </TooltipProvider>
   );
 }

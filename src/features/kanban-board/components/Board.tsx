@@ -457,7 +457,6 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
                                   : undefined
                               }
                               disabled={isDeveloperView}
-                              showAssignedProject={true}
                             />
                           );
                         })}
@@ -579,7 +578,6 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
                                 {group.resources.map((dev: any) => (
                                   <DeveloperChip
                                     key={`available-${dev.id}`}
-                                    showAssignedProject={false}
                                     developer={dev}
                                     containerId="available"
                                     disabled={isDeveloperView}
