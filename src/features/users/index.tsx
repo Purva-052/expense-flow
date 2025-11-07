@@ -10,7 +10,7 @@ import { columns } from "./components/columns";
 import { ViewUserModal } from "./components/view-model";
 import { useUsersStore } from "./stores/useUsersStore";
 import { useGetUsersList, useGetUsersRoles } from "./services";
-import { useGetTechnologyData } from "../technology/services";
+import { useGetTechnologyDropdownList } from "../technology/services";
 
 const UsersPage = () => {
   const { open, setOpen } = useUsersStore();
@@ -35,9 +35,7 @@ const UsersPage = () => {
 
   const { data: listData, isPending: loading } = useGetUsersList(apiParams);
   const { data: technologyList, isPending: technologyListLoading }: any =
-    useGetTechnologyData({
-      pagination: false,
-    });
+    useGetTechnologyDropdownList();
 
   const { data: roleList, isPending: roleListLoading }: any =
     useGetUsersRoles();

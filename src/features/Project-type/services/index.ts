@@ -7,6 +7,7 @@ import useDeleteData from "@/hooks/use-delete-data";
 import { useProjectTypeStore } from "../stores/useProjectTypeStore";
 
 const GET_API_URL = API.project_types.list;
+const GET_PROJECT_TYPE_DROPDOWN = API.dropdown_api.project_types
 
 export const useCreateProjectType = () => {
   const { setOpen } = useProjectTypeStore()
@@ -30,6 +31,10 @@ export const useUpdateProjectType = (id: string) => {
 
 export const useGetProjectTypes = (params?: any) => {
   return useFetchData({ url: GET_API_URL, params })
+}
+
+export const useGetProjectTypesDropdownList = (params?: any) => {
+  return useFetchData({ url: GET_PROJECT_TYPE_DROPDOWN, params })
 }
 
 export const useDeleteProjectTypes = (id: string) => {

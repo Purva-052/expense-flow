@@ -45,6 +45,13 @@ const API = {
     update: "/modules",
     delete: "/modules",
   },
+  dropdown_api:{
+    project_types:"/project-types/dropdown",
+    technology:"/technology/dropdown",
+    users:"/users/dropdown",
+    project :"/projects/dropdown",
+    client:"/clients/dropdown"
+  }
 };
 
 Object.freeze(API);

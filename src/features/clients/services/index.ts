@@ -8,6 +8,7 @@ import useDeleteData from "@/hooks/use-delete-data";
 
 
 const GET_API_URL = API.clients.list
+const GET_CLIENT_DROPDOWN = API.dropdown_api.client
 
 export const useCreateClientsData = () => {
   const { setOpen } = useClientsStore()
@@ -31,6 +32,10 @@ export const useUpdateClientsData = (id: string) => {
 
 export const useGetClientsData = (params?: any) => {
   return useFetchData({ url: GET_API_URL, params })
+}
+
+export const useGetClientsDropdownList = (params?: any) => {
+  return useFetchData({ url: GET_CLIENT_DROPDOWN, params })
 }
 
 export const useDeleteClientsData = (id: string) => {

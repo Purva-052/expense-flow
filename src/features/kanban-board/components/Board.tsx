@@ -12,9 +12,9 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Switch } from "@/components/ui/switch";
-import { useGetClientsData } from "@/features/clients/services";
+import { useGetClientsDropdownList } from "@/features/clients/services";
 import { useGetProjectsData } from "@/features/projects/services";
-import { useGetUsersList } from "@/features/users/services";
+import { useGetUserDropdownList } from "@/features/users/services";
 import type { Developer } from "@/lib/types";
 import { useAuthStore } from "@/stores/use-auth-store";
 import {
@@ -42,8 +42,8 @@ import { DeveloperDialog } from "./developer-dialog";
 import { ProjectCard } from "./project-card";
 import { Input } from "@/components/ui/input";
 import useDebounce from "@/hooks/use-debaunce";
-import { useGetProjectTypes } from "@/features/Project-type/services";
-import { useGetTechnologyData } from "@/features/technology/services";
+import { useGetProjectTypesDropdownList } from "@/features/Project-type/services";
+import { useGetTechnologyDropdownList } from "@/features/technology/services";
 
 type GroupedDevelopers = {
   technologyName: string;
@@ -64,9 +64,7 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
   const debouncedSearchTech = useDebounce(searchTech, 500);
 
   const { data: ProjectType, isPending: LoadingProjectType }: any =
-    useGetProjectTypes({
-      pagination: false,
-    });
+    useGetProjectTypesDropdownList();
 
   const getInitialFilters = () => {
     if (typeof window === "undefined")
@@ -252,20 +250,13 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
   };
 
   const { data: projecthandler, isPending: projecthandlerLoading }: any =
-    useGetUsersList({
-      role: ["project_manager", "team_lead"],
-      pagination: false,
-    });
+    useGetUserDropdownList();
 
   const { data: clientsList, isPending: clientListLoading }: any =
-    useGetClientsData({
-      pagination: false,
-    });
+    useGetClientsDropdownList();
 
   const { data: technologyList, isPending: technologyListLoading }: any =
-    useGetTechnologyData({
-      pagination: false,
-    });
+    useGetTechnologyDropdownList();
 
   const handleClientChange = (value: any) =>
     setListParams((prev: any) => ({ ...prev, clientId: value ?? null }));
@@ -293,6 +284,20 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
   const handleSearch = (search: string | undefined) => {
     setListParams((prev: any) => ({ ...prev, search: search ?? "" }));
   };
+
+  useEffect(() => {
+    if (!listParams.projectTypeId && ProjectType?.data?.length) {
+      const fixedType = ProjectType.data.find(
+        (type: any) => type.name === "Fixed"
+      );
+      if (fixedType) {
+        setListParams((prev: any) => ({
+          ...prev,
+          projectTypeId: fixedType.id,
+        }));
+      }
+    }
+  }, [ProjectType]);
 
   const filters: FilterConfig[] = [
     {
@@ -408,7 +413,7 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
             ref={scrollContainerRef}
             className="space-y-4 h-full overflow-auto p-2"
           >
-            {projectListLoading ? (
+            {projectListLoading || LoadingProjectType ? (
               <div className="flex flex-col justify-center items-center py-10 gap-3">
                 <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
                 <span className="text-sm text-muted-foreground">
