@@ -14,7 +14,7 @@ const ProjectBoard = () => {
     pagination: false,
   });
   return (
-    <Main>
+    <Main className="h-screen overflow-auto  flex flex-col">
       {userRole === "developer" ? (
         <Board activeTab={activeTab} />
       ) : (
