@@ -29,14 +29,12 @@ import { useGetProjectHistoryData } from "../services";
 import { ProjectDetailsColumn } from "./ProjectDetailsColumn";
 
 interface ProjectDetailsDialogProps {
-  projectId: string;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   project: any;
 }
 
 const ProjectDetailsDialog = ({
-  projectId,
   isOpen,
   project,
   onOpenChange,
@@ -55,10 +53,10 @@ const ProjectDetailsDialog = ({
   };
 
   const { data: projectDetails, isLoading: projectDetailsLoading }: any =
-    useGetProjectHistoryData(projectId, isOpen, apiParams);
+    useGetProjectHistoryData(project?.id, isOpen, apiParams);
 
   const { data: projectHistory, isFetching: projectHistoryLoading }: any =
-    useGetProjectsHistoryData(isOpen ? projectId : undefined);
+    useGetProjectsHistoryData(isOpen ? project?.id : undefined);
 
   const timelineData =
     projectHistory?.data?.map((item: any) => ({
@@ -214,7 +212,7 @@ const ProjectDetailsDialog = ({
                   </span>
                 </div>
               ) : timelineData?.length > 0 ? (
-                <div className="flex items-center justify-center">
+                <div className="ml-10">
                   <Timeline className="mt-3  overflow-y-auto max-h-[55dvh] h-full pb-14 px-2">
                     {timelineData?.map((item: any) => (
                       <TimelineItem key={item.id}>

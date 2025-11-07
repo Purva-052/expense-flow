@@ -289,7 +289,6 @@ export function ProjectCard({
       {/* --- Render the Dialog Component --- */}
       <ProjectDetailsDialog
         project={project}
-        projectId={project?.id}
         isOpen={isDialogOpen}
         onOpenChange={setDialogOpen}
       />
