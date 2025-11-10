@@ -1,8 +1,8 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ColumnDef } from '@tanstack/react-table';
+import { MoreHorizontal } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,15 +10,22 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useProjectsStore } from "../stores/useProjectsStore";
-import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
-import { Form, FormProvider, useForm } from "react-hook-form";
-import { useProjectStatusChange } from "@/features/kanban-board/services";
-import { useAuthStore } from "@/stores/use-auth-store";
-import { useState } from "react";
-import { ReasonDialog } from "@/features/kanban-board/components/status-reason-dialog";
-import { roles } from "@/utils/constant";
+} from '@/components/ui/dropdown-menu';
+import { useProjectsStore } from '../stores/useProjectsStore';
+import CustomDropDownSearchable from '@/components/shared/custome-searchable-dropdown';
+import { Form, FormProvider, useForm } from 'react-hook-form';
+import { useProjectStatusChange } from '@/features/kanban-board/services';
+import { useAuthStore } from '@/stores/use-auth-store';
+import { useState } from 'react';
+import { ReasonDialog } from '@/features/kanban-board/components/status-reason-dialog';
+import { roles } from '@/utils/constant';
+import { useNavigate } from '@tanstack/react-router';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 function StatusCell({ row }: any) {
   const [isReasonDialogOpen, setReasonDialogOpen] = useState(false);
@@ -34,15 +41,15 @@ function StatusCell({ row }: any) {
   });
 
   const statusOptions = [
-    { value: "active-discovery", label: "Active Discovery" },
-    { value: "running", label: "Running" },
-    { value: "slow", label: "Slow" },
-    { value: "stop", label: "Stop" },
-    { value: "completed", label: "Completed" },
+    { value: 'active-discovery', label: 'Active Discovery' },
+    { value: 'running', label: 'Running' },
+    { value: 'slow', label: 'Slow' },
+    { value: 'stop', label: 'Stop' },
+    { value: 'completed', label: 'Completed' },
   ];
 
   const handleChange = async (value: string) => {
-    if (value === "slow") {
+    if (value === 'slow') {
       setPendingStatus(value);
       setReasonDialogOpen(true);
     } else {
@@ -51,7 +58,7 @@ function StatusCell({ row }: any) {
         status: value,
         effectiveDate: new Date().toISOString(),
       });
-      form.setValue("status", value);
+      form.setValue('status', value);
     }
   };
 
@@ -63,7 +70,7 @@ function StatusCell({ row }: any) {
         reason: reason,
         effectiveDate: new Date().toISOString(),
       });
-      form.setValue("status", pendingStatus);
+      form.setValue('status', pendingStatus);
       setPendingStatus(null);
       setReasonDialogOpen(false);
     }
@@ -73,7 +80,7 @@ function StatusCell({ row }: any) {
     // If the dialog is closing and a status change was pending
     if (!isOpen && pendingStatus) {
       // Revert the form state to the original project status
-      form.setValue("status", project.currentStatus);
+      form.setValue('status', project.currentStatus);
       setPendingStatus(null); // Clear the pending state
     }
     setReasonDialogOpen(isOpen);
@@ -135,24 +142,30 @@ function StatusCell({ row }: any) {
 
 function ActionsCell({ row }: any) {
   const operator = row.original;
+  const navigate = useNavigate();
   const { setOpen, setCurrentRow } = useProjectsStore();
 
   const handleEdit = () => {
-    setOpen("edit");
+    setOpen('edit');
     setCurrentRow(operator);
   };
 
   const handleDelete = () => {
-    setOpen("delete");
+    setOpen('delete');
     setCurrentRow(operator);
   };
 
   const handleView = () => {
-    setOpen("view");
+    // setOpen("view");
+    navigate({
+      to: '/projects/detail/$id',
+      params: { id: operator.id },
+    });
     setCurrentRow(operator);
   };
   const handleViewHistory = () => {
-    setOpen("history");
+    setOpen('history');
+
     setCurrentRow(operator);
   };
 
@@ -185,58 +198,70 @@ function ActionsCell({ row }: any) {
 
 export const columns: ColumnDef<any>[] = [
   {
-    accessorKey: "name",
-    header: "Project Name",
+    accessorKey: 'name',
+    header: 'Project Name',
   },
   {
-    accessorKey: "description",
-    header: "Description",
+    accessorKey: 'description',
+    header: 'Description',
     cell: ({ row }) => {
       const description = row.original.description;
-      if (!description) return "-";
+      if (!description) return '-';
       return (
-        <div
-          className="whitespace-pre-wrap break-words"
-          style={{ maxWidth: "300px" }}
-        >
-          {description}
-        </div>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div
+                className="truncate max-w-[200px] cursor-pointer text-ellipsis"
+                title={description}
+              >
+                {description}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent
+              // side="top"
+              className="text-sm max-w-xs border shadow"
+            >
+              {description}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       );
     },
   },
   {
-    accessorKey: "client.name",
-    header: "Client",
+    accessorKey: 'client.name',
+    header: 'Client',
   },
   {
-    accessorKey: "projectHandler.fullName",
-    header: "Project Coordinator",
+    accessorKey: 'projectHandler.fullName',
+    header: 'Project Coordinator',
   },
   {
-    accessorKey: "percentageComplete",
-    header: "Progress (%)",
+    accessorKey: 'percentageComplete',
+    header: 'Progress (%)',
   },
   {
-    accessorKey: "expectedCompletionDate",
-    header: "Expected Completion",
+    accessorKey: 'expectedCompletionDate',
+    header: 'Expected Completion',
     cell: ({ row }) => {
       const date = row.original.expectedCompletionDate;
-      if (!date) return "-";
-      return new Date(date).toLocaleDateString("en-GB");
+      if (!date) return '-';
+      return new Date(date).toLocaleDateString('en-GB');
     },
   },
   {
-    accessorKey: "priority",
-    header: "Priority",
+    accessorKey: 'priority',
+    header: 'Priority',
   },
   {
-    accessorKey: "currentStatus",
-    header: "Project Status",
+    accessorKey: 'currentStatus',
+    header: 'Project Status',
     cell: StatusCell,
   },
   {
-    id: "actions",
-    header: "Actions",
+    id: 'actions',
+    header: 'Actions',
     cell: ActionsCell,
     enableSorting: false,
   },

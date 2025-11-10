@@ -1,0 +1,171 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Plus, Trash2 } from 'lucide-react';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { _documentListSchema, TProjectDocumentSchema } from '../schema';
+
+interface AddEditDocumentDialogProps {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  onSave: (data: TProjectDocumentSchema) => void;
+  defaultValues?: Partial<TProjectDocumentSchema>;
+}
+
+export default function AddEditDocumentDialog({
+  open,
+  setOpen,
+  onSave,
+  defaultValues,
+}: AddEditDocumentDialogProps) {
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<TProjectDocumentSchema>({
+    resolver: zodResolver(_documentListSchema),
+    defaultValues: defaultValues || {
+      documents: [{ documentName: '', notes: '', link: '' }],
+    },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'documents',
+  });
+
+  const handleFormSubmit = (data: TProjectDocumentSchema) => {
+    onSave(data);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>
+            {defaultValues ? 'Edit Documents' : 'Add Documents'}
+          </DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit(handleFormSubmit)}>
+          <div className="overflow-y-auto max-h-[60vh] space-y-6 py-2 mb-3">
+            {fields.map((field, index) => (
+              <div
+                key={field.id}
+                className="border rounded-lg p-4 space-y-3 relative"
+              >
+                {/* Document Number Header */}
+                <div className="flex justify-between items-center mb-1">
+                  <h3 className="font-semibold text-sm">
+                    Document {index + 1}
+                  </h3>
+                  {fields.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => remove(index)}
+                    >
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </Button>
+                  )}
+                </div>
+
+                {/* Document Name */}
+                <div>
+                  <label className="text-sm font-medium">Name</label>
+                  <Controller
+                    name={`documents.${index}.documentName`}
+                    control={control}
+                    render={({ field }) => (
+                      <Input placeholder="Enter document name..." {...field} />
+                    )}
+                  />
+                  {errors.documents?.[index]?.documentName?.message && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.documents[index]?.documentName?.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Notes */}
+                <div>
+                  <label className="text-sm font-medium">Notes</label>
+                  <Controller
+                    name={`documents.${index}.notes`}
+                    control={control}
+                    render={({ field }) => (
+                      <Textarea
+                        placeholder="Enter notes..."
+                        rows={3}
+                        {...field}
+                      />
+                    )}
+                  />
+                </div>
+
+                {/* Link */}
+                <div>
+                  <label className="text-sm font-medium">Link</label>
+                  <Controller
+                    name={`documents.${index}.link`}
+                    control={control}
+                    render={({ field }) => (
+                      <Input
+                        type="url"
+                        placeholder="https://example.com"
+                        {...field}
+                      />
+                    )}
+                  />
+                  {errors.documents?.[index]?.link && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.documents[index]?.link?.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Object-level error (Either Notes or Link) */}
+                {errors.documents?.[index]?.message && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.documents[index]?.message}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Add New Document Button */}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => append({ documentName: '', notes: '', link: '' })}
+            className="w-full flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" /> Add Another Document
+          </Button>
+
+          {/* Submit & Cancel */}
+          <div className="flex justify-end gap-2 pt-4">
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => setOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="submit">Save All</Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}

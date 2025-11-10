@@ -27,6 +27,7 @@ import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
 import { Route as AuthenticatedProjectTypeIndexRouteImport } from './routes/_authenticated/Project-type/index'
 import { Route as AuthenticatedProjectModuleIndexRouteImport } from './routes/_authenticated/Project-module/index'
+import { Route as AuthenticatedProjectsDetailIdRouteImport } from './routes/_authenticated/projects/detail.$id'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -123,6 +124,12 @@ const AuthenticatedProjectModuleIndexRoute =
     path: '/Project-module/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedProjectsDetailIdRoute =
+  AuthenticatedProjectsDetailIdRouteImport.update({
+    id: '/projects/detail/$id',
+    path: '/projects/detail/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/forgot-password': typeof authForgotPasswordRoute
@@ -142,6 +149,7 @@ export interface FileRoutesByFullPath {
   '/projects': typeof AuthenticatedProjectsIndexRoute
   '/technology': typeof AuthenticatedTechnologyIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/projects/detail/$id': typeof AuthenticatedProjectsDetailIdRoute
 }
 export interface FileRoutesByTo {
   '/forgot-password': typeof authForgotPasswordRoute
@@ -161,6 +169,7 @@ export interface FileRoutesByTo {
   '/projects': typeof AuthenticatedProjectsIndexRoute
   '/technology': typeof AuthenticatedTechnologyIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/projects/detail/$id': typeof AuthenticatedProjectsDetailIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -182,6 +191,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
   '/_authenticated/technology/': typeof AuthenticatedTechnologyIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/_authenticated/projects/detail/$id': typeof AuthenticatedProjectsDetailIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -203,6 +213,7 @@ export interface FileRouteTypes {
     | '/projects'
     | '/technology'
     | '/users'
+    | '/projects/detail/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/forgot-password'
@@ -222,6 +233,7 @@ export interface FileRouteTypes {
     | '/projects'
     | '/technology'
     | '/users'
+    | '/projects/detail/$id'
   id:
     | '__root__'
     | '/_authenticated'
@@ -242,6 +254,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/'
     | '/_authenticated/technology/'
     | '/_authenticated/users/'
+    | '/_authenticated/projects/detail/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -385,6 +398,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectModuleIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/projects/detail/$id': {
+      id: '/_authenticated/projects/detail/$id'
+      path: '/projects/detail/$id'
+      fullPath: '/projects/detail/$id'
+      preLoaderRoute: typeof AuthenticatedProjectsDetailIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -397,6 +417,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
   AuthenticatedTechnologyIndexRoute: typeof AuthenticatedTechnologyIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
+  AuthenticatedProjectsDetailIdRoute: typeof AuthenticatedProjectsDetailIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -408,6 +429,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
   AuthenticatedTechnologyIndexRoute: AuthenticatedTechnologyIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
+  AuthenticatedProjectsDetailIdRoute: AuthenticatedProjectsDetailIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

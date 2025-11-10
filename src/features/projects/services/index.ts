@@ -1,17 +1,17 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import API from "@/config/api/api";
-import { useProjectsStore } from "../stores/useProjectsStore";
-import usePostData from "@/hooks/use-post-data";
-import usePatchData from "@/hooks/use-patch-data";
-import useDeleteData from "@/hooks/use-delete-data";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import axios from "axios";
-import { useAuthStore } from "@/stores/use-auth-store";
-import useFetchData from "@/hooks/use-fetch-data";
+import API from '@/config/api/api';
+import { useProjectsStore } from '../stores/useProjectsStore';
+import usePostData from '@/hooks/use-post-data';
+import usePatchData from '@/hooks/use-patch-data';
+import useDeleteData from '@/hooks/use-delete-data';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import axios from 'axios';
+import { useAuthStore } from '@/stores/use-auth-store';
+import useFetchData from '@/hooks/use-fetch-data';
 
 const GET_API_URL = API.projects.list;
-const GET_PRIORITY_DROPDOWN = API.dropdown_api.priority
+const GET_PRIORITY_DROPDOWN = API.dropdown_api.priority;
 
 export const useCreateProjectsData = () => {
   const { setOpen } = useProjectsStore();
@@ -35,29 +35,27 @@ export const useUpdateProjectsData = (id: string) => {
 
 const fetchProjects = async ({ pageParam = 1, queryKey }: any) => {
   const [_key, params] = queryKey;
+  const baseURL = import.meta.env.VITE_API_BASE_URL;
   const token =
     useAuthStore.getState().user?.token ?? useAuthStore.getState().token;
-  const response = await axios.get(
-    `https://api-resource-management.devstree.in/api/v1${GET_API_URL}`,
-    {
-      params: {
-        ...params,
-        page: pageParam,
-        limit: 10,
-      },
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+  const response = await axios.get(baseURL + `${GET_API_URL}`, {
+    params: {
+      ...params,
+      page: pageParam,
+      limit: 10,
+    },
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   return response.data;
 };
 
 export const useGetProjectsData = (params?: any) => {
   return useInfiniteQuery({
-    queryKey: ["projects", params],
+    queryKey: ['projects', params],
     queryFn: fetchProjects,
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
@@ -91,6 +89,13 @@ export const useDeleteProjectsData = (id: string) => {
 export const useGetProjectsHistoryData = (id: string | undefined) => {
   return useFetchData({
     url: `${API.projects.history}/${id}`,
+    enabled: !!id,
+  });
+};
+
+export const useGetProjectsDetailData = (id: string | undefined) => {
+  return useFetchData({
+    url: `${API.projects.list}/${id}`,
     enabled: !!id,
   });
 };
