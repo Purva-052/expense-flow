@@ -7,11 +7,12 @@ import TablePageHeader from "@/components/table/table-page-header";
 import { FilterConfig } from "@/components/table/table-toolbar";
 import { ActionFormModal } from "./components/action";
 import { columns } from "./components/columns";
-import { useProjectModuleStore } from "./stores/useProjectModuleStore";
-import { useGetProjectModule } from "./services";
+import { useInquiryStore } from "./stores/useInquiryStore";
+import { useGetInquiry } from "./services";
+import { ViewInquiryModal } from "./components/view-model";
 
-const ProjectModulePage = () => {
-  const { open, setOpen } = useProjectModuleStore();
+const InquiryPage = () => {
+  const { open, setOpen } = useInquiryStore();
   const [listParams, setListParams] = useState({
     pageSize: 10,
     currentPage: 1,
@@ -25,7 +26,7 @@ const ProjectModulePage = () => {
     pagination: true,
   };
 
-  const { data: listData, isPending: loading } = useGetProjectModule(apiParams);
+  const { data: listData, isPending: loading } = useGetInquiry(apiParams);
 
   const totalCount = (listData as any)?.metadata?.totalCount;
 
@@ -61,11 +62,11 @@ const ProjectModulePage = () => {
   return (
     <PageLayout>
       <TablePageHeader
-        title="Project module"
-        buttonText="Add module"
+        title="Inquiry "
+        buttonText="Add Inquiry "
         onButtonClick={handleAdd}
       >
-        Manage your Project module here.
+        Manage your Inquiry here.
       </TablePageHeader>
       <GlobalFilterSection filters={filters ?? []} />
       <GlobalTable
@@ -79,8 +80,9 @@ const ProjectModulePage = () => {
         isPaginationEnabled
       />
       {open && <ActionFormModal />}
+      <ViewInquiryModal/>
     </PageLayout>
   );
 };
 
-export default ProjectModulePage;
+export default InquiryPage;

@@ -10,7 +10,7 @@ interface StoreState<T> {
 }
 
 // Create the Zustand store for Operators
-export const useProjectModuleStore = create<StoreState<any>>((set) => ({
+export const useInquiryTypeStore = create<StoreState<any>>((set) => ({
   open: null,
   setOpen: (open) => set({ open }),
   currentRow: null,

@@ -3,7 +3,9 @@ import {
   IconAugmentedReality,
   IconBrandDatabricks,
   IconLayoutBoardFilled,
+  IconMessage2Question,
   IconPalette,
+  IconPencilSearch,
   IconTool,
   IconUsers,
   IconUserScreen,
@@ -45,6 +47,12 @@ export const sidebarData: SidebarData = {
           icon: IconLayoutBoardFilled,
           requiredRoles: ["admin", "team_lead", "project_manager", "developer"],
         },
+        {
+          title: "Inquiry",
+          url: "/Inquiry",
+          icon: IconMessage2Question,
+          requiredRoles: ["admin"],
+        },
       ],
     },
     {
@@ -69,12 +77,12 @@ export const sidebarData: SidebarData = {
           icon: IconAlignBoxBottomCenter,
           requiredRoles: ["admin", "team_lead", "project_manager"],
         },
-        // {
-        //   title: 'Projects Module',
-        //   url: '/Project-module',
-        //   icon: IconHexagons,
-        //   requiredRoles: ['admin', 'team_lead',"project_manager"],
-        // },
+        {
+          title: 'Inquiry Type',
+          url: '/Inquiry-type',
+          icon: IconPencilSearch,
+          requiredRoles: ['admin'],
+        },
         {
           title: "Clients",
           url: "/clients",

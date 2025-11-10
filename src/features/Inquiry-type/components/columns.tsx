@@ -10,19 +10,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useProjectModuleStore } from "../stores/useProjectModuleStore";
+import { useInquiryTypeStore } from "../stores/useInquiryTypeStore";
 
 export const columns: ColumnDef<any>[] = [
   {
     accessorKey: "name",
-    header: "Project Module Name",
+    header: "Inquiry Type Name",
   },
   {
     id: "actions",
     header: "Actions",
     cell: function Cell({ row }) {
       const operator = row.original;
-      const { setOpen, setCurrentRow } = useProjectModuleStore();
+      const { setOpen, setCurrentRow } = useInquiryTypeStore();
 
       const handleEdit = () => {
         setOpen("edit");
@@ -34,10 +34,10 @@ export const columns: ColumnDef<any>[] = [
         setCurrentRow(operator);
       };
 
-      const handleView = () => {
-        setOpen("view");
-        setCurrentRow(operator);
-      };
+      // const handleView = () => {
+      //   setOpen("view");
+      //   setCurrentRow(operator);
+      // };
 
       return (
         <DropdownMenu>
@@ -50,17 +50,17 @@ export const columns: ColumnDef<any>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleView}>
-              View Project Module
-            </DropdownMenuItem>
+            {/* <DropdownMenuItem onClick={handleView}>
+              View Inquiry Type
+            </DropdownMenuItem> */}
             <DropdownMenuItem onClick={handleEdit}>
-              Edit Project Module
+              Edit Inquiry Type
             </DropdownMenuItem>
             <DropdownMenuItem
               className="text-red-600 focus:bg-red-50 focus:text-red-600"
               onClick={handleDelete}
             >
-              Delete Project Module
+              Delete Inquiry Type
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

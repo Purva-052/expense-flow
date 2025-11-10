@@ -12,7 +12,7 @@ import { Form } from "@/components/ui/form";
 import CustomButton from "@/components/shared/custom-button";
 import { TextInputField } from "@/components/shared/custom-input-field";
 import { TProjectFormSchema } from "@/features/projects/schema";
-import { ProjectModuleSchema, TProjectModuleSchema } from "../schema";
+import { InquiryTypeSchema, TInquiryTypeSchema } from "../schema";
 
 interface Props {
   currentRow?: any;
@@ -22,7 +22,7 @@ interface Props {
   onSubmit: (values: TProjectFormSchema) => void;
 }
 
-export function ProjectModuleActionForm({
+export function InquiryTypeActionForm({
   currentRow,
   open,
   onOpenChange,
@@ -31,14 +31,14 @@ export function ProjectModuleActionForm({
 }: Readonly<Props>) {
   const isEdit = !!currentRow;
 
-  const form = useForm<TProjectModuleSchema>({
-    resolver: zodResolver(ProjectModuleSchema) as any,
+  const form = useForm<TInquiryTypeSchema>({
+    resolver: zodResolver(InquiryTypeSchema) as any,
     defaultValues: {
       name: currentRow?.name ?? "",
     },
   });
 
-  const onSubmit: SubmitHandler<TProjectModuleSchema> = (values: any) => {
+  const onSubmit: SubmitHandler<TInquiryTypeSchema> = (values: any) => {
     onSubmitValues(values);
   };
 
@@ -54,22 +54,22 @@ export function ProjectModuleActionForm({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader className="text-left">
           <DialogTitle>
-            {isEdit ? "Edit Project Module" : "Add Project Module"}
+            {isEdit ? "Edit Inquiry Type" : "Add Inquiry Type"}
           </DialogTitle>
         </DialogHeader>
 
         <div className="-mr-4 h-fit w-full overflow-y-auto py-1">
           <Form {...form}>
             <form
-              id="project-module-form"
+              id="inquiry-type-form"
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-4 p-0.5"
             >
               <TextInputField
                 control={form.control}
                 name="name"
-                label="Project module name"
-                placeholder="Enter project module name"
+                label="Inquiry Type name"
+                placeholder="Enter Inquiry Type name"
               />
             </form>
           </Form>
@@ -79,7 +79,7 @@ export function ProjectModuleActionForm({
           <CustomButton
             type="submit"
             loading={loading}
-            form="project-module-form"
+            form="inquiry-type-form"
           >
             Save Changes
           </CustomButton>
