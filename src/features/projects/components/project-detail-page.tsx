@@ -6,16 +6,18 @@ import TablePageHeader from '@/components/table/table-page-header';
 import { FilterConfig } from '@/components/table/table-toolbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Edit2, Eye, Plus } from 'lucide-react';
-import { useState } from 'react';
-import AddEditDocumentDialog from './AddEditDocumentDialog';
-import { useGetProjectsDetailData } from '../services';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { Edit2, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { useGetProjectsDetailData } from '../services';
+import AddEditDocumentDialog from './AddEditDocumentDialog';
+import ProjectDetails from './project-detail-card';
+import ServerDetailsCard from './server-detail-card';
 
 export default function ProjectDetailPage({
   projectId,
@@ -107,7 +109,8 @@ export default function ProjectDetailPage({
                 </div>
               </TooltipTrigger>
               <TooltipContent
-                // side="top"
+                side="top"
+                align="start"
                 className="text-sm max-w-xs border shadow"
               >
                 {note}
@@ -125,11 +128,15 @@ export default function ProjectDetailPage({
       cell: ({ row }: any) => {
         const link = row.original.documents[row.index].link;
         return link ? (
-          <Button variant="outline" size="sm" asChild className="">
-            <a href={link} target="_blank" rel="noopener noreferrer">
-              <Eye className="w-4 h-4" />
-            </a>
-          </Button>
+          <a
+            href={link}
+            target="_blank"
+            className="text-blue-500 underline truncate max-w-[200px] cursor-pointer block"
+            title={link}
+            rel="noopener noreferrer"
+          >
+            {link}
+          </a>
         ) : (
           '-'
         );
@@ -154,6 +161,40 @@ export default function ProjectDetailPage({
   ];
 
   const totalCount = documents.length;
+  const serverDetails = [
+    {
+      ipUrl: '192.168.1.1',
+      type: 'Frontend',
+      owner: 'Devstree',
+      serverId: 'server-001',
+      status: 'Active',
+      ssl: 'Yes',
+    },
+    {
+      ipUrl: 'api.example.com',
+      type: 'Backend',
+      owner: 'Client',
+      serverId: 'server-002',
+      status: 'Inactive',
+      ssl: 'No',
+    },
+    {
+      ipUrl: 'dev.myservice.io',
+      type: 'Backend',
+      owner: 'Devstree',
+      serverId: 'server-003',
+      status: 'Active',
+      ssl: 'Yes',
+    },
+    {
+      ipUrl: '203.0.113.45',
+      type: 'Database',
+      owner: 'Client',
+      serverId: 'server-004',
+      status: 'Active',
+      ssl: 'N/A',
+    },
+  ];
 
   return (
     <PageLayout>
@@ -161,124 +202,26 @@ export default function ProjectDetailPage({
       <TablePageHeader showActionButton={false} title={`Project Details`}>
         View and manage project-related information, documents, and secrets.
       </TablePageHeader>
-
-      {/* Project Info Section */}
-      <Card className="mb-6 mt-4">
+      <ProjectDetails projectDetails={projectDetails} />
+      <Card className="my-6">
         <CardHeader>
-          <CardTitle>Project Information</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-2xl">Server Details</CardTitle>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Name */}
-            <div>
-              <h3 className="text-sm font-medium">Name</h3>
-              <p className="text-sm text-gray-600 text-wrap">
-                {projectDetails?.data?.name ?? '-'}
-              </p>
-            </div>
-
-            {/* Client */}
-            <div>
-              <h3 className="text-sm font-medium">Client</h3>
-              <p className="text-sm text-gray-600 text-wrap">
-                {projectDetails?.data?.client?.name ?? '-'}
-              </p>
-            </div>
-
-            {/* Project Type */}
-            <div>
-              <h3 className="text-sm font-medium">Project Type</h3>
-              <p className="text-sm text-gray-600 text-wrap">
-                {projectDetails?.data?.projectType?.name ?? '-'}
-              </p>
-            </div>
-
-            {/* Project Coordinator */}
-            <div>
-              <h3 className="text-sm font-medium">Project Coordinator</h3>
-              <p className="text-sm text-gray-600 text-wrap">
-                {projectDetails?.data?.projectHandler?.fullName ?? '-'}
-              </p>
-            </div>
-
-            {/* Start Date */}
-            <div>
-              <h3 className="text-sm font-medium">Start Date</h3>
-              <p className="text-sm text-gray-600">
-                {projectDetails?.data?.startDate?.split('T')?.[0] ?? '-'}
-              </p>
-            </div>
-
-            {/* Expected Completion */}
-            <div>
-              <h3 className="text-sm font-medium">Expected Completion</h3>
-              <p className="text-sm text-gray-600">
-                {projectDetails?.data?.expectedCompletionDate?.split(
-                  'T'
-                )?.[0] ?? '-'}
-              </p>
-            </div>
-
-            {/* Progress */}
-            <div>
-              <h3 className="text-sm font-medium">Progress</h3>
-              <p className="text-sm text-gray-600">
-                {projectDetails?.data?.percentageComplete ?? 0}%
-              </p>
-            </div>
-
-            {/* Priority */}
-            <div>
-              <h3 className="text-sm font-medium">Priority</h3>
-              <p className="text-sm text-gray-600 capitalize text-wrap">
-                {projectDetails?.data?.priority ?? '-'}
-              </p>
-            </div>
-
-            {/* Project Status */}
-            <div>
-              <h3 className="text-sm font-medium">Project Status</h3>
-              <p className="text-sm text-gray-600 capitalize">
-                {projectDetails?.data?.currentStatus || 'Not specified'}
-              </p>
-            </div>
-
-            {/* Description */}
-            <div className="lg:col-span-2">
-              <h3 className="text-sm font-medium">Description</h3>
-              <p className="text-sm max-w-[450px] text-gray-600 whitespace-pre-wrap break-words">
-                {projectDetails?.data?.description || 'No description provided'}
-              </p>
-            </div>
-
-            {/* Technologies */}
-            <div className="lg:col-span-3">
-              <h3 className="text-sm font-medium">Technologies</h3>
-              {projectDetails?.data?.technologies &&
-              projectDetails?.data?.technologies?.length > 0 ? (
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {projectDetails?.data.technologies.map((tech: any) => (
-                    <span
-                      key={tech.id || tech}
-                      className="px-2 py-1 text-xs rounded-md bg-gray-100 text-gray-700 border"
-                    >
-                      {tech.name ?? tech}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-600">No technologies listed</p>
-              )}
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {serverDetails.map((server) => (
+              <ServerDetailsCard key={server.serverId} server={server} />
+            ))}
           </div>
         </CardContent>
       </Card>
-
       {/* Documents Section */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Project Documents</CardTitle>
+            <CardTitle className="text-2xl">Project Documents</CardTitle>
             <Button onClick={handleAdd}>
               {' '}
               <Plus /> Add Document
