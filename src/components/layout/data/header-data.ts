@@ -8,5 +8,6 @@ export const URL_TO_TITLE_MAP: Record<string, string> = {
   '/profile' :'Profile',
   '/Project-type':"Project Type",
   '/Inquiry':'Inquiry',
-  '/Inquiry-type':"Inquiry Type"
+  '/Inquiry-type':"Inquiry Type",
+  '/Server':'Servers'
 }

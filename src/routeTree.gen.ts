@@ -25,6 +25,7 @@ import { Route as AuthenticatedTechnologyIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects/index'
 import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authenticated/profile/index'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
+import { Route as AuthenticatedServerIndexRouteImport } from './routes/_authenticated/Server/index'
 import { Route as AuthenticatedProjectTypeIndexRouteImport } from './routes/_authenticated/Project-type/index'
 import { Route as AuthenticatedInquiryIndexRouteImport } from './routes/_authenticated/Inquiry/index'
 import { Route as AuthenticatedInquiryTypeIndexRouteImport } from './routes/_authenticated/Inquiry-type/index'
@@ -112,6 +113,12 @@ const AuthenticatedClientsIndexRoute =
     path: '/clients/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedServerIndexRoute =
+  AuthenticatedServerIndexRouteImport.update({
+    id: '/Server/',
+    path: '/Server/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProjectTypeIndexRoute =
   AuthenticatedProjectTypeIndexRouteImport.update({
     id: '/Project-type/',
@@ -145,6 +152,7 @@ export interface FileRoutesByFullPath {
   '/Inquiry-type': typeof AuthenticatedInquiryTypeIndexRoute
   '/Inquiry': typeof AuthenticatedInquiryIndexRoute
   '/Project-type': typeof AuthenticatedProjectTypeIndexRoute
+  '/Server': typeof AuthenticatedServerIndexRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
   '/profile': typeof AuthenticatedProfileIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
@@ -165,6 +173,7 @@ export interface FileRoutesByTo {
   '/Inquiry-type': typeof AuthenticatedInquiryTypeIndexRoute
   '/Inquiry': typeof AuthenticatedInquiryIndexRoute
   '/Project-type': typeof AuthenticatedProjectTypeIndexRoute
+  '/Server': typeof AuthenticatedServerIndexRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
   '/profile': typeof AuthenticatedProfileIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
@@ -187,6 +196,7 @@ export interface FileRoutesById {
   '/_authenticated/Inquiry-type/': typeof AuthenticatedInquiryTypeIndexRoute
   '/_authenticated/Inquiry/': typeof AuthenticatedInquiryIndexRoute
   '/_authenticated/Project-type/': typeof AuthenticatedProjectTypeIndexRoute
+  '/_authenticated/Server/': typeof AuthenticatedServerIndexRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
   '/_authenticated/profile/': typeof AuthenticatedProfileIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
@@ -209,6 +219,7 @@ export interface FileRouteTypes {
     | '/Inquiry-type'
     | '/Inquiry'
     | '/Project-type'
+    | '/Server'
     | '/clients'
     | '/profile'
     | '/projects'
@@ -229,6 +240,7 @@ export interface FileRouteTypes {
     | '/Inquiry-type'
     | '/Inquiry'
     | '/Project-type'
+    | '/Server'
     | '/clients'
     | '/profile'
     | '/projects'
@@ -250,6 +262,7 @@ export interface FileRouteTypes {
     | '/_authenticated/Inquiry-type/'
     | '/_authenticated/Inquiry/'
     | '/_authenticated/Project-type/'
+    | '/_authenticated/Server/'
     | '/_authenticated/clients/'
     | '/_authenticated/profile/'
     | '/_authenticated/projects/'
@@ -384,6 +397,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClientsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/Server/': {
+      id: '/_authenticated/Server/'
+      path: '/Server'
+      fullPath: '/Server'
+      preLoaderRoute: typeof AuthenticatedServerIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/Project-type/': {
       id: '/_authenticated/Project-type/'
       path: '/Project-type'
@@ -413,6 +433,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInquiryTypeIndexRoute: typeof AuthenticatedInquiryTypeIndexRoute
   AuthenticatedInquiryIndexRoute: typeof AuthenticatedInquiryIndexRoute
   AuthenticatedProjectTypeIndexRoute: typeof AuthenticatedProjectTypeIndexRoute
+  AuthenticatedServerIndexRoute: typeof AuthenticatedServerIndexRoute
   AuthenticatedClientsIndexRoute: typeof AuthenticatedClientsIndexRoute
   AuthenticatedProfileIndexRoute: typeof AuthenticatedProfileIndexRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
@@ -425,6 +446,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInquiryTypeIndexRoute: AuthenticatedInquiryTypeIndexRoute,
   AuthenticatedInquiryIndexRoute: AuthenticatedInquiryIndexRoute,
   AuthenticatedProjectTypeIndexRoute: AuthenticatedProjectTypeIndexRoute,
+  AuthenticatedServerIndexRoute: AuthenticatedServerIndexRoute,
   AuthenticatedClientsIndexRoute: AuthenticatedClientsIndexRoute,
   AuthenticatedProfileIndexRoute: AuthenticatedProfileIndexRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,

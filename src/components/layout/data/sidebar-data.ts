@@ -6,6 +6,7 @@ import {
   IconMessage2Question,
   IconPalette,
   IconPencilSearch,
+  IconReservedLine,
   IconTool,
   IconUsers,
   IconUserScreen,
@@ -88,6 +89,12 @@ export const sidebarData: SidebarData = {
           url: "/clients",
           icon: IconBrandDatabricks,
           requiredRoles: ["admin", "team_lead", "project_manager"],
+        },
+        {
+          title: "Servers",
+          url: "/Server",
+          icon: IconReservedLine,
+          requiredRoles: ["admin", "project_manager"],
         },
         {
           title: "Users",
