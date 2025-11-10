@@ -49,6 +49,7 @@ import { useGetProjectTypesDropdownList } from "@/features/Project-type/services
 import { useGetTechnologyDropdownList } from "@/features/technology/services";
 import { cn } from "@/lib/utils";
 import { capitalizeFirstLetter } from "@/utils/commonFunctions";
+import { roles } from "@/utils/constant";
 
 type GroupedDevelopers = {
   technologyName: string;
@@ -61,8 +62,9 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
 
   const { user } = useAuthStore();
   const Role = user?.user?.role;
-  const isDeveloperView = Role === "developer";
-  const isCoordinatorView = Role === "project_manager" || Role === "team_lead";
+  const isDeveloperView = Role === roles.DEVELOPER;
+  const isCoordinatorView =
+    Role === roles.PROJECT_MANAGER || Role === roles.TEAM_LEAD;
   const currentUserId = user?.user?.id;
   const FILTER_STORAGE_KEY = "board_filters";
   const [searchTech, setSearchTech] = useState<string>("");

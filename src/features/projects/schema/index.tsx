@@ -13,7 +13,7 @@ export const projectFormSchema = z.object({
   clientId: z.number({ invalid_type_error: "Client is required" }),
   technologyId: z
     .array(z.number(), { invalid_type_error: "Technologies are required" })
-    .nonempty("At least one technology is required"), 
+    .nonempty("At least one technology is required"),
   projectTypeId: z.number({ invalid_type_error: "Project Type is required" }),
   startDate: z.preprocess(
     (val) => {
@@ -49,6 +49,14 @@ export const projectFormSchema = z.object({
       invalid_type_error: "Priority is required",
     })
   ),
+  projectDocuments: z
+    .array(
+      z.object({
+        link: z.string().url("Enter a valid URL"),
+        note: z.string().optional(),
+      })
+    )
+    .optional(),
 });
 
 export type TProjectFormSchema = z.infer<typeof projectFormSchema>;

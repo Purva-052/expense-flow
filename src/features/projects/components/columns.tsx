@@ -18,6 +18,7 @@ import { useProjectStatusChange } from "@/features/kanban-board/services";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { useState } from "react";
 import { ReasonDialog } from "@/features/kanban-board/components/status-reason-dialog";
+import { roles } from "@/utils/constant";
 
 function StatusCell({ row }: any) {
   const [isReasonDialogOpen, setReasonDialogOpen] = useState(false);
@@ -79,9 +80,9 @@ function StatusCell({ row }: any) {
   };
 
   // --- Role & permission logic (same as ProjectCard) ---
-  const isAdmin = userRole === "admin";
+  const isAdmin = userRole === roles.ADMIN;
   const isProjectHandler =
-    userRole === "project_manager" || userRole === "team_lead";
+    userRole === roles.PROJECT_MANAGER || userRole === roles.TEAM_LEAD;
 
   const isHandlerAssigned = !!project?.projectHandler?.id;
   const isCurrentUserAssignedHandler =

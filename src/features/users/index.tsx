@@ -12,6 +12,7 @@ import { useUsersStore } from "./stores/useUsersStore";
 import { useGetUsersList, useGetUsersRoles } from "./services";
 import { useGetTechnologyDropdownList } from "../technology/services";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { roles } from "@/utils/constant";
 
 const UsersPage = () => {
   const { open, setOpen } = useUsersStore();
@@ -147,7 +148,9 @@ const UsersPage = () => {
         buttonText="Add User"
         onButtonClick={handleAdd}
         showActionButton={
-          UserRole === "admin" || UserRole === "project_manager" ? true : false
+          UserRole === roles.ADMIN || UserRole === roles.PROJECT_MANAGER
+            ? true
+            : false
         }
       >
         Manage your Users here.

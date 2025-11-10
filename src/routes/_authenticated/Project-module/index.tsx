@@ -1,9 +1,11 @@
+import { roles } from "@/utils/constant";
 import { requireRole } from "@/utils/requireRole";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/Project-module/")({
   component: RouteComponent,
-  beforeLoad: () => requireRole(["admin", "team_lead", "project_manager"]),
+  beforeLoad: () =>
+    requireRole([roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER]),
 });
 
 function RouteComponent() {

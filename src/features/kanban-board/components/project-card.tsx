@@ -27,6 +27,7 @@ import { Form, FormProvider, useForm } from "react-hook-form";
 import { useProjectStatusChange } from "../services";
 import ProjectDetailsDialog from "./ProjectDetailsDialog";
 import { ReasonDialog } from "./status-reason-dialog";
+import { roles } from "@/utils/constant";
 
 // --- Priority styles remain the same ---
 const priorityStyles: Record<
@@ -79,8 +80,8 @@ export function ProjectCard({
   const { user } = useAuthStore();
   const userRole = user?.user?.role;
   const isProjectHandler =
-    userRole === "project_manager" || userRole === "team_lead";
-  const isAdmin = userRole === "admin";
+    userRole === roles.PROJECT_MANAGER || userRole === roles.TEAM_LEAD;
+  const isAdmin = userRole === roles.ADMIN;
 
   const { mutateAsync: ProjectStatusChange } = useProjectStatusChange(() => {
     onStatusChanged?.();

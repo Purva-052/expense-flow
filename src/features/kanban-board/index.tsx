@@ -5,6 +5,7 @@ import ResourceTab from "./components/resourceTab";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { useState } from "react";
 import { useGetTechnologyDropdownList } from "../technology/services";
+import { roles } from "@/utils/constant";
 
 const ProjectBoard = () => {
   const [activeTab, setActiveTab] = useState("board");
@@ -14,7 +15,7 @@ const ProjectBoard = () => {
     useGetTechnologyDropdownList();
   return (
     <Main className="h-screen overflow-auto  flex flex-col">
-      {userRole === "developer" ? (
+      {userRole === roles.DEVELOPER ? (
         <Board activeTab={activeTab} />
       ) : (
         // 🧭 Others see tabbed layout

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { SubmitHandler, useForm } from "react-hook-form";
+import { SubmitHandler, useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
@@ -15,6 +15,9 @@ import { projectFormSchema, TProjectFormSchema } from "../schema";
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 import { Textarea } from "@/components/ui/textarea";
+import { PlusCircle, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { roles } from "@/utils/constant";
 
 interface Props {
   currentRow?: any;
@@ -30,6 +33,7 @@ interface Props {
   projectTypesLoading?: boolean;
   technologyList?: any;
   technologyListLoading?: boolean;
+  userRole?: string;
 }
 
 export function ProjectActionForm({
@@ -46,12 +50,16 @@ export function ProjectActionForm({
   projectTypesLoading,
   technologyList,
   technologyListLoading,
+  userRole,
 }: Readonly<Props>) {
   const isEdit = !!currentRow;
 
+  const canManageDocuments =
+    userRole === roles.ADMIN || userRole === roles.PROJECT_MANAGER;
+
   const schema = isEdit
-    ? projectFormSchema.omit({ status: true }) // remove status when editing
-    : projectFormSchema; // keep status required when adding
+    ? projectFormSchema.omit({ status: true })
+    : projectFormSchema;
 
   const form = useForm<TProjectFormSchema>({
     resolver: zodResolver(schema) as any,
@@ -68,6 +76,7 @@ export function ProjectActionForm({
           priority: currentRow.priority ?? "",
           status: currentRow.status,
           projectTypeId: currentRow.projectTypeId ?? undefined,
+          projectDocuments: currentRow.projectDocuments ?? [],
         }
       : {
           name: "",
@@ -81,7 +90,18 @@ export function ProjectActionForm({
           priority: "",
           status: undefined,
           projectTypeId: undefined,
+          projectDocuments: [
+            {
+              link: "",
+              note: "",
+            },
+          ],
         },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "projectDocuments",
   });
 
   const onSubmit: SubmitHandler<TProjectFormSchema> = (values) => {
@@ -116,7 +136,7 @@ export function ProjectActionForm({
                 placeholder="Enter project name"
               />
 
-              {/* Project Description */}
+              {/* Description */}
               <div className="flex flex-col space-y-2">
                 <label className="text-sm font-medium text-gray-700">
                   Description
@@ -128,6 +148,7 @@ export function ProjectActionForm({
                   className="resize-none"
                 />
               </div>
+
               {!isEdit && (
                 <CustomDropDownSearchable
                   form={form}
@@ -145,7 +166,7 @@ export function ProjectActionForm({
                 />
               )}
 
-              {/* Client Dropdown */}
+              {/* Dropdowns */}
               <CustomDropDownSearchable
                 form={form}
                 name="clientId"
@@ -172,25 +193,26 @@ export function ProjectActionForm({
                 form={form}
                 name="technologyId"
                 label="Project Technologies"
-                options={technologyList?.data?.map((technology: any) => {
-                  return { value: technology.id, label: technology.name };
-                })}
+                options={technologyList?.data?.map((t: any) => ({
+                  value: t.id,
+                  label: t.name,
+                }))}
                 isLoading={technologyListLoading}
                 placeholder="Select Technologies"
                 multiple
               />
-              {/* Manager */}
               <CustomDropDownSearchable
                 form={form}
                 name="handlerId"
                 label="Project Coordinator"
-                options={projecthandler?.data?.map((handler: any) => ({
-                  value: handler.id,
-                  label: handler.fullName,
+                options={projecthandler?.data?.map((h: any) => ({
+                  value: h.id,
+                  label: h.fullName,
                 }))}
                 isLoading={projecthandlerLoading}
                 placeholder="Select Coordinator"
               />
+
               {/* Dates */}
               <CustomDatePicker
                 control={form.control}
@@ -228,6 +250,67 @@ export function ProjectActionForm({
                 placeholder="Select Priority"
                 searchEnabled={false}
               />
+
+              {canManageDocuments && (
+                <div className="mt-4 space-y-2 border-t pt-3">
+                  <div className="flex justify-between items-center">
+                    <label className="text-sm font-medium text-gray-700">
+                      Project Documents
+                    </label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => append({ link: "", note: "" })}
+                      className="flex items-center gap-1"
+                    >
+                      <PlusCircle className="h-4 w-4" /> Add
+                    </Button>
+                  </div>
+
+                  {fields.map((field, index) => (
+                    <div
+                      key={field.id}
+                      className="flex gap-3 items-center border p-3 rounded-lg"
+                    >
+                      <div className=" flex-1 gap-2 flex flex-col">
+                        <div className="">
+                          <TextInputField
+                            control={form.control}
+                            name={`projectDocuments.${index}.link`}
+                            label="Link"
+                            placeholder="Enter document link"
+                          />
+                        </div>
+                        <div className="flex flex-col space-y-1">
+                          <label className="text-sm font-medium text-gray-700">
+                            Note
+                          </label>
+                          <Textarea
+                            {...form.register(
+                              `projectDocuments.${index}.note` as const
+                            )}
+                            placeholder="Enter note"
+                            rows={3}
+                            className="resize-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="col-span-1 flex justify-end  pt-6">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => remove(index)}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </form>
           </Form>
         </div>

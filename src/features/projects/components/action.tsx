@@ -8,6 +8,7 @@ import {
   useUpdateProjectsData,
 } from "../services";
 import { ProjectActionForm } from "./action-form";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 export function ActionFormModal({
   clientsList,
@@ -20,6 +21,8 @@ export function ActionFormModal({
   technologyListLoading,
 }: any) {
   const { open, setOpen, currentRow, setCurrentRow } = useProjectsStore();
+  const user = useAuthStore((state) => state.user);
+  const userRole = user?.user?.role;
   const { mutateAsync: createMutate, isPending: isCreateLoading } =
     useCreateProjectsData();
   const { mutateAsync: updateMutate, isPending: isUpdateLoading } =
@@ -42,6 +45,7 @@ export function ActionFormModal({
       status: values.status,
       projectTypeId: values.projectTypeId,
       technologyId: values.technologyId,
+      projectDocuments: values.projectDocuments,
     };
     createMutate(payload);
   };
@@ -58,6 +62,7 @@ export function ActionFormModal({
       priority: values.priority,
       projectTypeId: values.projectTypeId,
       technologyId: values.technologyId,
+      projectDocuments: values.projectDocuments,
     };
 
     updateMutate(payload);
@@ -90,6 +95,7 @@ export function ActionFormModal({
         projecthandlerLoading={projecthandlerLoading}
         technologyList={technologyList}
         technologyListLoading={technologyListLoading}
+        userRole={userRole}
       />
 
       {currentRow && (
@@ -109,6 +115,7 @@ export function ActionFormModal({
             projecthandlerLoading={projecthandlerLoading}
             technologyList={technologyList}
             technologyListLoading={technologyListLoading}
+            userRole={userRole}
           />
           <DeleteModal
             onConfirm={handleDelete}
