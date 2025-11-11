@@ -1,18 +1,22 @@
 // src/features/coupons/components/ActionFormModal.tsx
 import { DeleteModal } from "@/components/model/delete-model";
-import { ProjectModuleActionForm } from "./action-form";
-import { useProjectModuleStore } from "../stores/useProjectModuleStore";
+import { InquiryTypeActionForm } from "./action-form";
+import { useInquiryTypeStore } from "../stores/useInquiryTypeStore";
 import { TProjectFormSchema } from "@/features/projects/schema";
-import { useCreateProjectModule, useDeleteProjectModule, useUpdateProjectModule } from "../services";
+import {
+  useCreateInquiryType,
+  useDeleteInquiryType,
+  useUpdateInquiryType,
+} from "../services";
 
 export function ActionFormModal() {
-  const { open, setOpen, currentRow, setCurrentRow } = useProjectModuleStore();
+  const { open, setOpen, currentRow, setCurrentRow } = useInquiryTypeStore();
   const { mutateAsync: createMutate, isPending: isCreateLoading } =
-    useCreateProjectModule();
+    useCreateInquiryType();
   const { mutateAsync: updateMutate, isPending: isUpdateLoading } =
-    useUpdateProjectModule(currentRow?.id || "");
+    useUpdateInquiryType(currentRow?.id || "");
   const { mutateAsync: deleteMutate, isPending: isDeleteLoading } =
-    useDeleteProjectModule(currentRow?.id || "");
+  useDeleteInquiryType(currentRow?.id || "");
 
   const handleCreate = (values: TProjectFormSchema) => {
     const payload = {
@@ -41,8 +45,8 @@ export function ActionFormModal() {
 
   return (
     <>
-      <ProjectModuleActionForm
-        key="add-project-module"
+      <InquiryTypeActionForm
+        key="add-inquiry-type"
         open={open === "add"}
         loading={isCreateLoading}
         onOpenChange={(value) => setOpen(value ? "add" : null)}
@@ -51,8 +55,8 @@ export function ActionFormModal() {
 
       {currentRow && (
         <>
-          <ProjectModuleActionForm
-            key={`project-module-edit-${currentRow.id}`}
+          <InquiryTypeActionForm
+            key={`inquiry-type-edit-${currentRow.id}`}
             open={open === "edit"}
             onSubmit={handleEdit}
             loading={isUpdateLoading}
@@ -61,7 +65,7 @@ export function ActionFormModal() {
           />
           <DeleteModal
             onConfirm={handleDelete}
-            key={`project-module-delete-${currentRow.id}`}
+            key={`inquiry-type-delete-${currentRow.id}`}
             isOpen={open === "delete"}
             onClose={handleCloseDialog}
             itemName={currentRow.code}

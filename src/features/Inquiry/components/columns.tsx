@@ -10,34 +10,59 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useProjectTypeStore } from "../stores/useProjectTypeStore";
+import { useInquiryStore } from "../stores/useInquiryStore";
 
 export const columns: ColumnDef<any>[] = [
   {
-    accessorKey: "name",
-    header: "Project type Name",
+    accessorKey: "clientName",
+    header: "Client Name",
+  },
+  {
+    accessorKey: "country",
+    header: "Country",
+  },
+  {
+    accessorKey: "type",
+    header: "Inquiry Type",
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => {
+      const status = row.original.status;
+      const color =
+        status === "open"
+          ? "text-green-600"
+          : status === "in-progress"
+          ? "text-yellow-600"
+          : status === "closed"
+          ? "text-gray-600"
+          : "text-blue-600";
+
+      return <span className={`capitalize font-medium ${color}`}>{status}</span>;
+    },
   },
   {
     id: "actions",
     header: "Actions",
     cell: function Cell({ row }) {
-      const operator = row.original;
-      const { setOpen, setCurrentRow } = useProjectTypeStore();
+      const inquiry = row.original;
+      const { setOpen, setCurrentRow } = useInquiryStore();
 
       const handleEdit = () => {
         setOpen("edit");
-        setCurrentRow(operator);
+        setCurrentRow(inquiry);
       };
 
       const handleDelete = () => {
         setOpen("delete");
-        setCurrentRow(operator);
+        setCurrentRow(inquiry);
       };
 
-      // const handleView = () => {
-      //   setOpen("view");
-      //   setCurrentRow(operator);
-      // };
+      const handleView = () => {
+        setOpen("view");
+        setCurrentRow(inquiry);
+      };
 
       return (
         <DropdownMenu>
@@ -50,17 +75,17 @@ export const columns: ColumnDef<any>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {/* <DropdownMenuItem onClick={handleView}>
-              View Project type
-            </DropdownMenuItem> */}
+            <DropdownMenuItem onClick={handleView}>
+              View Inquiry
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={handleEdit}>
-              Edit Project type
+              Edit Inquiry
             </DropdownMenuItem>
             <DropdownMenuItem
               className="text-red-600 focus:bg-red-50 focus:text-red-600"
               onClick={handleDelete}
             >
-              Delete Project type
+              Delete Inquiry
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
