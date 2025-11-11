@@ -46,6 +46,7 @@ export const sidebarData: SidebarData = {
         roles.TEAM_LEAD,
         roles.PROJECT_MANAGER,
         roles.DEVELOPER,
+        roles.BDE,
       ],
       items: [
         {
@@ -57,13 +58,14 @@ export const sidebarData: SidebarData = {
             roles.TEAM_LEAD,
             roles.PROJECT_MANAGER,
             roles.DEVELOPER,
+            roles.BDE,
           ],
         },
         {
           title: 'Inquiry',
           url: '/Inquiry',
           icon: IconMessage2Question,
-          requiredRoles: ['admin'],
+          requiredRoles: [roles.ADMIN],
         },
       ],
     },

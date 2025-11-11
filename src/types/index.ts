@@ -1,8 +1,8 @@
-import { Row } from "@tanstack/react-table";
+import { Row } from '@tanstack/react-table';
 
 export enum StorageEnum {
-  USER = "user",
-  TOKEN = "token",
+  USER = 'user',
+  TOKEN = 'token',
 }
 
 export interface ErrorResponse {
@@ -52,4 +52,5 @@ export interface Roles {
   TEAM_LEAD: string;
   PROJECT_MANAGER: string;
   DEVELOPER: string;
+  BDE: string;
 }
