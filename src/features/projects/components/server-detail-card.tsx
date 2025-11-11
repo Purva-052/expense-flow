@@ -33,12 +33,17 @@ const ServerDetailsCard = ({ server }: any) => {
         <h3 className="text-xl font-semibold text-gray-800 break-all">
           {ipUrl}
         </h3>
-        <div
-          className={`w-3 h-3 rounded-full ${
-            isActive ? 'bg-green-500' : 'bg-red-500'
-          }`}
-          title={status}
-        />
+        <div title={status} className="flex gap-1 items-center">
+          <span
+            className={`px-2 py-1 text-xs font-bold leading-none rounded-full ${
+              isActive
+                ? 'bg-green-100 text-green-800'
+                : 'bg-red-100 text-red-800'
+            }`}
+          >
+            {status}
+          </span>
+        </div>
       </div>
 
       <div className="space-y-2 text-gray-600">
@@ -64,18 +69,6 @@ const ServerDetailsCard = ({ server }: any) => {
         <div className="flex justify-between">
           <span className="font-medium">SSL:</span>
           <span>{ssl}</span>
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="font-medium">Status:</span>
-          <span
-            className={`px-2 py-1 text-xs font-bold leading-none rounded-full ${
-              isActive
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
-            }`}
-          >
-            {status}
-          </span>
         </div>
       </div>
     </div>

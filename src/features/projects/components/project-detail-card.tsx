@@ -61,7 +61,7 @@ const ProjectDetails = ({ projectDetails }: any) => {
           </p>
         </div>
         <div
-          className={`mt-3 sm:mt-0 px-3 py-1 text-sm font-medium rounded-full ${getStatusBadge(data?.currentStatus)}`}
+          className={`mt-3 sm:mt-0 px-3 py-1 text-sm font-medium capitalize rounded-full ${getStatusBadge(data?.currentStatus)}`}
         >
           {data?.currentStatus || 'Not specified'}
         </div>
