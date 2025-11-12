@@ -11,24 +11,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useServerStore } from "../stores/useServerStore";
+import { ServerOwnerTypeLabel } from "@/utils/constant";
 
 export const columns: ColumnDef<any>[] = [
   {
-    accessorKey: "ipOrUrl",
-    header: "IP / URL",
+    accessorKey: "ip",
+    header: "IP",
   },
+
   {
-    accessorKey: "type",
-    header: "Type",
-    cell: ({ row }) => (
-      <span className="capitalize">{row.original.type}</span>
-    ),
-  },
-  {
-    accessorKey: "owner",
+    accessorKey: "ownerName",
     header: "Owner",
     cell: ({ row }) => (
-      <span className="capitalize">{row.original.owner}</span>
+      <span className="capitalize">
+        {ServerOwnerTypeLabel?.[row.original.ownerName]
+          ? ServerOwnerTypeLabel?.[row.original.ownerName]
+          : "-"}
+      </span>
     ),
   },
   {
@@ -40,31 +39,11 @@ export const columns: ColumnDef<any>[] = [
           row.original.ssl ? "text-green-600" : "text-red-600"
         } font-medium`}
       >
-        {row.original.ssl ? "SSL" : "NONSSL"}
+        {row.original.ssl ? "SSL" : "NON SSL"}
       </span>
     ),
   },
-  {
-    accessorKey: "serverId",
-    header: "Server ID",
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => {
-      const status = row.original.status;
-      const color =
-        status === "active"
-          ? "text-green-600"
-          : status === "inactive"
-          ? "text-gray-600"
-          : "text-yellow-600";
 
-      return (
-        <span className={`capitalize font-medium ${color}`}>{status}</span>
-      );
-    },
-  },
   {
     id: "actions",
     header: "Actions",

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { SubmitHandler, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import CustomButton from "@/components/shared/custom-button";
+import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import {
   Dialog,
   DialogContent,
@@ -9,12 +9,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
-import CustomButton from "@/components/shared/custom-button";
-import { TextInputField } from "@/components/shared/custom-input-field";
-import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
-import { ServerSchema, TServerSchema } from "../schema";
-import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { ServerSchema, TServerSchema } from "../schema";
+import { ServerOwnerTypeOptions } from "@/utils/constant";
 
 interface Props {
   currentRow?: any;
@@ -36,12 +37,9 @@ export function ServerActionForm({
   const form = useForm<TServerSchema>({
     resolver: zodResolver(ServerSchema),
     defaultValues: {
-      ipOrUrl: currentRow?.ipOrUrl ?? "",
-      type: currentRow?.type ?? "",
-      owner: currentRow?.owner ?? "",
+      ip: currentRow?.ip ?? "",
+      ownerName: currentRow?.ownerName ?? "",
       ssl: currentRow?.ssl ?? true,
-      serverId: currentRow?.serverId ?? "",
-      status: currentRow?.status ?? "",
     },
   });
 
@@ -71,36 +69,37 @@ export function ServerActionForm({
               className="space-y-4 p-0.5"
             >
               {/* IP / URL */}
-              <TextInputField
+              <Controller
                 control={form.control}
-                name="ipOrUrl"
-                label="IP / URL"
-                placeholder="Enter IP address or URL"
-              />
-
-              {/* Type Dropdown */}
-              <CustomDropDownSearchable
-                form={form}
-                name="type"
-                label="Type"
-                options={[
-                  { value: "frontend", label: "Frontend" },
-                  { value: "backend", label: "Backend" },
-                  { value: "s3", label: "S3" },
-                ]}
-                placeholder="Select Type"
-                searchEnabled={false}
+                name={"ip"}
+                render={({ field, fieldState }) => (
+                  <div className="flex flex-col gap-1">
+                    <label htmlFor={field.name} className="font-medium text-sm">
+                      IP Address
+                    </label>
+                    <Input
+                      {...field}
+                      onChange={(e) => {
+                        const filtered = e.target.value.replace(/[^0-9.]/g, ""); // only digits and dots
+                        field.onChange(filtered);
+                      }}
+                      placeholder="Enter IP address"
+                    />
+                    {fieldState?.error?.message && (
+                      <p className="text-sm text-red-500">
+                        {fieldState.error.message}
+                      </p>
+                    )}
+                  </div>
+                )}
               />
 
               {/* Owner Dropdown */}
               <CustomDropDownSearchable
                 form={form}
-                name="owner"
+                name="ownerName"
                 label="Owner"
-                options={[
-                  { value: "devstree", label: "Devstree" },
-                  { value: "client", label: "Client" },
-                ]}
+                options={ServerOwnerTypeOptions}
                 placeholder="Select Owner"
                 searchEnabled={false}
               />
@@ -113,28 +112,6 @@ export function ServerActionForm({
                   onCheckedChange={(checked) => form.setValue("ssl", checked)}
                 />
               </div>
-
-              {/* Server ID */}
-              <TextInputField
-                control={form.control}
-                name="serverId"
-                label="Server ID"
-                placeholder="Enter Server ID"
-              />
-
-              {/* Status Dropdown */}
-              <CustomDropDownSearchable
-                form={form}
-                name="status"
-                label="Status"
-                options={[
-                  { value: "active", label: "Active" },
-                  { value: "inactive", label: "Inactive" },
-                  { value: "maintenance", label: "Maintenance" },
-                ]}
-                placeholder="Select Status"
-                searchEnabled={false}
-              />
             </form>
           </Form>
         </div>

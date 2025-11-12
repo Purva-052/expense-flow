@@ -4,36 +4,32 @@ import { DeleteModal } from "@/components/model/delete-model";
 import { ServerActionForm } from "./action-form";
 import { useServerStore } from "../stores/useServerStore";
 import { TServerSchema } from "../schema";
+import { useCreateServer, useDeleteServer, useUpdateServer } from "../services";
 
 export function ActionFormModal() {
   const { open, setOpen, currentRow, setCurrentRow } = useServerStore();
-  // const { mutateAsync: createMutate, isPending: isCreateLoading } =
-  //   useCreateInquiry();
-  // const { mutateAsync: updateMutate, isPending: isUpdateLoading } =
-  //   useUpdateInquiry(currentRow?.id || "");
-  // const { mutateAsync: deleteMutate, isPending: isDeleteLoading } =
-  //   useDeleteInquiry(currentRow?.id || "");
+  const { mutateAsync: createMutate, isPending: isCreateLoading } =
+    useCreateServer();
+  const { mutateAsync: updateMutate, isPending: isUpdateLoading } =
+    useUpdateServer(currentRow?.id || "");
+  const { mutateAsync: deleteMutate, isPending: isDeleteLoading } =
+    useDeleteServer(currentRow?.id || "");
 
-  const handleCreate = (values: TServerSchema) => {
-    console.log("🚀 ~ handleCreate ~ values:", values);
-
-    // const payload = {
-    //   name: values.name,
-    // };
-    // createMutate(payload);
-  };
-
-  const handleEdit = (values: TServerSchema) => {
-    console.log("🚀 ~ handleEdit ~ values:", values);
-
-    // const payload = {
-    //   name: values.name,
-    // };
-    // updateMutate(payload);
+  const handleSubmission = (values: TServerSchema, type: string) => {
+    const payload = {
+      ip: values.ip,
+      ownerName: values.ownerName,
+      ssl: values.ssl,
+    };
+    if (type === "add") {
+      createMutate(payload);
+    } else {
+      updateMutate(payload);
+    }
   };
 
   const handleDelete = () => {
-    // deleteMutate();
+    deleteMutate();
   };
 
   const handleCloseDialog = () => {
@@ -46,30 +42,30 @@ export function ActionFormModal() {
   return (
     <>
       <ServerActionForm
-        key="add-inquiry"
+        key="add-server"
         open={open === "add"}
-        // loading={isCreateLoading}
+        loading={isCreateLoading}
         onOpenChange={(value) => setOpen(value ? "add" : null)}
-        onSubmit={handleCreate}
+        onSubmit={(values) => handleSubmission(values, "add")}
       />
 
       {currentRow && (
         <>
           <ServerActionForm
-            key={`inquiry-edit-${currentRow.id}`}
+            key={`server-edit-${currentRow.id}`}
             open={open === "edit"}
-            onSubmit={handleEdit}
-            // loading={isUpdateLoading}
+            onSubmit={(values) => handleSubmission(values, "edit")}
+            loading={isUpdateLoading}
             onOpenChange={handleCloseDialog}
             currentRow={currentRow}
           />
           <DeleteModal
             onConfirm={handleDelete}
-            key={`inquiry-delete-${currentRow.id}`}
+            key={`server-delete-${currentRow.id}`}
             isOpen={open === "delete"}
             onClose={handleCloseDialog}
             itemName={currentRow.code}
-            // loading={isDeleteLoading}
+            loading={isDeleteLoading}
           />
         </>
       )}

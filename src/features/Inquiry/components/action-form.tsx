@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { SubmitHandler, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import CustomButton from "@/components/shared/custom-button";
+import { TextInputField } from "@/components/shared/custom-input-field";
+import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import {
   Dialog,
   DialogContent,
@@ -9,11 +10,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
-import CustomButton from "@/components/shared/custom-button";
-import { TextInputField } from "@/components/shared/custom-input-field";
 import { Textarea } from "@/components/ui/textarea";
-import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
+import { useGetInquiryType } from "@/features/Inquiry-type/services";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { InquirySchema, TInquirySchema } from "../schema";
+import { INQUIRY_STATUS } from "@/utils/constant";
 
 interface Props {
   currentRow?: any;
@@ -36,12 +38,21 @@ export function InquiryActionForm({
     resolver: zodResolver(InquirySchema) as any,
     defaultValues: {
       clientName: currentRow?.clientName ?? "",
-      country: currentRow?.country ?? "",
-      type: currentRow?.type ?? "",
+      country: currentRow?.countryName ?? "",
+      type: currentRow?.modules?.map((item: any) => item?.id) ?? [],
       status: currentRow?.status ?? "",
       notes: currentRow?.notes ?? "",
     },
   });
+
+  const { data: typeList, isPending: loadingType }: any = useGetInquiryType({
+    pagination: false,
+  });
+  const inquiryOptions =
+    typeList?.data?.map((item: any) => ({
+      value: item?.id,
+      label: item?.name,
+    })) || [];
 
   const onSubmit: SubmitHandler<TInquirySchema> = (values) => {
     onSubmitValues(values);
@@ -89,43 +100,63 @@ export function InquiryActionForm({
                 form={form}
                 name="type"
                 label="Inquiry Type"
-                options={[
-                  { value: "general", label: "General" },
-                  { value: "technical", label: "Technical" },
-                  { value: "support", label: "Support" },
-                  { value: "sales", label: "Sales" },
-                ]}
+                multiple
+                options={inquiryOptions}
                 placeholder="Select Inquiry Type"
                 searchEnabled={false}
+                isLoading={loadingType}
               />
 
-              {/* Status Dropdown */}
-              <CustomDropDownSearchable
-                form={form}
-                name="status"
-                label="Status"
-                options={[
-                  { value: "open", label: "Open" },
-                  { value: "in-progress", label: "In Progress" },
-                  { value: "closed", label: "Closed" },
-                  { value: "pending", label: "Pending" },
-                ]}
-                placeholder="Select Status"
-                searchEnabled={false}
-              />
-
-              {/* Notes */}
-              <div className="flex flex-col space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Notes
-                </label>
-                <Textarea
-                  {...form.register("notes")}
-                  placeholder="Enter additional notes"
-                  rows={3}
-                  className="resize-none"
-                />
-              </div>
+              {!isEdit && (
+                <>
+                  <CustomDropDownSearchable
+                    form={form}
+                    name="status"
+                    label="Status"
+                    options={[
+                      {
+                        value: INQUIRY_STATUS.NEW_INQUIRY,
+                        label: "New Inquiry",
+                      },
+                      {
+                        value: INQUIRY_STATUS.IN_DISCUSSION,
+                        label: "In Discussion",
+                      },
+                      {
+                        value: INQUIRY_STATUS.NEAR_TO_CLOSE,
+                        label: "Near to Close",
+                      },
+                      {
+                        value: INQUIRY_STATUS.CLOSED,
+                        label: "Closed",
+                      },
+                      {
+                        value: INQUIRY_STATUS.OPTED_OUT,
+                        label: "Opted Out",
+                      },
+                    ]}
+                    // options={[
+                    //   { value: "open", label: "Open" },
+                    //   { value: "in-progress", label: "In Progress" },
+                    //   { value: "closed", label: "Closed" },
+                    //   { value: "pending", label: "Pending" },
+                    // ]}
+                    placeholder="Select Status"
+                    searchEnabled={false}
+                  />
+                  <div className="flex flex-col space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Notes
+                    </label>
+                    <Textarea
+                      {...form.register("notes")}
+                      placeholder="Enter additional notes"
+                      rows={3}
+                      className="resize-none"
+                    />
+                  </div>
+                </>
+              )}
             </form>
           </Form>
         </div>

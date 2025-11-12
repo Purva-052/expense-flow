@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import PageLayout from "@/components/layout/layout-provider";
 import { GlobalTable } from "@/components/table/global-table";
@@ -8,6 +9,7 @@ import { ActionFormModal } from "./components/action";
 import { columns } from "./components/columns";
 import { useServerStore } from "./stores/useServerStore";
 import { ViewServerModal } from "./components/view-model";
+import { useGetServerList } from "./services";
 
 const ServerPage = () => {
   const { open, setOpen } = useServerStore();
@@ -17,16 +19,16 @@ const ServerPage = () => {
     search: "",
   });
 
-  // const apiParams = {
-  //   page: listParams.currentPage,
-  //   limit: listParams.pageSize,
-  //   search: listParams.search,
-  //   pagination: true,
-  // };
+  const apiParams = {
+    page: listParams.currentPage,
+    limit: listParams.pageSize,
+    search: listParams.search,
+    pagination: true,
+  };
 
-  // const { data: listData, isPending: loading } = useGetInquiry(apiParams);
+  const { data: listData, isPending: loading } = useGetServerList(apiParams);
 
-  // const totalCount = (listData as any)?.metadata?.totalCount;
+  const totalCount = (listData as any)?.metadata?.totalCount;
 
   const handleSearch = (search: string | undefined) => {
     setListParams({ ...listParams, search: search ?? "", currentPage: 1 });
@@ -70,13 +72,11 @@ const ServerPage = () => {
       <GlobalTable
         pageSize={listParams.pageSize}
         currentPage={listParams.currentPage}
-        totalCount={0}
-        // totalCount={totalCount ?? 0}
-        data={[]}
-        // data={(listData as any)?.data ?? []}
+        totalCount={totalCount ?? 0}
+        data={(listData as any)?.data ?? []}
         onPaginationChange={handlePaginationChange}
         columns={columns}
-        // loading={loading}
+        loading={loading}
         isPaginationEnabled
       />
       {open && <ActionFormModal />}

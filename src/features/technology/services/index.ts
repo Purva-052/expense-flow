@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import API from '@/config/api/api';
-import useFetchData from '@/hooks/use-fetch-data';
-import { useTechnologyStore } from '../stores/useTechnologyStore';
-import usePostData from '@/hooks/use-post-data';
-import usePatchData from '@/hooks/use-patch-data';
-import useDeleteData from '@/hooks/use-delete-data';
+import API from "@/config/api/api";
+import useFetchData from "@/hooks/use-fetch-data";
+import { useTechnologyStore } from "../stores/useTechnologyStore";
+import usePostData from "@/hooks/use-post-data";
+import usePatchData from "@/hooks/use-patch-data";
+import useDeleteData from "@/hooks/use-delete-data";
 
 const GET_API_URL = API.technology.list;
 const GET_TECHNOLOGY_DROPDOWN = API.dropdown_api.technology;
@@ -37,10 +37,11 @@ export const useGetTechnologyDropdownList = (
   params?: any,
   enabled?: boolean
 ) => {
+  const isEnable = typeof enabled === "boolean" ? enabled : true;
   return useFetchData({
     url: GET_TECHNOLOGY_DROPDOWN,
     params,
-    enabled: !!enabled,
+    enabled: isEnable,
   });
 };
 

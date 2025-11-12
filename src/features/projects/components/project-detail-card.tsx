@@ -8,31 +8,31 @@ import {
   Flag,
   TrendingUp,
   User,
-} from 'lucide-react';
+} from "lucide-react";
 
 const getStatusBadge = (status: any) => {
   switch (status?.toLowerCase()) {
-    case 'in progress':
-      return 'bg-blue-100 text-blue-800';
-    case 'completed':
-      return 'bg-green-100 text-green-800';
-    case 'on hold':
-      return 'bg-yellow-100 text-yellow-800';
+    case "in progress":
+      return "bg-blue-100 text-blue-800";
+    case "completed":
+      return "bg-green-100 text-green-800";
+    case "on hold":
+      return "bg-yellow-100 text-yellow-800";
     default:
-      return 'bg-gray-100 text-gray-800';
+      return "bg-gray-100 text-gray-800";
   }
 };
 
 const getPriorityBadge = (priority: any) => {
   switch (priority?.toLowerCase()) {
-    case 'high':
-      return 'bg-red-100 text-red-800';
-    case 'medium':
-      return 'bg-yellow-100 text-yellow-800';
-    case 'low':
-      return 'bg-green-100 text-green-800';
+    case "high":
+      return "bg-red-100 text-red-800";
+    case "medium":
+      return "bg-yellow-100 text-yellow-800";
+    case "low":
+      return "bg-green-100 text-green-800";
     default:
-      return 'bg-gray-100 text-gray-800';
+      return "bg-gray-100 text-gray-800";
   }
 };
 
@@ -49,48 +49,48 @@ const ProjectDetails = ({ projectDetails }: any) => {
   const data = projectDetails?.data;
 
   return (
-    <div className="bg-white p-6 my-5 rounded-lg shadow-md border border-gray-200 ">
+    <div className="bg-white p-6  rounded-lg shadow-md border border-gray-200 ">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 mb-4 border-b">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">
-            {data?.name ?? 'Project Name'}
+            Project Details {data?.name ? `(${data?.name})` : null}
           </h2>
           <p className="text-sm text-gray-500 mt-1">
-            Client: {data?.client?.name ?? '-'}
+            Client: {data?.client?.name ?? "-"}
           </p>
         </div>
         <div
           className={`mt-3 sm:mt-0 px-3 py-1 text-sm font-medium capitalize rounded-full ${getStatusBadge(data?.currentStatus)}`}
         >
-          {data?.currentStatus || 'Not specified'}
+          {data?.currentStatus || "Not specified"}
         </div>
       </div>
 
       {/* Main Details Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8">
         <DetailItem icon={<Briefcase size={16} />} label="Project Type">
-          <p>{data?.projectType?.name ?? '-'}</p>
+          <p>{data?.projectType?.name ?? "-"}</p>
         </DetailItem>
 
         <DetailItem icon={<User size={16} />} label="Project Coordinator">
-          <p>{data?.projectHandler?.fullName ?? '-'}</p>
+          <p>{data?.projectHandler?.fullName ?? "-"}</p>
         </DetailItem>
 
         <DetailItem icon={<Flag size={16} />} label="Priority">
           <span
             className={`px-2 py-0.5 text-xs font-semibold rounded-full capitalize ${getPriorityBadge(data?.priority)}`}
           >
-            {data?.priority ?? '-'}
+            {data?.priority ?? "-"}
           </span>
         </DetailItem>
 
         <DetailItem icon={<Calendar size={16} />} label="Start Date">
-          <p>{data?.startDate?.split('T')?.[0] ?? '-'}</p>
+          <p>{data?.startDate?.split("T")?.[0] ?? "-"}</p>
         </DetailItem>
 
         <DetailItem icon={<Clock size={16} />} label="Expected Completion">
-          <p>{data?.expectedCompletionDate?.split('T')?.[0] ?? '-'}</p>
+          <p>{data?.expectedCompletionDate?.split("T")?.[0] ?? "-"}</p>
         </DetailItem>
 
         {/* Progress Bar */}
@@ -114,7 +114,7 @@ const ProjectDetails = ({ projectDetails }: any) => {
         <div className="md:col-span-2 lg:col-span-3">
           <DetailItem icon={<FileText size={16} />} label="Description">
             <p className="whitespace-pre-wrap break-words text-gray-700">
-              {data?.description || 'No description provided'}
+              {data?.description || "No description provided"}
             </p>
           </DetailItem>
         </div>

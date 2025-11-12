@@ -1,8 +1,9 @@
-import { Row } from '@tanstack/react-table';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Row } from "@tanstack/react-table";
 
 export enum StorageEnum {
-  USER = 'user',
-  TOKEN = 'token',
+  USER = "user",
+  TOKEN = "token",
 }
 
 export interface ErrorResponse {
@@ -53,4 +54,20 @@ export interface Roles {
   PROJECT_MANAGER: string;
   DEVELOPER: string;
   BDE: string;
+}
+
+export enum OWNER_TYPE {
+  DEVSTREE = "DEVSTREE",
+  CLIENT = "CLIENT",
+}
+
+export enum PROJECT_SERVER_TYPE {
+  FRONTEND = "FRONTEND",
+  BACKEND = "BACKEND",
+  S3 = "S3",
+}
+
+export enum PROJECT_SERVER_STATUS {
+  ACTIVE = "ACTIVE",
+  INACTIVE = "INACTIVE",
 }

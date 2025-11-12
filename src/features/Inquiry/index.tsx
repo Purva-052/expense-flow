@@ -1,18 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
 import PageLayout from "@/components/layout/layout-provider";
 import { GlobalTable } from "@/components/table/global-table";
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import TablePageHeader from "@/components/table/table-page-header";
 import { FilterConfig } from "@/components/table/table-toolbar";
+import { useAuthStore } from "@/stores/use-auth-store";
+import { roles } from "@/utils/constant";
+import { useState } from "react";
 import { ActionFormModal } from "./components/action";
 import { columns } from "./components/columns";
-import { useInquiryStore } from "./stores/useInquiryStore";
-import { useGetInquiry } from "./services";
 import { ViewInquiryModal } from "./components/view-model";
+import { useGetInquiry } from "./services";
+import { useInquiryStore } from "./stores/useInquiryStore";
+import { HistoryProjectModal } from "./components/history-modal";
 
 const InquiryPage = () => {
   const { open, setOpen } = useInquiryStore();
+  const user = useAuthStore((state) => state.user);
+  const userRole = user?.user?.role;
   const [listParams, setListParams] = useState({
     pageSize: 10,
     currentPage: 1,
@@ -65,6 +70,7 @@ const InquiryPage = () => {
         title="Inquiry "
         buttonText="Add Inquiry "
         onButtonClick={handleAdd}
+        showActionButton={userRole === roles.BDE ? true : false}
       >
         Manage your Inquiry here.
       </TablePageHeader>
@@ -80,7 +86,8 @@ const InquiryPage = () => {
         isPaginationEnabled
       />
       {open && <ActionFormModal />}
-      <ViewInquiryModal/>
+      <ViewInquiryModal />
+      <HistoryProjectModal />
     </PageLayout>
   );
 };

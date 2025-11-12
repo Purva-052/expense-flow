@@ -1,20 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { SubmitHandler, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { SubmitHandler, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Form } from '@/components/ui/form';
-import CustomButton from '@/components/shared/custom-button';
-import { TextInputField } from '@/components/shared/custom-input-field';
-import { projectFormSchema, TProjectFormSchema } from '../schema';
-import CustomDropDownSearchable from '@/components/shared/custome-searchable-dropdown';
-import { CustomDatePicker } from '@/components/shared/custome-datePicker';
-import { Textarea } from '@/components/ui/textarea';
+} from "@/components/ui/dialog";
+import { Form } from "@/components/ui/form";
+import CustomButton from "@/components/shared/custom-button";
+import { TextInputField } from "@/components/shared/custom-input-field";
+import { projectFormSchema, TProjectFormSchema } from "../schema";
+import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
+import { CustomDatePicker } from "@/components/shared/custome-datePicker";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Props {
   currentRow?: any;
@@ -57,28 +57,28 @@ export function ProjectActionForm({
     resolver: zodResolver(schema) as any,
     defaultValues: isEdit
       ? {
-          name: currentRow.name ?? '',
-          description: currentRow.description ?? '',
+          name: currentRow.name ?? "",
+          description: currentRow.description ?? "",
           clientId: currentRow.clientId ?? null,
           technologyId: currentRow.technologyId ?? null,
-          startDate: currentRow.startDate ?? '',
-          expectedCompletionDate: currentRow.expectedCompletionDate ?? '',
+          startDate: currentRow.startDate ?? "",
+          expectedCompletionDate: currentRow.expectedCompletionDate ?? "",
           handlerId: currentRow.projectHandler?.id ?? 0,
           percentageComplete: currentRow.percentageComplete ?? 0,
-          priority: currentRow.priority ?? '',
+          priority: currentRow.priority ?? "",
           status: currentRow.status,
           projectTypeId: currentRow.projectTypeId ?? undefined,
         }
       : {
-          name: '',
-          description: '',
+          name: "",
+          description: "",
           clientId: null,
           technologyId: null,
-          startDate: '',
-          expectedCompletionDate: '',
+          startDate: "",
+          expectedCompletionDate: "",
           handlerId: undefined,
           percentageComplete: 0,
-          priority: '',
+          priority: "",
           status: undefined,
           projectTypeId: undefined,
         },
@@ -99,7 +99,7 @@ export function ProjectActionForm({
     >
       <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-auto">
         <DialogHeader>
-          <DialogTitle>{isEdit ? 'Edit Project' : 'Add Project'}</DialogTitle>
+          <DialogTitle>{isEdit ? "Edit Project" : "Add Project"}</DialogTitle>
         </DialogHeader>
         <div className="h-fit w-full overflow-y-auto py-1">
           <Form {...form}>
@@ -122,7 +122,7 @@ export function ProjectActionForm({
                   Description
                 </label>
                 <Textarea
-                  {...form.register('description')}
+                  {...form.register("description")}
                   placeholder="Enter project description"
                   rows={3}
                   className="resize-none"
@@ -134,11 +134,11 @@ export function ProjectActionForm({
                   name="status"
                   label="Status"
                   options={[
-                    { value: 'active-discovery', label: 'Active Discovery' },
-                    { value: 'running', label: 'Running' },
-                    { value: 'slow', label: 'Slow' },
-                    { value: 'stop', label: 'Stop' },
-                    { value: 'completed', label: 'Completed' },
+                    { value: "active-discovery", label: "Active Discovery" },
+                    { value: "running", label: "Running" },
+                    { value: "slow", label: "Slow" },
+                    { value: "stop", label: "Stop" },
+                    { value: "completed", label: "Completed" },
                   ]}
                   placeholder="Select Status"
                   searchEnabled={false}
@@ -165,6 +165,7 @@ export function ProjectActionForm({
                   value: type.id,
                   label: type.name,
                 }))}
+                searchEnabled={false}
                 isLoading={projectTypesLoading}
                 placeholder="Select Project Type"
               />
@@ -221,9 +222,9 @@ export function ProjectActionForm({
                 name="priority"
                 label="Priority"
                 options={[
-                  { value: 'low', label: 'Low' },
-                  { value: 'medium', label: 'Medium' },
-                  { value: 'high', label: 'High' },
+                  { value: "low", label: "Low" },
+                  { value: "medium", label: "Medium" },
+                  { value: "high", label: "High" },
                 ]}
                 placeholder="Select Priority"
                 searchEnabled={false}

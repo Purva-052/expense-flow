@@ -247,9 +247,9 @@ export function DeveloperDialog({
                         tomorrow.setDate(today.getDate());
 
                         const fiveDaysLater = new Date(today);
-                        fiveDaysLater.setDate(today.getDate() + 5);
+                        fiveDaysLater.setDate(today.getDate() + 3);
 
-                        // disable everything before tomorrow and after 5 days later
+                        // disable everything before tomorrow and after 3 days later
                         return day < tomorrow || day > fiveDaysLater;
                       }}
                     />

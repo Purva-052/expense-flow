@@ -1,41 +1,41 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-console */
 // src/features/coupons/components/ActionFormModal.tsx
 import { DeleteModal } from "@/components/model/delete-model";
-import { InquiryActionForm } from "./action-form";
-import { useInquiryStore } from "../stores/useInquiryStore";
-import { TInquirySchema } from "../schema";
 import {
-  useCreateInquiry,
-  useDeleteInquiry,
-  useUpdateInquiry,
+  useCreateProjectServer,
+  useDeleteProjectServer,
+  useUpdateProjectServer,
 } from "../services";
 
-export function ActionFormModal() {
-  const { open, setOpen, currentRow, setCurrentRow } = useInquiryStore();
-  console.log("🚀 ~ ActionFormModal ~ currentRow:", currentRow);
-  const { mutateAsync: createMutate, isPending: isCreateLoading } =
-    useCreateInquiry();
-  const { mutateAsync: updateMutate, isPending: isUpdateLoading } =
-    useUpdateInquiry(currentRow?.id || "");
-  const { mutateAsync: deleteMutate, isPending: isDeleteLoading } =
-    useDeleteInquiry(currentRow?.id || "");
+import { useProjectServerStore } from "../stores/useProjectServerStore";
+import { ProjectServerActionForm } from "./project-server-form";
 
-  const handleSubmission = (values: TInquirySchema, type: string) => {
+export function ProjectServerActionFormModal({
+  ProjectId,
+}: {
+  ProjectId: any;
+}) {
+  const { open, setOpen, currentRow, setCurrentRow } = useProjectServerStore();
+  const { mutateAsync: createMutate, isPending: isCreateLoading } =
+    useCreateProjectServer();
+  const { mutateAsync: updateMutate, isPending: isUpdateLoading } =
+    useUpdateProjectServer(currentRow?.id || "");
+  const { mutateAsync: deleteMutate, isPending: isDeleteLoading } =
+    useDeleteProjectServer(currentRow?.id || "");
+
+  const handleSubmission = (values: any, type: string) => {
+    const payload = {
+      url: values?.url,
+      port: values?.port,
+      type: values?.type,
+      status: values?.status,
+      serverId: values?.serverId,
+      projectId: ProjectId,
+    };
     if (type === "add") {
-      const payload = {
-        clientName: values.clientName,
-        countryName: values.country,
-        requirements: values.type,
-        status: values.status,
-        notes: values.notes,
-      };
       createMutate(payload);
     } else {
-      const payload = {
-        clientName: values.clientName,
-        countryName: values.country,
-        requirements: values.type,
-      };
       updateMutate(payload);
     }
   };
@@ -53,8 +53,8 @@ export function ActionFormModal() {
 
   return (
     <>
-      <InquiryActionForm
-        key="add-inquiry"
+      <ProjectServerActionForm
+        key="add-server"
         open={open === "add"}
         loading={isCreateLoading}
         onOpenChange={(value) => setOpen(value ? "add" : null)}
@@ -63,8 +63,8 @@ export function ActionFormModal() {
 
       {currentRow && (
         <>
-          <InquiryActionForm
-            key={`inquiry-edit-${currentRow.id}`}
+          <ProjectServerActionForm
+            key={`server-edit-${currentRow.id}`}
             open={open === "edit"}
             onSubmit={(values) => handleSubmission(values, "edit")}
             loading={isUpdateLoading}
@@ -73,10 +73,10 @@ export function ActionFormModal() {
           />
           <DeleteModal
             onConfirm={handleDelete}
-            key={`inquiry-delete-${currentRow.id}`}
+            key={`server-delete-${currentRow.id}`}
             isOpen={open === "delete"}
             onClose={handleCloseDialog}
-            itemName={currentRow.clientName}
+            itemName={currentRow.url}
             loading={isDeleteLoading}
           />
         </>

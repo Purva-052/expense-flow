@@ -13,7 +13,7 @@ export const InquirySchema = z.object({
     .max(50, { message: "Country cannot exceed 50 characters." })
     .trim(),
 
-  type: z.string().nonempty({ message: "Please select an inquiry type." }),
+  type: z.array(z.number()).min(1, { message: "Please select a type." }),
 
   status: z.string().nonempty({ message: "Please select a status." }),
 

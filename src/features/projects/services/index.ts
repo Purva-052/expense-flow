@@ -1,17 +1,19 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import API from '@/config/api/api';
-import { useProjectsStore } from '../stores/useProjectsStore';
-import usePostData from '@/hooks/use-post-data';
-import usePatchData from '@/hooks/use-patch-data';
-import useDeleteData from '@/hooks/use-delete-data';
-import { useInfiniteQuery } from '@tanstack/react-query';
-import axios from 'axios';
-import { useAuthStore } from '@/stores/use-auth-store';
-import useFetchData from '@/hooks/use-fetch-data';
+import API from "@/config/api/api";
+import { useProjectsStore } from "../stores/useProjectsStore";
+import usePostData from "@/hooks/use-post-data";
+import usePatchData from "@/hooks/use-patch-data";
+import useDeleteData from "@/hooks/use-delete-data";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { useAuthStore } from "@/stores/use-auth-store";
+import useFetchData from "@/hooks/use-fetch-data";
+import { useProjectServerStore } from "../stores/useProjectServerStore";
 
 const GET_API_URL = API.projects.list;
 const GET_PRIORITY_DROPDOWN = API.dropdown_api.priority;
+const Project_Server_List = API.projects.server_project;
 
 export const useCreateProjectsData = () => {
   const { setOpen } = useProjectsStore();
@@ -45,7 +47,7 @@ const fetchProjects = async ({ pageParam = 1, queryKey }: any) => {
       limit: 10,
     },
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
   });
@@ -55,7 +57,7 @@ const fetchProjects = async ({ pageParam = 1, queryKey }: any) => {
 
 export const useGetProjectsData = (params?: any) => {
   return useInfiniteQuery({
-    queryKey: ['projects', params],
+    queryKey: ["projects", params],
     queryFn: fetchProjects,
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
@@ -97,5 +99,40 @@ export const useGetProjectsDetailData = (id: string | undefined) => {
   return useFetchData({
     url: `${API.projects.list}/${id}`,
     enabled: !!id,
+  });
+};
+
+export const useCreateProjectServer = () => {
+  const { setOpen } = useProjectServerStore();
+  return usePostData({
+    url: Project_Server_List,
+    refetchQueries: [Project_Server_List],
+    onSuccess: () => {
+      setOpen(null);
+    },
+  });
+};
+
+export const useUpdateProjectServer = (id: string) => {
+  const { setOpen } = useProjectServerStore();
+  return usePatchData({
+    url: `${Project_Server_List}/${id}`,
+    refetchQueries: [Project_Server_List],
+    onSuccess: () => setOpen(null),
+  });
+};
+
+export const useGetProjectServerList = (params?: any) => {
+  return useFetchData({ url: Project_Server_List, params });
+};
+
+export const useDeleteProjectServer = (id: string) => {
+  const { setOpen } = useProjectServerStore();
+  return useDeleteData({
+    url: `${Project_Server_List}/${id}`,
+    refetchQueries: [Project_Server_List],
+    onSuccess: () => {
+      setOpen(null);
+    },
   });
 };

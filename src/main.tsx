@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import { AxiosError } from "axios";
@@ -84,6 +85,10 @@ declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router;
   }
+}
+if (process.env.NODE_ENV === "production") {
+  console.log = function () {};
+  console.warn = function () {};
 }
 
 // Render the app
