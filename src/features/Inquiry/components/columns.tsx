@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
+import SimpleDropDownSearchable from "@/components/shared/custome-simple-dropdown";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -31,11 +31,10 @@ import { zodResolver } from "@hookform/resolvers/zod"; // Import the zod resolve
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Form, FormProvider, useForm } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod"; // Import zod
 import { useCreateInquiryStatus } from "../services";
 import { useInquiryStore } from "../stores/useInquiryStore";
-import SimpleDropDownSearchable from "@/components/shared/custome-simple-dropdown";
 
 // 1. Define the validation schema using Zod
 const statusUpdateSchema = z.object({
