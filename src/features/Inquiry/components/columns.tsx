@@ -33,7 +33,7 @@ import { MoreHorizontal } from "lucide-react";
 import { useState } from "react";
 import { Form, FormProvider, useForm } from "react-hook-form";
 import { z } from "zod"; // Import zod
-import { useCreateInquiryStatus, useUpdateInquiryStatus } from "../services";
+import { useCreateInquiryStatus } from "../services";
 import { useInquiryStore } from "../stores/useInquiryStore";
 
 // 1. Define the validation schema using Zod
@@ -82,7 +82,6 @@ const StatusUpdateModal = ({
                         {...field}
                       />
                     </FormControl>
-                    {/* 3. FormMessage will automatically display the error */}
                     <FormMessage />
                   </FormItem>
                 )}
