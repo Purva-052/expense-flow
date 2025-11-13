@@ -56,6 +56,16 @@ export const useUpdateInquiryStatus = (
   });
 };
 
+export const useCreateInquiryStatus = (onSucessStatusChange?: any) => {
+  return usePostData({
+    url: `${API.inquiry_status.create}`,
+    refetchQueries: [Inquiry_List],
+    onSuccess: () => {
+      onSucessStatusChange();
+    },
+  });
+};
+
 export const useGetInquiryHistoryData = (id?: any) => {
   return useFetchData({
     url: `${API.inquiry_status.history}/${id}`,

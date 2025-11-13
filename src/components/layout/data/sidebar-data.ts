@@ -1,3 +1,4 @@
+import { roles } from "@/utils/constant";
 import {
   IconAlignBoxBottomCenter,
   IconAugmentedReality,
@@ -10,37 +11,36 @@ import {
   IconTool,
   IconUsers,
   IconUserScreen,
-} from '@tabler/icons-react';
-import { Command } from 'lucide-react';
-import { type SidebarData } from '../types';
-import { roles } from '@/utils/constant';
+} from "@tabler/icons-react";
+import { Command } from "lucide-react";
+import { type SidebarData } from "../types";
 
 export const sidebarData: SidebarData = {
   user: {
-    name: 'satnaing',
-    email: 'satnaingdev@gmail.com',
-    avatar: '/avatars/shadcn.jpg',
+    name: "satnaing",
+    email: "satnaingdev@gmail.com",
+    avatar: "/avatars/shadcn.jpg",
   },
   teams: [
     {
-      name: 'Shadcn Admin',
+      name: "Shadcn Admin",
       logo: Command,
-      plan: 'Vite + ShadcnUI',
+      plan: "Vite + ShadcnUI",
     },
     {
-      name: 'Acme Inc',
+      name: "Acme Inc",
       logo: IconTool,
-      plan: 'Enterprise',
+      plan: "Enterprise",
     },
     {
-      name: 'Acme Corp.',
+      name: "Acme Corp.",
       logo: IconPalette,
-      plan: 'Startup',
+      plan: "Startup",
     },
   ],
   navGroups: [
     {
-      title: 'Overview',
+      title: "Overview",
       requiredRoles: [
         roles.ADMIN,
         roles.TEAM_LEAD,
@@ -50,8 +50,8 @@ export const sidebarData: SidebarData = {
       ],
       items: [
         {
-          title: 'Dashboard',
-          url: '/',
+          title: "Dashboard",
+          url: "/",
           icon: IconLayoutBoardFilled,
           requiredRoles: [
             roles.ADMIN,
@@ -62,56 +62,56 @@ export const sidebarData: SidebarData = {
           ],
         },
         {
-          title: 'Inquiry',
-          url: '/Inquiry',
+          title: "Inquiries",
+          url: "/Inquiry",
           icon: IconMessage2Question,
           requiredRoles: [roles.ADMIN],
         },
       ],
     },
     {
-      title: 'Masters',
+      title: "Masters",
       requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
       items: [
         {
-          title: 'Technology',
-          url: '/technology',
+          title: "Technologies",
+          url: "/technology",
           icon: IconAugmentedReality,
           requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
         {
-          title: 'Projects',
-          url: '/projects',
+          title: "Projects",
+          url: "/projects",
           icon: IconUserScreen,
           requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
         {
-          title: 'Projects Type',
-          url: '/Project-type',
+          title: "Project Types",
+          url: "/Project-type",
           icon: IconAlignBoxBottomCenter,
           requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
         {
-          title: 'Inquiry Type',
-          url: '/Inquiry-type',
+          title: "Inquiry Types",
+          url: "/Inquiry-type",
           icon: IconPencilSearch,
-          requiredRoles: ['admin'],
+          requiredRoles: ["admin"],
         },
         {
-          title: 'Clients',
-          url: '/clients',
+          title: "Clients",
+          url: "/clients",
           icon: IconBrandDatabricks,
           requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
         {
-          title: 'Servers',
-          url: '/Server',
+          title: "Servers",
+          url: "/Server",
           icon: IconReservedLine,
-          requiredRoles: ['admin', 'project_manager'],
+          requiredRoles: ["admin", "project_manager"],
         },
         {
-          title: 'Users',
-          url: '/users',
+          title: "Users",
+          url: "/users",
           icon: IconUsers,
           requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },

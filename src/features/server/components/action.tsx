@@ -64,7 +64,7 @@ export function ActionFormModal() {
             key={`server-delete-${currentRow.id}`}
             isOpen={open === "delete"}
             onClose={handleCloseDialog}
-            itemName={currentRow.code}
+            itemName={currentRow.ip}
             loading={isDeleteLoading}
           />
         </>

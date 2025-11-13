@@ -16,7 +16,7 @@ export function ActionFormModal() {
   const { mutateAsync: updateMutate, isPending: isUpdateLoading } =
     useUpdateInquiryType(currentRow?.id || "");
   const { mutateAsync: deleteMutate, isPending: isDeleteLoading } =
-  useDeleteInquiryType(currentRow?.id || "");
+    useDeleteInquiryType(currentRow?.id || "");
 
   const handleCreate = (values: TProjectFormSchema) => {
     const payload = {
@@ -68,7 +68,7 @@ export function ActionFormModal() {
             key={`inquiry-type-delete-${currentRow.id}`}
             isOpen={open === "delete"}
             onClose={handleCloseDialog}
-            itemName={currentRow.code}
+            itemName={currentRow.name}
             loading={isDeleteLoading}
           />
         </>

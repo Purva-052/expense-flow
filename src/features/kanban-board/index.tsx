@@ -1,15 +1,15 @@
-import { Main } from '@/components/layout/main';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useAuthStore } from '@/stores/use-auth-store';
-import { roles } from '@/utils/constant';
-import { useState } from 'react';
-import InquiryPage from '../Inquiry';
-import { useGetTechnologyDropdownList } from '../technology/services';
-import Board from './components/Board';
-import ResourceTab from './components/resourceTab';
+import { Main } from "@/components/layout/main";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuthStore } from "@/stores/use-auth-store";
+import { roles } from "@/utils/constant";
+import { useState } from "react";
+import InquiryPage from "../Inquiry";
+import { useGetTechnologyDropdownList } from "../technology/services";
+import Board from "./components/Board";
+import ResourceTab from "./components/resourceTab";
 
 const ProjectBoard = () => {
-  const [activeTab, setActiveTab] = useState('board');
+  const [activeTab, setActiveTab] = useState("board");
   const user = useAuthStore((state) => state.user);
   const userRole = user?.user?.role;
   const { data: technologies, isPending: techLoading } =

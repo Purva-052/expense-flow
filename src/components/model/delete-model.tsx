@@ -22,7 +22,7 @@ export function DeleteModal({
   isOpen,
   onClose,
   onConfirm,
-  itemName = "item",
+  itemName = "",
   loading = false,
 }: Readonly<DeleteModalProps>) {
   const handleConfirm = async () => {

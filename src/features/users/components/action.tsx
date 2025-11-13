@@ -111,7 +111,7 @@ export function ActionFormModal({
             key={`user-delete-${currentRow.id}`}
             isOpen={open === "delete"}
             onClose={handleCloseDialog}
-            itemName={currentRow.code}
+            itemName={currentRow.fullName}
             loading={isDeleteLoading}
           />
         </>

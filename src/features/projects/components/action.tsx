@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { DeleteModal } from '@/components/model/delete-model';
-import { useProjectsStore } from '../stores/useProjectsStore';
-import { TProjectFormSchema } from '../schema';
+import { DeleteModal } from "@/components/model/delete-model";
+import { useProjectsStore } from "../stores/useProjectsStore";
+import { TProjectFormSchema } from "../schema";
 import {
   useCreateProjectsData,
   useDeleteProjectsData,
   useUpdateProjectsData,
-} from '../services';
-import { ProjectActionForm } from './action-form';
+} from "../services";
+import { ProjectActionForm } from "./action-form";
 
 export function ActionFormModal({
   clientsList,
@@ -23,9 +23,9 @@ export function ActionFormModal({
   const { mutateAsync: createMutate, isPending: isCreateLoading } =
     useCreateProjectsData();
   const { mutateAsync: updateMutate, isPending: isUpdateLoading } =
-    useUpdateProjectsData(currentRow?.id || '');
+    useUpdateProjectsData(currentRow?.id || "");
   const { mutateAsync: deleteMutate, isPending: isDeleteLoading } =
-    useDeleteProjectsData(currentRow?.id || '');
+    useDeleteProjectsData(currentRow?.id || "");
 
   const ClientListData = clientsList?.data;
 
@@ -78,9 +78,9 @@ export function ActionFormModal({
     <>
       <ProjectActionForm
         key="add-coupon"
-        open={open === 'add'}
+        open={open === "add"}
         loading={isCreateLoading}
-        onOpenChange={(value) => setOpen(value ? 'add' : null)}
+        onOpenChange={(value) => setOpen(value ? "add" : null)}
         onSubmit={handleCreate}
         projectTypes={projectTypes}
         projectTypesLoading={projectTypesLoading}
@@ -96,7 +96,7 @@ export function ActionFormModal({
         <>
           <ProjectActionForm
             key={`coupon-edit-${currentRow.id}`}
-            open={open === 'edit'}
+            open={open === "edit"}
             onSubmit={handleEdit}
             loading={isUpdateLoading}
             onOpenChange={handleCloseDialog}
@@ -113,9 +113,9 @@ export function ActionFormModal({
           <DeleteModal
             onConfirm={handleDelete}
             key={`coupon-delete-${currentRow.id}`}
-            isOpen={open === 'delete'}
+            isOpen={open === "delete"}
             onClose={handleCloseDialog}
-            itemName={currentRow.code}
+            itemName={currentRow.name}
             loading={isDeleteLoading}
           />
         </>
