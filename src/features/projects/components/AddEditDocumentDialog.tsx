@@ -56,10 +56,16 @@ export default function AddEditDocumentDialog({ ProjectId }: any) {
   });
 
   const handleFormSubmit = async (data: any) => {
-    const payload = { documents: data?.documents, projectId: ProjectId };
     if (isEdit) {
+      const payload = {
+        documentName: data?.documents?.[0]?.documentName,
+        notes: data?.documents?.[0]?.notes,
+        link: data?.documents?.[0]?.link,
+        projectId: ProjectId,
+      };
       await updateProjectDocument(payload);
     } else {
+      const payload = { documents: data?.documents, projectId: ProjectId };
       await createProjectDocument(payload);
     }
   };

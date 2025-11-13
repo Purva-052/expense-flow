@@ -24,7 +24,8 @@ interface SimpleDropDownProps {
   onCreateOption?: (input: string) => Promise<any> | any;
   isLoading?: boolean;
   loadingText?: string;
-  onChange?: (value: string | null) => void;
+  onChange?: (value: any) => void;
+  allowClear?: boolean;
 }
 
 const SimpleDropDownSearchable = ({
@@ -39,6 +40,7 @@ const SimpleDropDownSearchable = ({
   isLoading = false,
   loadingText = "Loading...",
   onChange,
+  allowClear = true,
 }: SimpleDropDownProps) => {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [popoverWidth, setPopoverWidth] = useState<string | number>("auto");
@@ -173,7 +175,7 @@ const SimpleDropDownSearchable = ({
           </PopoverContent>
         </Popover>
 
-        {value && (
+        {allowClear && value && (
           <X
             className="absolute top-1/2 right-8 h-4 w-4 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-red-500"
             onClick={() => onChange?.(null)}

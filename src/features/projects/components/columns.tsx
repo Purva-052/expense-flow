@@ -31,7 +31,10 @@ function StatusCell({ row }: any) {
   const [isReasonDialogOpen, setReasonDialogOpen] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
 
-  const { mutateAsync: ProjectStatusChange } = useProjectStatusChange();
+  const {
+    mutateAsync: ProjectStatusChange,
+    isPending: projectStatusChangePending,
+  } = useProjectStatusChange();
   const { user } = useAuthStore();
   const userRole = user?.user?.role;
 
@@ -49,6 +52,7 @@ function StatusCell({ row }: any) {
   ];
 
   const handleChange = async (value: string) => {
+    if (project.currentStatus === value) return;
     if (value === "slow") {
       setPendingStatus(value);
       setReasonDialogOpen(true);
@@ -58,7 +62,7 @@ function StatusCell({ row }: any) {
         status: value,
         effectiveDate: new Date().toISOString(),
       });
-      form.setValue("status", value);
+      // form.setValue("status", value);
     }
   };
 
@@ -121,6 +125,8 @@ function StatusCell({ row }: any) {
                 placeholder="Select Status"
                 searchEnabled={false}
                 onChangeValue={handleChange}
+                isLoading={projectStatusChangePending}
+                disabled={projectStatusChangePending}
                 showClearButton={false}
               />
             </Form>
