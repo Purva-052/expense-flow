@@ -27,6 +27,8 @@ import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
 import { Route as AuthenticatedProjectTypeIndexRouteImport } from './routes/_authenticated/Project-type/index'
 import { Route as AuthenticatedProjectModuleIndexRouteImport } from './routes/_authenticated/Project-module/index'
+import { Route as AuthenticatedInquiryIndexRouteImport } from './routes/_authenticated/Inquiry/index'
+import { Route as AuthenticatedInquiryTypeIndexRouteImport } from './routes/_authenticated/Inquiry-type/index'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -123,6 +125,18 @@ const AuthenticatedProjectModuleIndexRoute =
     path: '/Project-module/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedInquiryIndexRoute =
+  AuthenticatedInquiryIndexRouteImport.update({
+    id: '/Inquiry/',
+    path: '/Inquiry/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedInquiryTypeIndexRoute =
+  AuthenticatedInquiryTypeIndexRouteImport.update({
+    id: '/Inquiry-type/',
+    path: '/Inquiry-type/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/forgot-password': typeof authForgotPasswordRoute
@@ -135,6 +149,8 @@ export interface FileRoutesByFullPath {
   '/503': typeof errors503Route
   '/unauthorized': typeof errorsUnauthorizedRoute
   '/': typeof AuthenticatedIndexRoute
+  '/Inquiry-type': typeof AuthenticatedInquiryTypeIndexRoute
+  '/Inquiry': typeof AuthenticatedInquiryIndexRoute
   '/Project-module': typeof AuthenticatedProjectModuleIndexRoute
   '/Project-type': typeof AuthenticatedProjectTypeIndexRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
@@ -154,6 +170,8 @@ export interface FileRoutesByTo {
   '/503': typeof errors503Route
   '/unauthorized': typeof errorsUnauthorizedRoute
   '/': typeof AuthenticatedIndexRoute
+  '/Inquiry-type': typeof AuthenticatedInquiryTypeIndexRoute
+  '/Inquiry': typeof AuthenticatedInquiryIndexRoute
   '/Project-module': typeof AuthenticatedProjectModuleIndexRoute
   '/Project-type': typeof AuthenticatedProjectTypeIndexRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
@@ -175,6 +193,8 @@ export interface FileRoutesById {
   '/(errors)/503': typeof errors503Route
   '/(errors)/unauthorized': typeof errorsUnauthorizedRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/Inquiry-type/': typeof AuthenticatedInquiryTypeIndexRoute
+  '/_authenticated/Inquiry/': typeof AuthenticatedInquiryIndexRoute
   '/_authenticated/Project-module/': typeof AuthenticatedProjectModuleIndexRoute
   '/_authenticated/Project-type/': typeof AuthenticatedProjectTypeIndexRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
@@ -196,6 +216,8 @@ export interface FileRouteTypes {
     | '/503'
     | '/unauthorized'
     | '/'
+    | '/Inquiry-type'
+    | '/Inquiry'
     | '/Project-module'
     | '/Project-type'
     | '/clients'
@@ -215,6 +237,8 @@ export interface FileRouteTypes {
     | '/503'
     | '/unauthorized'
     | '/'
+    | '/Inquiry-type'
+    | '/Inquiry'
     | '/Project-module'
     | '/Project-type'
     | '/clients'
@@ -235,6 +259,8 @@ export interface FileRouteTypes {
     | '/(errors)/503'
     | '/(errors)/unauthorized'
     | '/_authenticated/'
+    | '/_authenticated/Inquiry-type/'
+    | '/_authenticated/Inquiry/'
     | '/_authenticated/Project-module/'
     | '/_authenticated/Project-type/'
     | '/_authenticated/clients/'
@@ -385,11 +411,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectModuleIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/Inquiry/': {
+      id: '/_authenticated/Inquiry/'
+      path: '/Inquiry'
+      fullPath: '/Inquiry'
+      preLoaderRoute: typeof AuthenticatedInquiryIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/Inquiry-type/': {
+      id: '/_authenticated/Inquiry-type/'
+      path: '/Inquiry-type'
+      fullPath: '/Inquiry-type'
+      preLoaderRoute: typeof AuthenticatedInquiryTypeIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedInquiryTypeIndexRoute: typeof AuthenticatedInquiryTypeIndexRoute
+  AuthenticatedInquiryIndexRoute: typeof AuthenticatedInquiryIndexRoute
   AuthenticatedProjectModuleIndexRoute: typeof AuthenticatedProjectModuleIndexRoute
   AuthenticatedProjectTypeIndexRoute: typeof AuthenticatedProjectTypeIndexRoute
   AuthenticatedClientsIndexRoute: typeof AuthenticatedClientsIndexRoute
@@ -401,6 +443,8 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedInquiryTypeIndexRoute: AuthenticatedInquiryTypeIndexRoute,
+  AuthenticatedInquiryIndexRoute: AuthenticatedInquiryIndexRoute,
   AuthenticatedProjectModuleIndexRoute: AuthenticatedProjectModuleIndexRoute,
   AuthenticatedProjectTypeIndexRoute: AuthenticatedProjectTypeIndexRoute,
   AuthenticatedClientsIndexRoute: AuthenticatedClientsIndexRoute,
