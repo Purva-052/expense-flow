@@ -32,6 +32,7 @@ const API = {
     assign_developers: "/developer-allocations",
     status_change: "project-status-logs",
     history: "/project-status-logs/project",
+    server_project: "/project-servers",
   },
   project_types: {
     list: "/project-types",
@@ -45,13 +46,38 @@ const API = {
     update: "/modules",
     delete: "/modules",
   },
-  dropdown_api:{
-    project_types:"/project-types/dropdown",
-    technology:"/technology/dropdown",
-    users:"/users/dropdown",
-    priority :"/projects/priority-dropdown",
-    client:"/clients/dropdown"
-  }
+  inquiry: {
+    list: "/project-leads",
+    create: "/project-leads",
+    update: "/project-leads",
+    delete: "/project-leads",
+  },
+  inquiry_status: {
+    list: "/project-lead-status-logs",
+    create: "/project-lead-status-logs",
+    update: "/project-lead-status-logs",
+    delete: "/project-lead-status-logs",
+    history: "/project-lead-status-logs/project-lead",
+  },
+  server: {
+    list: "/servers",
+    create: "/servers",
+    update: "/servers",
+    delete: "/servers",
+  },
+  document: {
+    list: "/project-documentation",
+    create: "/project-documentation",
+    update: "/project-documentation",
+    delete: "/project-documentation",
+  },
+  dropdown_api: {
+    project_types: "/project-types/dropdown",
+    technology: "/technology/dropdown",
+    users: "/users/dropdown",
+    priority: "/projects/priority-dropdown",
+    client: "/clients/dropdown",
+  },
 };
 
 Object.freeze(API);

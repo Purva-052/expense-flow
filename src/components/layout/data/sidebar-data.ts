@@ -1,9 +1,12 @@
+import { roles } from "@/utils/constant";
 import {
   IconAlignBoxBottomCenter,
   IconAugmentedReality,
   IconBrandDatabricks,
   IconLayoutBoardFilled,
+  IconMessage2Question,
   IconPalette,
+  IconPencilSearch,
   IconTool,
   IconUsers,
   IconUserScreen,
@@ -37,55 +40,73 @@ export const sidebarData: SidebarData = {
   navGroups: [
     {
       title: "Overview",
-      requiredRoles: ["admin", "team_lead", "project_manager", "developer"],
+      requiredRoles: [
+        roles.ADMIN,
+        roles.TEAM_LEAD,
+        roles.PROJECT_MANAGER,
+        roles.DEVELOPER,
+        roles.BDE,
+      ],
       items: [
         {
           title: "Dashboard",
           url: "/",
           icon: IconLayoutBoardFilled,
-          requiredRoles: ["admin", "team_lead", "project_manager", "developer"],
+          requiredRoles: [
+            roles.ADMIN,
+            roles.TEAM_LEAD,
+            roles.PROJECT_MANAGER,
+            roles.DEVELOPER,
+            roles.BDE,
+          ],
+        },
+        {
+          title: "Inquiry",
+          url: "/Inquiry",
+          icon: IconMessage2Question,
+          requiredRoles: [roles.ADMIN],
         },
       ],
     },
     {
       title: "Masters",
-      requiredRoles: ["admin", "team_lead", "project_manager"],
+      requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
       items: [
         {
           title: "Technology",
           url: "/technology",
           icon: IconAugmentedReality,
-          requiredRoles: ["admin", "team_lead", "project_manager"],
+          requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
         {
           title: "Projects",
           url: "/projects",
           icon: IconUserScreen,
-          requiredRoles: ["admin", "team_lead", "project_manager"],
+          requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
         {
           title: "Projects Type",
           url: "/Project-type",
           icon: IconAlignBoxBottomCenter,
-          requiredRoles: ["admin", "team_lead", "project_manager"],
+          requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
-        // {
-        //   title: 'Projects Module',
-        //   url: '/Project-module',
-        //   icon: IconHexagons,
-        //   requiredRoles: ['admin', 'team_lead',"project_manager"],
-        // },
+        {
+          title: "Inquiry Type",
+          url: "/Inquiry-type",
+          icon: IconPencilSearch,
+          requiredRoles: ["admin"],
+        },
         {
           title: "Clients",
           url: "/clients",
           icon: IconBrandDatabricks,
-          requiredRoles: ["admin", "team_lead", "project_manager"],
+          requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
         {
           title: "Users",
           url: "/users",
           icon: IconUsers,
-          requiredRoles: ["admin", "team_lead", "project_manager"],
+          requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
       ],
     },
