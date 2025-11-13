@@ -22,6 +22,7 @@ import AddEditDocumentDialog from "./AddEditDocumentDialog";
 import ProjectDetails from "./project-detail-card";
 import { ProjectServerActionFormModal } from "./project-server-action";
 import ServerDetailsCard from "./server-detail-card";
+import { useProjectDocumentStore } from "../stores/useProjectDocumentStore";
 
 export default function ProjectDetailPage({
   projectId,
@@ -38,11 +39,13 @@ export default function ProjectDetailPage({
     setCurrentRow: setProjectServerCurrentRow,
   } = useProjectServerStore();
 
+  const {
+    setOpen: setOpenDocumentModal,
+    setCurrentRow: setDocumentCurrentRow,
+  } = useProjectDocumentStore();
+
   // State for documents (mock — replace later with API)
   const [activeTab, setActiveTab] = useState("details");
-  const [documents, setDocuments] = useState<any[]>([]);
-  const [openDocument, setOpenDocument] = useState(false);
-  const [selectedDoc, setSelectedDoc] = useState<any>(null);
 
   // Search + pagination state
   const [listParams, setListParams] = useState({
@@ -80,22 +83,13 @@ export default function ProjectDetailPage({
 
   // Add/Edit logic
   const handleAddDocument = () => {
-    setSelectedDoc(null);
-    setOpenDocument(true);
+    setOpenDocumentModal("add");
+    setDocumentCurrentRow(null);
   };
 
-  const handleSave = (data: any) => {
-    if (selectedDoc) {
-      setDocuments((prev) =>
-        prev.map((doc) =>
-          doc.id === selectedDoc.id ? { ...doc, ...data } : doc
-        )
-      );
-    } else {
-      setDocuments((prev) => [...prev, { ...data, id: Date.now() }]);
-    }
-    setOpenDocument(false);
-    setSelectedDoc(null);
+  const handleEditDocument = (row: any) => {
+    setOpenDocumentModal("edit");
+    setDocumentCurrentRow(row);
   };
 
   const handleAddServer = () => {
@@ -172,8 +166,7 @@ export default function ProjectDetailPage({
           variant="outline"
           size="icon"
           onClick={() => {
-            setSelectedDoc(row.original);
-            setOpenDocument(true);
+            handleEditDocument(row.original);
           }}
         >
           <Edit2 className="w-4 h-4" />
@@ -182,7 +175,7 @@ export default function ProjectDetailPage({
     },
   ];
 
-  const totalCount = documents.length;
+  const totalCount = 0;
 
   return (
     <PageLayout>
@@ -277,7 +270,7 @@ export default function ProjectDetailPage({
                 pageSize={listParams.pageSize}
                 currentPage={listParams.currentPage}
                 totalCount={totalCount}
-                data={documents}
+                data={[]}
                 onPaginationChange={handlePaginationChange}
                 columns={columns}
                 loading={false}
@@ -287,15 +280,9 @@ export default function ProjectDetailPage({
           </Card>
         </TabsContent>
       </Tabs>
-      {/* Add/Edit Modal */}
-      {openDocument && (
-        <AddEditDocumentDialog
-          open={openDocument}
-          setOpen={setOpenDocument}
-          onSave={handleSave}
-          defaultValues={selectedDoc}
-        />
-      )}
+
+      <AddEditDocumentDialog />
+
       <ProjectServerActionFormModal ProjectId={projectDetails?.data?.id} />
     </PageLayout>
   );

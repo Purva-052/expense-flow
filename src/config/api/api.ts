@@ -65,6 +65,12 @@ const API = {
     update: "/servers",
     delete: "/servers",
   },
+  document: {
+    list: "/project-documentation",
+    create: "/project-documentation",
+    update: "/project-documentation",
+    delete: "/project-documentation",
+  },
   dropdown_api: {
     project_types: "/project-types/dropdown",
     technology: "/technology/dropdown",

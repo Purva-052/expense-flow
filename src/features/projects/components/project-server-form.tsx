@@ -50,7 +50,7 @@ export function ProjectServerActionForm({
     resolver: zodResolver(ProjectServerSchema),
     defaultValues: {
       url: currentRow?.url ?? "",
-      port: `${currentRow?.port ? currentRow?.port : 0}`,
+      port: `${currentRow?.port ? currentRow?.port : ""}`,
       type: currentRow?.type ?? "",
       status: currentRow?.status ?? "",
       serverId: currentRow?.server?.id ?? "",

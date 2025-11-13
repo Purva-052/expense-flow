@@ -119,11 +119,11 @@ const ServerDetailsCard = ({
             {server?.url ? (
               <span className="font-mono text-sm">
                 <a
+                  href={server?.url}
                   target="_blank"
                   className="text-blue-500 underline truncate max-w-[200px] cursor-pointer block"
                   title={server?.url}
                   rel="noopener noreferrer"
-                  href={server?.url}
                 >
                   {server?.url}
                 </a>

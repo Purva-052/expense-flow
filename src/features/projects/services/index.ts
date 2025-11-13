@@ -10,10 +10,12 @@ import axios from "axios";
 import { useAuthStore } from "@/stores/use-auth-store";
 import useFetchData from "@/hooks/use-fetch-data";
 import { useProjectServerStore } from "../stores/useProjectServerStore";
+import { useProjectDocumentStore } from "../stores/useProjectDocumentStore";
 
 const GET_API_URL = API.projects.list;
 const GET_PRIORITY_DROPDOWN = API.dropdown_api.priority;
 const Project_Server_List = API.projects.server_project;
+const Project_Document = API.document.list;
 
 export const useCreateProjectsData = () => {
   const { setOpen } = useProjectsStore();
@@ -131,6 +133,44 @@ export const useDeleteProjectServer = (id: string) => {
   return useDeleteData({
     url: `${Project_Server_List}/${id}`,
     refetchQueries: [Project_Server_List],
+    onSuccess: () => {
+      setOpen(null);
+    },
+  });
+};
+
+export const useCreateProjectDocument = () => {
+  const { setOpen } = useProjectDocumentStore();
+  return usePostData({
+    url: API.document.create,
+    refetchQueries: [Project_Document],
+    onSuccess: () => {
+      setOpen(null);
+    },
+  });
+};
+
+export const useUpdateProjectsDocument = (id: string) => {
+  const { setOpen } = useProjectDocumentStore();
+  return usePatchData({
+    url: `${Project_Document}/${id}`,
+    refetchQueries: [Project_Document],
+    onSuccess: () => setOpen(null),
+  });
+};
+
+export const useGetProjectsDocument = (params: any) => {
+  return useFetchData({
+    url: Project_Document,
+    params: params,
+  });
+};
+
+export const useDeleteProjectDocument = (id: string) => {
+  const { setOpen } = useProjectDocumentStore();
+  return useDeleteData({
+    url: `${Project_Document}/${id}`,
+    refetchQueries: [Project_Document],
     onSuccess: () => {
       setOpen(null);
     },

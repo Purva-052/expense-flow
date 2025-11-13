@@ -81,6 +81,7 @@ export type TProjectDocumentSchema = z.infer<typeof _documentListSchema>;
 export const ProjectServerSchema = z.object({
   url: z
     .string()
+    .url({ message: "Please enter a valid URL." })
     .min(5, { message: "URL must be at least 5 characters long." })
     .max(100, { message: "URL cannot exceed 100 characters." })
     .trim(),

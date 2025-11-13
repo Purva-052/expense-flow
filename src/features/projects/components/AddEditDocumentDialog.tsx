@@ -1,57 +1,76 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus, Trash2 } from 'lucide-react';
-import { Controller, useFieldArray, useForm } from 'react-hook-form';
-import { _documentListSchema, TProjectDocumentSchema } from '../schema';
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Plus, Trash2 } from "lucide-react";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { _documentListSchema, TProjectDocumentSchema } from "../schema";
+import { useProjectDocumentStore } from "../stores/useProjectDocumentStore";
 
-interface AddEditDocumentDialogProps {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-  onSave: (data: TProjectDocumentSchema) => void;
-  defaultValues?: Partial<TProjectDocumentSchema>;
-}
-
-export default function AddEditDocumentDialog({
-  open,
-  setOpen,
-  onSave,
-  defaultValues,
-}: AddEditDocumentDialogProps) {
+export default function AddEditDocumentDialog() {
+  const { open, setOpen, currentRow } = useProjectDocumentStore();
+  const isEdit = !!currentRow;
+  const initialValues =
+    currentRow?.length > 0
+      ? currentRow?.map((doc: any) => ({
+          documentName: doc.documentName ?? "",
+          notes: doc.notes ?? "",
+          link: doc.link ?? "",
+        }))
+      : [
+          {
+            documentName: "",
+            notes: "",
+            link: "",
+          },
+        ];
   const {
     control,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<TProjectDocumentSchema>({
     resolver: zodResolver(_documentListSchema),
-    defaultValues: defaultValues || {
-      documents: [{ documentName: '', notes: '', link: '' }],
-    },
+    defaultValues: initialValues,
   });
 
   const { fields, append, remove } = useFieldArray({
     control,
-    name: 'documents',
+    name: "documents",
   });
 
-  const handleFormSubmit = (data: TProjectDocumentSchema) => {
-    onSave(data);
+  const handleFormSubmit = (data: any) => {
+    console.log(data);
+  };
+  const onCloseModal = () => {
+    setOpen(false);
+    reset({
+      documents: [
+        {
+          documentName: "",
+          notes: "",
+          link: "",
+        },
+      ],
+    });
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open === "add" || open === "edit" ? true : false}
+      onOpenChange={onCloseModal}
+    >
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            {defaultValues ? 'Edit Documents' : 'Add Documents'}
+            {isEdit ? "Edit Documents" : "Add Documents"}
           </DialogTitle>
         </DialogHeader>
 
@@ -143,15 +162,16 @@ export default function AddEditDocumentDialog({
             ))}
           </div>
 
-          {/* Add New Document Button */}
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => append({ documentName: '', notes: '', link: '' })}
-            className="w-full flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" /> Add Another Document
-          </Button>
+          {!isEdit && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => append({ documentName: "", notes: "", link: "" })}
+              className="w-full flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" /> Add Another Document
+            </Button>
+          )}
 
           {/* Submit & Cancel */}
           <div className="flex justify-end gap-2 pt-4">
@@ -162,7 +182,9 @@ export default function AddEditDocumentDialog({
             >
               Cancel
             </Button>
-            <Button type="submit">Save All</Button>
+            <Button type="submit">
+              {fields?.length > 1 ? "Save All" : "Save"}
+            </Button>
           </div>
         </form>
       </DialogContent>
