@@ -15,6 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { addUserSchema, editUserSchema, TUserFormSchema } from "../schema";
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
+import { roles } from "@/utils/constant";
 
 interface Props {
   currentRow?: any;
@@ -77,7 +78,10 @@ export function UserActionForm({
   });
 
   // 🧹 Auto-clear technology when role = "project_manager"
-  if (selectedRole === "project_manager" && form.getValues("technologyId")) {
+  if (
+    selectedRole === roles.PROJECT_MANAGER &&
+    form.getValues("technologyId")
+  ) {
     form.setValue("technologyId", undefined);
   }
 
@@ -160,7 +164,8 @@ export function UserActionForm({
                 isLoading={technologyListLoading}
                 placeholder="Select Technology"
                 disabled={
-                  selectedRole === "project_manager" || selectedRole === "admin"
+                  selectedRole === roles.PROJECT_MANAGER ||
+                  selectedRole === roles.ADMIN
                 }
               />
 

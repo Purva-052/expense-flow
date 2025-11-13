@@ -1,31 +1,31 @@
+/* eslint-disable no-console */
 // src/features/coupons/components/ActionFormModal.tsx
 import { DeleteModal } from "@/components/model/delete-model";
-import { ProjectModuleActionForm } from "./action-form";
-import { useProjectModuleStore } from "../stores/useProjectModuleStore";
-import { TProjectFormSchema } from "@/features/projects/schema";
-import { useCreateProjectModule, useDeleteProjectModule, useUpdateProjectModule } from "../services";
+import { ServerActionForm } from "./action-form";
+import { useServerStore } from "../stores/useServerStore";
+import { TServerSchema } from "../schema";
+import { useCreateServer, useDeleteServer, useUpdateServer } from "../services";
 
 export function ActionFormModal() {
-  const { open, setOpen, currentRow, setCurrentRow } = useProjectModuleStore();
+  const { open, setOpen, currentRow, setCurrentRow } = useServerStore();
   const { mutateAsync: createMutate, isPending: isCreateLoading } =
-    useCreateProjectModule();
+    useCreateServer();
   const { mutateAsync: updateMutate, isPending: isUpdateLoading } =
-    useUpdateProjectModule(currentRow?.id || "");
+    useUpdateServer(currentRow?.id || "");
   const { mutateAsync: deleteMutate, isPending: isDeleteLoading } =
-    useDeleteProjectModule(currentRow?.id || "");
+    useDeleteServer(currentRow?.id || "");
 
-  const handleCreate = (values: TProjectFormSchema) => {
+  const handleSubmission = (values: TServerSchema, type: string) => {
     const payload = {
-      name: values.name,
+      ip: values.ip,
+      ownerName: values.ownerName,
+      ssl: values.ssl,
     };
-    createMutate(payload);
-  };
-
-  const handleEdit = (values: TProjectFormSchema) => {
-    const payload = {
-      name: values.name,
-    };
-    updateMutate(payload);
+    if (type === "add") {
+      createMutate(payload);
+    } else {
+      updateMutate(payload);
+    }
   };
 
   const handleDelete = () => {
@@ -41,30 +41,30 @@ export function ActionFormModal() {
 
   return (
     <>
-      <ProjectModuleActionForm
-        key="add-project-module"
+      <ServerActionForm
+        key="add-server"
         open={open === "add"}
         loading={isCreateLoading}
         onOpenChange={(value) => setOpen(value ? "add" : null)}
-        onSubmit={handleCreate}
+        onSubmit={(values) => handleSubmission(values, "add")}
       />
 
       {currentRow && (
         <>
-          <ProjectModuleActionForm
-            key={`project-module-edit-${currentRow.id}`}
+          <ServerActionForm
+            key={`server-edit-${currentRow.id}`}
             open={open === "edit"}
-            onSubmit={handleEdit}
+            onSubmit={(values) => handleSubmission(values, "edit")}
             loading={isUpdateLoading}
             onOpenChange={handleCloseDialog}
             currentRow={currentRow}
           />
           <DeleteModal
             onConfirm={handleDelete}
-            key={`project-module-delete-${currentRow.id}`}
+            key={`server-delete-${currentRow.id}`}
             isOpen={open === "delete"}
             onClose={handleCloseDialog}
-            itemName={currentRow.code}
+            itemName={currentRow.ip}
             loading={isDeleteLoading}
           />
         </>

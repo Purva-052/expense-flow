@@ -18,12 +18,23 @@ import { useProjectStatusChange } from "@/features/kanban-board/services";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { useState } from "react";
 import { ReasonDialog } from "@/features/kanban-board/components/status-reason-dialog";
+import { roles } from "@/utils/constant";
+import { useNavigate } from "@tanstack/react-router";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 function StatusCell({ row }: any) {
   const [isReasonDialogOpen, setReasonDialogOpen] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
 
-  const { mutateAsync: ProjectStatusChange } = useProjectStatusChange();
+  const {
+    mutateAsync: ProjectStatusChange,
+    isPending: projectStatusChangePending,
+  } = useProjectStatusChange();
   const { user } = useAuthStore();
   const userRole = user?.user?.role;
 
@@ -41,6 +52,7 @@ function StatusCell({ row }: any) {
   ];
 
   const handleChange = async (value: string) => {
+    if (project.currentStatus === value) return;
     if (value === "slow") {
       setPendingStatus(value);
       setReasonDialogOpen(true);
@@ -50,7 +62,7 @@ function StatusCell({ row }: any) {
         status: value,
         effectiveDate: new Date().toISOString(),
       });
-      form.setValue("status", value);
+      // form.setValue("status", value);
     }
   };
 
@@ -79,9 +91,9 @@ function StatusCell({ row }: any) {
   };
 
   // --- Role & permission logic (same as ProjectCard) ---
-  const isAdmin = userRole === "admin";
+  const isAdmin = userRole === roles.ADMIN;
   const isProjectHandler =
-    userRole === "project_manager" || userRole === "team_lead";
+    userRole === roles.PROJECT_MANAGER || userRole === roles.TEAM_LEAD;
 
   const isHandlerAssigned = !!project?.projectHandler?.id;
   const isCurrentUserAssignedHandler =
@@ -113,6 +125,8 @@ function StatusCell({ row }: any) {
                 placeholder="Select Status"
                 searchEnabled={false}
                 onChangeValue={handleChange}
+                isLoading={projectStatusChangePending}
+                disabled={projectStatusChangePending}
                 showClearButton={false}
               />
             </Form>
@@ -134,6 +148,7 @@ function StatusCell({ row }: any) {
 
 function ActionsCell({ row }: any) {
   const operator = row.original;
+  const navigate = useNavigate();
   const { setOpen, setCurrentRow } = useProjectsStore();
 
   const handleEdit = () => {
@@ -147,11 +162,16 @@ function ActionsCell({ row }: any) {
   };
 
   const handleView = () => {
-    setOpen("view");
+    // setOpen("view");
+    navigate({
+      to: "/projects/detail/$id",
+      params: { id: operator.id },
+    });
     setCurrentRow(operator);
   };
   const handleViewHistory = () => {
     setOpen("history");
+
     setCurrentRow(operator);
   };
 
@@ -194,12 +214,24 @@ export const columns: ColumnDef<any>[] = [
       const description = row.original.description;
       if (!description) return "-";
       return (
-        <div
-          className="whitespace-pre-wrap break-words"
-          style={{ maxWidth: "300px" }}
-        >
-          {description}
-        </div>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div
+                className="truncate max-w-[200px] cursor-pointer text-ellipsis"
+                title={description}
+              >
+                {description}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent
+              // side="top"
+              className="text-sm max-w-xs border shadow"
+            >
+              {description}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       );
     },
   },

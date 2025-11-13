@@ -165,6 +165,7 @@ export function ProjectActionForm({
                   value: type.id,
                   label: type.name,
                 }))}
+                searchEnabled={false}
                 isLoading={projectTypesLoading}
                 placeholder="Select Project Type"
               />

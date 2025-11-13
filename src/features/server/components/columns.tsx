@@ -10,57 +10,79 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useProjectModuleStore } from "../stores/useProjectModuleStore";
+import { useServerStore } from "../stores/useServerStore";
+import { ServerOwnerTypeLabel } from "@/utils/constant";
 
 export const columns: ColumnDef<any>[] = [
   {
-    accessorKey: "name",
-    header: "Project Module Name",
+    accessorKey: "ip",
+    header: "IP",
   },
+
+  {
+    accessorKey: "ownerName",
+    header: "Owner",
+    cell: ({ row }) => (
+      <span className="capitalize">
+        {ServerOwnerTypeLabel?.[row.original.ownerName]
+          ? ServerOwnerTypeLabel?.[row.original.ownerName]
+          : "-"}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "ssl",
+    header: "SSL",
+    cell: ({ row }) => (
+      <span
+        className={`${
+          row.original.ssl ? "text-green-600" : "text-red-600"
+        } font-medium`}
+      >
+        {row.original.ssl ? "SSL" : "NON SSL"}
+      </span>
+    ),
+  },
+
   {
     id: "actions",
     header: "Actions",
     cell: function Cell({ row }) {
-      const operator = row.original;
-      const { setOpen, setCurrentRow } = useProjectModuleStore();
+      const server = row.original;
+      const { setOpen, setCurrentRow } = useServerStore();
 
       const handleEdit = () => {
         setOpen("edit");
-        setCurrentRow(operator);
+        setCurrentRow(server);
       };
 
       const handleDelete = () => {
         setOpen("delete");
-        setCurrentRow(operator);
+        setCurrentRow(server);
       };
 
       const handleView = () => {
         setOpen("view");
-        setCurrentRow(operator);
+        setCurrentRow(server);
       };
 
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleView}>
-              View Project Module
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleEdit}>
-              Edit Project Module
-            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleView}>View</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleEdit}>Edit</DropdownMenuItem>
             <DropdownMenuItem
               className="text-red-600 focus:bg-red-50 focus:text-red-600"
               onClick={handleDelete}
             >
-              Delete Project Module
+              Delete
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -34,10 +34,10 @@ export const columns: ColumnDef<any>[] = [
         setCurrentRow(operator);
       };
 
-      const handleView = () => {
-        setOpen("view");
-        setCurrentRow(operator);
-      };
+      // const handleView = () => {
+      //   setOpen("view");
+      //   setCurrentRow(operator);
+      // };
 
       return (
         <DropdownMenu>
@@ -50,9 +50,9 @@ export const columns: ColumnDef<any>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleView}>
+            {/* <DropdownMenuItem onClick={handleView}>
               View Project type
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
             <DropdownMenuItem onClick={handleEdit}>
               Edit Project type
             </DropdownMenuItem>

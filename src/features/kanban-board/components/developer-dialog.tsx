@@ -23,6 +23,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { useUpdateUserData } from "@/features/users/services";
 import { useAuthStore } from "@/stores/use-auth-store"; // ✅ IMPORT THIS
+import { roles } from "@/utils/constant";
 
 // Define the shape of our form data
 type ScheduleFormData = {
@@ -45,7 +46,7 @@ export function DeveloperDialog({
   refetchAvailableDevelopers: any;
 }) {
   const { user } = useAuthStore(); // ✅ Get user context
-  const isDeveloperView = user?.user?.role === "developer";
+  const isDeveloperView = user?.user?.role === roles.DEVELOPER;
   const isMyDialog = developer?.developer?.id === user?.user?.id;
 
   // A Project Manager/Admin can manage (remove/schedule) any developer.
@@ -246,9 +247,9 @@ export function DeveloperDialog({
                         tomorrow.setDate(today.getDate());
 
                         const fiveDaysLater = new Date(today);
-                        fiveDaysLater.setDate(today.getDate() + 5);
+                        fiveDaysLater.setDate(today.getDate() + 3);
 
-                        // disable everything before tomorrow and after 5 days later
+                        // disable everything before tomorrow and after 3 days later
                         return day < tomorrow || day > fiveDaysLater;
                       }}
                     />

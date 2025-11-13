@@ -112,10 +112,10 @@ export function ActionFormModal({
           />
           <DeleteModal
             onConfirm={handleDelete}
-            key={`coupon-delete-${currentRow.id}`}
+            key={`project-delete-${currentRow.id}`}
             isOpen={open === "delete"}
             onClose={handleCloseDialog}
-            itemName={currentRow.code}
+            itemName={currentRow.name}
             loading={isDeleteLoading}
           />
         </>

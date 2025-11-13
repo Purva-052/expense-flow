@@ -1,3 +1,4 @@
+import { PROJECT_SERVER_STATUS, PROJECT_SERVER_TYPE } from "@/types";
 import { z } from "zod";
 
 export const projectFormSchema = z.object({
@@ -13,7 +14,7 @@ export const projectFormSchema = z.object({
   clientId: z.number({ invalid_type_error: "Client is required" }),
   technologyId: z
     .array(z.number(), { invalid_type_error: "Technologies are required" })
-    .nonempty("At least one technology is required"), 
+    .nonempty("At least one technology is required"),
   projectTypeId: z.number({ invalid_type_error: "Project Type is required" }),
   startDate: z.preprocess(
     (val) => {
@@ -49,6 +50,71 @@ export const projectFormSchema = z.object({
       invalid_type_error: "Priority is required",
     })
   ),
+  projectDocuments: z
+    .array(
+      z.object({
+        link: z.string().url("Enter a valid URL"),
+        note: z.string().optional(),
+      })
+    )
+    .optional(),
 });
 
 export type TProjectFormSchema = z.infer<typeof projectFormSchema>;
+
+export const singleDocSchema = z
+  .object({
+    documentName: z.string().min(1, "Document name is required"),
+    notes: z.string().optional(),
+    link: z
+      .string()
+      .url("Please enter a valid URL like https://example.com")
+      .or(z.literal(""))
+      .optional(),
+  })
+  .refine((data) => data.notes || data.link, {
+    message: "Either Notes or Link must be filled.",
+  });
+
+export const _documentListSchema = z.object({
+  documents: z.array(singleDocSchema).min(1, "At least one document required"),
+});
+
+export type TProjectDocumentSchema = z.infer<typeof _documentListSchema>;
+
+export const ProjectServerSchema = z.object({
+  url: z
+    .string()
+    .url({ message: "Please enter a valid URL like https://example.com" })
+    .min(5, { message: "URL must be at least 5 characters long." })
+    .max(100, { message: "URL cannot exceed 100 characters." })
+    .trim(),
+  port: z
+    .string()
+    .min(1, { message: "Port must be at least 1." })
+    .max(65535, { message: "Port must be between 1 and 65535." }),
+
+  type: z.enum(
+    [
+      PROJECT_SERVER_TYPE.BACKEND,
+      PROJECT_SERVER_TYPE.FRONTEND,
+      PROJECT_SERVER_TYPE.S3,
+    ],
+    {
+      errorMap: () => ({ message: "Please select a valid server type." }),
+    }
+  ),
+
+  serverId: z
+    .number()
+    .min(2, { message: "Server ID must be at least 2 characters long." })
+    .max(50, { message: "Server ID cannot exceed 50 characters." }),
+  status: z.enum(
+    [PROJECT_SERVER_STATUS.ACTIVE, PROJECT_SERVER_STATUS.INACTIVE],
+    {
+      errorMap: () => ({ message: "Please select a valid status." }),
+    }
+  ),
+});
+
+export type TProjectServerSchema = z.infer<typeof ProjectServerSchema>;

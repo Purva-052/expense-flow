@@ -7,6 +7,7 @@ import {
   IconMessage2Question,
   IconPalette,
   IconPencilSearch,
+  IconReservedLine,
   IconTool,
   IconUsers,
   IconUserScreen,
@@ -61,7 +62,7 @@ export const sidebarData: SidebarData = {
           ],
         },
         {
-          title: "Inquiry",
+          title: "Inquiries",
           url: "/Inquiry",
           icon: IconMessage2Question,
           requiredRoles: [roles.ADMIN],
@@ -73,7 +74,7 @@ export const sidebarData: SidebarData = {
       requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
       items: [
         {
-          title: "Technology",
+          title: "Technologies",
           url: "/technology",
           icon: IconAugmentedReality,
           requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
@@ -85,13 +86,13 @@ export const sidebarData: SidebarData = {
           requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
         {
-          title: "Projects Type",
+          title: "Project Types",
           url: "/Project-type",
           icon: IconAlignBoxBottomCenter,
           requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
         {
-          title: "Inquiry Type",
+          title: "Inquiry Types",
           url: "/Inquiry-type",
           icon: IconPencilSearch,
           requiredRoles: ["admin"],
@@ -101,6 +102,12 @@ export const sidebarData: SidebarData = {
           url: "/clients",
           icon: IconBrandDatabricks,
           requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
+        },
+        {
+          title: "Servers",
+          url: "/Server",
+          icon: IconReservedLine,
+          requiredRoles: ["admin", "project_manager"],
         },
         {
           title: "Users",

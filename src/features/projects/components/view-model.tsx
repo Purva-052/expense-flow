@@ -4,15 +4,15 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { useProjectsStore } from "../stores/useProjectsStore";
+} from '@/components/ui/dialog';
+import { useProjectsStore } from '../stores/useProjectsStore';
 
 export function ViewProjectModal() {
   const { open, setOpen, currentRow } = useProjectsStore();
-  if (open !== "view" || !currentRow) return null;
+  if (open !== 'view' || !currentRow) return null;
 
   return (
-    <Dialog open={open === "view"} onOpenChange={() => setOpen(null)}>
+    <Dialog open={open === 'view'} onOpenChange={() => setOpen(null)}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Project Details</DialogTitle>
@@ -27,7 +27,7 @@ export function ViewProjectModal() {
           <div>
             <h3 className="text-sm font-medium">Description</h3>
             <p className="text-sm  max-w-[450px] whitespace-pre-wrap break-words d p-2 ">
-              {currentRow.description || "No description provided"}
+              {currentRow.description || 'No description provided'}
             </p>
           </div>
           <div>
@@ -38,7 +38,7 @@ export function ViewProjectModal() {
           <div>
             <h3 className="text-sm font-medium">Project Type</h3>
             <p className="text-sm text-gray-600">
-              {currentRow?.projectType?.name ?? "-"}
+              {currentRow?.projectType?.name ?? '-'}
             </p>
           </div>
           <div>
@@ -67,14 +67,14 @@ export function ViewProjectModal() {
           <div>
             <h3 className="text-sm font-medium">Start Date</h3>
             <p className="text-sm text-gray-600">
-              {currentRow.startDate?.split("T")[0]}
+              {currentRow.startDate?.split('T')[0]}
             </p>
           </div>
 
           <div>
             <h3 className="text-sm font-medium">Expected Completion</h3>
             <p className="text-sm text-gray-600">
-              {currentRow.expectedCompletionDate?.split("T")[0]}
+              {currentRow.expectedCompletionDate?.split('T')[0]}
             </p>
           </div>
 
@@ -95,7 +95,7 @@ export function ViewProjectModal() {
           <div>
             <h3 className="text-sm font-medium">Project Status</h3>
             <p className="text-sm text-gray-600 capitalize">
-              {currentRow.currentStatus || "Not specified"}
+              {currentRow.currentStatus || 'Not specified'}
             </p>
           </div>
         </div>

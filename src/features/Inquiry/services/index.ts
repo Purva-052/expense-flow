@@ -56,13 +56,10 @@ export const useUpdateInquiryStatus = (
   });
 };
 
-export const useCreateInquiryStatus = (onSucessStatusChange?: any) => {
+export const useCreateInquiryStatus = () => {
   return usePostData({
     url: `${API.inquiry_status.create}`,
     refetchQueries: [Inquiry_List],
-    onSuccess: () => {
-      onSucessStatusChange();
-    },
   });
 };
 

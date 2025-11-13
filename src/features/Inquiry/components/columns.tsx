@@ -30,11 +30,12 @@ import { INQUIRY_STATUS, roles } from "@/utils/constant";
 import { zodResolver } from "@hookform/resolvers/zod"; // Import the zod resolver
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Form, FormProvider, useForm } from "react-hook-form";
 import { z } from "zod"; // Import zod
 import { useCreateInquiryStatus } from "../services";
 import { useInquiryStore } from "../stores/useInquiryStore";
+import SimpleDropDownSearchable from "@/components/shared/custome-simple-dropdown";
 
 // 1. Define the validation schema using Zod
 const statusUpdateSchema = z.object({
@@ -104,30 +105,20 @@ const StatusUpdateModal = ({
 const StatusCell = ({ row }: any) => {
   const inquiry = row.original;
   const currentStatus = inquiry?.status;
+
+  const [selectedValue, setSelectedValue] = useState(currentStatus);
+
   const formStatusNotes = useForm<z.infer<typeof statusUpdateSchema>>({
     resolver: zodResolver(statusUpdateSchema),
-    defaultValues: {
-      notes: "",
-    },
+    defaultValues: { notes: "" },
   });
 
-  const onSucessStatusChange = () => {
-    handleModalClose();
-  };
-
-  const { mutateAsync: InquiryStatusChange } =
-    useCreateInquiryStatus(onSucessStatusChange);
-
+  // --- Hooks and other state (no change) ---
+  const { mutateAsync: InquiryStatusChange } = useCreateInquiryStatus();
   const { user } = useAuthStore();
   const userRole = user?.user?.role;
-
-  const form = useForm({
-    defaultValues: { status: currentStatus },
-  });
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
-
   const statusOptions = [
     { value: INQUIRY_STATUS.NEW_INQUIRY, label: "New Inquiry" },
     { value: INQUIRY_STATUS.IN_DISCUSSION, label: "In Discussion" },
@@ -136,17 +127,22 @@ const StatusCell = ({ row }: any) => {
     { value: INQUIRY_STATUS.OPTED_OUT, label: "Opted Out" },
   ];
 
+  // --- REFACTORED HANDLERS ---
   const handleChange = (value: string) => {
     if (value === currentStatus) return;
+
+    // 1. Immediately update the UI to give the user feedback.
+    // setSelectedValue(value);
     setPendingStatus(value);
     setIsModalOpen(true);
+    formStatusNotes.reset({ notes: "" });
   };
 
   const handleModalClose = () => {
     setIsModalOpen(false);
-    formStatusNotes.reset();
-    form.setValue("status", currentStatus);
+    formStatusNotes.reset({ notes: "" });
     setPendingStatus(null);
+    setSelectedValue(currentStatus);
   };
 
   const handleModalSubmit = async (notes: string) => {
@@ -159,48 +155,43 @@ const StatusCell = ({ row }: any) => {
         effectiveDate: new Date().toISOString(),
         notes: notes,
       });
-      // On success, we need to update the form's value to the new status
-      form.setValue("status", pendingStatus);
     } catch (error) {
-      // console.error("Failed to update status", error);
-      // On failure, revert the dropdown to the original status
-      form.setValue("status", currentStatus);
+      setSelectedValue(currentStatus);
     } finally {
       setIsModalOpen(false);
       setPendingStatus(null);
     }
   };
 
-  // --- Role & permission logic ---
-  const canEditStatus = userRole === roles.BDE;
+  // --- RENDER LOGIC (with changes to the dropdown) ---
+  const canEditStatus = userRole === roles.BDE || userRole === roles.ADMIN;
 
-  const currentStatusLabel =
-    statusOptions.find((s) => s.value === currentStatus)?.label || "";
+  useEffect(() => {
+    if (currentStatus === selectedValue) return;
+    setSelectedValue(currentStatus);
+  }, [currentStatus]);
 
-  if (!currentStatus)
+  if (!currentStatus) {
     return <div className="text-muted-foreground text-sm italic">-</div>;
+  }
 
   return (
     <>
       <div className="w-[180px]">
         {canEditStatus ? (
-          <FormProvider {...form}>
-            <Form {...form}>
-              <CustomDropDownSearchable
-                form={form}
-                name="status"
-                label=""
-                options={statusOptions}
-                placeholder="Select Status"
-                searchEnabled={false}
-                onChangeValue={handleChange}
-                showClearButton={false}
-              />
-            </Form>
-          </FormProvider>
+          <SimpleDropDownSearchable
+            value={selectedValue}
+            onChange={handleChange}
+            options={statusOptions}
+            placeholder="Select Status"
+            allowClear={false}
+          />
         ) : (
           <div className="text-sm text-muted-foreground">
-            <span>{currentStatusLabel}</span>
+            <span>
+              {statusOptions.find((s) => s.value === currentStatus)?.label ||
+                ""}
+            </span>
           </div>
         )}
       </div>
@@ -211,7 +202,7 @@ const StatusCell = ({ row }: any) => {
         newStatusLabel={
           statusOptions.find((s) => s.value === pendingStatus)?.label || ""
         }
-        form={formStatusNotes}
+        form={formStatusNotes} // Modal still uses its form
       />
     </>
   );
@@ -296,7 +287,7 @@ export const columns: ColumnDef<any>[] = [
             <DropdownMenuItem onClick={handleViewHistory}>
               View history
             </DropdownMenuItem>
-            {userRole === roles.BDE && (
+            {(userRole === roles.BDE || userRole === roles.ADMIN) && (
               <>
                 <DropdownMenuItem onClick={handleEdit}>
                   Edit Inquiry

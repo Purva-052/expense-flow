@@ -7,11 +7,12 @@ import TablePageHeader from "@/components/table/table-page-header";
 import { FilterConfig } from "@/components/table/table-toolbar";
 import { ActionFormModal } from "./components/action";
 import { columns } from "./components/columns";
-import { useProjectModuleStore } from "./stores/useProjectModuleStore";
-import { useGetProjectModule } from "./services";
+import { useServerStore } from "./stores/useServerStore";
+import { ViewServerModal } from "./components/view-model";
+import { useGetServerList } from "./services";
 
-const ProjectModulePage = () => {
-  const { open, setOpen } = useProjectModuleStore();
+const ServerPage = () => {
+  const { open, setOpen } = useServerStore();
   const [listParams, setListParams] = useState({
     pageSize: 10,
     currentPage: 1,
@@ -25,7 +26,7 @@ const ProjectModulePage = () => {
     pagination: true,
   };
 
-  const { data: listData, isPending: loading } = useGetProjectModule(apiParams);
+  const { data: listData, isPending: loading } = useGetServerList(apiParams);
 
   const totalCount = (listData as any)?.metadata?.totalCount;
 
@@ -61,11 +62,11 @@ const ProjectModulePage = () => {
   return (
     <PageLayout>
       <TablePageHeader
-        title="Project module"
-        buttonText="Add module"
+        title="Servers"
+        buttonText="Add Server"
         onButtonClick={handleAdd}
       >
-        Manage your Project module here.
+        Manage your Servers here.
       </TablePageHeader>
       <GlobalFilterSection filters={filters ?? []} />
       <GlobalTable
@@ -79,8 +80,9 @@ const ProjectModulePage = () => {
         isPaginationEnabled
       />
       {open && <ActionFormModal />}
+      <ViewServerModal />
     </PageLayout>
   );
 };
 
-export default ProjectModulePage;
+export default ServerPage;

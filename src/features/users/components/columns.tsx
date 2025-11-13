@@ -14,6 +14,7 @@ import {
 import { useUsersStore } from "../stores/useUsersStore";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { formatRole } from "@/utils/commonFunctions";
+import { roles } from "@/utils/constant";
 
 // 🎯 Columns
 export const columns: ColumnDef<any>[] = [
@@ -113,7 +114,8 @@ export const columns: ColumnDef<any>[] = [
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleView}>View User</DropdownMenuItem>
-            {(UserRole === "admin" || UserRole === "project_manager") && (
+            {(UserRole === roles.ADMIN ||
+              UserRole === roles.PROJECT_MANAGER) && (
               <>
                 <DropdownMenuItem onClick={handleEdit}>
                   Edit User
