@@ -86,7 +86,7 @@ export function ProjectServerActionForm({
                 control={form.control}
                 name="url"
                 label="URL"
-                placeholder="Enter URL..."
+                placeholder="https://example.com"
               />
               {/* Server ID */}
               <CustomDropDownSearchable

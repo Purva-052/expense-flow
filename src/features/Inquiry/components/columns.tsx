@@ -172,7 +172,7 @@ const StatusCell = ({ row }: any) => {
   };
 
   // --- Role & permission logic ---
-  const canEditStatus = userRole === roles.BDE;
+  const canEditStatus = userRole === roles.BDE || userRole === roles.ADMIN;
 
   const currentStatusLabel =
     statusOptions.find((s) => s.value === currentStatus)?.label || "";
@@ -296,7 +296,7 @@ export const columns: ColumnDef<any>[] = [
             <DropdownMenuItem onClick={handleViewHistory}>
               View history
             </DropdownMenuItem>
-            {userRole === roles.BDE && (
+            {(userRole === roles.BDE || userRole === roles.ADMIN) && (
               <>
                 <DropdownMenuItem onClick={handleEdit}>
                   Edit Inquiry

@@ -13,24 +13,25 @@ import { Plus, Trash2 } from "lucide-react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { _documentListSchema, TProjectDocumentSchema } from "../schema";
 import { useProjectDocumentStore } from "../stores/useProjectDocumentStore";
+import {
+  useCreateProjectDocument,
+  useUpdateProjectsDocument,
+} from "../services";
+import { useEffect } from "react";
 
-export default function AddEditDocumentDialog() {
+export default function AddEditDocumentDialog({ ProjectId }: any) {
   const { open, setOpen, currentRow } = useProjectDocumentStore();
+
+  const {
+    mutateAsync: createProjectDocument,
+    isPending: isCreateDocumentLoading,
+  } = useCreateProjectDocument();
+  const {
+    mutateAsync: updateProjectDocument,
+    isPending: isUpdateDocumentLoading,
+  } = useUpdateProjectsDocument(currentRow?.id);
   const isEdit = !!currentRow;
-  const initialValues =
-    currentRow?.length > 0
-      ? currentRow?.map((doc: any) => ({
-          documentName: doc.documentName ?? "",
-          notes: doc.notes ?? "",
-          link: doc.link ?? "",
-        }))
-      : [
-          {
-            documentName: "",
-            notes: "",
-            link: "",
-          },
-        ];
+
   const {
     control,
     handleSubmit,
@@ -38,7 +39,15 @@ export default function AddEditDocumentDialog() {
     formState: { errors },
   } = useForm<TProjectDocumentSchema>({
     resolver: zodResolver(_documentListSchema),
-    defaultValues: initialValues,
+    defaultValues: {
+      documents: [
+        {
+          documentName: "",
+          notes: "",
+          link: "",
+        },
+      ],
+    },
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -46,8 +55,13 @@ export default function AddEditDocumentDialog() {
     name: "documents",
   });
 
-  const handleFormSubmit = (data: any) => {
-    console.log(data);
+  const handleFormSubmit = async (data: any) => {
+    const payload = { documents: data?.documents, projectId: ProjectId };
+    if (isEdit) {
+      await updateProjectDocument(payload);
+    } else {
+      await createProjectDocument(payload);
+    }
   };
   const onCloseModal = () => {
     setOpen(false);
@@ -61,6 +75,32 @@ export default function AddEditDocumentDialog() {
       ],
     });
   };
+
+  useEffect(() => {
+    if (open === "edit" && currentRow) {
+      reset({
+        documents: [
+          {
+            documentName: currentRow.documentName ?? "",
+            notes: currentRow.notes ?? "",
+            link: currentRow.link ?? "",
+          },
+        ],
+      });
+    }
+
+    if (open === "add") {
+      reset({
+        documents: [
+          {
+            documentName: "",
+            notes: "",
+            link: "",
+          },
+        ],
+      });
+    }
+  }, [open, currentRow, reset]);
 
   return (
     <Dialog
@@ -182,8 +222,15 @@ export default function AddEditDocumentDialog() {
             >
               Cancel
             </Button>
-            <Button type="submit">
-              {fields?.length > 1 ? "Save All" : "Save"}
+            <Button
+              type="submit"
+              disabled={isCreateDocumentLoading || isUpdateDocumentLoading}
+            >
+              {isCreateDocumentLoading || isUpdateDocumentLoading
+                ? "Saving..."
+                : fields?.length > 1
+                  ? "Save All"
+                  : "Save"}
             </Button>
           </div>
         </form>

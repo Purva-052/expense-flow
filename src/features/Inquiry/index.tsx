@@ -70,7 +70,9 @@ const InquiryPage = () => {
         title="Inquiry "
         buttonText="Add Inquiry "
         onButtonClick={handleAdd}
-        showActionButton={userRole === roles.BDE ? true : false}
+        showActionButton={
+          userRole === roles.BDE || userRole === roles.ADMIN ? true : false
+        }
       >
         Manage your Inquiry here.
       </TablePageHeader>

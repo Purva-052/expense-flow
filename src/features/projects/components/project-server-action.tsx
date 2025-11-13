@@ -73,7 +73,7 @@ export function ProjectServerActionFormModal({
           />
           <DeleteModal
             onConfirm={handleDelete}
-            key={`server-delete-${currentRow.id}`}
+            key={`project-server-delete-${currentRow.id}`}
             isOpen={open === "delete"}
             onClose={handleCloseDialog}
             itemName={currentRow.url}

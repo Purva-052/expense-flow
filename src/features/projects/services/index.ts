@@ -140,22 +140,26 @@ export const useDeleteProjectServer = (id: string) => {
 };
 
 export const useCreateProjectDocument = () => {
-  const { setOpen } = useProjectDocumentStore();
+  const { setOpen, setCurrentRow } = useProjectDocumentStore();
   return usePostData({
     url: API.document.create,
     refetchQueries: [Project_Document],
     onSuccess: () => {
       setOpen(null);
+      setCurrentRow(null);
     },
   });
 };
 
 export const useUpdateProjectsDocument = (id: string) => {
-  const { setOpen } = useProjectDocumentStore();
+  const { setOpen, setCurrentRow } = useProjectDocumentStore();
   return usePatchData({
     url: `${Project_Document}/${id}`,
     refetchQueries: [Project_Document],
-    onSuccess: () => setOpen(null),
+    onSuccess: () => {
+      setOpen(null);
+      setCurrentRow(null);
+    },
   });
 };
 
@@ -167,12 +171,13 @@ export const useGetProjectsDocument = (params: any) => {
 };
 
 export const useDeleteProjectDocument = (id: string) => {
-  const { setOpen } = useProjectDocumentStore();
+  const { setOpen, setCurrentRow } = useProjectDocumentStore();
   return useDeleteData({
     url: `${Project_Document}/${id}`,
     refetchQueries: [Project_Document],
     onSuccess: () => {
       setOpen(null);
+      setCurrentRow(null);
     },
   });
 };

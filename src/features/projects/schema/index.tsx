@@ -66,7 +66,11 @@ export const singleDocSchema = z
   .object({
     documentName: z.string().min(1, "Document name is required"),
     notes: z.string().optional(),
-    link: z.string().url("Must be a valid URL").or(z.literal("")).optional(),
+    link: z
+      .string()
+      .url("Please enter a valid URL like https://example.com")
+      .or(z.literal(""))
+      .optional(),
   })
   .refine((data) => data.notes || data.link, {
     message: "Either Notes or Link must be filled.",
@@ -81,7 +85,7 @@ export type TProjectDocumentSchema = z.infer<typeof _documentListSchema>;
 export const ProjectServerSchema = z.object({
   url: z
     .string()
-    .url({ message: "Please enter a valid URL." })
+    .url({ message: "Please enter a valid URL like https://example.com" })
     .min(5, { message: "URL must be at least 5 characters long." })
     .max(100, { message: "URL cannot exceed 100 characters." })
     .trim(),

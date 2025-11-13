@@ -50,8 +50,8 @@ export function DeleteModal({
               </DialogTitle>
             </div>
             <DialogDescription className="mt-2 text-gray-600 dark:text-gray-300">
-              Are you sure you want to delete <b>{itemName}</b> ? This action
-              cannot be undone.
+              Are you sure you want to delete {itemName && <b>{itemName}</b>} ?
+              This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-6 flex justify-end gap-3">
