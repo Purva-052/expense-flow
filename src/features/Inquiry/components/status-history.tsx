@@ -49,27 +49,35 @@ const InquiryStatusHistoryComponent = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-1 items-start">
           <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex flex-col">
-              <span className="font-medium text-foreground">Name:</span>
+              <span className="font-medium text-foreground">Created By:</span>
+              <span>{Details?.generatedByUser?.fullName ?? "-"}</span>
+            </div>
+          </div>
+          <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
+            <div className="flex flex-col">
+              <span className="font-medium text-foreground">Client Name:</span>
               <span>{Details?.clientName ?? "-"}</span>
             </div>
           </div>
           <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex flex-col">
-              <span className="font-medium text-foreground">Company Name:</span>{" "}
+              <span className="font-medium text-foreground">
+                Client Company:
+              </span>{" "}
               <span>{Details?.clientCompanyName ?? "-"}</span>
             </div>
           </div>
           <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex flex-col">
-              <span className="font-medium text-foreground">
-                Company Email:
-              </span>{" "}
+              <span className="font-medium text-foreground">Client Email:</span>{" "}
               <span>{Details?.clientEmailId ?? "-"}</span>
             </div>
           </div>
           <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex flex-col">
-              <span className="font-medium text-foreground">Contact:</span>{" "}
+              <span className="font-medium text-foreground">
+                Client Contact:
+              </span>{" "}
               <span>{Details?.clientContactNo ?? "-"}</span>
             </div>
           </div>

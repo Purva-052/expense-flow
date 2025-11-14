@@ -166,13 +166,11 @@ export function GlobalTable<TData>({
                 <tr>
                   <td
                     colSpan={columns.length}
-                    className="h-40 px-4 text-center align-middle"
+                    className="h-80 px-4 text-center align-middle"
                   >
                     <div className="flex flex-col items-center justify-center space-y-2 text-muted-foreground">
                       <SearchX className="h-8 w-8 text-muted-foreground/70" />
-                      <span className="text-lg font-medium">
-                        No results found
-                      </span>
+                      <span className="text-lg font-medium">No data found</span>
                     </div>
                   </td>
                 </tr>
