@@ -68,8 +68,10 @@ export function InquiryActionForm({
       open={open}
       modal
       onOpenChange={(state) => {
-        form.reset();
         onOpenChange(state);
+        if (!state) {
+          form.reset();
+        }
       }}
     >
       <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-auto">
