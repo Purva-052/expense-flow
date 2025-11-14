@@ -1,43 +1,48 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
-import PhoneInput from "react-phone-number-input";
-import "react-phone-number-input/style.css";
+import { Controller } from "react-hook-form";
+import { PhoneInput } from "react-international-phone";
+import "react-international-phone/style.css";
 
-export function PhoneInputField({ form, name, label }: any) {
+interface Props {
+  form: any;
+  name: string;
+  label?: string;
+}
+
+export function PhoneInputField({ form, name, label }: Props) {
   return (
-    <FormField
-      control={form.control}
-      name={name}
-      render={({ field, fieldState }) => (
-        <FormItem className="space-y-2">
-          <FormLabel>{label}</FormLabel>
-
-          <FormControl>
-            <PhoneInput
-              {...field}
-              value={field.value || ""}
-              onChange={(value) => field.onChange(value)}
-              defaultCountry="IN"
-              international
-              withCountryCallingCode
-              placeholder="Enter phone number"
-              className={`
-                w-full rounded-md border px-3 py-2 text-sm bg-background
-                ${fieldState.error ? "border-red-500" : "border-input"}
-              `}
-            />
-          </FormControl>
-
-          {/* THIS WILL NOW SHOW PROPERLY */}
-          <FormMessage />
-        </FormItem>
+    <div className="flex flex-col gap-1">
+      {label && (
+        <label className="text-sm font-medium text-gray-700">{label}</label>
       )}
-    />
+
+      <Controller
+        control={form.control}
+        name={name}
+        render={({ field }: any) => (
+          <PhoneInput
+            defaultCountry="in"
+            value={field.value}
+            onChange={(phone: any, meta: any) => {
+              const digits = phone.replace(/\D/g, ""); // only numbers
+              const max = meta?.maxLength ?? 15;
+
+              // Block input if exceeds max digits
+              if (digits.length <= max) {
+                field.onChange(phone);
+              }
+            }}
+            className="phone-input !border !border-gray-300 !rounded-md !shadow-none focus:!ring-0 focus:!border-gray-400"
+            inputClassName="!border-none !shadow-none focus:!ring-0 focus:!border-none"
+          />
+        )}
+      />
+
+      {form.formState.errors[name]?.message && (
+        <p className="text-red-500 text-xs">
+          {String(form.formState.errors[name]?.message)}
+        </p>
+      )}
+    </div>
   );
 }
