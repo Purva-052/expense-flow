@@ -13,7 +13,7 @@ export const InquirySchema = z.object({
     .trim()
     .min(2, { message: "Country must be at least 2 characters long." })
     .max(50, { message: "Country cannot exceed 50 characters." }),
-  clientContactNo: z.string().optional(),
+  clientContactNo: z.any().optional(),
   clientCompanyName: z.string().trim().optional(),
   sourceOfInquiry: z.string().trim().optional(),
   clientEmailId: z.string().trim().email().optional().or(z.literal("")),

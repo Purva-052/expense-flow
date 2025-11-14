@@ -285,6 +285,14 @@ const InquiryPage = () => {
       header: "Country",
     },
     {
+      accessorKey: "generatedByUser",
+      header: "Created By",
+      cell: ({ row }) => {
+        const createdBy = row.original?.generatedByUser?.fullName ?? "-";
+        return <span className="capitalize">{createdBy}</span>;
+      },
+    },
+    {
       accessorKey: "modules",
       header: "Inquiry Type",
       cell: ({ row }) => {

@@ -47,6 +47,13 @@ export function ViewInquiryModal() {
 
         <div className="space-y-3 py-2">
           <div className="flex justify-between">
+            <span className="font-medium text-gray-700">Created By:</span>
+            <span className="text-gray-900">
+              {currentRow?.generatedByUser?.fullName ?? "-"}
+            </span>
+          </div>
+          <Separator />
+          <div className="flex justify-between">
             <span className="font-medium text-gray-700">Client Name:</span>
             <span className="text-gray-900">
               {currentRow?.clientName ?? "-"}
@@ -55,9 +62,7 @@ export function ViewInquiryModal() {
           <Separator />
 
           <div className="flex justify-between">
-            <span className="font-medium text-gray-700">
-              Client Company name:
-            </span>
+            <span className="font-medium text-gray-700">Client Company:</span>
             <span className="text-gray-900">
               {currentRow?.clientCompanyName ?? "-"}
             </span>
@@ -71,9 +76,7 @@ export function ViewInquiryModal() {
           </div>
           <Separator />
           <div className="flex justify-between">
-            <span className="font-medium text-gray-700">
-              Client Contact No:
-            </span>
+            <span className="font-medium text-gray-700">Client Contact:</span>
             <span className="text-gray-900">
               {currentRow?.clientContactNo ?? "-"}
             </span>

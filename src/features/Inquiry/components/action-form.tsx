@@ -43,7 +43,7 @@ export function InquiryActionForm({
       requirements: currentRow?.modules?.map((item: any) => item?.id) ?? [],
       status: currentRow?.status ?? "",
       notes: currentRow?.notes ?? "",
-      clientContactNo: currentRow?.clientContactNo ?? "",
+      clientContactNo: currentRow?.clientContactNo ?? null,
       clientCompanyName: currentRow?.clientCompanyName ?? "",
       sourceOfInquiry: currentRow?.sourceOfInquiry ?? "",
       clientEmailId: currentRow?.clientEmailId ?? "",
