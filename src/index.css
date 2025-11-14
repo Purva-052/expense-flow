@@ -306,3 +306,9 @@
     height: 0;
   }
 }
+
+/* ----------- Custom react-phone-number-input ----------- */
+.PhoneInputInput:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}

@@ -10,7 +10,7 @@ export function HistoryProjectModal() {
 
   return (
     <Dialog open={open === "history"} onOpenChange={() => setOpen(null)}>
-      <DialogContent className="!max-w-xl rounded-xl shadow-lg border border-border bg-card p-6">
+      <DialogContent className="!max-w-2xl rounded-xl shadow-lg border border-border bg-card p-6">
         <InquiryStatusHistoryComponent
           Id={currentRow?.id}
           Details={currentRow}

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable no-console */
 // src/pages/board.tsx
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -39,7 +40,11 @@ import {
 import { ChevronDown, Users } from "lucide-react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useInView } from "react-intersection-observer";
-import { useAssignDeveloper, useGetAllDevelopers } from "../services";
+import {
+  useAssignDeveloper,
+  useGetAllBecomingAvailableDevelopers,
+  useGetAllDevelopers,
+} from "../services";
 import { DeveloperChip } from "./developer-chip";
 import { DeveloperDialog } from "./developer-dialog";
 import { ProjectCard } from "./project-card";
@@ -50,6 +55,7 @@ import { useGetTechnologyDropdownList } from "@/features/technology/services";
 import { cn } from "@/lib/utils";
 import { capitalizeFirstLetter } from "@/utils/commonFunctions";
 import { roles } from "@/utils/constant";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type GroupedDevelopers = {
   technologyName: string;
@@ -69,6 +75,8 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
   const FILTER_STORAGE_KEY = "board_filters";
   const [searchTech, setSearchTech] = useState<string>("");
   const debouncedSearchTech = useDebounce(searchTech, 500);
+  const [activeTabResource, setActiveTabResource] =
+    useState<string>("available");
 
   const { data: ProjectType, isPending: LoadingProjectType }: any =
     useGetProjectTypesDropdownList();
@@ -124,15 +132,21 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
     );
   }, [listParams]);
 
+  const resourcePayload = {
+    ...(activeTabResource === "available"
+      ? { available: showAllDevelopers ? undefined : true }
+      : {}),
+    search: debouncedSearchTech,
+    technologyId: selectedTech.length > 0 ? selectedTech : undefined,
+  };
+
   const {
     data: AllDevelopersResponse,
     isPending: AllDevelopersLoading,
     refetch: AllDevelopersRefetch,
-  }: any = useGetAllDevelopers({
-    available: showAllDevelopers ? undefined : true,
-    search: debouncedSearchTech,
-    technologyId: selectedTech.length > 0 ? selectedTech : undefined,
-  });
+  }: any = activeTabResource !== "available"
+    ? useGetAllBecomingAvailableDevelopers(resourcePayload)
+    : useGetAllDevelopers(resourcePayload);
 
   const groupedDevelopers: GroupedDevelopers = useMemo(() => {
     if (!AllDevelopersResponse?.data) return [];
@@ -491,23 +505,44 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
               <Card
                 ref={availableDroppable.setNodeRef}
                 className={cn(
-                  "!h-full !gap-2",
+                  "!h-full !gap-2 py-2",
                   availableDroppable.isOver && "ring-2 ring-pink-500"
                 )}
               >
-                <CardHeader className="flex flex-col gap-2 ">
+                <CardHeader className="flex flex-col gap-2">
+                  <Tabs
+                    value={activeTabResource}
+                    onValueChange={setActiveTabResource}
+                    className="!w-full my-1"
+                  >
+                    <TabsList>
+                      <TabsTrigger value="available">Available</TabsTrigger>
+                      <TabsTrigger value="becomeAvailable">
+                        Become Available
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
                   <CardTitle className="w-full text-balance flex items-center justify-between">
-                    {showAllDevelopers
-                      ? "All Developers"
-                      : "Available Resources"}
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">All</span>
-                      <Switch
-                        checked={showAllDevelopers}
-                        onCheckedChange={setShowAllDevelopers}
-                      />
-                    </div>
+                    {activeTabResource === "available" ? (
+                      <span className="flex gap-2 justify-between w-full">
+                        {showAllDevelopers
+                          ? "All Developers"
+                          : "Available Resources"}
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground">
+                            All
+                          </span>
+                          <Switch
+                            checked={showAllDevelopers}
+                            onCheckedChange={setShowAllDevelopers}
+                          />
+                        </div>
+                      </span>
+                    ) : (
+                      <span>Become Available Resources</span>
+                    )}
                   </CardTitle>
+
                   <Input
                     value={searchTech}
                     onChange={(e) => setSearchTech(e.target.value)}

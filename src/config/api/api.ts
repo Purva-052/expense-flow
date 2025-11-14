@@ -11,6 +11,7 @@ const API = {
     role: "/users/roles",
     available_developers: "/users/available-developers",
     all_developers: "/users/resources",
+    becoming_available_developer: "/users/resources/ending-allocations",
     remove_developer_from_project: "/developer-allocations/remove",
     reallocate_developer: "/developer-allocations/reallocate",
     project_handler: "/users/handled-projects",

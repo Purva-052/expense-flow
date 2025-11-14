@@ -8,6 +8,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useInquiryStore } from "../stores/useInquiryStore";
 import { INQUIRY_STATUS } from "@/utils/constant";
+import { Badge } from "@/components/ui/badge";
 
 export function ViewInquiryModal() {
   const { open, setOpen, currentRow } = useInquiryStore();
@@ -39,7 +40,7 @@ export function ViewInquiryModal() {
 
   return (
     <Dialog open={open === "view"} onOpenChange={() => setOpen("")}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Inquiry Details</DialogTitle>
         </DialogHeader>
@@ -54,6 +55,31 @@ export function ViewInquiryModal() {
           <Separator />
 
           <div className="flex justify-between">
+            <span className="font-medium text-gray-700">
+              Client Company name:
+            </span>
+            <span className="text-gray-900">
+              {currentRow?.clientCompanyName ?? "-"}
+            </span>
+          </div>
+          <Separator />
+          <div className="flex justify-between">
+            <span className="font-medium text-gray-700">Client Email:</span>
+            <span className="text-gray-900">
+              {currentRow?.clientEmailId ?? "-"}
+            </span>
+          </div>
+          <Separator />
+          <div className="flex justify-between">
+            <span className="font-medium text-gray-700">
+              Client Contact No:
+            </span>
+            <span className="text-gray-900">
+              {currentRow?.clientContactNo ?? "-"}
+            </span>
+          </div>
+          <Separator />
+          <div className="flex justify-between">
             <span className="font-medium text-gray-700">Country:</span>
             <span className="text-gray-900">
               {currentRow?.countryName ?? "-"}
@@ -62,17 +88,31 @@ export function ViewInquiryModal() {
           <Separator />
 
           <div className="flex justify-between">
+            <span className="font-medium text-gray-700">
+              Source Of Inquiry:
+            </span>
+            <span className="text-gray-900">
+              {currentRow?.sourceOfInquiry ?? "-"}
+            </span>
+          </div>
+          <Separator />
+
+          <div className="flex justify-between">
             <span className="font-medium text-gray-700 w-24">Type:</span>
-            <span className="capitalize text-gray-900 text-wrap text-right">
+            <span className="capitalize text-gray-900 flex items-center  gap-1">
               {currentRow?.modules?.length > 0
-                ? currentRow?.modules?.map((m: any) => m.name).join(", ")
+                ? currentRow?.modules?.map((m: any) => {
+                    return (
+                      <Badge
+                        variant="secondary"
+                        className="border border-gray-300"
+                      >
+                        {m?.name}
+                      </Badge>
+                    );
+                  })
                 : "-"}
             </span>
-            {/* <span className="capitalize text-gray-900 max-w-[400px] flex flex-wrap">
-              {currentRow?.modules?.length > 0
-                ? currentRow?.modules?.map((m: any) => m.name).join(", ")
-                : "-"}
-            </span> */}
           </div>
           <Separator />
 
@@ -89,7 +129,7 @@ export function ViewInquiryModal() {
 
           <div>
             <span className="font-medium text-gray-700">Notes:</span>
-            <p className="mt-1 text-gray-900 whitespace-pre-line">
+            <p className="mt-1 text-gray-900 whitespace-pre-line border rounded p-1 min-h-20">
               {currentRow?.notes || "—"}
             </p>
           </div>

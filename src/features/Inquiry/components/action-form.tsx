@@ -16,6 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { InquirySchema, TInquirySchema } from "../schema";
 import { INQUIRY_STATUS } from "@/utils/constant";
+import { PhoneInputField } from "@/components/shared/custom-phone-number-countrywise";
 
 interface Props {
   currentRow?: any;
@@ -38,10 +39,14 @@ export function InquiryActionForm({
     resolver: zodResolver(InquirySchema) as any,
     defaultValues: {
       clientName: currentRow?.clientName ?? "",
-      country: currentRow?.countryName ?? "",
-      type: currentRow?.modules?.map((item: any) => item?.id) ?? [],
+      countryName: currentRow?.countryName ?? "",
+      requirements: currentRow?.modules?.map((item: any) => item?.id) ?? [],
       status: currentRow?.status ?? "",
       notes: currentRow?.notes ?? "",
+      clientContactNo: currentRow?.clientContactNo ?? "",
+      clientCompanyName: currentRow?.clientCompanyName ?? "",
+      sourceOfInquiry: currentRow?.sourceOfInquiry ?? "",
+      clientEmailId: currentRow?.clientEmailId ?? "",
     },
   });
 
@@ -87,18 +92,56 @@ export function InquiryActionForm({
                 placeholder="Enter client name"
               />
 
+              {/* Client Company Name. */}
+              <TextInputField
+                control={form.control}
+                name="clientCompanyName"
+                label="Client Company Name"
+                placeholder="Enter client company name"
+              />
+
+              {/* Client Email */}
+              <TextInputField
+                control={form.control}
+                name="clientEmailId"
+                label="Client Email"
+                placeholder="Enter client email"
+              />
+
+              {/* Client Contact No. */}
+              {/* <TextInputField
+                control={form.control}
+                name="clientContactNo"
+                label="Client Contact No."
+                placeholder="Enter client contact no."
+              /> */}
+
+              <PhoneInputField
+                form={form}
+                name="clientContactNo"
+                label="Client Contact No."
+              />
+
               {/* Country */}
               <TextInputField
                 control={form.control}
-                name="country"
+                name="countryName"
                 label="Country"
                 placeholder="Enter country name"
+              />
+
+              {/* Source of Inquiry */}
+              <TextInputField
+                control={form.control}
+                name="sourceOfInquiry"
+                label="Source of Inquiry"
+                placeholder="Enter source of inquiry"
               />
 
               {/* Type Dropdown */}
               <CustomDropDownSearchable
                 form={form}
-                name="type"
+                name="requirements"
                 label="Inquiry Type"
                 multiple
                 options={inquiryOptions}
@@ -135,12 +178,6 @@ export function InquiryActionForm({
                         label: "Opted Out",
                       },
                     ]}
-                    // options={[
-                    //   { value: "open", label: "Open" },
-                    //   { value: "in-progress", label: "In Progress" },
-                    //   { value: "closed", label: "Closed" },
-                    //   { value: "pending", label: "Pending" },
-                    // ]}
                     placeholder="Select Status"
                     searchEnabled={false}
                   />

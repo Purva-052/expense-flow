@@ -40,22 +40,46 @@ const InquiryStatusHistoryComponent = ({
     })) ?? [];
 
   return (
-    <div className=" rounded-xl p-2">
+    <div className="rounded-xl p-2">
       <DialogHeader className="border-b pb-3 mb-4">
         <DialogTitle className="text-lg font-semibold flex items-center gap-2">
           Inquiry History
         </DialogTitle>
 
-        <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
-          <div>
-            <span className="font-medium text-foreground">Client Name:</span>{" "}
-            {Details?.clientName ?? "-"}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-1 items-start">
+          <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
+            <div className="flex flex-col">
+              <span className="font-medium text-foreground">Name:</span>
+              <span>{Details?.clientName ?? "-"}</span>
+            </div>
           </div>
-        </div>
-        <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
-          <div>
-            <span className="font-medium text-foreground">Country:</span>{" "}
-            {Details?.countryName ?? "-"}
+          <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
+            <div className="flex flex-col">
+              <span className="font-medium text-foreground">Company Name:</span>{" "}
+              <span>{Details?.clientCompanyName ?? "-"}</span>
+            </div>
+          </div>
+          <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
+            <div className="flex flex-col">
+              <span className="font-medium text-foreground">
+                Company Email:
+              </span>{" "}
+              <span>{Details?.clientEmailId ?? "-"}</span>
+            </div>
+          </div>
+          <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
+            <div className="flex flex-col">
+              <span className="font-medium text-foreground">
+                Source of Inquiry:
+              </span>{" "}
+              <span>{Details?.sourceOfInquiry ?? "-"}</span>
+            </div>
+          </div>
+          <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
+            <div className="flex flex-col">
+              <span className="font-medium text-foreground">Country:</span>{" "}
+              <span>{Details?.countryName ?? "-"}</span>
+            </div>
           </div>
         </div>
       </DialogHeader>
