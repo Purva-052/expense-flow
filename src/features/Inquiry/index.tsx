@@ -354,20 +354,19 @@ const InquiryPage = () => {
               <DropdownMenuItem onClick={handleViewHistory}>
                 View history
               </DropdownMenuItem>
-              {(userRole === roles.BDE || userRole === roles.ADMIN) &&
-                activeTab === "active" && (
-                  <>
-                    <DropdownMenuItem onClick={handleEdit}>
-                      Edit Inquiry
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="text-red-600 focus:bg-red-50 focus:text-red-600"
-                      onClick={handleDelete}
-                    >
-                      Delete Inquiry
-                    </DropdownMenuItem>
-                  </>
-                )}
+              {(userRole === roles.BDE || userRole === roles.ADMIN) && (
+                <>
+                  <DropdownMenuItem onClick={handleEdit}>
+                    Edit Inquiry
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="text-red-600 focus:bg-red-50 focus:text-red-600"
+                    onClick={handleDelete}
+                  >
+                    Delete Inquiry
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         );

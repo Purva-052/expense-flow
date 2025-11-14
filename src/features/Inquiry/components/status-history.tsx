@@ -69,6 +69,12 @@ const InquiryStatusHistoryComponent = ({
           </div>
           <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex flex-col">
+              <span className="font-medium text-foreground">Contact:</span>{" "}
+              <span>{Details?.clientContactNo ?? "-"}</span>
+            </div>
+          </div>
+          <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
+            <div className="flex flex-col">
               <span className="font-medium text-foreground">
                 Source of Inquiry:
               </span>{" "}

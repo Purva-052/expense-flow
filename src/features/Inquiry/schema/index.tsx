@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { isValidPhoneNumber } from "react-phone-number-input";
 
 export const InquirySchema = z.object({
   clientName: z
@@ -14,16 +13,7 @@ export const InquirySchema = z.object({
     .trim()
     .min(2, { message: "Country must be at least 2 characters long." })
     .max(50, { message: "Country cannot exceed 50 characters." }),
-  clientContactNo: z
-    .string()
-    .optional()
-    .refine(
-      (val) => {
-        if (!val) return true; // optional field
-        return isValidPhoneNumber(val);
-      },
-      { message: "Invalid phone number for selected country" }
-    ),
+  clientContactNo: z.string().optional(),
   clientCompanyName: z.string().trim().optional(),
   sourceOfInquiry: z.string().trim().optional(),
   clientEmailId: z.string().trim().email().optional().or(z.literal("")),
