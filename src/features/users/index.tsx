@@ -12,7 +12,7 @@ import { useUsersStore } from "./stores/useUsersStore";
 import { useGetUsersList, useGetUsersRoles } from "./services";
 import { useGetTechnologyDropdownList } from "../technology/services";
 import { useAuthStore } from "@/stores/use-auth-store";
-import { roles } from "@/utils/constant";
+import { roleLabels, roles } from "@/utils/constant";
 
 const UsersPage = () => {
   const { open, setOpen } = useUsersStore();
@@ -98,10 +98,12 @@ const UsersPage = () => {
       placeholder: "Filter by Role",
       options: roleList?.data?.map((role: any) => ({
         value: role,
-        label: role
-          .split("_")
-          .map((word: any) => word[0].toUpperCase() + word.slice(1))
-          .join(" "), // Converts "team_lead" -> "Team Lead"
+        label: roleLabels[role]
+          ? roleLabels[role]
+          : role
+              .split("_")
+              .map((word: string) => word[0].toUpperCase() + word.slice(1))
+              .join(" "),
       })),
       value: listParams.role,
       onChange: handleRoleChange,

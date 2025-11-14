@@ -39,6 +39,10 @@ export const roles: Roles = {
   BDE: "bde",
 };
 
+export const roleLabels: Record<string, string> = {
+  bde: "Business Development Team",
+};
+
 export const INQUIRY_STATUS = {
   NEW_INQUIRY: "new-inquiry",
   IN_DISCUSSION: "in-discussion",
