@@ -6,6 +6,7 @@ import { GlobalTable } from "@/components/table/global-table";
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import TablePageHeader from "@/components/table/table-page-header";
 import { FilterConfig } from "@/components/table/table-toolbar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -29,6 +30,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { INQUIRY_STATUS, roles } from "@/utils/constant";
@@ -43,8 +45,6 @@ import { HistoryProjectModal } from "./components/history-modal";
 import { ViewInquiryModal } from "./components/view-model";
 import { useCreateInquiryStatus, useGetInquiry } from "./services";
 import { useInquiryStore } from "./stores/useInquiryStore";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const InquiryPage = () => {
   const { open, setOpen } = useInquiryStore();
   const user = useAuthStore((state) => state.user);
