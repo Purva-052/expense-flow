@@ -12,7 +12,6 @@ import {
 
 export function ActionFormModal() {
   const { open, setOpen, currentRow, setCurrentRow } = useInquiryStore();
-  console.log("🚀 ~ ActionFormModal ~ currentRow:", currentRow);
   const { mutateAsync: createMutate, isPending: isCreateLoading } =
     useCreateInquiry();
   const { mutateAsync: updateMutate, isPending: isUpdateLoading } =
@@ -23,18 +22,26 @@ export function ActionFormModal() {
   const handleSubmission = (values: TInquirySchema, type: string) => {
     if (type === "add") {
       const payload = {
-        clientName: values.clientName,
-        countryName: values.country,
-        requirements: values.type,
-        status: values.status,
-        notes: values.notes,
+        clientName: values?.clientName,
+        countryName: values?.countryName,
+        requirements: values?.requirements,
+        status: values?.status,
+        notes: values?.notes,
+        clientContactNo: values?.clientContactNo,
+        clientCompanyName: values?.clientCompanyName,
+        sourceOfInquiry: values?.sourceOfInquiry,
+        clientEmailId: values?.clientEmailId,
       };
       createMutate(payload);
     } else {
       const payload = {
         clientName: values.clientName,
-        countryName: values.country,
-        requirements: values.type,
+        countryName: values.countryName,
+        requirements: values.requirements,
+        clientContactNo: values?.clientContactNo,
+        clientCompanyName: values?.clientCompanyName,
+        sourceOfInquiry: values?.sourceOfInquiry,
+        clientEmailId: values?.clientEmailId,
       };
       updateMutate(payload);
     }
