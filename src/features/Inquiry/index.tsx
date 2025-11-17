@@ -399,7 +399,7 @@ const InquiryPage = () => {
         <GlobalFilterSection
           filters={filters ?? []}
           extraItemShow={true}
-          className={"flex items-center my-2"}
+          className={"!my-2 flex flex-wrap gap-2"}
           extraItem={
             <TabsList className="">
               <TabsTrigger value="active">Active Inquiries</TabsTrigger>

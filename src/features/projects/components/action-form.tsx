@@ -101,7 +101,7 @@ export function ProjectActionForm({
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit Project" : "Add Project"}</DialogTitle>
         </DialogHeader>
-        <div className="h-fit w-full overflow-y-auto py-1">
+        <div className="h-fit w-full py-1">
           <Form {...form}>
             <form
               id="project-form"

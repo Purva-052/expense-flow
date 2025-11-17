@@ -7,6 +7,7 @@ import InquiryPage from "../Inquiry";
 import { useGetTechnologyDropdownList } from "../technology/services";
 import Board from "./components/Board";
 import ResourceTab from "./components/resourceTab";
+import InquiryTab from "./components/inquiryTab";
 
 const ProjectBoard = () => {
   const [activeTab, setActiveTab] = useState("board");
@@ -30,7 +31,7 @@ const ProjectBoard = () => {
               className="w-full"
             >
               {/* Tab Headers */}
-              <TabsList className="grid grid-cols-4 w-[570px] mb-2">
+              <TabsList className="grid grid-cols-5  w-[680px]  mb-2">
                 <TabsTrigger value="board">Projects</TabsTrigger>
                 <TabsTrigger value="resources">Resources</TabsTrigger>
                 <TabsTrigger value="Project Coordinator">
@@ -39,6 +40,7 @@ const ProjectBoard = () => {
                 <TabsTrigger value="Archive Projects">
                   Archive Projects
                 </TabsTrigger>
+                <TabsTrigger value="inquiry">Inquiry</TabsTrigger>
               </TabsList>
 
               {/* Board Tab */}
@@ -69,6 +71,9 @@ const ProjectBoard = () => {
 
               <TabsContent value="Archive Projects">
                 <Board activeTab={activeTab} />
+              </TabsContent>
+              <TabsContent value="inquiry">
+                <InquiryTab />
               </TabsContent>
             </Tabs>
           )}

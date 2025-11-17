@@ -5,7 +5,7 @@ const GlobalFilterSection = ({
   filters,
   className = "my-4",
   extraItem = null,
-  extraItemClassName = "mx-2",
+  extraItemClassName = "",
   extraItemShow = false,
 }: {
   filters: FilterConfig[];
