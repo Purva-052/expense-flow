@@ -72,6 +72,14 @@ export const InquiryChip = ({ lead }: { lead: any }) => {
               </Badge>
             </div>
 
+            {/* Project name */}
+            <div className="flex items-start gap-2">
+              <span className="font-semibold w-32">Project Name:</span>
+              <span className="text-muted-foreground">
+                {lead?.projectName ?? "-"}
+              </span>
+            </div>
+
             {/* Client Company */}
             <div className="flex items-start gap-2">
               <span className="font-semibold w-32">Company:</span>
