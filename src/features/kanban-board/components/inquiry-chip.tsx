@@ -117,6 +117,14 @@ export const InquiryChip = ({ lead }: { lead: any }) => {
                 <span className="text-muted-foreground">-</span>
               )}
             </div>
+
+            {/* notes */}
+            <div className="flex items-start gap-2">
+              <span className="font-semibold w-32">Notes:</span>
+              <span className="text-muted-foreground w-60 text-wrap">
+                {lead?.notes ?? "-"}
+              </span>
+            </div>
           </div>
         </TooltipContent>
       </Tooltip>

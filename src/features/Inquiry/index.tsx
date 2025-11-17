@@ -276,7 +276,11 @@ const InquiryPage = () => {
       accessorKey: "clientCompanyName",
       header: "Client Company",
       cell: ({ row }) => {
-        const clientCompany = row.original?.clientCompanyName ?? "-";
+        const clientCompany =
+          row.original?.clientCompanyName &&
+          row.original?.clientCompanyName?.trim() !== ""
+            ? row.original?.clientCompanyName
+            : "-";
         return <span className="capitalize">{clientCompany}</span>;
       },
     },

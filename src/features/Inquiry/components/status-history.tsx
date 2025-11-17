@@ -55,6 +55,16 @@ const InquiryStatusHistoryComponent = ({
           </div>
           <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex flex-col">
+              <span className="font-medium text-foreground">Project Name:</span>
+              <span>
+                {Details?.projectName && Details?.projectName?.trim() !== ""
+                  ? Details?.projectName
+                  : "-"}
+              </span>
+            </div>
+          </div>
+          <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
+            <div className="flex flex-col">
               <span className="font-medium text-foreground">Client Name:</span>
               <span>{Details?.clientName ?? "-"}</span>
             </div>
@@ -99,7 +109,7 @@ const InquiryStatusHistoryComponent = ({
       </DialogHeader>
 
       {HistoryLoading ? (
-        <div className="flex flex-col justify-center items-center py-16 gap-3 h-[55dvh]">
+        <div className="flex flex-col justify-center items-center py-16 gap-3 h-[20dvh]">
           <div className="w-10 h-10 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary" />
           <span className="text-sm text-muted-foreground font-medium">
             Loading history...

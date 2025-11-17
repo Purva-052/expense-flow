@@ -70,7 +70,7 @@ const InquiryTab = () => {
   const filters: FilterConfig[] = [
     {
       type: "search",
-      placeholder: "Search by client, creator, etc...",
+      placeholder: "Search by client...",
       key: "search",
       value: listParams.search,
       onChange: handleSearch,
