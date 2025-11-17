@@ -52,6 +52,7 @@ const API = {
     create: "/project-leads",
     update: "/project-leads",
     delete: "/project-leads",
+    dashboard: "/project-leads/inquiry",
   },
   inquiry_status: {
     list: "/project-lead-status-logs",
