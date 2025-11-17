@@ -21,7 +21,7 @@ export function ActionFormModal() {
 
   const handleSubmission = (values: TInquirySchema, type: string) => {
     if (type === "add") {
-      const payload = {
+      const basePayload = {
         clientName: values?.clientName,
         countryName: values?.countryName,
         requirements: values?.requirements,
@@ -32,9 +32,14 @@ export function ActionFormModal() {
         sourceOfInquiry: values?.sourceOfInquiry,
         clientEmailId: values?.clientEmailId,
       };
+      const payload = Object.fromEntries(
+        Object.entries(basePayload).filter(
+          ([_, v]) => v !== undefined && v !== null && v !== ""
+        )
+      );
       createMutate(payload);
     } else {
-      const payload = {
+      const basePayload = {
         clientName: values.clientName,
         countryName: values.countryName,
         requirements: values.requirements,
@@ -43,6 +48,11 @@ export function ActionFormModal() {
         sourceOfInquiry: values?.sourceOfInquiry,
         clientEmailId: values?.clientEmailId,
       };
+      const payload = Object.fromEntries(
+        Object.entries(basePayload).filter(
+          ([_, v]) => v !== undefined && v !== null && v !== ""
+        )
+      );
       updateMutate(payload);
     }
   };
