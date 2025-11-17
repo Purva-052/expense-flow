@@ -38,6 +38,7 @@ export function InquiryActionForm({
   const form = useForm<TInquirySchema>({
     resolver: zodResolver(InquirySchema) as any,
     defaultValues: {
+      projectName: currentRow?.projectName ?? "",
       clientName: currentRow?.clientName ?? "",
       countryName: currentRow?.countryName ?? "",
       requirements: currentRow?.modules?.map((item: any) => item?.id) ?? [],
@@ -86,6 +87,14 @@ export function InquiryActionForm({
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-4 p-0.5"
             >
+              {/* Client Name */}
+              <TextInputField
+                control={form.control}
+                name="projectName"
+                label="Project Name"
+                placeholder="Enter project name"
+              />
+
               {/* Client Name */}
               <TextInputField
                 control={form.control}

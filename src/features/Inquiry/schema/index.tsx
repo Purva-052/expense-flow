@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const InquirySchema = z.object({
+  projectName: z.string().trim().optional(),
   clientName: z
     .string()
     .trim()

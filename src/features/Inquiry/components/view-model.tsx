@@ -53,6 +53,17 @@ export function ViewInquiryModal() {
             </span>
           </div>
           <Separator />
+
+          <div className="flex justify-between">
+            <span className="font-medium text-gray-700">Project Name:</span>
+            <span className="text-gray-900">
+              {currentRow?.projectName && currentRow?.projectName?.trim() !== ""
+                ? currentRow?.projectName
+                : "-"}
+            </span>
+          </div>
+          <Separator />
+
           <div className="flex justify-between">
             <span className="font-medium text-gray-700">Client Name:</span>
             <span className="text-gray-900">

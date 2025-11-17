@@ -22,6 +22,7 @@ export function ActionFormModal() {
   const handleSubmission = (values: TInquirySchema, type: string) => {
     if (type === "add") {
       const basePayload = {
+        projectName: values?.projectName,
         clientName: values?.clientName,
         countryName: values?.countryName,
         requirements: values?.requirements,
@@ -40,6 +41,7 @@ export function ActionFormModal() {
       createMutate(payload);
     } else {
       const basePayload = {
+        projectName: values.projectName,
         clientName: values.clientName,
         countryName: values.countryName,
         requirements: values.requirements,
@@ -50,7 +52,7 @@ export function ActionFormModal() {
       };
       const payload = Object.fromEntries(
         Object.entries(basePayload).filter(
-          ([_, v]) => v !== undefined && v !== null && v !== ""
+          ([_, v]) => v !== undefined && v !== null
         )
       );
       updateMutate(payload);
