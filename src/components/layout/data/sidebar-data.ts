@@ -65,7 +65,7 @@ export const sidebarData: SidebarData = {
           title: "Inquiries",
           url: "/Inquiry",
           icon: IconMessage2Question,
-          requiredRoles: [roles.ADMIN],
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
         },
       ],
     },
