@@ -6,8 +6,8 @@ import { useState } from "react";
 import InquiryPage from "../Inquiry";
 import { useGetTechnologyDropdownList } from "../technology/services";
 import Board from "./components/Board";
-import ResourceTab from "./components/resourceTab";
 import InquiryTab from "./components/inquiryTab";
+import ResourceTab from "./components/resourceTab";
 
 const ProjectBoard = () => {
   const [activeTab, setActiveTab] = useState("board");
