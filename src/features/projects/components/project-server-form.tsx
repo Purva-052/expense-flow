@@ -24,6 +24,7 @@ import { Input } from "@/components/ui/input";
 interface Props {
   currentRow?: any;
   open: boolean;
+  isEdit?: boolean;
   onOpenChange: (open: boolean) => void;
   loading?: boolean;
   onSubmit: (values: TProjectServerSchema) => void;
@@ -32,12 +33,11 @@ interface Props {
 export function ProjectServerActionForm({
   currentRow,
   open,
+  isEdit,
   onOpenChange,
   onSubmit: onSubmitValues,
   loading,
 }: Readonly<Props>) {
-  const isEdit = !!currentRow;
-
   const { data: serverList, isFetching: isServerListLoading }: any =
     useGetServerList({ pagination: false });
 

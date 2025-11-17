@@ -25,7 +25,7 @@ export function ProjectServerActionFormModal({
     useDeleteProjectServer(currentRow?.id || "");
 
   const handleSubmission = (values: any, type: string) => {
-    const payload = {
+    const basePayload: any = {
       url: values?.url,
       port: values?.port,
       type: values?.type,
@@ -33,6 +33,13 @@ export function ProjectServerActionFormModal({
       serverId: values?.serverId,
       projectId: ProjectId,
     };
+
+    const payload = Object.fromEntries(
+      Object.entries(basePayload).filter(
+        ([_, v]) => v !== undefined && v !== null && v !== ""
+      )
+    );
+
     if (type === "add") {
       createMutate(payload);
     } else {
@@ -56,15 +63,17 @@ export function ProjectServerActionFormModal({
       <ProjectServerActionForm
         key="add-server"
         open={open === "add"}
+        isEdit={open === "add" ? false : true}
         loading={isCreateLoading}
         onOpenChange={(value) => setOpen(value ? "add" : null)}
         onSubmit={(values) => handleSubmission(values, "add")}
       />
 
-      {currentRow && (
+      {(open === "edit" || open === "delete") && (
         <>
           <ProjectServerActionForm
             key={`server-edit-${currentRow.id}`}
+            isEdit={true}
             open={open === "edit"}
             onSubmit={(values) => handleSubmission(values, "edit")}
             loading={isUpdateLoading}

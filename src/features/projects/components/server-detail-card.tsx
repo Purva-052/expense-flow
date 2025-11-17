@@ -53,9 +53,24 @@ const ServerDetailsCard = ({
         }`}
       >
         <div className="flex items-start justify-between gap-3 mb-4">
-          <h3 className="text-xl font-semibold text-gray-800 break-all pr-4">
-            {server?.server?.ip}
-          </h3>
+          <div className={`flex justify-between items-center gap-2`}>
+            <span className="font-medium">URL:</span>
+            {server?.url ? (
+              <span className="font-mono text-sm">
+                <a
+                  href={server?.url}
+                  target="_blank"
+                  className="text-blue-500 underline truncate max-w-[200px] cursor-pointer block"
+                  title={server?.url}
+                  rel="noopener noreferrer"
+                >
+                  {server?.url}
+                </a>
+              </span>
+            ) : (
+              "-"
+            )}
+          </div>
 
           <div className="flex items-center gap-2">
             <div title={server?.status}>
@@ -105,29 +120,12 @@ const ServerDetailsCard = ({
               {server?.type}
             </span>
           </div>
-          {/* <div className="flex justify-between">
-            <span className="font-medium">Owner:</span>
-            <span>{server?.owner}</span>
-          </div>
-
-          <div className="flex justify-between">
-            <span className="font-medium">SSL:</span>
-            <span>{server?.ssl}</span>
-          </div> */}
           <div className={`flex justify-between items-center gap-2`}>
-            <span className="font-medium">URL:</span>
-            {server?.url ? (
-              <span className="font-mono text-sm">
-                <a
-                  href={server?.url}
-                  target="_blank"
-                  className="text-blue-500 underline truncate max-w-[200px] cursor-pointer block"
-                  title={server?.url}
-                  rel="noopener noreferrer"
-                >
-                  {server?.url}
-                </a>
-              </span>
+            <span className="font-medium">Server:</span>
+            {server?.server?.ip ? (
+              <h3 className="text-xl font-semibold text-gray-800 break-all pr-4">
+                {server?.server?.ip}
+              </h3>
             ) : (
               "-"
             )}

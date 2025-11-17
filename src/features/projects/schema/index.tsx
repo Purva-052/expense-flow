@@ -89,10 +89,7 @@ export const ProjectServerSchema = z.object({
     .min(5, { message: "URL must be at least 5 characters long." })
     .max(100, { message: "URL cannot exceed 100 characters." })
     .trim(),
-  port: z
-    .string()
-    .min(1, { message: "Port must be at least 1." })
-    .max(65535, { message: "Port must be between 1 and 65535." }),
+  port: z.any().optional(),
 
   type: z.enum(
     [
@@ -105,10 +102,7 @@ export const ProjectServerSchema = z.object({
     }
   ),
 
-  serverId: z
-    .number()
-    .min(2, { message: "Server ID must be at least 2 characters long." })
-    .max(50, { message: "Server ID cannot exceed 50 characters." }),
+  serverId: z.any().optional(),
   status: z.enum(
     [PROJECT_SERVER_STATUS.ACTIVE, PROJECT_SERVER_STATUS.INACTIVE],
     {
