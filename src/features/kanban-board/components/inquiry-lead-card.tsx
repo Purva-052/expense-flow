@@ -20,10 +20,10 @@ export const InquiryLeadCard = ({ group }: { group: any }) => {
               <div className="flex flex-col gap-3 w-full overflow-hidden">
                 <div>
                   <h3 className="text-lg font-bold text-card-foreground wrap-break-word leading-tight">
-                    {group.generatedByName}
+                    {group?.generatedByName}
                   </h3>
                   <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                    {group.generatedByEmail}
+                    {group?.generatedByEmail}
                   </p>
                 </div>
 
@@ -32,8 +32,8 @@ export const InquiryLeadCard = ({ group }: { group: any }) => {
                     className="text-xs text-white"
                     style={{ backgroundColor: leadGeneratorColor }}
                   >
-                    {group.totalLeads}{" "}
-                    {group.totalLeads === 1 ? "Lead" : "Leads"}
+                    {group?.totalLeads}{" "}
+                    {group?.totalLeads === 1 ? "Lead" : "Leads"}
                   </Badge>
                 </div>
               </div>
@@ -42,9 +42,9 @@ export const InquiryLeadCard = ({ group }: { group: any }) => {
 
           {/* Right Side: Displays all leads from this generator */}
           <div className="p-4 min-h-[110px] bg-transparent">
-            {group.leads?.length > 0 ? (
+            {group?.leads?.length > 0 ? (
               <div className="flex flex-wrap gap-2">
-                {group.leads.map((lead: any) => (
+                {group?.leads.map((lead: any) => (
                   <InquiryChip key={lead.id} lead={lead} />
                 ))}
               </div>
