@@ -186,16 +186,16 @@ function ActionsCell({ row }: any) {
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleView}>View project</DropdownMenuItem>
+        <DropdownMenuItem onClick={handleView}>View Project</DropdownMenuItem>
         <DropdownMenuItem onClick={handleViewHistory}>
-          View history
+          View History
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleEdit}>Edit project</DropdownMenuItem>
+        <DropdownMenuItem onClick={handleEdit}>Edit Project</DropdownMenuItem>
         <DropdownMenuItem
           className="text-red-600 focus:bg-red-50 focus:text-red-600"
           onClick={handleDelete}
         >
-          Delete project
+          Delete Project
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
