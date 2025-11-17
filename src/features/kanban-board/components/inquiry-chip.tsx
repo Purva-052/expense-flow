@@ -76,7 +76,9 @@ export const InquiryChip = ({ lead }: { lead: any }) => {
             <div className="flex items-start gap-2">
               <span className="font-semibold w-32">Company:</span>
               <span className="text-muted-foreground">
-                {lead?.clientCompanyName ?? "-"}
+                {lead?.clientCompanyName && lead?.clientCompanyName !== ""
+                  ? lead?.clientCompanyName
+                  : "-"}
               </span>
             </div>
 
