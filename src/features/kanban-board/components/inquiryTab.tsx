@@ -8,11 +8,13 @@ import { FilterConfig } from "@/components/table/table-toolbar";
 import { useGetInquiryDashboardData } from "../services";
 import { InquiryLeadCard } from "./inquiry-lead-card";
 
-const InquiryTab = () => {
+const InquiryTab = ({ activeTab }: any) => {
+  const isArchiveInquryTab = activeTab === "Archive inquiry";
+
   const [listParams, setListParams] = useState({
     pagination: true,
     search: "",
-    status: "active",
+    status: isArchiveInquryTab ? "inactive" : "active",
   });
 
   // Create the ref for the scrollable container

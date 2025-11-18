@@ -10,6 +10,7 @@ export enum ProjectPriority {
 export type Developer = {
  developer:any
  endDate: any 
+ id: any
 }
 
 export type Project = {

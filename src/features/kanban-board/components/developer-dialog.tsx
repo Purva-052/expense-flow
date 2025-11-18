@@ -19,15 +19,20 @@ import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 import {
   useReallocateDeveloperTOProject,
   useRemoveDeveloperFromProject,
+  useUpdateProjectWorkingHour,
 } from "../services";
 import { Switch } from "@/components/ui/switch";
 import { useUpdateUserData } from "@/features/users/services";
-import { useAuthStore } from "@/stores/use-auth-store"; // ✅ IMPORT THIS
+import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
+// ✅ --- ADDED IMPORTS FOR NEW UI ---
+import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 
 // Define the shape of our form data
 type ScheduleFormData = {
   removalDate: Date | undefined;
+  hours: string | undefined;
+  minutes: string | undefined;
 };
 
 export function DeveloperDialog({
@@ -45,7 +50,7 @@ export function DeveloperDialog({
   afterChange: () => void;
   refetchAvailableDevelopers: any;
 }) {
-  const { user } = useAuthStore(); // ✅ Get user context
+  const { user } = useAuthStore();
   const isDeveloperView = user?.user?.role === roles.DEVELOPER;
   const isMyDialog = developer?.developer?.id === user?.user?.id;
 
@@ -69,6 +74,16 @@ export function DeveloperDialog({
     isPending: updateCurrentWorkingProjectLoading,
   } = useUpdateUserData(developer?.developer?.id || "", onsuccessUpdate);
 
+  const handleUpdateWorkingHourSuccess = () => {
+    afterChange();
+    onOpenChange(false);
+  };
+
+  const { mutateAsync: updateWorkingHour } = useUpdateProjectWorkingHour(
+    developer?.id,
+    handleUpdateWorkingHourSuccess
+  );
+
   const onsuccessRemoveDeveloper = () => {
     refetchAvailableDevelopers();
     afterChange();
@@ -88,18 +103,65 @@ export function DeveloperDialog({
   const { mutateAsync: reAllocateDeveloper }: any =
     useReallocateDeveloperTOProject(onSuccessReallocateDeveloper);
 
+  // Helper function to parse workingHours (e.g., 2.30) into hours and minutes
+  const parseWorkingHours = (workingHours: number | string | undefined) => {
+    if (workingHours === undefined || workingHours === null || workingHours === "") {
+      return { hours: "1", minutes: "00" };
+    }
+
+    // Convert to string to handle both number and string formats
+    let workingHoursStr = String(workingHours);
+    
+    // If it's a number like 2.3, pad the decimal part to 2 digits (2.30)
+    if (typeof workingHours === "number") {
+      const parts = workingHoursStr.split(".");
+      if (parts.length === 2 && parts[1].length === 1) {
+        workingHoursStr = `${parts[0]}.${parts[1]}0`;
+      }
+    }
+
+    const parts = workingHoursStr.split(".");
+
+    if (parts.length === 2) {
+      // Format: hours.minutes (e.g., 2.30)
+      // Ensure minutes is 2 digits
+      const minutes = parts[1].padEnd(2, "0").substring(0, 2);
+      return {
+        hours: parts[0] || "1",
+        minutes: minutes || "00",
+      };
+    } else {
+      // If no decimal point, assume whole hours
+      return {
+        hours: parts[0] || "1",
+        minutes: "00",
+      };
+    }
+  };
+
   const form = useForm<ScheduleFormData>({
     defaultValues: {
       removalDate: undefined,
+      hours: "1",
+      minutes: "00",
     },
   });
 
   React.useEffect(() => {
-    if (open) {
+    if (open && developer) {
       setView("initial");
-      form.reset({ removalDate: undefined });
+      
+      // Parse workingHours from developer object
+      const workingHours = (developer as any)?.workingHours;
+      const { hours, minutes } = parseWorkingHours(workingHours);
+      
+      form.reset({
+        removalDate: undefined,
+        hours: hours,
+        minutes: minutes,
+      });
     }
-  }, [open, form]);
+  }, [open, form, developer]);
 
   if (!developer) return null;
 
@@ -148,6 +210,19 @@ export function DeveloperDialog({
       projectId: projectId,
     });
   }
+
+  const handleSubmitWorkingHour = (data: ScheduleFormData) => {
+    // Get hours and minutes as strings
+    const hours = data.hours || "0";
+    const minutes = data.minutes || "00";
+
+    // Format as hours.minutes (e.g., 2.30 for 2 hours 30 minutes)
+    const workingHours = parseFloat(`${hours}.${minutes}`);
+
+    updateWorkingHour({
+      workingHours: workingHours,
+    });
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -205,7 +280,9 @@ export function DeveloperDialog({
                 </div>
               )}
               {/* Adjust margin based on whether the buttons are shown */}
-              <div className={canManage ? "mt-6" : "mt-0"}>
+              <div className={canManage ? "mt-6 space-y-6" : "mt-0"}>
+                {" "}
+                {/* ✅ ADDED space-y-6 FOR SPACING */}
                 <Form {...form}>
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                     <div className="space-y-0.5">
@@ -224,6 +301,62 @@ export function DeveloperDialog({
                     />
                   </FormItem>
                 </Form>
+                {/* ✅ --- START: NEW UI FOR WORKING HOURS --- ✅ */}
+                {canManage && (
+                  <div className="rounded-lg border p-4 shadow-sm">
+                    <h3 className="text-base font-semibold mb-1">
+                      Daily Working Hours
+                    </h3>
+                    <p className="mb-4 text-sm text-muted-foreground">
+                      Set the developer's daily allocated time.
+                    </p>
+                    <Form {...form}>
+                      <form
+                        onSubmit={form.handleSubmit(handleSubmitWorkingHour)}
+                      >
+                        <div className="flex items-center gap-4">
+                          {/* --- Hours Dropdown --- */}
+                          <div className="flex-1">
+                            <CustomDropDownSearchable
+                              form={form}
+                              name="hours"
+                              label="Hours"
+                              placeholder="Select hours"
+                              options={Array.from({ length: 8 }, (_, i) => ({
+                                label: `${i + 1}`,
+                                value: `${i + 1}`,
+                              }))}
+                              searchEnabled={false}
+                              showClearButton={false}
+                            />
+                          </div>
+
+                          {/* --- Minutes Dropdown --- */}
+                          <div className="flex-1">
+                            <CustomDropDownSearchable
+                              form={form}
+                              name="minutes"
+                              label="Minutes"
+                              placeholder="Select minutes"
+                              options={[
+                                { label: "00", value: "00" },
+                                { label: "15", value: "15" },
+                                { label: "30", value: "30" },
+                                { label: "45", value: "45" },
+                              ]}
+                              searchEnabled={false}
+                              showClearButton={false}
+                            />
+                          </div>
+                        </div>
+                        <Button type="submit" className="w-full mt-4">
+                          Save Hours
+                        </Button>
+                      </form>
+                    </Form>
+                  </div>
+                )}
+                {/* ✅ --- END: NEW UI FOR WORKING HOURS --- ✅ */}
               </div>
             </>
           )}

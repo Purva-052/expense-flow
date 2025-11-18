@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import API from "@/config/api/api";
 import useFetchData from "@/hooks/use-fetch-data";
+import usePatchData from "@/hooks/use-patch-data";
 import usePostData from "@/hooks/use-post-data";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -51,6 +52,16 @@ export const useGetProjectHandlerProjectsAPI = (params: any) => {
 export const useAssignDeveloper = (onsuccess: any) => {
   return usePostData({
     url: API.projects.assign_developers,
+    refetchQueries: [GET_ALL_DEVELOPER_API_URL, PROJECTS_API_URL],
+    onSuccess: () => {
+      onsuccess();
+    },
+  });
+};
+
+export const useUpdateProjectWorkingHour = (id: any, onsuccess: any) => {
+  return usePatchData({
+    url: `${API.projects.assign_developers}/${id}`,
     refetchQueries: [GET_ALL_DEVELOPER_API_URL, PROJECTS_API_URL],
     onSuccess: () => {
       onsuccess();
