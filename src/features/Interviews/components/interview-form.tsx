@@ -1,0 +1,501 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { UserCircle2, CalendarClock, Check } from "lucide-react";
+
+import { InterviewFormValues, interviewFormSchema } from "../schema";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+
+// --- Import your custom components and constants ---
+import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
+import {
+  interviewTypes,
+  interviewRounds,
+  interviewStatuses,
+} from "../constants";
+import { FileUpload } from "@/components/shared/custome-file-upload";
+
+interface InterviewFormProps {
+  selectedDate: Date;
+  onSubmit: (data: InterviewFormValues) => void;
+  onClose: () => void;
+  technologyList: any;
+  technologyListLoading: boolean;
+  usersList: any;
+  usersListLoading: boolean;
+}
+
+const steps = [
+  { id: 1, name: "Candidate Details", icon: UserCircle2 },
+  { id: 2, name: "Scheduling", icon: CalendarClock },
+];
+
+// --- Define fields for each step to enable per-step validation ---
+const step1Fields: (keyof InterviewFormValues)[] = [
+  "candidateName",
+  "technology",
+  "email",
+  "phoneNumber",
+  "location",
+  "experience",
+  "currentCtc",
+  "expectedCtc",
+  "noticePeriod",
+  "resume",
+];
+const step2Fields: (keyof InterviewFormValues)[] = [
+  "interviewerName",
+  "interviewRound",
+  "startTime",
+  "endTime",
+  "interviewType",
+  "interviewUrl",
+  "interviewStatus",
+];
+
+export const InterviewForm = ({
+  onSubmit,
+  onClose,
+  technologyList,
+  technologyListLoading,
+  usersList,
+  usersListLoading,
+}: InterviewFormProps) => {
+  const [currentStep, setCurrentStep] = useState(1);
+
+  const form = useForm<InterviewFormValues>({
+    resolver: zodResolver(interviewFormSchema),
+    mode: "onBlur", // Validate on blur for better UX
+    reValidateMode: "onChange", // Re-validate on change after first error
+    defaultValues: {
+      candidateName: "",
+      technology: "",
+      email: "",
+      phoneNumber: "",
+      location: "",
+      notes: "",
+      experience: 0,
+      currentCtc: 0,
+      expectedCtc: 0,
+      noticePeriod: "",
+      interviewerName: "",
+      startTime: "10:00",
+      endTime: "11:00",
+      interviewType: "video_call",
+      interviewUrl: "",
+      interviewRound: "",
+      interviewerComment: "",
+      interviewStatus: "scheduled",
+      resume: null,
+    },
+  });
+
+  const { trigger, formState } = form;
+  const interviewType = form.watch("interviewType");
+
+  // Re-validate interviewUrl when interviewType changes
+  useEffect(() => {
+    if (interviewType) {
+      form.trigger("interviewUrl");
+    }
+  }, [interviewType, form]);
+
+  const handleNextStep = async () => {
+    // Trigger validation for the fields in the current step
+    const fieldsToValidate = currentStep === 1 ? step1Fields : step2Fields;
+    const isValid = await trigger(fieldsToValidate, { shouldFocus: true });
+
+    // Only proceed if the current step's form is valid
+    if (isValid) {
+      setCurrentStep((prev) => prev + 1);
+    } else {
+      // Scroll to first error
+      const firstError = Object.keys(formState.errors)[0];
+      if (firstError) {
+        const errorElement = document.querySelector(`[name="${firstError}"]`);
+        if (errorElement) {
+          errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }
+    }
+  };
+
+  const goToPrevStep = () => setCurrentStep((prev) => prev - 1);
+
+  const handleFormSubmit = async (data: InterviewFormValues) => {
+    // Validate all fields before submitting
+    const allFieldsValid = await trigger(undefined, { shouldFocus: true });
+    if (allFieldsValid) {
+      onSubmit(data);
+    } else {
+      // Scroll to first error
+      const firstError = Object.keys(formState.errors)[0];
+      if (firstError) {
+        const errorElement = document.querySelector(`[name="${firstError}"]`);
+        if (errorElement) {
+          errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }
+    }
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
+        {/* --- Stepper Navigation --- */}
+        <nav className="flex items-center justify-center mb-4 sm:mb-6 px-2">
+          {steps.map((step, index) => (
+            <div key={step.id} className="flex items-center flex-1 sm:flex-initial">
+              <div className="flex flex-col items-center w-full sm:w-auto">
+                <div
+                  className={cn(
+                    "w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold transition-all text-xs sm:text-sm",
+                    currentStep > step.id
+                      ? "bg-primary text-primary-foreground"
+                      : currentStep === step.id
+                        ? "bg-primary/90 text-primary-foreground border-2 border-primary-foreground shadow-lg"
+                        : "bg-muted text-muted-foreground"
+                  )}
+                >
+                  {currentStep > step.id ? (
+                    <Check className="h-4 w-4 sm:h-5 sm:w-5" />
+                  ) : (
+                    <step.icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                  )}
+                </div>
+                <p
+                  className={cn(
+                    "mt-1 sm:mt-2 text-xs sm:text-sm text-center px-1",
+                    currentStep >= step.id
+                      ? "text-primary font-medium"
+                      : "text-muted-foreground"
+                  )}
+                >
+                  <span className="hidden sm:inline">{step.name}</span>
+                  <span className="sm:hidden">
+                    {step.id === 1 ? "Candidate" : "Schedule"}
+                  </span>
+                </p>
+              </div>
+              {index < steps.length - 1 && (
+                <div className="flex-auto border-t-2 mx-2 sm:mx-4 transition-all hidden sm:block" />
+              )}
+            </div>
+          ))}
+        </nav>
+
+        <Card className="border-none shadow-none max-h-[50vh] sm:max-h-[60vh] overflow-y-auto p-1">
+          {/* --- Step 1: Candidate Details --- */}
+          {currentStep === 1 && (
+            <CardContent className="p-2 sm:p-4">
+              <div className="space-y-4 rounded-md border p-3 sm:p-4">
+                <h3 className="text-base sm:text-lg font-medium">Candidate Details</h3>
+                <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="candidateName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="John Doe" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <CustomDropDownSearchable
+                    form={form}
+                    name="technology"
+                    label="Technology"
+                    options={technologyList?.data?.map((technology: any) => {
+                      return { value: technology.id, label: technology.name };
+                    })}
+                    placeholder="Select technology"
+                    isLoading={technologyListLoading}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input placeholder="candidate@email.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="phoneNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Phone Number</FormLabel>
+                        <FormControl>
+                          <Input placeholder="+1234567890" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="location"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Location</FormLabel>
+                        <FormControl>
+                          <Input placeholder="City, Country" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="experience"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Experience (Years)</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="5" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="currentCtc"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Current CTC</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="100000"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="expectedCtc"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Expected CTC</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="120000"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="noticePeriod"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Notice Period</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., 30 Days" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="md:col-span-2">
+                    <FileUpload name="resume" label="Resume (CV)" />
+                  </div>
+                  <FormField
+                    control={form.control}
+                    name="notes"
+                    render={({ field }) => (
+                      <FormItem className="md:col-span-2">
+                        <FormLabel>Notes</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Any additional notes about the candidate..."
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          )}
+
+          {/* --- Step 2: Scheduling Details --- */}
+          {currentStep === 2 && (
+            <CardContent className="p-2 sm:p-4">
+              <div className="space-y-4 rounded-md border p-3 sm:p-4">
+                <h3 className="text-base sm:text-lg font-medium">Interviewer Details</h3>
+                <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+                  <CustomDropDownSearchable
+                    form={form}
+                    name="interviewerName"
+                    label="Interviewer Name"
+                    options={usersList?.data?.map((user: any) => {
+                      return { value: user.id, label: user.fullName };
+                    })}
+                    placeholder="Select interviewer"
+                    isLoading={usersListLoading}
+                  />
+                  <CustomDropDownSearchable
+                    form={form}
+                    name="interviewRound"
+                    label="Interview Round"
+                    options={interviewRounds}
+                    placeholder="Select round"
+                    searchEnabled={false}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="startTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Start Time</FormLabel>
+                        <FormControl>
+                          <Input type="time" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="endTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>End Time</FormLabel>
+                        <FormControl>
+                          <Input type="time" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <CustomDropDownSearchable
+                    form={form}
+                    name="interviewType"
+                    label="Interview Type"
+                    options={interviewTypes}
+                    placeholder="Select type"
+                    searchEnabled={false}
+                  />
+                  {interviewType === "video_call" && (
+                    <FormField
+                      control={form.control}
+                      name="interviewUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Interview URL</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="https://meet.google.com/..."
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                  <CustomDropDownSearchable
+                    form={form}
+                    name="interviewStatus"
+                    label="Interview Status"
+                    options={interviewStatuses}
+                    placeholder="Select status"
+                    searchEnabled={false}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="interviewerComment"
+                    render={({ field }) => (
+                      <FormItem className="md:col-span-2">
+                        <FormLabel>Interviewer Comment</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Instructions or notes for the interviewer..."
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          )}
+        </Card>
+
+        {/* --- Navigation Buttons --- */}
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-2 pt-4 border-t">
+          <Button 
+            type="button" 
+            variant="ghost" 
+            onClick={onClose}
+            className="w-full sm:w-auto order-2 sm:order-1"
+          >
+            Cancel
+          </Button>
+          <div className="flex gap-2 w-full sm:w-auto order-1 sm:order-2">
+            {currentStep > 1 && (
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={goToPrevStep}
+                className="flex-1 sm:flex-initial"
+              >
+                Back
+              </Button>
+            )}
+            {currentStep < steps.length ? (
+              <Button 
+                type="button" 
+                onClick={handleNextStep}
+                className="flex-1 sm:flex-initial"
+              >
+                Next
+              </Button>
+            ) : (
+              <Button 
+                type="submit"
+                className="flex-1 sm:flex-initial"
+              >
+                Schedule Interview
+              </Button>
+            )}
+          </div>
+        </div>
+      </form>
+    </Form>
+  );
+};
