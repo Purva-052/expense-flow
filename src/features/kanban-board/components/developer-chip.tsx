@@ -155,6 +155,11 @@ export function DeveloperChip({
                         {project.percentageComplete}%
                       </span>
                     )}
+                    {project.workingHours && (
+                      <span className="ml-1 text-[10px] text-blue-600">
+                        • {project.workingHours} hrs
+                      </span>
+                    )}
                   </li>
                 ))}
               </ul>

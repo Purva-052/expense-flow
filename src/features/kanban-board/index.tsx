@@ -42,7 +42,13 @@ const ProjectBoard = () => {
                 </TabsTrigger>
                 {(userRole === roles.ADMIN ||
                   userRole === roles.PROJECT_MANAGER) && (
-                  <TabsTrigger value="inquiry">Inquiry</TabsTrigger>
+                  <TabsTrigger value="inquiry">Inquiries</TabsTrigger>
+                )}
+                {(userRole === roles.ADMIN ||
+                  userRole === roles.PROJECT_MANAGER) && (
+                  <TabsTrigger value="Archive inquiry">
+                    Archive Inquiries
+                  </TabsTrigger>
                 )}
               </TabsList>
 
@@ -79,6 +85,12 @@ const ProjectBoard = () => {
                 userRole === roles.PROJECT_MANAGER) && (
                 <TabsContent value="inquiry">
                   <InquiryTab />
+                </TabsContent>
+              )}
+              {(userRole === roles.ADMIN ||
+                userRole === roles.PROJECT_MANAGER) && (
+                <TabsContent value="Archive inquiry">
+                  <InquiryTab activeTab={activeTab} />
                 </TabsContent>
               )}
             </Tabs>
