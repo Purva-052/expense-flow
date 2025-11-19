@@ -19,7 +19,11 @@ export const interviewFormSchema = z.object({
     noticePeriod: z.string().min(1, "Notice period is required"),
 
     // Interviewer Details
-    interviewerName: z.string().min(1, "Interviewer is required"),
+    interviewerName:  z.any().refine((val) => {
+        return val != null && val !== "" && String(val).trim().length > 0;
+    }, {
+        message: "Interview Name is required",
+    }),
     startTime: z.string().min(1, "Start time is required"),
     endTime: z.string().min(1, "End time is required"),
     interviewType: z.string().min(1, "Interview type is required"),

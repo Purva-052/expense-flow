@@ -1,4 +1,3 @@
-import { InterviewEvent } from "../types";
 
 // Mock data for dropdowns
 export const technologies = [
@@ -14,7 +13,7 @@ export const interviewers = [
 
 export const interviewTypes = [
   { value: "telephonic", label: "Telephonic" },
-  { value: "onsite", label: "On-site" },
+  { value: "on_site", label: "On-site" },
   { value: "video_call", label: "Video Call" },
 ];
 
@@ -28,33 +27,5 @@ export const interviewStatuses = [
   { value: "pending", label: "Pending" },
 ];
 
-// Mock data to pre-populate the calendar
-export const initialEvents: InterviewEvent[] = [
-  {
-    id: "1",
-    title: "John Doe",
-    start: "2025-09-22",
-    extendedProps: {
-      candidateName: "John Doe",
-      technology: "react",
-      email: "john.doe@example.com",
-      phoneNumber: "1234567890",
-      location: "New York, USA",
-      experience: 5,
-      currentCtc: 120000,
-      expectedCtc: 140000,
-      noticePeriod: "30 Days",
-      interviewerName: "jane_smith",
-      startTime: "10:00",
-      endTime: "11:00",
-      interviewType: "video_call",
-      interviewUrl: "https://meet.google.com/xyz",
-      interviewRound: "technical",
-      interviewStatus: "scheduled",
-      notes: "Experienced React developer.",
-      interviewerComment: "Please assess problem-solving skills.",
-      resume: null,
-    },
-  },
-];
+
 

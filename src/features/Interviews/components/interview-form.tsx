@@ -27,6 +27,7 @@ import {
   interviewStatuses,
 } from "../constants";
 import { FileUpload } from "@/components/shared/custome-file-upload";
+import TimePicker from "@/components/shared/custome-timepicker";
 
 interface InterviewFormProps {
   selectedDate: Date;
@@ -36,6 +37,7 @@ interface InterviewFormProps {
   technologyListLoading: boolean;
   usersList: any;
   usersListLoading: boolean;
+  isSubmitting?: boolean;
 }
 
 const steps = [
@@ -73,12 +75,13 @@ export const InterviewForm = ({
   technologyListLoading,
   usersList,
   usersListLoading,
+  isSubmitting = false,
 }: InterviewFormProps) => {
   const [currentStep, setCurrentStep] = useState(1);
 
   const form = useForm<InterviewFormValues>({
     resolver: zodResolver(interviewFormSchema),
-    mode: "onBlur", // Validate on blur for better UX
+    mode: "onSubmit", // Only validate on submit/next button click
     reValidateMode: "onChange", // Re-validate on change after first error
     defaultValues: {
       candidateName: "",
@@ -106,47 +109,67 @@ export const InterviewForm = ({
   const { trigger, formState } = form;
   const interviewType = form.watch("interviewType");
 
-  // Re-validate interviewUrl when interviewType changes
+  // Re-validate interviewUrl when interviewType changes (only if we're on step 2)
   useEffect(() => {
-    if (interviewType) {
+    if (interviewType && currentStep === 2) {
       form.trigger("interviewUrl");
     }
-  }, [interviewType, form]);
+  }, [interviewType, currentStep, form]);
 
   const handleNextStep = async () => {
-    // Trigger validation for the fields in the current step
-    const fieldsToValidate = currentStep === 1 ? step1Fields : step2Fields;
-    const isValid = await trigger(fieldsToValidate, { shouldFocus: true });
+    // Only validate step 1 fields when on step 1
+    if (currentStep === 1) {
+      const isValid = await trigger(step1Fields, { shouldFocus: true });
 
-    // Only proceed if the current step's form is valid
-    if (isValid) {
-      setCurrentStep((prev) => prev + 1);
-    } else {
-      // Scroll to first error
-      const firstError = Object.keys(formState.errors)[0];
-      if (firstError) {
-        const errorElement = document.querySelector(`[name="${firstError}"]`);
-        if (errorElement) {
-          errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (isValid) {
+        // Clear any step 2 errors before moving forward
+        step2Fields.forEach((field) => {
+          form.clearErrors(field);
+        });
+        setCurrentStep(2);
+      } else {
+        // Scroll to first error in step 1
+        const step1Errors = step1Fields.filter(
+          (field) => formState.errors[field]
+        );
+        if (step1Errors.length > 0) {
+          const firstError = step1Errors[0];
+          const errorElement = document.querySelector(`[name="${firstError}"]`);
+          if (errorElement) {
+            errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
         }
       }
     }
   };
 
-  const goToPrevStep = () => setCurrentStep((prev) => prev - 1);
+  const goToPrevStep = () => {
+    // Clear step 2 errors when going back
+    step2Fields.forEach((field) => {
+      form.clearErrors(field);
+    });
+    setCurrentStep((prev) => prev - 1);
+  };
 
   const handleFormSubmit = async (data: InterviewFormValues) => {
-    // Validate all fields before submitting
-    const allFieldsValid = await trigger(undefined, { shouldFocus: true });
-    if (allFieldsValid) {
-      onSubmit(data);
-    } else {
-      // Scroll to first error
-      const firstError = Object.keys(formState.errors)[0];
-      if (firstError) {
-        const errorElement = document.querySelector(`[name="${firstError}"]`);
-        if (errorElement) {
-          errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+    // Only validate step 2 fields when submitting from step 2
+    if (currentStep === 2) {
+      const isValid = await trigger(step2Fields, { shouldFocus: true });
+      
+      if (isValid) {
+        // If step 2 is valid, submit the form
+        onSubmit(data);
+      } else {
+        // Scroll to first error in step 2
+        const step2Errors = step2Fields.filter(
+          (field) => formState.errors[field]
+        );
+        if (step2Errors.length > 0) {
+          const firstError = step2Errors[0];
+          const errorElement = document.querySelector(`[name="${firstError}"]`);
+          if (errorElement) {
+            errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
         }
       }
     }
@@ -381,7 +404,11 @@ export const InterviewForm = ({
                       <FormItem>
                         <FormLabel>Start Time</FormLabel>
                         <FormControl>
-                          <Input type="time" {...field} />
+                          <TimePicker
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="Select start time"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -394,7 +421,11 @@ export const InterviewForm = ({
                       <FormItem>
                         <FormLabel>End Time</FormLabel>
                         <FormControl>
-                          <Input type="time" {...field} />
+                          <TimePicker
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="Select end time"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -489,8 +520,9 @@ export const InterviewForm = ({
               <Button 
                 type="submit"
                 className="flex-1 sm:flex-initial"
+                disabled={isSubmitting}
               >
-                Schedule Interview
+                {isSubmitting ? "Scheduling..." : "Schedule Interview"}
               </Button>
             )}
           </div>
