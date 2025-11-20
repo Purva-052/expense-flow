@@ -105,13 +105,17 @@ export function DeveloperDialog({
 
   // Helper function to parse workingHours (e.g., 2.30) into hours and minutes
   const parseWorkingHours = (workingHours: number | string | undefined) => {
-    if (workingHours === undefined || workingHours === null || workingHours === "") {
+    if (
+      workingHours === undefined ||
+      workingHours === null ||
+      workingHours === ""
+    ) {
       return { hours: "1", minutes: "00" };
     }
 
     // Convert to string to handle both number and string formats
     let workingHoursStr = String(workingHours);
-    
+
     // If it's a number like 2.3, pad the decimal part to 2 digits (2.30)
     if (typeof workingHours === "number") {
       const parts = workingHoursStr.split(".");
@@ -150,11 +154,11 @@ export function DeveloperDialog({
   React.useEffect(() => {
     if (open && developer) {
       setView("initial");
-      
+
       // Parse workingHours from developer object
       const workingHours = (developer as any)?.workingHours;
       const { hours, minutes } = parseWorkingHours(workingHours);
-      
+
       form.reset({
         removalDate: undefined,
         hours: hours,
@@ -171,6 +175,7 @@ export function DeveloperDialog({
     removeDeveloper({
       developerId: developer?.developer?.id,
       projectId: projectId,
+      isRemoved: true,
     });
   }
 

@@ -15,6 +15,12 @@ import {
 } from "@tabler/icons-react";
 import { Command } from "lucide-react";
 import { type SidebarData } from "../types";
+import { useAuthStore } from "@/stores/use-auth-store";
+
+const {user} = useAuthStore.getState();
+const userID = user?.user?.id;
+
+const allowUserID1  = userID === 1 ? true :false ;
 
 export const sidebarData: SidebarData = {
   user: {
@@ -66,7 +72,7 @@ export const sidebarData: SidebarData = {
           title: "Inquiries",
           url: "/Inquiry",
           icon: IconMessage2Question,
-          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+          allowUserID1: allowUserID1, 
         },
         {
           title: "Interviews",
@@ -102,7 +108,7 @@ export const sidebarData: SidebarData = {
           title: "Inquiry Types",
           url: "/Inquiry-type",
           icon: IconPencilSearch,
-          requiredRoles: ["admin"],
+          requiredRoles: [roles.ADMIN],
         },
         {
           title: "Clients",
