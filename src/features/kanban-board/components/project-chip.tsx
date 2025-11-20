@@ -1,22 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/components/project-chip.tsx
-import { cn } from '@/lib/utils';
-import { Briefcase } from 'lucide-react';
+import { cn } from "@/lib/utils";
+import { Briefcase } from "lucide-react";
 
 // This component is now PURELY for display. It has no drag-and-drop code.
 export const ProjectChip = ({ project }: { project: any }) => {
   const completion = project.percentageComplete ?? 0;
+  const workinghours = project.workinghours;
 
   const getBorderColor = () => {
-    if (completion === 100) return 'border-green-500'; // Completed
-    if (project.currentStatus === 'active') return 'border-blue-500'; // Active
-    return 'border-gray-300'; // Default
+    if (completion === 100) return "border-green-500"; // Completed
+    if (project.currentStatus === "active") return "border-blue-500"; // Active
+    return "border-gray-300"; // Default
   };
 
   return (
     <div
       className={cn(
-        'flex flex-col gap-2 rounded-lg border p-3 text-sm shadow-sm bg-secondary/50',
+        "flex flex-col gap-2 rounded-lg border p-3 text-sm shadow-sm bg-secondary/50",
         getBorderColor()
       )}
     >
@@ -32,9 +33,11 @@ export const ProjectChip = ({ project }: { project: any }) => {
           <span className="truncate text-wrap font-bold text-card-foreground">
             {project.name}
           </span>
-          <span className="text-sm font-semibold text-muted-foreground shrink-0">
-            ({completion}%)
-          </span>
+          {workinghours && (
+            <span className="text-sm font-semibold text-muted-foreground shrink-0">
+              {workinghours} hrs
+            </span>
+          )}
         </div>
       </div>
     </div>

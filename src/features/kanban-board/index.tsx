@@ -13,6 +13,7 @@ const ProjectBoard = () => {
   const [activeTab, setActiveTab] = useState("board");
   const user = useAuthStore((state) => state.user);
   const userRole = user?.user?.role;
+  const userId = user?.user?.id;
   const { data: technologies, isPending: techLoading } =
     useGetTechnologyDropdownList(null, userRole !== roles.BDE);
   return (
@@ -40,12 +41,10 @@ const ProjectBoard = () => {
                 <TabsTrigger value="Archive Projects">
                   Archive Projects
                 </TabsTrigger>
-                {(userRole === roles.ADMIN ||
-                  userRole === roles.PROJECT_MANAGER) && (
+                {userId === 1 && (
                   <TabsTrigger value="inquiry">Inquiries</TabsTrigger>
                 )}
-                {(userRole === roles.ADMIN ||
-                  userRole === roles.PROJECT_MANAGER) && (
+                {userId === 1 && (
                   <TabsTrigger value="Archive inquiry">
                     Archive Inquiries
                   </TabsTrigger>
@@ -81,14 +80,12 @@ const ProjectBoard = () => {
               <TabsContent value="Archive Projects">
                 <Board activeTab={activeTab} />
               </TabsContent>
-              {(userRole === roles.ADMIN ||
-                userRole === roles.PROJECT_MANAGER) && (
+              {userId === 1 && (
                 <TabsContent value="inquiry">
                   <InquiryTab />
                 </TabsContent>
               )}
-              {(userRole === roles.ADMIN ||
-                userRole === roles.PROJECT_MANAGER) && (
+              {userId === 1 && (
                 <TabsContent value="Archive inquiry">
                   <InquiryTab activeTab={activeTab} />
                 </TabsContent>
