@@ -150,11 +150,11 @@ export function DeveloperChip({
                     {project.isCurrentProject && (
                       <span className="text-green-600 ml-1">(Current)</span>
                     )}
-                    {typeof project.percentageComplete === "number" && (
+                    {/* {typeof project.percentageComplete === "number" && (
                       <span className="ml-1 text-[10px] text-gray-500">
                         {project.percentageComplete}%
                       </span>
-                    )}
+                    )} */}
                     {project.workingHours && (
                       <span className="ml-1 text-[10px] text-blue-600">
                         • {project.workingHours} hrs

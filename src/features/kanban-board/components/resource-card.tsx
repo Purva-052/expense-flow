@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/components/resource-card.tsx
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ProjectChip } from './project-chip';
-import { useDroppable } from '@dnd-kit/core';
-import { cn } from '@/lib/utils';
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ProjectChip } from "./project-chip";
+import { useDroppable } from "@dnd-kit/core";
+import { cn } from "@/lib/utils";
 
 // ✅ Helper: Calculate years of experience
 const getYearsOfExperience = (
@@ -27,7 +27,7 @@ const getYearsOfExperience = (
 };
 
 export const ResourceCard = ({ developer }: { developer: any }) => {
-  const techColor = developer?.technology?.color || '#e2e8f0';
+  const techColor = developer?.technology?.color || "#e2e8f0";
 
   // --- dnd-kit hook to make the card a drop zone ---
   const { setNodeRef, isOver } = useDroppable({
@@ -41,8 +41,8 @@ export const ResourceCard = ({ developer }: { developer: any }) => {
     <Card
       ref={setNodeRef}
       className={cn(
-        'overflow-hidden transition-shadow duration-300 hover:shadow-lg py-0',
-        isOver ? 'ring-2 ring-pink-500 ring-offset-2' : ''
+        "overflow-hidden transition-shadow duration-300 hover:shadow-lg py-0",
+        isOver ? "ring-2 ring-pink-500 ring-offset-2" : ""
       )}
     >
       <CardContent className="p-0">
@@ -50,7 +50,7 @@ export const ResourceCard = ({ developer }: { developer: any }) => {
           {/* Left Side: Developer Details */}
           <div
             className={`flex flex-col gap-3 p-4 bg-secondary/50 h-full ${
-              developer?.technology?.color ? 'border-l-8' : ''
+              developer?.technology?.color ? "border-l-8" : ""
             }`}
             style={
               developer?.technology?.color
@@ -92,12 +92,14 @@ export const ResourceCard = ({ developer }: { developer: any }) => {
             {developer?.activeProjects?.length > 0 ||
             developer?.handledProjects?.length > 0 ? (
               <div className="flex flex-wrap gap-2">
-                {developer.activeProjects?.map((project: any) => (
-                  <ProjectChip
-                    key={`assigned-${project.id}`}
-                    project={project}
-                  />
-                ))}
+                {developer.activeProjects?.map((project: any) => {
+                  return (
+                    <ProjectChip
+                      key={`assigned-${project.id}`}
+                      project={project}
+                    />
+                  );
+                })}
                 {developer.handledProjects?.map((project: any) => (
                   <ProjectChip
                     key={`handled-${project.id}`}

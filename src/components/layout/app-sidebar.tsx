@@ -25,8 +25,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     .map((group) => ({
       ...group,
       items: group.items.filter((item: any) => {
-        if (!item.requiredRoles) return true;
-        return item.requiredRoles.includes(user?.user?.role || "");
+        const role = user?.user?.role || "";
+        const id = user?.user?.id;
+
+        // Condition 1: role match
+        const hasRoleAccess = item.requiredRoles?.includes(role);
+
+        // Condition 2: user ID is 1 (if allowed)
+        const hasIDAccess = item.allowUserID1 && id === 1;
+
+        return hasRoleAccess || hasIDAccess;
       }),
     }))
     // Remove empty groups (in case all items got filtered out)
