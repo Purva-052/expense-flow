@@ -48,7 +48,9 @@ const InterviewsPage = () => {
     null
   );
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-  const [currentCalendarDate, setCurrentCalendarDate] = useState<Date>(new Date());
+  const [currentCalendarDate, setCurrentCalendarDate] = useState<Date>(
+    new Date()
+  );
   const [timeZone, setTimeZone] = useState<string>("");
 
   // Get browser timezone dynamically
@@ -137,6 +139,8 @@ const InterviewsPage = () => {
       const interviewEnd = new Date(selectedDate);
       interviewEnd.setHours(endHours, endMinutes, 0, 0);
 
+      const resumeKey = data.resumeS3Key || "";
+
       // Transform form data to match API body structure
       const apiBody = {
         candidateName: data.candidateName,
@@ -146,12 +150,7 @@ const InterviewsPage = () => {
         location: data.location,
         notes: data.notes || "",
         experienceInYears: Number(data.experience),
-        resumeLink:
-          data.resume instanceof File
-            ? "" // File upload to get URL should be handled separately before form submission
-            : typeof data.resume === "string"
-              ? data.resume
-              : "",
+        resumeS3Key: resumeKey,
         currentCtc: Number(data.currentCtc),
         expectedCtc: Number(data.expectedCtc),
         noticePeriodInDays: noticePeriodInDays,
@@ -197,7 +196,7 @@ const InterviewsPage = () => {
 
       // Listen to date changes
       calendarApi.on("datesSet", updateCalendarState);
-      
+
       // Initial update
       updateCalendarState();
 

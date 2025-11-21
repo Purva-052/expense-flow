@@ -15,6 +15,18 @@ export const ProjectDetailsColumn: ColumnDef<any>[] = [
     header: "Technology",
   },
   {
+    accessorKey: "allocationAssignedBy",
+    header: "Allocated By",
+  },
+  {
+    accessorKey: "allocationRemovedBy",
+    header: "Removed By",
+    cell: ({ row }) => {
+      const removedBy = row.original.allocationRemovedBy;
+      return removedBy ? removedBy : "-";
+    },
+  },
+  {
     accessorKey: "allocationstartDate",
     header: "Start Date",
     cell: ({ row }) => {

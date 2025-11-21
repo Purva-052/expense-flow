@@ -61,11 +61,11 @@ const ProjectTypePage = () => {
   return (
     <PageLayout>
       <TablePageHeader
-        title="Project type"
+        title="Project Types"
         buttonText="Add type"
         onButtonClick={handleAdd}
       >
-        Manage your Project type here.
+        Manage your Project types here.
       </TablePageHeader>
       <GlobalFilterSection filters={filters ?? []} />
       <GlobalTable

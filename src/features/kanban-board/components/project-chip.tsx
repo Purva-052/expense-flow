@@ -33,7 +33,7 @@ export const ProjectChip = ({ project }: { project: any }) => {
           <span className="truncate text-wrap font-bold text-card-foreground">
             {project.name}
           </span>
-          {workinghours && (
+          {workinghours > 0 && (
             <span className="text-sm font-semibold text-muted-foreground shrink-0">
               {workinghours} hrs
             </span>

@@ -26,6 +26,7 @@ import {
   interviewRounds,
   interviewStatuses,
 } from "../constants";
+import { useCreateInterviewResumeLink } from "../services";
 import { FileUpload } from "@/components/shared/custome-file-upload";
 import TimePicker from "@/components/shared/custome-timepicker";
 
@@ -78,11 +79,12 @@ export const InterviewForm = ({
   isSubmitting = false,
 }: InterviewFormProps) => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [uploadedResumeKey, setUploadedResumeKey] = useState<string>("");
 
   const form = useForm<InterviewFormValues>({
     resolver: zodResolver(interviewFormSchema),
-    mode: "onSubmit", // Only validate on submit/next button click
-    reValidateMode: "onChange", // Re-validate on change after first error
+    mode: "onSubmit",
+    reValidateMode: "onChange",
     defaultValues: {
       candidateName: "",
       technology: "",
@@ -101,13 +103,15 @@ export const InterviewForm = ({
       interviewUrl: "",
       interviewRound: "",
       interviewerComment: "",
-      interviewStatus: "scheduled",
+      interviewStatus: "pending",
       resume: null,
+      resumeS3Key: "",
     },
   });
 
   const { trigger, formState } = form;
   const interviewType = form.watch("interviewType");
+  const { mutateAsync: uploadResume } = useCreateInterviewResumeLink();
 
   // Re-validate interviewUrl when interviewType changes (only if we're on step 2)
   useEffect(() => {
@@ -116,8 +120,25 @@ export const InterviewForm = ({
     }
   }, [interviewType, currentStep, form]);
 
+  const handleResumeUpload = async (file: File) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "interview-resumes");
+
+      const response: any = await uploadResume(formData);
+
+      if (response?.key) {
+        setUploadedResumeKey(response.key);
+      }
+    } catch (error) {
+      console.error("Error uploading resume:", error);
+      // Re-throw error to be handled by FileUpload component
+      throw error;
+    }
+  };
+
   const handleNextStep = async () => {
-    // Only validate step 1 fields when on step 1
     if (currentStep === 1) {
       const isValid = await trigger(step1Fields, { shouldFocus: true });
 
@@ -136,7 +157,10 @@ export const InterviewForm = ({
           const firstError = step1Errors[0];
           const errorElement = document.querySelector(`[name="${firstError}"]`);
           if (errorElement) {
-            errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+            errorElement.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+            });
           }
         }
       }
@@ -152,13 +176,16 @@ export const InterviewForm = ({
   };
 
   const handleFormSubmit = async (data: InterviewFormValues) => {
-    // Only validate step 2 fields when submitting from step 2
     if (currentStep === 2) {
       const isValid = await trigger(step2Fields, { shouldFocus: true });
-      
+
       if (isValid) {
-        // If step 2 is valid, submit the form
-        onSubmit(data);
+        // Add the uploaded resume key to form data before submitting
+        const submissionData = {
+          ...data,
+          resumeS3Key: uploadedResumeKey,
+        };
+        onSubmit(submissionData);
       } else {
         // Scroll to first error in step 2
         const step2Errors = step2Fields.filter(
@@ -168,7 +195,10 @@ export const InterviewForm = ({
           const firstError = step2Errors[0];
           const errorElement = document.querySelector(`[name="${firstError}"]`);
           if (errorElement) {
-            errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+            errorElement.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+            });
           }
         }
       }
@@ -177,11 +207,17 @@ export const InterviewForm = ({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
+      <form
+        onSubmit={form.handleSubmit(handleFormSubmit)}
+        className="space-y-4"
+      >
         {/* --- Stepper Navigation --- */}
         <nav className="flex items-center justify-center mb-4 sm:mb-6 px-2">
           {steps.map((step, index) => (
-            <div key={step.id} className="flex items-center flex-1 sm:flex-initial">
+            <div
+              key={step.id}
+              className="flex items-center flex-1 sm:flex-initial"
+            >
               <div className="flex flex-col items-center w-full sm:w-auto">
                 <div
                   className={cn(
@@ -225,7 +261,9 @@ export const InterviewForm = ({
           {currentStep === 1 && (
             <CardContent className="p-2 sm:p-4">
               <div className="space-y-4 rounded-md border p-3 sm:p-4">
-                <h3 className="text-base sm:text-lg font-medium">Candidate Details</h3>
+                <h3 className="text-base sm:text-lg font-medium">
+                  Candidate Details
+                </h3>
                 <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                   <FormField
                     control={form.control}
@@ -350,7 +388,11 @@ export const InterviewForm = ({
                     )}
                   />
                   <div className="md:col-span-2">
-                    <FileUpload name="resume" label="Resume (CV)" />
+                    <FileUpload
+                      name="resume"
+                      label="Resume (CV)"
+                      onFileSelect={handleResumeUpload}
+                    />
                   </div>
                   <FormField
                     control={form.control}
@@ -377,7 +419,9 @@ export const InterviewForm = ({
           {currentStep === 2 && (
             <CardContent className="p-2 sm:p-4">
               <div className="space-y-4 rounded-md border p-3 sm:p-4">
-                <h3 className="text-base sm:text-lg font-medium">Interviewer Details</h3>
+                <h3 className="text-base sm:text-lg font-medium">
+                  Interviewer Details
+                </h3>
                 <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                   <CustomDropDownSearchable
                     form={form}
@@ -489,9 +533,9 @@ export const InterviewForm = ({
 
         {/* --- Navigation Buttons --- */}
         <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-2 pt-4 border-t">
-          <Button 
-            type="button" 
-            variant="ghost" 
+          <Button
+            type="button"
+            variant="ghost"
             onClick={onClose}
             className="w-full sm:w-auto order-2 sm:order-1"
           >
@@ -499,9 +543,9 @@ export const InterviewForm = ({
           </Button>
           <div className="flex gap-2 w-full sm:w-auto order-1 sm:order-2">
             {currentStep > 1 && (
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={goToPrevStep}
                 className="flex-1 sm:flex-initial"
               >
@@ -509,15 +553,15 @@ export const InterviewForm = ({
               </Button>
             )}
             {currentStep < steps.length ? (
-              <Button 
-                type="button" 
+              <Button
+                type="button"
                 onClick={handleNextStep}
                 className="flex-1 sm:flex-initial"
               >
                 Next
               </Button>
             ) : (
-              <Button 
+              <Button
                 type="submit"
                 className="flex-1 sm:flex-initial"
                 disabled={isSubmitting}

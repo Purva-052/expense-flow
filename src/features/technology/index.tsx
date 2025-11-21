@@ -63,11 +63,11 @@ const TechnologyPage = () => {
   return (
     <PageLayout>
       <TablePageHeader
-        title="Technology"
+        title="Technologies"
         buttonText="Add Technology"
         onButtonClick={handleAdd}
       >
-        Manage your Technology here.
+        Manage your Technologies here.
       </TablePageHeader>
       <GlobalFilterSection filters={filters ?? []} />
       <GlobalTable

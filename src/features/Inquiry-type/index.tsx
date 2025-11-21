@@ -61,11 +61,11 @@ const InquiryTypePage = () => {
   return (
     <PageLayout>
       <TablePageHeader
-        title="Inquiry Type"
+        title="Inquiry Types"
         buttonText="Add Type"
         onButtonClick={handleAdd}
       >
-        Manage your Inquiry Type here.
+        Manage your Inquiry Types here.
       </TablePageHeader>
       <GlobalFilterSection filters={filters ?? []} />
       <GlobalTable

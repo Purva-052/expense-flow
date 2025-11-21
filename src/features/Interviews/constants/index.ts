@@ -1,4 +1,3 @@
-
 // Mock data for dropdowns
 export const technologies = [
   { value: "react", label: "React.js" },
@@ -23,9 +22,7 @@ export const interviewRounds = [
 ];
 
 export const interviewStatuses = [
-  { value: "scheduled", label: "Scheduled" },
+  { value: "selected", label: "Selected" },
+  { value: "rejected", label: "Rejected" },
   { value: "pending", label: "Pending" },
 ];
-
-
-
