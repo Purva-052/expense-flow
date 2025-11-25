@@ -39,6 +39,7 @@ interface InterviewFormProps {
   usersList: any;
   usersListLoading: boolean;
   isSubmitting?: boolean;
+  initialData?: any; // InterviewApiResponse for edit mode
 }
 
 const steps = [
@@ -77,6 +78,7 @@ export const InterviewForm = ({
   usersList,
   usersListLoading,
   isSubmitting = false,
+  initialData,
 }: InterviewFormProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [uploadedResumeKey, setUploadedResumeKey] = useState<string>("");
@@ -108,6 +110,41 @@ export const InterviewForm = ({
       resumeS3Key: "",
     },
   });
+  const formatNoticePeriod = (days: number): string => {
+    return `${days} Days`;
+  };
+  const formatTimeFromISO = (isoString: string): string => {
+    const date = new Date(isoString);
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    return `${hours}:${minutes}`;
+  };
+  useEffect(() => {
+    if (initialData && currentStep === 1) {
+      form.reset({
+        candidateName: initialData.candidateName,
+        technology: initialData.technology?.id?.toString() || "",
+        email: initialData.email || "",
+        phoneNumber: initialData.phoneNumber || "",
+        location: initialData.location || "",
+        notes: initialData.notes || "",
+        experience: Number(initialData.experienceInYears) || 0,
+        currentCtc: Number(initialData.currentCtc) || 0,
+        expectedCtc: Number(initialData.expectedCtc) || 0,
+        noticePeriod: formatNoticePeriod(initialData.noticePeriodInDays || 0),
+        interviewerName: initialData.interviewer?.id?.toString() || "",
+        startTime: formatTimeFromISO(initialData.interviewStart),
+        endTime: formatTimeFromISO(initialData.interviewEnd),
+        interviewType: initialData.interviewType || "video_call",
+        interviewUrl: initialData.interviewUrl || "",
+        interviewRound: initialData.interviewRound || "",
+        interviewerComment: initialData.interviewerComments || "",
+        interviewStatus: initialData.status || "pending",
+        resume: null,
+        resumeS3Key: initialData.resumeS3Key || "",
+      });
+    }
+  }, [initialData, form, currentStep === 1]);
 
   const { trigger, formState } = form;
   const interviewType = form.watch("interviewType");
@@ -141,7 +178,6 @@ export const InterviewForm = ({
   const handleNextStep = async () => {
     if (currentStep === 1) {
       const isValid = await trigger(step1Fields, { shouldFocus: true });
-
       if (isValid) {
         // Clear any step 2 errors before moving forward
         step2Fields.forEach((field) => {

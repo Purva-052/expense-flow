@@ -2,6 +2,10 @@
 import API from "@/config/api/api";
 import useFetchData from "@/hooks/use-fetch-data";
 import usePostData from "@/hooks/use-post-data";
+import instance from "@/config/instance/instance";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { extractErrorInfo } from "@/utils/error-response";
 
 const Interview_list = API.interview.list;
 
@@ -18,11 +22,94 @@ export const useCreateInterview = (onsuccess?: any) => {
 export const useGetInterview = (params?: {
   time_zone?: string;
   current_date?: string;
+  start_date?: string;
+  end_date?: string;
 }) => {
   return useFetchData({
     url: Interview_list,
     params,
-    enabled: !!params?.time_zone && !!params?.current_date, // Only fetch when both params are available
+    enabled:
+      !!params?.time_zone &&
+      !!params?.current_date &&
+      !!params?.start_date &&
+      !!params?.end_date,
+  });
+};
+
+export const useUpdateInterview = (onsuccess?: any) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (variables: { id: number; data: any }) => {
+      const { id, data: body } = variables;
+      const response = await instance.patch({
+        url: `${API.interview.update}/${id}`,
+        data: body,
+      });
+      if (response?.statusCode === 200 || response?.statusCode === 201) {
+        toast.success(response?.message ?? "Interview updated successfully", {
+          position: "top-right",
+        });
+        return response.data;
+      }
+      const errorMessage = response?.message || "Failed to update interview";
+      throw new Error(errorMessage);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [Interview_list] });
+      if (onsuccess) onsuccess();
+    },
+    onError: (error: Error & { statusCode?: number }) => {
+      const errorInfo = extractErrorInfo(error);
+      toast.error(errorInfo.title, {
+        description: errorInfo.description,
+        duration: 3000,
+        position: "top-right",
+      });
+    },
+  });
+};
+
+export const useDeleteInterview = (onsuccess?: any) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const response = await instance.delete({
+        url: `${API.interview.update}/${id}`,
+      });
+      if (
+        response?.statusCode === 200 ||
+        response?.statusCode === 202 ||
+        response?.statusCode === 201
+      ) {
+        toast.success("Interview deleted successfully", {
+          duration: 3000,
+          position: "top-right",
+        });
+        return response.data;
+      }
+      const errorMessage = response?.message || "Failed to delete interview";
+      if (response?.statusCode === 400) {
+        throw Object.assign(new Error(errorMessage), { statusCode: 400 });
+      }
+      if (response?.statusCode === 401) {
+        throw Object.assign(new Error("Unauthorized"), { statusCode: 401 });
+      }
+      throw new Error(errorMessage);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [Interview_list] });
+      if (onsuccess) onsuccess();
+    },
+    onError: (error: Error & { statusCode?: number }) => {
+      const errorInfo = extractErrorInfo(error);
+      toast.error(errorInfo.title, {
+        description: errorInfo.description,
+        duration: 3000,
+        position: "top-right",
+      });
+    },
   });
 };
 
