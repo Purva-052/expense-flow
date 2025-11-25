@@ -77,7 +77,7 @@ export const InterviewDetailsDialog = ({
         <DialogHeader className="px-6 pt-6 pb-4 border-b">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <DialogTitle className="text-2xl font-bold flex align-middle items-center gap-3 mb-2">
+              <DialogTitle className="text-2xl font-bold flex items-center gap-3 mb-2">
                 {details.candidateName}
                 {details.technology && (
                   <Badge

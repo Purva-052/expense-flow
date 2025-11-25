@@ -1,14 +1,16 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { format } from "date-fns";
 import { Calendar } from "lucide-react";
-
-// FullCalendar Imports
-import FullCalendar from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/daygrid";
-import interactionPlugin, { DateClickArg } from "@fullcalendar/interaction";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // ShadCN UI Imports
 import { Main } from "@/components/layout/main";
@@ -19,18 +21,12 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 
 // Local Imports
 import { InterviewForm } from "./components/interview-form";
 import { InterviewDetailsDialog } from "./components/interview-details-dialog";
+import { PremiumRBCCalendar } from "./components/premium-rbc-calendar";
 import { InterviewFormValues } from "./schema";
 import { InterviewEvent, InterviewApiResponse } from "./types";
 import { useGetTechnologyDropdownList } from "../technology/services";
@@ -44,7 +40,6 @@ import {
 
 // --- MAIN PAGE COMPONENT ---
 const InterviewsPage = () => {
-  const calendarRef = useRef<any>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -57,15 +52,26 @@ const InterviewsPage = () => {
     null
   );
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [currentCalendarDate, setCurrentCalendarDate] = useState<Date>(
     new Date()
   );
+  const [calendarView, setCalendarView] = useState<
+    "month" | "week" | "day" | "work_week" | "agenda"
+  >("month");
+  const [selectedYear, setSelectedYear] = useState<number>(
+    new Date().getFullYear()
+  );
   const [timeZone, setTimeZone] = useState<string>("");
-  const currentCalenderDateRange =
-    calendarRef.current?.getApi()?.currentData?.dateProfile?.activeRange;
 
-  console.log("currentCalenderDateRange", currentCalenderDateRange);
+  const currentYear = new Date().getFullYear();
+
+  // previous years (example: from 1900)
+  const startYear = 2025;
+
+  const years = Array.from(
+    { length: currentYear - startYear + 1 + 3 }, // total count
+    (_, i) => startYear + i
+  );
 
   // Get browser timezone dynamically
   useEffect(() => {
@@ -87,11 +93,45 @@ const InterviewsPage = () => {
     const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   };
+
+  // Calculate current_date for API: selected year + today's month + today's day
+  const getCurrentDateForAPI = useMemo(() => {
+    const today = new Date();
+    return new Date(
+      selectedYear,
+      today.getMonth(), // Current month (November = 10)
+      today.getDate() // Current day (25)
+    );
+  }, [selectedYear]);
+
+  // Calculate date range based on current view for API
+  const getDateRange = () => {
+    const start = new Date(currentCalendarDate);
+    const end = new Date(currentCalendarDate);
+
+    if (calendarView === "month") {
+      start.setDate(1);
+      const lastDay = new Date(start.getFullYear(), start.getMonth() + 1, 0);
+      end.setDate(lastDay.getDate());
+    } else if (calendarView === "week") {
+      const dayOfWeek = start.getDay();
+      start.setDate(start.getDate() - dayOfWeek);
+      end.setDate(start.getDate() + 6);
+    } else {
+      // day view
+      end.setDate(start.getDate());
+    }
+
+    return { start, end };
+  };
+
+  const dateRange = getDateRange();
+
   const { data: interviewsData }: any = useGetInterview({
     time_zone: timeZone,
-    current_date: formatCurrentDate(currentCalendarDate),
-    start_date: formatCurrentDate(new Date(currentCalenderDateRange?.start)),
-    end_date: formatCurrentDate(new Date(currentCalenderDateRange?.end)),
+    current_date: formatCurrentDate(getCurrentDateForAPI),
+    start_date: formatCurrentDate(dateRange.start),
+    end_date: formatCurrentDate(dateRange.end),
   });
 
   const onSuccessCreateInterview = () => {
@@ -118,34 +158,47 @@ const InterviewsPage = () => {
   const { mutateAsync: deleteInterview, isPending: isDeletingInterview } =
     useDeleteInterview(onSuccessDeleteInterview);
 
-  // Transform API response to FullCalendar events
-  const events: InterviewEvent[] = (interviewsData?.data || []).map(
-    (interview: InterviewApiResponse) => {
-      const startDate = new Date(interview.interviewStart);
-      const endDate = new Date(interview.interviewEnd);
+  // Transform API response to InterviewEvent format
+  const events: InterviewEvent[] = useMemo(() => {
+    if (!interviewsData?.data) return [];
 
-      return {
-        id: interview.id.toString(),
-        title: interview.candidateName,
-        start: startDate.toISOString(),
-        end: endDate.toISOString(),
-        backgroundColor: interview.technology?.colour || "#10B981",
-        borderColor: interview.technology?.colour || "#10B981",
-        extendedProps: interview,
-      };
-    }
-  );
+    return interviewsData.data
+      .map((interview: InterviewApiResponse) => {
+        // Parse dates - handle both ISO strings and Date objects
+        const startDate = interview.interviewStart
+          ? new Date(interview.interviewStart)
+          : new Date();
+        const endDate = interview.interviewEnd
+          ? new Date(interview.interviewEnd)
+          : new Date(startDate.getTime() + 60 * 60 * 1000); // Default 1 hour duration
 
-  // Generate years from 2020 to 2030 (you can adjust this range)
-  const years = Array.from({ length: 21 }, (_, i) => 2020 + i);
+        // Validate dates
+        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+          return null;
+        }
 
-  const handleDateClick = (clickInfo: DateClickArg) => {
-    setSelectedDate(clickInfo.date);
+        return {
+          id: interview.id.toString(),
+          title: interview.candidateName || "Untitled Interview",
+          start: startDate.toISOString(),
+          end: endDate.toISOString(),
+          backgroundColor: interview.technology?.colour || "#10B981",
+          borderColor: interview.technology?.colour || "#10B981",
+          extendedProps: interview,
+        };
+      })
+      .filter(
+        (event: InterviewEvent | null) => event !== null
+      ) as InterviewEvent[];
+  }, [interviewsData]);
+
+  const handleDateClick = (date: Date) => {
+    setSelectedDate(date);
     setIsAddDialogOpen(true);
   };
 
-  const handleEventClick = (clickInfo: any) => {
-    setSelectedEvent(clickInfo.event.toPlainObject() as InterviewEvent);
+  const handleEventClick = (event: InterviewEvent) => {
+    setSelectedEvent(event);
     setIsViewDialogOpen(true);
   };
 
@@ -234,84 +287,29 @@ const InterviewsPage = () => {
     }
   };
 
-  const handleYearChange = (year: string) => {
-    const selectedYear = parseInt(year, 10);
-    setCurrentYear(selectedYear);
-
-    // Get the calendar API and navigate to the selected year
-    const calendarApi = calendarRef.current?.getApi();
-    console.log("calendarApi", calendarApi);
-    if (calendarApi) {
-      const currentDate = calendarApi.getDate();
-      const newDate = new Date(currentDate);
-      newDate.setFullYear(selectedYear);
-      calendarApi.gotoDate(newDate);
-    }
+  const handleMonthChange = (date: Date) => {
+    setCurrentCalendarDate(date);
+    // Update selected year when calendar navigates
+    setSelectedYear(date.getFullYear());
   };
 
-  // Update current year and date when calendar view changes
-  useEffect(() => {
-    const calendarApi = calendarRef.current?.getApi();
-    console.log("calendarApi", calendarApi);
-    if (calendarApi) {
-      const updateCalendarState = () => {
-        const currentDate = calendarApi.getDate();
-        setCurrentYear(currentDate.getFullYear());
-        setCurrentCalendarDate(currentDate);
-      };
+  const handleYearChange = (year: string) => {
+    const newYear = parseInt(year, 10);
+    setSelectedYear(newYear);
 
-      // Listen to date changes
-      calendarApi.on("datesSet", updateCalendarState);
-
-      // Initial update
-      updateCalendarState();
-
-      return () => {
-        calendarApi.off("datesSet", updateCalendarState);
-      };
-    }
-  }, []);
-
-  // Attach event handlers to edit/delete buttons
-  useEffect(() => {
-    const handleEditButtonClick = (e: Event) => {
-      const target = e.target as HTMLElement;
-      const button = target.closest(".fc-edit-btn") as HTMLElement;
-      if (button) {
-        e.stopPropagation();
-        const eventId = button.getAttribute("data-event-id");
-        const event = events.find((ev) => ev.id === eventId);
-        if (event) {
-          handleEditClick(e as any, event);
-        }
-      }
-    };
-
-    const handleDeleteButtonClick = (e: Event) => {
-      const target = e.target as HTMLElement;
-      const button = target.closest(".fc-delete-btn") as HTMLElement;
-      if (button) {
-        e.stopPropagation();
-        const eventId = button.getAttribute("data-event-id");
-        const event = events.find((ev) => ev.id === eventId);
-        if (event) {
-          handleDeleteClick(e as any, event);
-        }
-      }
-    };
-
-    document.addEventListener("click", handleEditButtonClick);
-    document.addEventListener("click", handleDeleteButtonClick);
-
-    return () => {
-      document.removeEventListener("click", handleEditButtonClick);
-      document.removeEventListener("click", handleDeleteButtonClick);
-    };
-  }, [events]);
+    // Update calendar date to selected year with today's month and day
+    const today = new Date();
+    const newDate = new Date(
+      newYear,
+      today.getMonth(), // Current month
+      today.getDate() // Current day
+    );
+    setCurrentCalendarDate(newDate);
+  };
 
   return (
     <Main>
-      <div className="p-2 sm:p-4">
+      <div className="p-4">
         {/* Year Selector */}
         <div className="mb-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
@@ -320,7 +318,7 @@ const InterviewsPage = () => {
               Select Year:
             </span>
             <Select
-              value={currentYear.toString()}
+              value={selectedYear.toString()}
               onValueChange={handleYearChange}
             >
               <SelectTrigger className="w-[140px]">
@@ -337,81 +335,25 @@ const InterviewsPage = () => {
           </div>
         </div>
 
-        <FullCalendar
-          ref={calendarRef}
-          plugins={[dayGridPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
-          weekends={true}
+        <PremiumRBCCalendar
           events={events}
-          dateClick={handleDateClick}
-          eventClick={handleEventClick}
-          height="80vh"
-          headerToolbar={{
-            left: "prev,next today",
-            center: "title",
-            right: "dayGridMonth,dayGridWeek",
-          }}
-          eventClassNames="cursor-pointer fc-interview-event"
-          eventContent={(arg) => {
-            const event = arg.event.toPlainObject() as InterviewEvent;
-            const eventId = `event-${event.id}`;
-
-            return {
-              html: `
-        <div data-event-id="${eventId}" class="fc-event-content-wrapper" style="
-          padding: 6px 8px;
-          width: 100%;
-          color: white;
-          font-weight: 500;
-          background-color: ${arg.event.backgroundColor};
-          border-radius: 4px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          font-size: 13px;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-          min-height: 28px;
-        ">
-          <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 4px;">
-            ${arg.event.title}
-          </span>
-          <div class="fc-event-actions" style="display: flex; align-items: center; gap: 2px; flex-shrink: 0;">
-            <button class="fc-edit-btn" data-event-id="${event.id}" style="
-              padding: 2px 4px;
-              background: rgba(255,255,255,0.2);
-              border: none;
-              border-radius: 3px;
-              cursor: pointer;
-              display: inline-flex;
-              align-items: center;
-              transition: background 0.2s;
-              color: white;
-            " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'" title="Edit">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-              </svg>
-            </button>
-            <button class="fc-delete-btn" data-event-id="${event.id}" style="
-              padding: 2px 4px;
-              background: rgba(255,255,255,0.2);
-              border: none;
-              border-radius: 3px;
-              cursor: pointer;
-              display: inline-flex;
-              align-items: center;
-              transition: background 0.2s;
-              color: white;
-            " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'" title="Delete">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-              </svg>
-            </button>
-          </div>
-        </div>
-      `,
-            };
+          currentDate={currentCalendarDate}
+          onDateClick={handleDateClick}
+          onEventClick={handleEventClick}
+          onEventEdit={(event, e) => handleEditClick(e, event)}
+          onEventDelete={(event, e) => handleDeleteClick(e, event)}
+          onNavigate={handleMonthChange}
+          view={calendarView}
+          onViewChange={(view) => {
+            if (
+              view === "month" ||
+              view === "week" ||
+              view === "day" ||
+              view === "work_week" ||
+              view === "agenda"
+            ) {
+              setCalendarView(view);
+            }
           }}
         />
       </div>
