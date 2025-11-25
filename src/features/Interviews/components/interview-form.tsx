@@ -122,7 +122,7 @@ export const InterviewForm = ({
   useEffect(() => {
     if (initialData && currentStep === 1) {
       form.reset({
-        candidateName: initialData.candidateName,
+        candidateName: initialData.candidateName || "",
         technology: initialData.technology?.id?.toString() || "",
         email: initialData.email || "",
         phoneNumber: initialData.phoneNumber || "",
@@ -143,8 +143,10 @@ export const InterviewForm = ({
         resume: null,
         resumeS3Key: initialData.resumeS3Key || "",
       });
+      setUploadedResumeKey(initialData.resumeS3Key || "");
     }
-  }, [initialData, form, currentStep === 1]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialData, currentStep]);
 
   const { trigger, formState } = form;
   const interviewType = form.watch("interviewType");
@@ -158,24 +160,21 @@ export const InterviewForm = ({
   }, [interviewType, currentStep, form]);
 
   const handleResumeUpload = async (file: File) => {
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("folder", "interview-resumes");
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("folder", "interview-resumes");
 
-      const response: any = await uploadResume(formData);
+    const response: any = await uploadResume(formData);
 
-      if (response?.key) {
-        setUploadedResumeKey(response.key);
-      }
-    } catch (error) {
-      console.error("Error uploading resume:", error);
-      // Re-throw error to be handled by FileUpload component
-      throw error;
+    if (response?.key) {
+      setUploadedResumeKey(response.key);
     }
   };
 
-  const handleNextStep = async () => {
+  const handleNextStep = async (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
     if (currentStep === 1) {
       const isValid = await trigger(step1Fields, { shouldFocus: true });
       if (isValid) {
@@ -212,30 +211,33 @@ export const InterviewForm = ({
   };
 
   const handleFormSubmit = async (data: InterviewFormValues) => {
-    if (currentStep === 2) {
-      const isValid = await trigger(step2Fields, { shouldFocus: true });
+    // Only submit if we're on step 2 - prevent auto-submit when on step 1
+    if (currentStep !== 2) {
+      return;
+    }
 
-      if (isValid) {
-        // Add the uploaded resume key to form data before submitting
-        const submissionData = {
-          ...data,
-          resumeS3Key: uploadedResumeKey,
-        };
-        onSubmit(submissionData);
-      } else {
-        // Scroll to first error in step 2
-        const step2Errors = step2Fields.filter(
-          (field) => formState.errors[field]
-        );
-        if (step2Errors.length > 0) {
-          const firstError = step2Errors[0];
-          const errorElement = document.querySelector(`[name="${firstError}"]`);
-          if (errorElement) {
-            errorElement.scrollIntoView({
-              behavior: "smooth",
-              block: "center",
-            });
-          }
+    const isValid = await trigger(step2Fields, { shouldFocus: true });
+
+    if (isValid) {
+      // Add the uploaded resume key to form data before submitting
+      const submissionData = {
+        ...data,
+        resumeS3Key: uploadedResumeKey || data.resumeS3Key || "",
+      };
+      onSubmit(submissionData);
+    } else {
+      // Scroll to first error in step 2
+      const step2Errors = step2Fields.filter(
+        (field) => formState.errors[field]
+      );
+      if (step2Errors.length > 0) {
+        const firstError = step2Errors[0];
+        const errorElement = document.querySelector(`[name="${firstError}"]`);
+        if (errorElement) {
+          errorElement.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
         }
       }
     }
@@ -244,7 +246,14 @@ export const InterviewForm = ({
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(handleFormSubmit)}
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          // Only allow form submission when on step 2
+          if (currentStep === 2) {
+            form.handleSubmit(handleFormSubmit)();
+          }
+        }}
         className="space-y-4"
       >
         {/* --- Stepper Navigation --- */}
@@ -591,7 +600,11 @@ export const InterviewForm = ({
             {currentStep < steps.length ? (
               <Button
                 type="button"
-                onClick={handleNextStep}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleNextStep(e);
+                }}
                 className="flex-1 sm:flex-initial"
               >
                 Next

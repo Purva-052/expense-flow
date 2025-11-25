@@ -66,7 +66,7 @@ const InterviewsPage = () => {
   const currentYear = new Date().getFullYear();
 
   // previous years (example: from 1900)
-  const startYear = 2025;
+  const startYear = 2020;
 
   const years = Array.from(
     { length: currentYear - startYear + 1 + 3 }, // total count

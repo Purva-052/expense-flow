@@ -40,14 +40,14 @@ interface PremiumRBCCalendarProps {
 }
 
 const formats = {
-  dayFormat: "EEE",
-  weekdayFormat: "EEE",
-  dayHeaderFormat: "EEEE, MMMM d",
+  dayFormat: (date: Date) => format(date, "EEE"),
+  weekdayFormat: (date: Date) => format(date, "EEE"),
+  dayHeaderFormat: (date: Date) => format(date, "EEEE, MMMM d"),
   dayRangeHeaderFormat: ({ start, end }: { start: Date; end: Date }) =>
-    `${format(start, "MMM d")} - ${format(end, "MMM d, yyyy")}`,
+    `${format(start, "EEE, MMM d")} - ${format(end, "EEE, MMM d")}`,
   eventTimeRangeFormat: ({ start, end }: { start: Date; end: Date }) =>
     `${format(start, "h:mm a")} - ${format(end, "h:mm a")}`,
-  timeGutterFormat: "h:mm a",
+  timeGutterFormat: (date: Date) => format(date, "h:mm a"),
 };
 
 export const PremiumRBCCalendar = ({
@@ -62,6 +62,44 @@ export const PremiumRBCCalendar = ({
   onViewChange,
 }: PremiumRBCCalendarProps) => {
   const [hoveredEvent, setHoveredEvent] = useState<string | null>(null);
+
+  // Calculate the date to display in header based on view
+  const getHeaderDate = useMemo(() => {
+    const today = new Date();
+
+    if (view === "month") {
+      // For month view, show today's date if it's in the current month, otherwise first day
+      const isCurrentMonth =
+        currentDate.getFullYear() === today.getFullYear() &&
+        currentDate.getMonth() === today.getMonth();
+
+      if (isCurrentMonth) {
+        return today;
+      } else {
+        // Show first day of the month being viewed
+        return new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      }
+    } else if (view === "week") {
+      // For week view, show the start of the week (Sunday)
+      const dayOfWeek = currentDate.getDay();
+      const weekStart = new Date(currentDate);
+      weekStart.setDate(currentDate.getDate() - dayOfWeek);
+      return weekStart;
+    } else {
+      // For day view, show the current date
+      return currentDate;
+    }
+  }, [currentDate, view]);
+
+  // Calculate week end date for week view
+  const getWeekEndDate = useMemo(() => {
+    if (view === "week") {
+      const weekEnd = new Date(getHeaderDate);
+      weekEnd.setDate(weekEnd.getDate() + 6);
+      return weekEnd;
+    }
+    return null;
+  }, [getHeaderDate, view]);
 
   const calendarEvents = useMemo(() => {
     if (!events || events.length === 0) return [];
@@ -256,11 +294,18 @@ export const PremiumRBCCalendar = ({
             </div>
             <div>
               <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                {format(currentDate, "MMMM yyyy")}
+                {view === "month"
+                  ? format(getHeaderDate, "EEEE, MMMM d, yyyy")
+                  : view === "week" && getWeekEndDate
+                    ? `${format(getHeaderDate, "EEEE, MMMM d")} - ${format(
+                        getWeekEndDate,
+                        "EEEE, MMMM d, yyyy"
+                      )}`
+                    : format(getHeaderDate, "EEEE, MMMM d, yyyy")}
               </h2>
               <p className="text-sm text-muted-foreground mt-1">
-                {events.length} interview{events.length !== 1 ? "s" : ""}{" "}
-                scheduled
+                {format(currentDate, "MMMM yyyy")} • {events.length} interview
+                {events.length !== 1 ? "s" : ""} scheduled
               </p>
             </div>
           </div>
@@ -385,6 +430,11 @@ export const PremiumRBCCalendar = ({
               eventPropGetter={eventStyleGetter}
               components={{
                 event: CustomEvent,
+                header: ({ date }: { date: Date }) => {
+                  // Use moment to format since we're using momentLocalizer
+                  const dayName = moment(date).format("ddd");
+                  return <div className="rbc-header-custom">{dayName}</div>;
+                },
               }}
               popup
               showMultiDayTimes
@@ -418,6 +468,16 @@ export const PremiumRBCCalendar = ({
           font-size: 0.75rem;
           letter-spacing: 0.05em;
           color: hsl(var(--muted-foreground));
+          text-align: center;
+        }
+        
+        .premium-rbc-calendar .rbc-header-custom {
+          font-weight: 600;
+          text-transform: uppercase;
+          font-size: 0.75rem;
+          letter-spacing: 0.05em;
+          color: hsl(var(--muted-foreground));
+          text-align: center;
         }
         
         .premium-rbc-calendar .rbc-day-bg {
