@@ -25,7 +25,7 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 
 const localizer = momentLocalizer(moment);
 
-interface PremiumRBCCalendarProps {
+interface ReactBigCalendarProps {
   events: InterviewEvent[];
   currentDate: Date;
   onDateClick: (date: Date) => void;
@@ -50,7 +50,7 @@ const formats = {
   timeGutterFormat: (date: Date) => format(date, "h:mm a"),
 };
 
-export const PremiumRBCCalendar = ({
+export const ReactBigCalendar = ({
   events,
   currentDate,
   onDateClick,
@@ -60,7 +60,7 @@ export const PremiumRBCCalendar = ({
   onNavigate,
   view = "month",
   onViewChange,
-}: PremiumRBCCalendarProps) => {
+}: ReactBigCalendarProps) => {
   const [hoveredEvent, setHoveredEvent] = useState<string | null>(null);
 
   // Calculate the date to display in header based on view

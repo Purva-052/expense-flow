@@ -1,9 +1,6 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useState, useEffect, useMemo } from "react";
-import { format } from "date-fns";
-import { Calendar } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -11,32 +8,36 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { format } from "date-fns";
+import { Calendar } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 // ShadCN UI Imports
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Main } from "@/components/layout/main";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
-import { ConfirmDialog } from "@/components/confirm-dialog";
 
 // Local Imports
-import { InterviewForm } from "./components/interview-form";
 import { InterviewDetailsDialog } from "./components/interview-details-dialog";
-import { PremiumRBCCalendar } from "./components/premium-rbc-calendar";
-import { InterviewFormValues } from "./schema";
-import { InterviewEvent, InterviewApiResponse } from "./types";
+import { InterviewForm } from "./components/interview-form";
+
 import { useGetTechnologyDropdownList } from "../technology/services";
 import { useGetUsersList } from "../users/services";
+import { ReactBigCalendar } from "./components/react-big-calendar";
+import { InterviewFormValues } from "./schema";
 import {
-  useGetInterview,
   useCreateInterview,
-  useUpdateInterview,
   useDeleteInterview,
+  useGetInterview,
+  useUpdateInterview,
 } from "./services";
+import { InterviewApiResponse, InterviewEvent } from "./types";
 
 // --- MAIN PAGE COMPONENT ---
 const InterviewsPage = () => {
@@ -335,7 +336,7 @@ const InterviewsPage = () => {
           </div>
         </div>
 
-        <PremiumRBCCalendar
+        <ReactBigCalendar
           events={events}
           currentDate={currentCalendarDate}
           onDateClick={handleDateClick}
