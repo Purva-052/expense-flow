@@ -20,19 +20,14 @@ export const useCreateInterview = (onsuccess?: any) => {
 };
 
 export const useGetInterview = (params?: {
-  time_zone?: string;
-  current_date?: string;
-  start_date?: string;
-  end_date?: string;
+  timezone?: string;
+  startDate?: string;
+  endDate?: string;
 }) => {
   return useFetchData({
     url: Interview_list,
     params,
-    enabled:
-      !!params?.time_zone &&
-      !!params?.current_date &&
-      !!params?.start_date &&
-      !!params?.end_date,
+    enabled: !!params?.timezone && !!params?.startDate && !!params?.endDate,
   });
 };
 

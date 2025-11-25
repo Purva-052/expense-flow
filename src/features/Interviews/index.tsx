@@ -56,13 +56,20 @@ const InterviewsPage = () => {
   const [currentCalendarDate, setCurrentCalendarDate] = useState<Date>(
     new Date()
   );
-  const [calendarView, setCalendarView] = useState<
-    "month" | "week" | "day" | "work_week" | "agenda"
-  >("month");
+  const [calendarView, setCalendarView] = useState<"month" | "week" | "day">(
+    "month"
+  );
   const [selectedYear, setSelectedYear] = useState<number>(
     new Date().getFullYear()
   );
   const [timeZone, setTimeZone] = useState<string>("");
+
+  const [currentDateRange, setCurrentDateRange] = useState<{
+    start: Date;
+    end: Date;
+  } | null>(null);
+
+  console.log("currentDateRange", currentDateRange);
 
   const currentYear = new Date().getFullYear();
 
@@ -129,10 +136,9 @@ const InterviewsPage = () => {
   const dateRange = getDateRange();
 
   const { data: interviewsData }: any = useGetInterview({
-    time_zone: timeZone,
-    current_date: formatCurrentDate(getCurrentDateForAPI),
-    start_date: formatCurrentDate(dateRange.start),
-    end_date: formatCurrentDate(dateRange.end),
+    timezone: timeZone,
+    startDate: formatCurrentDate(dateRange.start),
+    endDate: formatCurrentDate(dateRange.end),
   });
 
   const onSuccessCreateInterview = () => {
@@ -345,14 +351,11 @@ const InterviewsPage = () => {
           onEventDelete={(event, e) => handleDeleteClick(e, event)}
           onNavigate={handleMonthChange}
           view={calendarView}
+          // onRangeChange={(range) => {
+          //   console.log("range", range);
+          // }}
           onViewChange={(view) => {
-            if (
-              view === "month" ||
-              view === "week" ||
-              view === "day" ||
-              view === "work_week" ||
-              view === "agenda"
-            ) {
+            if (view === "month" || view === "week" || view === "day") {
               setCalendarView(view);
             }
           }}
