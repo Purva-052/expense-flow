@@ -9,7 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"; // 👈 1. Import Tooltip components
-// import { Clock } from "lucide-react";
+import { Clock } from "lucide-react";
 // import React from "react";
 
 const getDaysRemaining = (
@@ -70,10 +70,10 @@ export function DeveloperChip({
   const daysRemaining = getDaysRemaining(endDate);
   const showReleaseWarning = daysRemaining !== null && daysRemaining <= 5;
 
-  // const getReleaseText = (): React.ReactNode => {
-  //   if (daysRemaining === 1) return <strong>1</strong>;
-  //   return <strong>{daysRemaining}</strong>;
-  // };
+  const getReleaseText = (): React.ReactNode => {
+    if (daysRemaining === 1) return <strong>1</strong>;
+    return <strong>{daysRemaining}</strong>;
+  };
 
   const techColor = developer?.technology?.color || "#e2e8f0";
   const experience = getYearsOfExperience(developer?.careerStartDate);
@@ -115,8 +115,8 @@ export function DeveloperChip({
 
                   {showReleaseWarning && (
                     <div className="flex items-center gap-1 text-orange-600 dark:text-orange-400 text-xs font-semibold animate-pulse">
-                      {/* <Clock className="h-3 w-3" />
-                      <span>{getReleaseText()}</span> */}
+                      <Clock className="h-3 w-3" />
+                      <span>{getReleaseText()}</span>
                     </div>
                   )}
 
