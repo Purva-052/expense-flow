@@ -111,7 +111,7 @@ export function ClientActionForm({
                   return { value: opt.value, label: opt.label };
                 })}
                 placeholder="Select Timezone"
-                searchEnabled={false}
+                searchEnabled={true}
               />
             </form>
           </Form>

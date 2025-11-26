@@ -113,12 +113,13 @@ export const InterviewForm = ({
   const formatNoticePeriod = (days: number): string => {
     return `${days} Days`;
   };
-  const formatTimeFromISO = (isoString: string): string => {
-    const date = new Date(isoString);
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    return `${hours}:${minutes}`;
-  };
+  // const formatTimeFromISO = (isoString: string): string => {
+  //   const date = new Date(isoString);
+  //   const hours = String(date.getHours()).padStart(2, "0");
+  //   const minutes = String(date.getMinutes()).padStart(2, "0");
+  //   return `${hours}:${minutes}`;
+  // };
+
   useEffect(() => {
     if (initialData && currentStep === 1) {
       form.reset({
@@ -133,8 +134,8 @@ export const InterviewForm = ({
         expectedCtc: Number(initialData.expectedCtc) || 0,
         noticePeriod: formatNoticePeriod(initialData.noticePeriodInDays || 0),
         interviewerName: initialData.interviewer?.id?.toString() || "",
-        startTime: formatTimeFromISO(initialData.interviewStart),
-        endTime: formatTimeFromISO(initialData.interviewEnd),
+        startTime: initialData.interviewStart,
+        endTime: initialData.interviewEnd,
         interviewType: initialData.interviewType || "video_call",
         interviewUrl: initialData.interviewUrl || "",
         interviewRound: initialData.interviewRound || "",
