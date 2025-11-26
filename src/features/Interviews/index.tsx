@@ -64,12 +64,12 @@ const InterviewsPage = () => {
   );
   const [timeZone, setTimeZone] = useState<string>("");
 
-  const [currentDateRange, setCurrentDateRange] = useState<{
-    start: Date;
-    end: Date;
-  } | null>(null);
+  // const [currentDateRange, setCurrentDateRange] = useState<{
+  //   start: Date;
+  //   end: Date;
+  // } | null>(null);
 
-  console.log("currentDateRange", currentDateRange);
+  // console.log("currentDateRange", currentDateRange);
 
   const currentYear = new Date().getFullYear();
 
@@ -103,14 +103,14 @@ const InterviewsPage = () => {
   };
 
   // Calculate current_date for API: selected year + today's month + today's day
-  const getCurrentDateForAPI = useMemo(() => {
-    const today = new Date();
-    return new Date(
-      selectedYear,
-      today.getMonth(), // Current month (November = 10)
-      today.getDate() // Current day (25)
-    );
-  }, [selectedYear]);
+  // const getCurrentDateForAPI = useMemo(() => {
+  //   const today = new Date();
+  //   return new Date(
+  //     selectedYear,
+  //     today.getMonth(), // Current month (November = 10)
+  //     today.getDate() // Current day (25)
+  //   );
+  // }, [selectedYear]);
 
   // Calculate date range based on current view for API
   const getDateRange = () => {

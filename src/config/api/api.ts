@@ -59,6 +59,7 @@ const API = {
     create: "/interviews",
     update: "/interviews",
     upload: "/files/upload",
+    delete: "/interviews",
   },
   inquiry_status: {
     list: "/project-lead-status-logs",
