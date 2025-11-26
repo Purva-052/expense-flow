@@ -15,6 +15,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { InterviewEvent } from "../types";
 import "react-big-calendar/lib/css/react-big-calendar.css";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const localizer = momentLocalizer(moment);
 
@@ -43,11 +49,15 @@ export const ReactBigCalendar = ({
 
   const calendarEvents = useMemo(() => {
     if (!events) return [];
+    // console.log("events: ", events);
     return events.map((event) => ({
       ...event,
+      interViewer: event.interViewer || "Untitled",
       start: new Date(event.start),
       end: event.end ? new Date(event.end) : new Date(event.start),
       title: event.title || "Untitled",
+      backgroundColor: event.backgroundColor || "#039be5",
+      borderColor: event.borderColor || event.backgroundColor || "#039be5",
     }));
   }, [events]);
 
@@ -83,25 +93,72 @@ export const ReactBigCalendar = ({
   // Custom Event Component
   const CustomEvent = ({ event }: { event: any }) => {
     const isHovered = hoveredEvent === event.id;
+
     return (
-      <div
-        className="h-full w-full px-2 py-0.5 text-xs font-medium leading-tight overflow-hidden truncate transition-all duration-200"
-        onMouseEnter={() => setHoveredEvent(event.id)}
-        onMouseLeave={() => setHoveredEvent(null)}
-        onClick={(e) => {
-          e.stopPropagation();
-          onEventClick(event);
-        }}
-        style={{ opacity: isHovered ? 0.9 : 1 }}
-      >
-        {view === "month" && (
-          <span className="mr-1 text-[10px] opacity-90">
-            {format(event.start, "h:mma")}
-          </span>
-        )}
-        {event.title}
-      </div>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div
+              className="h-full w-full px-1.5 py-0.5 flex flex-col justify-center text-white cursor-pointer transition-all duration-200"
+              onMouseEnter={() => setHoveredEvent(event.id)}
+              onMouseLeave={() => setHoveredEvent(null)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onEventClick(event);
+              }}
+              style={{ opacity: isHovered ? 0.85 : 1 }}
+            >
+              <div className="flex items-center gap-1 text-[11px] font-medium leading-tight truncate">
+                {view === "month" && (
+                  <span className="text-[9px] font-medium opacity-95 shrink-0">
+                    {format(event.start, "h:mma")}
+                  </span>
+                )}
+                <span className="truncate font-medium">{event.title}</span>
+              </div>
+            </div>
+          </TooltipTrigger>
+
+          {/* Tooltip Content (Hover Box) */}
+          <TooltipContent side="right" className="p-3 text-sm rounded-md">
+            <div className="font-semibold">{event.title}</div>
+            <div className="text-gray-600 mt-1">
+              Technology: {event.extendedProps?.technology?.name}
+            </div>
+            <div className="text-gray-600 mt-1">
+              Interviewer:{" "}
+              <span className="font-medium">{event.interViewer}</span>
+            </div>
+            <div className="text-gray-600">
+              Time: {format(event.start, "hh:mm a")} –{" "}
+              {format(event.end, "hh:mm a")}
+            </div>
+            <div className="text-gray-500 text-xs mt-1">
+              {format(event.start, "MMMM dd, yyyy")}
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     );
+  };
+
+  // Event prop getter to apply dynamic background colors
+  const eventPropGetter = useCallback((event: any) => {
+    return {
+      style: {
+        backgroundColor: event.backgroundColor || "#039be5",
+        borderColor: event.borderColor || event.backgroundColor || "#039be5",
+        color: "#ffffff",
+        borderRadius: "4px",
+        border: "none",
+        boxShadow: "none",
+      },
+    };
+  }, []);
+
+  // Custom Event Wrapper to disable tooltip
+  const EventWrapper = ({ children, event: _event }: any) => {
+    return <div title="">{children}</div>;
   };
 
   // Custom Header Component for Week/Day view columns
@@ -183,28 +240,31 @@ export const ReactBigCalendar = ({
 
         <div className="flex items-center gap-4">
           {onViewChange && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="min-w-[90px] justify-between border-gray-300 text-gray-700 hover:bg-gray-50"
-                >
-                  {view.charAt(0).toUpperCase() + view.slice(1)}
-                  <ChevronLeft className="h-4 w-4 rotate-270 ml-2" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-40">
-                <DropdownMenuItem onClick={() => handleViewChange("day")}>
-                  Day
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleViewChange("week")}>
-                  Week
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleViewChange("month")}>
-                  Month
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="min-w-[90px] justify-between border-gray-300 text-gray-700 hover:bg-gray-50"
+                  >
+                    {view.charAt(0).toUpperCase() + view.slice(1)}
+                    <ChevronLeft className="h-4 w-4 rotate-270 ml-2" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-40">
+                  <DropdownMenuItem onClick={() => handleViewChange("day")}>
+                    Day
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleViewChange("week")}>
+                    Week
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleViewChange("month")}>
+                    Month
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              {/* <h1>Colors</h1>  */}
+            </>
           )}
         </div>
       </header>
@@ -226,9 +286,12 @@ export const ReactBigCalendar = ({
             onNavigate={handleNavigate}
             onSelectSlot={(slotInfo: SlotInfo) => onDateClick(slotInfo.start)}
             onSelectEvent={(event: any) => onEventClick(event)}
+            eventPropGetter={eventPropGetter}
             selectable
+            popup
             components={{
               event: CustomEvent,
+              eventWrapper: EventWrapper,
               header:
                 view === "month"
                   ? undefined // Default header for month view
@@ -288,7 +351,7 @@ export const ReactBigCalendar = ({
 
         .google-calendar-wrapper .rbc-month-row {
           border-bottom: 1px solid #e5e7eb;
-          min-height: 100px;
+          min-height: 140px;
         }
 
         .google-calendar-wrapper .rbc-day-bg + .rbc-day-bg {
@@ -297,11 +360,20 @@ export const ReactBigCalendar = ({
 
         /* 2. Date Cells (Month View) */
         .google-calendar-wrapper .rbc-date-cell {
-          padding: 8px;
+          padding: 6px 8px;
           text-align: center;
           font-size: 12px;
           font-weight: 500;
           color: #3c4043;
+        }
+        
+        .google-calendar-wrapper .rbc-row-content {
+          position: relative;
+          z-index: 4;
+        }
+        
+        .google-calendar-wrapper .rbc-row-segment {
+          padding: 1px 2px;
         }
 
         .google-calendar-wrapper .rbc-now .rbc-button-link {
@@ -326,20 +398,44 @@ export const ReactBigCalendar = ({
 
         /* 3. Events */
         .google-calendar-wrapper .rbc-event {
-          background-color: #039be5; /* Google Blue */
           border: none;
           border-radius: 4px;
           box-shadow: none;
           padding: 0;
-          margin: 1px 4px;
+          margin: 1px 2px;
+          overflow: hidden;
+          min-height: 22px;
         }
 
         .google-calendar-wrapper .rbc-event-content {
-          font-size: 12px;
+          font-size: 11px;
+          line-height: 1.2;
+        }
+        
+        .google-calendar-wrapper .rbc-show-more {
+          background-color: transparent;
+          color: #1a73e8;
+          font-size: 11px;
+          font-weight: 500;
+          padding: 2px 8px;
+          margin: 2px;
+          text-align: left;
+          cursor: pointer;
+          border-radius: 4px;
+          transition: background-color 0.2s;
+        }
+        
+        .google-calendar-wrapper .rbc-show-more:hover {
+          background-color: #f1f3f4;
         }
 
         .google-calendar-wrapper .rbc-selected {
-          background-color: #1a73e8 !important; /* Darker blue on select */
+          opacity: 0.85 !important;
+        }
+        
+        .google-calendar-wrapper .rbc-event:focus {
+          outline: 2px solid rgba(255, 255, 255, 0.5);
+          outline-offset: 2px;
         }
 
         /* 4. Time Grid (Week/Day View) */

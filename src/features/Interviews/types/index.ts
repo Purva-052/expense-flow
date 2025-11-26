@@ -1,4 +1,3 @@
-
 export interface Technology {
   id: number;
   name: string;
@@ -43,10 +42,10 @@ export interface InterviewApiResponse {
 export interface InterviewEvent {
   id: string;
   title: string;
+  interViewer?: string;
   start: string;
   end?: string;
   backgroundColor?: string;
   borderColor?: string;
   extendedProps: InterviewApiResponse;
 }
-

@@ -11,9 +11,10 @@ export const clientFormSchema = z.object({
     .trim(),
   company: z
     .string()
-    .min(2, { message: "Company field must be at least 2 characters long." })
+    // .min(2, { message: "Company field must be at least 2 characters long." })
     .max(100, { message: "Company field cannot exceed 100 characters." })
-    .trim(),
+    .trim()
+    .optional(),
   country: z
     .string()
     .min(2, { message: "Country name must be at least 2 characters long." })

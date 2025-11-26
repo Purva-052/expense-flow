@@ -102,6 +102,13 @@ const InterviewsPage = () => {
     return `${year}-${month}-${day}`;
   };
 
+  // function toISTISOString(date: Date) {
+  //   // convert to IST (UTC+5:30)
+  //   const istDate = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
+
+  //   return istDate.toISOString().slice(0, 19); // remove Z
+  // }
+
   // Calculate current_date for API: selected year + today's month + today's day
   // const getCurrentDateForAPI = useMemo(() => {
   //   const today = new Date();
@@ -171,6 +178,7 @@ const InterviewsPage = () => {
 
     return interviewsData.data
       .map((interview: InterviewApiResponse) => {
+        // console.log("interview: ", interview);
         // Parse dates - handle both ISO strings and Date objects
         const startDate = interview.interviewStart
           ? new Date(interview.interviewStart)
@@ -183,10 +191,12 @@ const InterviewsPage = () => {
         if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
           return null;
         }
+        // console.log("interview.interviewer.name: ", interview.interviewer.name);
 
         return {
           id: interview.id.toString(),
           title: interview.candidateName || "Untitled Interview",
+          interViewer: interview.interviewer.name,
           start: startDate.toISOString(),
           end: endDate.toISOString(),
           backgroundColor: interview.technology?.colour || "#10B981",
@@ -314,31 +324,60 @@ const InterviewsPage = () => {
     setCurrentCalendarDate(newDate);
   };
 
+  // const TechnologyLegend = ({ technologies }: { technologies: any }) => {
+  //   if (!technologies || technologies.length === 0) return null;
+
+  //   return (
+  //     <div className="flex flex-wrap items-center gap-2 px-3 py-2 bg-muted/40 rounded-xl border">
+  //       <span className="text-sm font-medium text-muted-foreground mr-2">
+  //         Technologies:
+  //       </span>
+
+  //       {technologies.map((tech: any) => (
+  //         <div
+  //           key={tech.id}
+  //           className="flex items-center gap-2 px-3 py-1 rounded-full bg-white shadow-sm border hover:shadow-md transition-all cursor-default"
+  //         >
+  //           <span
+  //             className="h-3 w-3 rounded-full"
+  //             style={{ backgroundColor: tech.color }}
+  //           ></span>
+
+  //           <span className="text-sm font-medium">{tech.name}</span>
+  //         </div>
+  //       ))}
+  //     </div>
+  //   );
+  // };
+
   return (
     <Main>
       <div className="p-4">
-        {/* Year Selector */}
-        <div className="mb-4 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-muted-foreground" />
-            <span className="text-sm font-medium text-muted-foreground">
-              Select Year:
-            </span>
-            <Select
-              value={selectedYear.toString()}
-              onValueChange={handleYearChange}
-            >
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Select year" />
-              </SelectTrigger>
-              <SelectContent>
-                {years.map((year) => (
-                  <SelectItem key={year} value={year.toString()}>
-                    {year}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <div className="mb-4 space-y-3">
+          {/* Year Selector */}
+          <div className="mb-4 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-muted-foreground" />
+              <span className="text-sm font-medium text-muted-foreground">
+                Select Year:
+              </span>
+              {/* <span>{interview.technology?.colour}</span> */}
+              <Select
+                value={selectedYear.toString()}
+                onValueChange={handleYearChange}
+              >
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="Select year" />
+                </SelectTrigger>
+                <SelectContent>
+                  {years.map((year) => (
+                    <SelectItem key={year} value={year.toString()}>
+                      {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
