@@ -1,26 +1,6 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client";
 
-import { useState, useRef, useEffect } from "react";
-import { format } from "date-fns";
-import { Calendar } from "lucide-react";
-
-// FullCalendar Imports
-import FullCalendar from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/daygrid";
-import interactionPlugin, { DateClickArg } from "@fullcalendar/interaction";
-import { EventClickArg } from "@fullcalendar/core";
-
-// ShadCN UI Imports
-import { Main } from "@/components/layout/main";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -28,30 +8,78 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { format } from "date-fns";
+import { Calendar } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+
+// ShadCN UI Imports
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { Main } from "@/components/layout/main";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // Local Imports
-import { InterviewForm } from "./components/interview-form";
 import { InterviewDetailsDialog } from "./components/interview-details-dialog";
-import { InterviewFormValues } from "./schema";
-import { InterviewEvent, InterviewApiResponse } from "./types";
+import { InterviewForm } from "./components/interview-form";
+
 import { useGetTechnologyDropdownList } from "../technology/services";
 import { useGetUsersList } from "../users/services";
-import { useGetInterview, useCreateInterview } from "./services";
+import { ReactBigCalendar } from "./components/react-big-calendar";
+import { InterviewFormValues } from "./schema";
+import {
+  useCreateInterview,
+  useDeleteInterview,
+  useGetInterview,
+  useUpdateInterview,
+} from "./services";
+import { InterviewApiResponse, InterviewEvent } from "./types";
 
 // --- MAIN PAGE COMPONENT ---
 const InterviewsPage = () => {
-  const calendarRef = useRef<FullCalendar>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<InterviewEvent | null>(
     null
   );
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [eventToEdit, setEventToEdit] = useState<InterviewEvent | null>(null);
+  const [eventToDelete, setEventToDelete] = useState<InterviewEvent | null>(
+    null
+  );
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [currentCalendarDate, setCurrentCalendarDate] = useState<Date>(
     new Date()
   );
+  const [calendarView, setCalendarView] = useState<"month" | "week" | "day">(
+    "month"
+  );
+  const [selectedYear, setSelectedYear] = useState<number>(
+    new Date().getFullYear()
+  );
   const [timeZone, setTimeZone] = useState<string>("");
+
+  const [currentDateRange, setCurrentDateRange] = useState<{
+    start: Date;
+    end: Date;
+  } | null>(null);
+
+  console.log("currentDateRange", currentDateRange);
+
+  const currentYear = new Date().getFullYear();
+
+  // previous years (example: from 1900)
+  const startYear = 2020;
+
+  const years = Array.from(
+    { length: currentYear - startYear + 1 + 3 }, // total count
+    (_, i) => startYear + i
+  );
 
   // Get browser timezone dynamically
   useEffect(() => {
@@ -74,10 +102,43 @@ const InterviewsPage = () => {
     return `${year}-${month}-${day}`;
   };
 
-  // Fetch interviews from API with timezone and current date params
+  // Calculate current_date for API: selected year + today's month + today's day
+  const getCurrentDateForAPI = useMemo(() => {
+    const today = new Date();
+    return new Date(
+      selectedYear,
+      today.getMonth(), // Current month (November = 10)
+      today.getDate() // Current day (25)
+    );
+  }, [selectedYear]);
+
+  // Calculate date range based on current view for API
+  const getDateRange = () => {
+    const start = new Date(currentCalendarDate);
+    const end = new Date(currentCalendarDate);
+
+    if (calendarView === "month") {
+      start.setDate(1);
+      const lastDay = new Date(start.getFullYear(), start.getMonth() + 1, 0);
+      end.setDate(lastDay.getDate());
+    } else if (calendarView === "week") {
+      const dayOfWeek = start.getDay();
+      start.setDate(start.getDate() - dayOfWeek);
+      end.setDate(start.getDate() + 6);
+    } else {
+      // day view
+      end.setDate(start.getDate());
+    }
+
+    return { start, end };
+  };
+
+  const dateRange = getDateRange();
+
   const { data: interviewsData }: any = useGetInterview({
-    time_zone: timeZone,
-    current_date: formatCurrentDate(currentCalendarDate),
+    timezone: timeZone,
+    startDate: formatCurrentDate(dateRange.start),
+    endDate: formatCurrentDate(dateRange.end),
   });
 
   const onSuccessCreateInterview = () => {
@@ -85,42 +146,98 @@ const InterviewsPage = () => {
     setSelectedDate(null);
   };
 
+  const onSuccessUpdateInterview = () => {
+    setIsEditDialogOpen(false);
+    setEventToEdit(null);
+  };
+
+  const onSuccessDeleteInterview = () => {
+    setIsDeleteDialogOpen(false);
+    setEventToDelete(null);
+  };
+
   const { mutateAsync: createInterview, isPending: isCreatingInterview } =
     useCreateInterview(onSuccessCreateInterview);
 
-  // Transform API response to FullCalendar events
-  const events: InterviewEvent[] = (interviewsData?.data || []).map(
-    (interview: InterviewApiResponse) => {
-      const startDate = new Date(interview.interviewStart);
-      const endDate = new Date(interview.interviewEnd);
+  const { mutateAsync: updateInterview, isPending: isUpdatingInterview } =
+    useUpdateInterview(onSuccessUpdateInterview);
 
-      return {
-        id: interview.id.toString(),
-        title: interview.candidateName,
-        start: startDate.toISOString(),
-        end: endDate.toISOString(),
-        backgroundColor: interview.technology?.colour || "#10B981",
-        borderColor: interview.technology?.colour || "#10B981",
-        extendedProps: interview,
-      };
-    }
-  );
+  const { mutateAsync: deleteInterview, isPending: isDeletingInterview } =
+    useDeleteInterview(onSuccessDeleteInterview);
 
-  // Generate years from 2020 to 2030 (you can adjust this range)
-  const years = Array.from({ length: 21 }, (_, i) => 2020 + i);
+  // Transform API response to InterviewEvent format
+  const events: InterviewEvent[] = useMemo(() => {
+    if (!interviewsData?.data) return [];
 
-  const handleDateClick = (clickInfo: DateClickArg) => {
-    setSelectedDate(clickInfo.date);
+    return interviewsData.data
+      .map((interview: InterviewApiResponse) => {
+        // Parse dates - handle both ISO strings and Date objects
+        const startDate = interview.interviewStart
+          ? new Date(interview.interviewStart)
+          : new Date();
+        const endDate = interview.interviewEnd
+          ? new Date(interview.interviewEnd)
+          : new Date(startDate.getTime() + 60 * 60 * 1000); // Default 1 hour duration
+
+        // Validate dates
+        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+          return null;
+        }
+
+        return {
+          id: interview.id.toString(),
+          title: interview.candidateName || "Untitled Interview",
+          start: startDate.toISOString(),
+          end: endDate.toISOString(),
+          backgroundColor: interview.technology?.colour || "#10B981",
+          borderColor: interview.technology?.colour || "#10B981",
+          extendedProps: interview,
+        };
+      })
+      .filter(
+        (event: InterviewEvent | null) => event !== null
+      ) as InterviewEvent[];
+  }, [interviewsData]);
+
+  const handleDateClick = (date: Date) => {
+    setSelectedDate(date);
     setIsAddDialogOpen(true);
   };
 
-  const handleEventClick = (clickInfo: EventClickArg) => {
-    setSelectedEvent(clickInfo.event.toPlainObject() as InterviewEvent);
+  const handleEventClick = (event: InterviewEvent) => {
+    setSelectedEvent(event);
     setIsViewDialogOpen(true);
   };
 
+  const handleEditClick = (e: React.MouseEvent, event: InterviewEvent) => {
+    e.stopPropagation();
+    setEventToEdit(event);
+    setIsEditDialogOpen(true);
+    setIsViewDialogOpen(false);
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent, event: InterviewEvent) => {
+    e.stopPropagation();
+    setEventToDelete(event);
+    setIsDeleteDialogOpen(true);
+    setIsViewDialogOpen(false);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (eventToDelete) {
+      try {
+        await deleteInterview(eventToDelete.extendedProps.id);
+      } catch (error) {
+        console.error("Error deleting interview:", error);
+      }
+    }
+  };
+
   const handleFormSubmit = async (data: InterviewFormValues) => {
-    if (!selectedDate) return;
+    const dateToUse = eventToEdit
+      ? new Date(eventToEdit.extendedProps.interviewStart)
+      : selectedDate;
+    if (!dateToUse) return;
 
     try {
       // Parse notice period to extract days (e.g., "30 Days" -> 30)
@@ -133,10 +250,10 @@ const InterviewsPage = () => {
       const [startHours, startMinutes] = data.startTime.split(":").map(Number);
       const [endHours, endMinutes] = data.endTime.split(":").map(Number);
 
-      const interviewStart = new Date(selectedDate);
+      const interviewStart = new Date(dateToUse);
       interviewStart.setHours(startHours, startMinutes, 0, 0);
 
-      const interviewEnd = new Date(selectedDate);
+      const interviewEnd = new Date(dateToUse);
       interviewEnd.setHours(endHours, endMinutes, 0, 0);
 
       const resumeKey = data.resumeS3Key || "";
@@ -163,52 +280,43 @@ const InterviewsPage = () => {
         interviewEnd: interviewEnd.toISOString(),
       };
 
-      // Call the API
-      await createInterview(apiBody);
+      // Call the appropriate API
+      if (eventToEdit) {
+        await updateInterview({
+          id: eventToEdit.extendedProps.id,
+          data: apiBody,
+        });
+      } else {
+        await createInterview(apiBody);
+      }
     } catch (error) {
       console.error("Error submitting interview:", error);
     }
   };
 
-  const handleYearChange = (year: string) => {
-    const selectedYear = parseInt(year, 10);
-    setCurrentYear(selectedYear);
-
-    // Get the calendar API and navigate to the selected year
-    const calendarApi = calendarRef.current?.getApi();
-    if (calendarApi) {
-      const currentDate = calendarApi.getDate();
-      const newDate = new Date(currentDate);
-      newDate.setFullYear(selectedYear);
-      calendarApi.gotoDate(newDate);
-    }
+  const handleMonthChange = (date: Date) => {
+    setCurrentCalendarDate(date);
+    // Update selected year when calendar navigates
+    setSelectedYear(date.getFullYear());
   };
 
-  // Update current year and date when calendar view changes
-  useEffect(() => {
-    const calendarApi = calendarRef.current?.getApi();
-    if (calendarApi) {
-      const updateCalendarState = () => {
-        const currentDate = calendarApi.getDate();
-        setCurrentYear(currentDate.getFullYear());
-        setCurrentCalendarDate(currentDate);
-      };
+  const handleYearChange = (year: string) => {
+    const newYear = parseInt(year, 10);
+    setSelectedYear(newYear);
 
-      // Listen to date changes
-      calendarApi.on("datesSet", updateCalendarState);
-
-      // Initial update
-      updateCalendarState();
-
-      return () => {
-        calendarApi.off("datesSet", updateCalendarState);
-      };
-    }
-  }, []);
+    // Update calendar date to selected year with today's month and day
+    const today = new Date();
+    const newDate = new Date(
+      newYear,
+      today.getMonth(), // Current month
+      today.getDate() // Current day
+    );
+    setCurrentCalendarDate(newDate);
+  };
 
   return (
     <Main>
-      <div className="p-2 sm:p-4">
+      <div className="p-4">
         {/* Year Selector */}
         <div className="mb-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
@@ -217,7 +325,7 @@ const InterviewsPage = () => {
               Select Year:
             </span>
             <Select
-              value={currentYear.toString()}
+              value={selectedYear.toString()}
               onValueChange={handleYearChange}
             >
               <SelectTrigger className="w-[140px]">
@@ -234,42 +342,29 @@ const InterviewsPage = () => {
           </div>
         </div>
 
-        <FullCalendar
-          ref={calendarRef}
-          plugins={[dayGridPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
-          weekends={true}
+        <ReactBigCalendar
           events={events}
-          dateClick={handleDateClick}
-          eventClick={handleEventClick}
-          height="80vh"
-          headerToolbar={{
-            left: "prev,next today",
-            center: "title",
-            right: "dayGridMonth,dayGridWeek",
-          }}
-          eventClassNames="cursor-pointer"
-          eventContent={(arg) => {
-            return {
-              html: `
-        <div style="
-          padding: 4px 8px;
-          width: 100%;
-          color: white;
-          font-weight: 500;
-          background-color: ${arg.event.backgroundColor};
-        ">
-        ${arg.event.title}
-        </div>
-      `,
-            };
+          currentDate={currentCalendarDate}
+          onDateClick={handleDateClick}
+          onEventClick={handleEventClick}
+          onEventEdit={(event, e) => handleEditClick(e, event)}
+          onEventDelete={(event, e) => handleDeleteClick(e, event)}
+          onNavigate={handleMonthChange}
+          view={calendarView}
+          // onRangeChange={(range) => {
+          //   console.log("range", range);
+          // }}
+          onViewChange={(view) => {
+            if (view === "month" || view === "week" || view === "day") {
+              setCalendarView(view);
+            }
           }}
         />
       </div>
 
       {selectedDate && (
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogContent className="w-[95vw] sm:w-full sm:max-w-[850px] max-h-[90vh] p-4 sm:p-6">
+          <DialogContent className="w-[95vw] sm:w-full sm:max-w-[850px]  p-4 sm:p-6">
             <DialogHeader>
               <DialogTitle>
                 Schedule Interview for {format(selectedDate, "PPP")}
@@ -292,11 +387,68 @@ const InterviewsPage = () => {
         </Dialog>
       )}
 
-      <InterviewDetailsDialog
-        event={selectedEvent}
-        open={isViewDialogOpen}
-        onOpenChange={setIsViewDialogOpen}
-      />
+      {eventToEdit && (
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="w-[95vw] sm:w-full sm:max-w-[850px] h-fit!  overflow-y-auto p-4 sm:p-6">
+            <DialogHeader>
+              <DialogTitle>Edit Interview</DialogTitle>
+              <DialogDescription>
+                Update the interview details below.
+              </DialogDescription>
+            </DialogHeader>
+            <InterviewForm
+              selectedDate={new Date(eventToEdit.extendedProps.interviewStart)}
+              onClose={() => {
+                setIsEditDialogOpen(false);
+                setEventToEdit(null);
+              }}
+              onSubmit={handleFormSubmit}
+              technologyList={technologyList}
+              technologyListLoading={technologyListLoading}
+              usersList={usersList}
+              usersListLoading={usersListLoading}
+              isSubmitting={isUpdatingInterview}
+              initialData={eventToEdit.extendedProps}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {selectedEvent && isViewDialogOpen && (
+        <InterviewDetailsDialog
+          event={selectedEvent}
+          open={isViewDialogOpen}
+          onOpenChange={setIsViewDialogOpen}
+          onEdit={(event) => {
+            setEventToEdit(event);
+            setIsEditDialogOpen(true);
+            setIsViewDialogOpen(false);
+          }}
+          onDelete={(event) => {
+            setEventToDelete(event);
+            setIsDeleteDialogOpen(true);
+            setIsViewDialogOpen(false);
+          }}
+        />
+      )}
+
+      {isDeleteDialogOpen && (
+        <ConfirmDialog
+          open={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+          title="Delete Interview"
+          desc={
+            eventToDelete
+              ? `Are you sure you want to delete the interview for ${eventToDelete.extendedProps.candidateName}? This action cannot be undone.`
+              : "Are you sure you want to delete this interview?"
+          }
+          confirmText="Delete"
+          cancelBtnText="Cancel"
+          destructive={true}
+          handleConfirm={handleDeleteConfirm}
+          isLoading={isDeletingInterview}
+        />
+      )}
     </Main>
   );
 };
