@@ -6,45 +6,49 @@ import usePatchData from "@/hooks/use-patch-data";
 import useFetchData from "@/hooks/use-fetch-data";
 import useDeleteData from "@/hooks/use-delete-data";
 
-
-const GET_API_URL = API.clients.list
-const GET_CLIENT_DROPDOWN = API.dropdown_api.client
+const GET_API_URL = API.clients.list;
+const GET_CLIENT_DROPDOWN = API.dropdown_api.client;
+const GET_COUNTRY_DROPDOWN = API.dropdown_api.country;
 
 export const useCreateClientsData = () => {
-  const { setOpen } = useClientsStore()
+  const { setOpen } = useClientsStore();
   return usePostData({
     url: API.clients.create,
     refetchQueries: [GET_API_URL],
     onSuccess: () => {
-      setOpen(null)
+      setOpen(null);
     },
-  })
-}
+  });
+};
 
 export const useUpdateClientsData = (id: string) => {
-  const { setOpen } = useClientsStore()
+  const { setOpen } = useClientsStore();
   return usePatchData({
     url: `${API.clients.list}/${id}`,
     refetchQueries: [GET_API_URL],
     onSuccess: () => setOpen(null), // <-- ✅ correct place
-  })
-}
+  });
+};
 
 export const useGetClientsData = (params?: any) => {
-  return useFetchData({ url: GET_API_URL, params })
-}
+  return useFetchData({ url: GET_API_URL, params });
+};
 
 export const useGetClientsDropdownList = (params?: any) => {
-  return useFetchData({ url: GET_CLIENT_DROPDOWN, params })
-}
+  return useFetchData({ url: GET_CLIENT_DROPDOWN, params });
+};
+
+export const useGetCountryDropdownList = (params?: any) => {
+  return useFetchData({ url: GET_COUNTRY_DROPDOWN, params });
+};
 
 export const useDeleteClientsData = (id: string) => {
-  const { setOpen } = useClientsStore()
+  const { setOpen } = useClientsStore();
   return useDeleteData({
     url: `${API.clients.delete}/${id}`,
     refetchQueries: [GET_API_URL],
     onSuccess: () => {
-      setOpen(null)
+      setOpen(null);
     },
-  })
-}
+  });
+};

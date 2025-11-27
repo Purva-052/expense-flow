@@ -86,6 +86,7 @@ const API = {
     users: "/users/dropdown",
     priority: "/projects/priority-dropdown",
     client: "/clients/dropdown",
+    country: "/country/dropdown",
   },
 };
 
