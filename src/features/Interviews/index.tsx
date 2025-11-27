@@ -38,6 +38,8 @@ import {
   useUpdateInterview,
 } from "./services";
 import { InterviewApiResponse, InterviewEvent } from "./types";
+import { FilterConfig } from "@/components/table/table-toolbar";
+import GlobalFilterSection from "@/components/table/global-table-filter";
 
 // --- MAIN PAGE COMPONENT ---
 const InterviewsPage = () => {
@@ -63,6 +65,29 @@ const InterviewsPage = () => {
     new Date().getFullYear()
   );
   const [timeZone, setTimeZone] = useState<string>("");
+
+  const [listParams, setListParams] = useState({
+    pageSize: 10,
+    currentPage: 1,
+    // search: "",
+    // clientId: undefined,
+    // priority: undefined,
+    // handlerId: undefined,
+    // projectTypeId: undefined,
+    technologyId: undefined,
+  });
+
+  const apiParams = {
+    page: listParams.currentPage,
+    // limit: listParams.pageSize,
+    // search: listParams.search,
+    // pagination: true,
+    // clientId: listParams.clientId,
+    // priority: listParams.priority,
+    // handlerId: listParams.handlerId,
+    // projectTypeId: listParams.projectTypeId,
+    technologyId: listParams.technologyId,
+  };
 
   // const [currentDateRange, setCurrentDateRange] = useState<{
   //   start: Date;
@@ -146,6 +171,7 @@ const InterviewsPage = () => {
     timezone: timeZone,
     startDate: formatCurrentDate(dateRange.start),
     endDate: formatCurrentDate(dateRange.end),
+    technologyId: apiParams.technologyId,
   });
 
   const onSuccessCreateInterview = () => {
@@ -324,6 +350,14 @@ const InterviewsPage = () => {
     setCurrentCalendarDate(newDate);
   };
 
+  const handleTechnologyChange = (value: any) => {
+    setListParams({
+      ...listParams,
+      technologyId: value ?? null,
+      currentPage: 1,
+    });
+  };
+
   // const TechnologyLegend = ({ technologies }: { technologies: any }) => {
   //   if (!technologies || technologies.length === 0) return null;
 
@@ -350,12 +384,26 @@ const InterviewsPage = () => {
   //   );
   // };
 
+  const filters: FilterConfig[] = [
+    {
+      type: "select",
+      key: "technologyId",
+      placeholder: "Filter by Technology",
+      options: technologyList?.data?.map((technology: any) => {
+        return { value: technology.id, label: technology.name };
+      }),
+      value: listParams.technologyId, // 👈 pre-selects if set
+      onChange: handleTechnologyChange,
+      isLoading: technologyListLoading,
+    },
+  ];
+
   return (
     <Main>
       <div className="p-4">
         <div className="mb-4 space-y-3">
           {/* Year Selector */}
-          <div className="mb-4 flex items-center justify-between gap-4">
+          <div className="mb-4 flex items-center gap-4">
             <div className="flex items-center gap-2">
               <Calendar className="h-5 w-5 text-muted-foreground" />
               <span className="text-sm font-medium text-muted-foreground">
@@ -378,6 +426,7 @@ const InterviewsPage = () => {
                 </SelectContent>
               </Select>
             </div>
+            <GlobalFilterSection filters={filters ?? []} />
           </div>
         </div>
 

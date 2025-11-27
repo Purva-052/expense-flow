@@ -49,16 +49,23 @@ export const ReactBigCalendar = ({
 
   const calendarEvents = useMemo(() => {
     if (!events) return [];
-    // console.log("events: ", events);
-    return events.map((event) => ({
-      ...event,
-      interViewer: event.interViewer || "Untitled",
-      start: new Date(event.start),
-      end: event.end ? new Date(event.end) : new Date(event.start),
-      title: event.title || "Untitled",
-      backgroundColor: event.backgroundColor || "#039be5",
-      borderColor: event.borderColor || event.backgroundColor || "#039be5",
-    }));
+
+    return events.map((event) => {
+      const techColor =
+        (event as any)?.extendedProps?.technology?.color ||
+        (event as any)?.extendedProps?.technology?.colour || // if API uses 'colour' sometimes
+        "#039be5";
+
+      return {
+        ...event,
+        interViewer: event.interViewer || "Untitled",
+        start: new Date(event.start),
+        end: event.end ? new Date(event.end) : new Date(event.start),
+        title: event.title || "Untitled",
+        backgroundColor: techColor,
+        borderColor: techColor,
+      };
+    });
   }, [events]);
 
   const handleNavigate = useCallback(
@@ -306,7 +313,7 @@ export const ReactBigCalendar = ({
       </div>
 
       <style>{`
-        /* Google Calendar Styles Override */
+        /* Google Calendar Styles Override */ 
 
         /* 1. General Grid & Layout */
         .google-calendar-wrapper .rbc-calendar {
