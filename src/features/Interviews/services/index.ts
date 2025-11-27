@@ -26,6 +26,7 @@ export const useGetInterview = (params?: {
   timezone?: string;
   startDate?: string;
   endDate?: string;
+  technologyId?: string;
 }) => {
   return useFetchData({
     url: Interview_list,
