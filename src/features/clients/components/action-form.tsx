@@ -14,6 +14,7 @@ import { TextInputField } from "@/components/shared/custom-input-field";
 import { clientFormSchema, TClientFormSchema } from "../schema";
 import { useTimezoneSelect, allTimezones } from "react-timezone-select";
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
+import { useGetCountryDropdownList } from "../services";
 
 interface Props {
   currentRow?: any;
@@ -40,6 +41,9 @@ export function ClientActionForm({
     labelStyle,
     timezones,
   });
+
+  const { data: countryList, isPending: loadingCountry }: any =
+    useGetCountryDropdownList();
 
   const isEdit = !!currentRow;
 
@@ -97,16 +101,22 @@ export function ClientActionForm({
                 label="Company"
                 placeholder="Enter company"
               />
-              <TextInputField
-                control={form.control}
+              <CustomDropDownSearchable
+                form={form}
                 name="country"
                 label="Country"
-                placeholder="Enter country"
+                placeholder="Select country"
+                sortOptions={false}
+                options={countryList?.data?.map((opt: any) => {
+                  return { value: opt.name, label: opt.name };
+                })}
               />
               <CustomDropDownSearchable
                 form={form}
                 name="timezone"
                 label="Timezone"
+                isLoading={loadingCountry}
+                sortOptions={true}
                 options={options?.map((opt) => {
                   return { value: opt.value, label: opt.label };
                 })}

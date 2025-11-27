@@ -151,6 +151,7 @@ export const InterviewForm = ({
 
   const { trigger, formState } = form;
   const interviewType = form.watch("interviewType");
+  const startTime = form.watch("startTime");
   const { mutateAsync: uploadResume } = useCreateInterviewResumeLink();
 
   // Re-validate interviewUrl when interviewType changes (only if we're on step 2)
@@ -495,6 +496,7 @@ export const InterviewForm = ({
                         <FormLabel>Start Time</FormLabel>
                         <FormControl>
                           <TimePicker
+                            // minTime={startTime}
                             value={field.value}
                             onChange={field.onChange}
                             placeholder="Select start time"
@@ -512,6 +514,7 @@ export const InterviewForm = ({
                         <FormLabel>End Time</FormLabel>
                         <FormControl>
                           <TimePicker
+                            minTime={startTime}
                             value={field.value}
                             onChange={field.onChange}
                             placeholder="Select end time"

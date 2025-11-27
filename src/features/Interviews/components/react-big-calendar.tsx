@@ -290,6 +290,7 @@ export const ReactBigCalendar = ({
             selectable
             popup
             components={{
+              toolbar: () => null,
               event: CustomEvent,
               eventWrapper: EventWrapper,
               header:

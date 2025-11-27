@@ -37,6 +37,7 @@ interface CustomDropDownProps {
   multiple?: boolean; // ✅ new prop
   searchEnabled?: boolean; // ✅ new prop
   showClearButton?: boolean;
+  sortOptions?: boolean;
 }
 
 const CustomDropDownSearchable = ({
@@ -56,6 +57,7 @@ const CustomDropDownSearchable = ({
   onChangeValue,
   multiple = false, // default false
   searchEnabled = true,
+  sortOptions = true,
 }: CustomDropDownProps) => {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [popoverWidth, setPopoverWidth] = useState<string | number>("auto");
@@ -75,16 +77,44 @@ const CustomDropDownSearchable = ({
     return () => window.removeEventListener("resize", updateWidth);
   }, [open]);
 
-  const filteredOptions = options?.filter(
+  // ---------- Filtering + Sorting (replace the previous declarations) ----------
+  const safeOptions = Array.isArray(options) ? options : [];
+
+  // filter by search
+  const filteredOptions = safeOptions.filter(
     (option: any) =>
       typeof option?.label === "string" &&
-      option.label.toLowerCase().includes(searchValue?.toLowerCase() || "")
+      option.label.toLowerCase().includes((searchValue || "").toLowerCase())
   );
 
-  const exactMatchExists = options?.some(
+  // non-mutating sort - extract location name after GMT offset for timezone sorting
+  const sortArray = (arr: any[]) =>
+    [...arr].sort((a: any, b: any) => {
+      const labelA = (a?.label ?? "").toString();
+      const labelB = (b?.label ?? "").toString();
+
+      // Extract text after GMT offset (e.g., "(GMT-11:00) Midway Island" -> "Midway Island")
+      const extractName = (label: string) => {
+        const match = label.match(/\)\s*(.+)$/);
+        return match ? match[1].trim() : label;
+      };
+
+      const nameA = extractName(labelA);
+      const nameB = extractName(labelB);
+
+      return nameA.toLowerCase().localeCompare(nameB.toLowerCase());
+    });
+
+  // final list used throughout the UI
+  const finalOptions = sortOptions
+    ? sortArray(filteredOptions)
+    : filteredOptions;
+
+  // Use a check against finalOptions when determining exact-match
+  const exactMatchExists = finalOptions.some(
     (o: any) =>
       typeof o?.label === "string" &&
-      o?.label?.toLowerCase() === searchValue?.toLowerCase()
+      o.label.toLowerCase() === (searchValue || "").toLowerCase()
   );
 
   const handleCreate = async () => {
@@ -206,7 +236,7 @@ const CustomDropDownSearchable = ({
                               <CommandEmpty>No option found.</CommandEmpty>
                             )}
                             <CommandGroup>
-                              {filteredOptions?.map((item: any) => (
+                              {finalOptions?.map((item: any) => (
                                 <CommandItem
                                   value={item.label}
                                   key={item.value}
