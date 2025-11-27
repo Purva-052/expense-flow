@@ -17,6 +17,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { InquirySchema, TInquirySchema } from "../schema";
 import { INQUIRY_STATUS } from "@/utils/constant";
 import { PhoneInputField } from "@/components/shared/custom-phone-number-countrywise";
+import { useGetCountryDropdownList } from "@/features/clients/services";
 
 interface Props {
   currentRow?: any;
@@ -54,6 +55,8 @@ export function InquiryActionForm({
   const { data: typeList, isPending: loadingType }: any = useGetInquiryType({
     pagination: false,
   });
+  const { data: countryList, isPending: loadingCountry }: any =
+    useGetCountryDropdownList();
   const inquiryOptions =
     typeList?.data?.map((item: any) => ({
       value: item?.id,
@@ -134,11 +137,22 @@ export function InquiryActionForm({
               />
 
               {/* Country */}
-              <TextInputField
+              {/* <TextInputField
                 control={form.control}
                 name="countryName"
                 label="Country"
                 placeholder="Enter country name"
+              /> */}
+              <CustomDropDownSearchable
+                form={form}
+                name="countryName"
+                label="Country"
+                placeholder="Select country"
+                sortOptions={false}
+                isLoading={loadingCountry}
+                options={countryList?.data?.map((opt: any) => {
+                  return { value: opt.name, label: opt.name };
+                })}
               />
 
               {/* Source of Inquiry */}

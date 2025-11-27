@@ -9,11 +9,10 @@ export const InquirySchema = z.object({
     .max(50, { message: "Client name cannot exceed 50 characters." })
     .trim(),
 
-  countryName: z
-    .string()
-    .trim()
-    .min(2, { message: "Country must be at least 2 characters long." })
-    .max(50, { message: "Country cannot exceed 50 characters." }),
+  countryName: z.preprocess(
+    (val) => (val === null || val === undefined ? "" : val),
+    z.string().min(1, "Country is required")
+  ),
   clientContactNo: z.any().optional(),
   clientCompanyName: z.string().trim().optional(),
   sourceOfInquiry: z.string().trim().optional(),
