@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { InterviewEvent } from "../types";
+import { InterviewEvent } from "../types"; // Make sure this path is correct for your project
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import {
   Tooltip,
@@ -21,6 +21,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useAuthStore } from "@/stores/use-auth-store";
+import { roles } from "@/utils/constant";
 
 const localizer = momentLocalizer(moment);
 
@@ -46,6 +48,8 @@ export const ReactBigCalendar = ({
   onViewChange,
 }: ReactBigCalendarProps) => {
   const [hoveredEvent, setHoveredEvent] = useState<string | null>(null);
+  const user = useAuthStore((state) => state.user);
+  const userRole = user?.user?.role;
 
   const calendarEvents = useMemo(() => {
     if (!events) return [];
@@ -53,7 +57,7 @@ export const ReactBigCalendar = ({
     return events.map((event) => {
       const techColor =
         (event as any)?.extendedProps?.technology?.color ||
-        (event as any)?.extendedProps?.technology?.colour || // if API uses 'colour' sometimes
+        (event as any)?.extendedProps?.technology?.colour ||
         "#039be5";
 
       return {
@@ -126,7 +130,6 @@ export const ReactBigCalendar = ({
             </div>
           </TooltipTrigger>
 
-          {/* Tooltip Content (Hover Box) */}
           <TooltipContent side="right" className="p-3 text-sm rounded-md">
             <div className="font-semibold">{event.title}</div>
             <div className="text-gray-600 mt-1">
@@ -149,7 +152,6 @@ export const ReactBigCalendar = ({
     );
   };
 
-  // Event prop getter to apply dynamic background colors
   const eventPropGetter = useCallback((event: any) => {
     return {
       style: {
@@ -163,12 +165,10 @@ export const ReactBigCalendar = ({
     };
   }, []);
 
-  // Custom Event Wrapper to disable tooltip
-  const EventWrapper = ({ children, event: _event }: any) => {
+  const EventWrapper = ({ children }: any) => {
     return <div title="">{children}</div>;
   };
 
-  // Custom Header Component for Week/Day view columns
   const CustomHeader = ({ date }: { date: Date; label?: string }) => {
     const isToday = new Date().toDateString() === date.toDateString();
 
@@ -198,20 +198,22 @@ export const ReactBigCalendar = ({
 
   return (
     <div className="flex flex-col h-screen max-h-[90vh] bg-white text-slate-900 border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-      {/* Google Calendar Header */}
+      {/* Header */}
       <header className="flex items-center justify-between px-6 py-3 border-b border-gray-200 bg-white">
         <div className="flex items-center gap-4 lg:gap-6">
-          <div className="hidden lg:flex flex-col w-fit border-r border-gray-200 pr-6 bg-white/50">
-            <Button
-              className="w-fit pl-3 pr-6 h-12 rounded-full shadow-md bg-white hover:bg-slate-50 text-slate-700 border border-gray-200 flex items-center gap-3 transition-all hover:shadow-lg"
-              onClick={() => onDateClick(new Date())}
-            >
-              <div className="relative">
-                <Plus className="h-7 w-7 text-blue-600" />
-              </div>
-              <span className="font-medium text-base">Create</span>
-            </Button>
-          </div>
+          {userRole === roles.ADMIN && (
+            <div className="hidden lg:flex flex-col w-fit border-r border-gray-200 pr-6 bg-white/50">
+              <Button
+                className="w-fit pl-3 pr-6 h-12 rounded-full shadow-md bg-white hover:bg-slate-50 text-slate-700 border border-gray-200 flex items-center gap-3 transition-all hover:shadow-lg"
+                onClick={() => onDateClick(new Date())}
+              >
+                <div className="relative">
+                  <Plus className="h-7 w-7 text-blue-600" />
+                </div>
+                <span className="font-medium text-base">Create</span>
+              </Button>
+            </div>
+          )}
 
           <div className="flex items-center gap-4">
             <Button
@@ -270,7 +272,6 @@ export const ReactBigCalendar = ({
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              {/* <h1>Colors</h1>  */}
             </>
           )}
         </div>
@@ -278,9 +279,6 @@ export const ReactBigCalendar = ({
 
       {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden relative">
-        {/* Optional Sidebar Placeholder (Hidden on small screens) */}
-
-        {/* Calendar Grid */}
         <div className="flex-1 google-calendar-wrapper">
           <Calendar
             localizer={localizer}
@@ -300,10 +298,7 @@ export const ReactBigCalendar = ({
               toolbar: () => null,
               event: CustomEvent,
               eventWrapper: EventWrapper,
-              header:
-                view === "month"
-                  ? undefined // Default header for month view
-                  : CustomHeader, // Custom header for week/day views
+              header: view === "month" ? undefined : CustomHeader,
             }}
             step={60}
             timeslots={1}
@@ -326,12 +321,15 @@ export const ReactBigCalendar = ({
             Roboto,
             sans-serif;
         }
-          .google-calendar-wrapper  .rbc-toolbar{
+        
+        .google-calendar-wrapper .rbc-toolbar {
           margin-top: 10px;
           margin-inline: 10px;
         }
-        .google-calendar-wrapper .rbc-month-header  {
+
+        .google-calendar-wrapper .rbc-month-header {
           border-top: 1px solid #e5e7eb;
+          flex-shrink: 0; /* Header should not shrink */
         }
 
         .google-calendar-wrapper .rbc-header {
@@ -345,28 +343,47 @@ export const ReactBigCalendar = ({
           overflow: visible;
         }
         
-        .google-calendar-wrapper .rbc-time-header-content {
-          border-bottom: 1px solid #e5e7eb;
-        }
-        
-        .google-calendar-wrapper .rbc-time-header {
-          overflow: visible;
-        }
-
+        /* 2. Month View Layout Fixes */
         .google-calendar-wrapper .rbc-month-view {
           border: none;
+          display: flex;
+          flex-direction: column;
+          height: 100%; /* Important: Fill the available vertical space */
+          overflow: hidden;
         }
 
         .google-calendar-wrapper .rbc-month-row {
           border-bottom: 1px solid #e5e7eb;
-          min-height: 140px;
+          /* The Magic: flex: 1 0 0 ensures all rows are exactly equal height */
+          flex: 1 0 0; 
+          min-height: 0; /* Allows rows to shrink to fit the screen */
+          display: flex;
+          flex-direction: column;
+          overflow: hidden; /* Ensures content doesn't break the layout */
+        }
+
+        .google-calendar-wrapper .rbc-month-row .rbc-row-bg {
+          flex: 1;
+          height: 100%;
+          overflow: hidden;
+        }
+
+        .google-calendar-wrapper .rbc-month-row .rbc-row-content {
+          flex: 1;
+          height: 100%;
+          position: relative;
+          z-index: 4;
+        }
+        
+        .google-calendar-wrapper .rbc-month-row:last-child {
+          border-bottom: none; 
         }
 
         .google-calendar-wrapper .rbc-day-bg + .rbc-day-bg {
           border-left: 1px solid #e5e7eb;
         }
 
-        /* 2. Date Cells (Month View) */
+        /* 3. Date Cells */
         .google-calendar-wrapper .rbc-date-cell {
           padding: 6px 8px;
           text-align: center;
@@ -374,16 +391,8 @@ export const ReactBigCalendar = ({
           font-weight: 500;
           color: #3c4043;
         }
+          
         
-        .google-calendar-wrapper .rbc-row-content {
-          position: relative;
-          z-index: 4;
-        }
-        
-        .google-calendar-wrapper .rbc-row-segment {
-          padding: 1px 2px;
-        }
-
         .google-calendar-wrapper .rbc-now .rbc-button-link {
           background-color: #1a73e8;
           color: white;
@@ -397,14 +406,14 @@ export const ReactBigCalendar = ({
         }
 
         .google-calendar-wrapper .rbc-off-range-bg {
-          background: transparent; /* Google keeps it white, just lighter text */
+          background: transparent;
         }
 
         .google-calendar-wrapper .rbc-off-range .rbc-button-link {
           color: #d1d5db;
         }
 
-        /* 3. Events */
+        /* 4. Events */
         .google-calendar-wrapper .rbc-event {
           border: none;
           border-radius: 4px;
@@ -412,7 +421,7 @@ export const ReactBigCalendar = ({
           padding: 0;
           margin: 1px 2px;
           overflow: hidden;
-          min-height: 22px;
+          min-height: 22px; /* Small height to fit more events */
         }
 
         .google-calendar-wrapper .rbc-event-content {
@@ -440,23 +449,26 @@ export const ReactBigCalendar = ({
         .google-calendar-wrapper .rbc-selected {
           opacity: 0.85 !important;
         }
-        
-        .google-calendar-wrapper .rbc-event:focus {
-          outline: 2px solid rgba(255, 255, 255, 0.5);
-          outline-offset: 2px;
-        }
 
-        /* 4. Time Grid (Week/Day View) */
+        /* 5. Time Grid (Week/Day View) */
         .google-calendar-wrapper .rbc-time-view {
           border: none;
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+          height: 100%;
+          min-height: 0;
         }
 
         .google-calendar-wrapper .rbc-time-header {
           border-bottom: 1px solid #e5e7eb;
+          flex-shrink: 0;
         }
-
+        
         .google-calendar-wrapper .rbc-time-content {
           border-top: none;
+          flex: 1;
+          overflow-y: auto; /* Allow scrolling in week/day view */
         }
 
         .google-calendar-wrapper .rbc-timeslot-group {
@@ -465,21 +477,20 @@ export const ReactBigCalendar = ({
         }
 
         .google-calendar-wrapper .rbc-time-gutter .rbc-timeslot-group {
-          border-bottom: none; /* Cleaner time gutter */
+          border-bottom: none;
         }
 
         .google-calendar-wrapper .rbc-label {
           font-size: 11px;
           color: #70757a;
-          top: -6px; /* Align label with line */
+          top: -6px;
           position: relative;
         }
 
         .google-calendar-wrapper .rbc-day-slot .rbc-time-slot {
-          border-top: 1px solid transparent; /* Hide internal slot lines for cleaner look */
+          border-top: 1px solid transparent;
         }
 
-        /* 5. Current Time Indicator */
         .google-calendar-wrapper .rbc-current-time-indicator {
           background-color: #ea4335;
           height: 2px;
@@ -511,7 +522,7 @@ export const ReactBigCalendar = ({
         .google-calendar-wrapper ::-webkit-scrollbar-thumb:hover {
           background: #bdc1c6;
         }
-        .google-calendar-wrapper .rbc-time-view .rbc-row{
+          .google-calendar-wrapper .rbc-time-view .rbc-row{
          min-height: auto !important;
         }
       `}</style>

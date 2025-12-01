@@ -6,8 +6,8 @@ const timezoneRegex = /^[A-Za-z]+(?:\/[A-Za-z_]+(?:\/[A-Za-z_]+)?)$/;
 export const clientFormSchema = z.object({
   name: z
     .string()
-    .min(2, { message: "client name must be at least 2 characters long." })
-    .max(100, { message: "client name cannot exceed 100 characters." })
+    .min(2, { message: "Client name must be at least 2 characters long." })
+    .max(100, { message: "Client name cannot exceed 100 characters." })
     .trim(),
   company: z
     .string()
@@ -15,10 +15,7 @@ export const clientFormSchema = z.object({
     .max(100, { message: "Company field cannot exceed 100 characters." })
     .trim()
     .optional(),
-  country: z.preprocess(
-    (val) => (val === null || val === undefined ? "" : val),
-    z.string().min(1, "Country is required")
-  ),
+  countryId: z.coerce.number().min(1, "Country is required"),
   timezone: z.string().regex(timezoneRegex, {
     message:
       "Invalid timezone format. Example: Asia/Kolkata, America/New_York, Europe/London",

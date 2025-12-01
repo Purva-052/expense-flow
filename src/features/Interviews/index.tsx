@@ -277,7 +277,7 @@ const InterviewsPage = () => {
 
     try {
       // Parse notice period to extract days (e.g., "30 Days" -> 30)
-      const noticePeriodMatch = data.noticePeriod.match(/(\d+)/);
+      const noticePeriodMatch = data?.noticePeriod?.match(/(\d+)/);
       const noticePeriodInDays = noticePeriodMatch
         ? parseInt(noticePeriodMatch[1], 10)
         : 0;

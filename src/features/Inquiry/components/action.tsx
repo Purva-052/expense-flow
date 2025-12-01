@@ -24,7 +24,7 @@ export function ActionFormModal() {
       const basePayload = {
         projectName: values?.projectName,
         clientName: values?.clientName,
-        countryName: values?.countryName,
+        countryId: values?.countryId,
         requirements: values?.requirements,
         status: values?.status,
         notes: values?.notes,
@@ -43,7 +43,7 @@ export function ActionFormModal() {
       const basePayload = {
         projectName: values.projectName,
         clientName: values.clientName,
-        countryName: values.countryName,
+        countryId: values.countryId,
         requirements: values.requirements,
         clientContactNo: values?.clientContactNo,
         clientCompanyName: values?.clientCompanyName,

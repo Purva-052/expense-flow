@@ -10,7 +10,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
+  // FormMessage,
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -35,31 +35,39 @@ export const FileUpload = ({ name, label, onFileSelect }: FileUploadProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
+  // 1. Form state se errors nikalein
+  const { formState } = form;
+
+  // 2. Error detection logic
+  // Hum check kar rahe hain:
+  // - Direct field error (e.g. "resume")
+  // - OR agar field "resume" hai, toh "resumeS3Key" ka error bhi check karein (kyunki schema wahan validation laga raha hai)
+  const fieldError =
+    formState.errors[name] ||
+    (name === "resume" ? formState.errors.resumeS3Key : undefined);
+
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
       if (acceptedFiles.length > 0) {
         const selectedFile = acceptedFiles[0];
-
-        // Clear any previous errors
         setUploadError(null);
 
-        // Set the file in form immediately
+        // Error clear karein jab user file drop kare
+        form.clearErrors(name);
+        if (name === "resume") form.clearErrors("resumeS3Key");
+
         form.setValue(name, selectedFile, { shouldValidate: true });
 
-        // If onFileSelect callback is provided, call it (for upload)
         if (onFileSelect) {
           setIsUploading(true);
           try {
             await onFileSelect(selectedFile);
           } catch (error: any) {
-            // Handle upload error
             const errorMessage =
               error?.response?.data?.message ||
               error?.message ||
               "Failed to upload file";
             setUploadError(errorMessage);
-
-            // Clear the file from form if upload failed
             form.setValue(name, null, { shouldValidate: true });
           } finally {
             setIsUploading(false);
@@ -84,6 +92,9 @@ export const FileUpload = ({ name, label, onFileSelect }: FileUploadProps) => {
 
   const handleRemove = () => {
     form.setValue(name, null, { shouldValidate: true });
+    // Remove par key bhi hatana zaroori hai
+    if (name === "resume")
+      form.setValue("resumeS3Key", "", { shouldValidate: true });
     setUploadError(null);
   };
 
@@ -93,21 +104,47 @@ export const FileUpload = ({ name, label, onFileSelect }: FileUploadProps) => {
       name={name}
       render={() => (
         <FormItem>
-          <FormLabel>{label}</FormLabel>
+          {/* Label color bhi Red karein agar error hai */}
+          <FormLabel className={fieldError ? "text-red-500" : ""}>
+            {label}
+          </FormLabel>
           <FormControl>
             {file ? (
               // --- View after file is selected ---
               <div className="space-y-2">
-                <div className="flex items-center justify-between rounded-md border p-3">
+                <div
+                  className={cn(
+                    "flex items-center justify-between rounded-md border p-3",
+                    // Error hone par Red border, nahi toh normal logic
+                    fieldError ? "border-red-500 bg-red-50" : "border-gray-200"
+                  )}
+                >
                   <div className="flex items-center gap-2">
                     {isUploading ? (
                       <Loader2 className="h-6 w-6 text-primary animate-spin" />
                     ) : (
-                      <FileIcon className="h-6 w-6 text-gray-500" />
+                      <FileIcon
+                        className={cn(
+                          "h-6 w-6",
+                          fieldError ? "text-red-500" : "text-gray-500"
+                        )}
+                      />
                     )}
                     <div className="flex flex-col">
-                      <span className="font-medium text-sm">{file.name}</span>
-                      <span className="text-xs text-gray-400">
+                      <span
+                        className={cn(
+                          "font-medium text-sm",
+                          fieldError ? "text-red-700" : ""
+                        )}
+                      >
+                        {file.name}
+                      </span>
+                      <span
+                        className={cn(
+                          "text-xs",
+                          fieldError ? "text-red-400" : "text-gray-400"
+                        )}
+                      >
                         {formatBytes(file.size)}
                         {isUploading && " - Uploading..."}
                       </span>
@@ -124,6 +161,7 @@ export const FileUpload = ({ name, label, onFileSelect }: FileUploadProps) => {
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
+                {/* Custom Upload Error (Network fail etc) */}
                 {uploadError && (
                   <p className="text-sm text-red-500">{uploadError}</p>
                 )}
@@ -135,9 +173,15 @@ export const FileUpload = ({ name, label, onFileSelect }: FileUploadProps) => {
                   {...getRootProps()}
                   className={cn(
                     "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-center transition-colors",
+                    // Priority Logic:
+                    // 1. Drag Active -> Primary Color
+                    // 2. Error -> Red Color & Red Background
+                    // 3. Default -> Gray Color
                     isDragActive
                       ? "border-primary bg-primary/10"
-                      : "border-gray-300",
+                      : fieldError
+                        ? "border-red-500 bg-red-50 hover:bg-red-100/50" // Red Style
+                        : "border-gray-300 hover:bg-gray-50", // Default Style
                     isUploading && "opacity-50 cursor-not-allowed"
                   )}
                 >
@@ -145,25 +189,42 @@ export const FileUpload = ({ name, label, onFileSelect }: FileUploadProps) => {
                   {isUploading ? (
                     <Loader2 className="h-10 w-10 text-primary animate-spin" />
                   ) : (
-                    <UploadCloud className="h-10 w-10 text-gray-400" />
+                    <UploadCloud
+                      className={cn(
+                        "h-10 w-10",
+                        fieldError ? "text-red-500" : "text-gray-400"
+                      )}
+                    />
                   )}
                   <p className="text-sm text-muted-foreground">
-                    <span className="font-semibold text-primary">
+                    <span
+                      className={cn(
+                        "font-semibold",
+                        fieldError ? "text-red-600" : "text-primary"
+                      )}
+                    >
                       Click to upload
                     </span>{" "}
                     or drag and drop
                   </p>
-                  <p className="text-xs text-gray-400">
+                  <p
+                    className={cn(
+                      "text-xs",
+                      fieldError ? "text-red-400" : "text-gray-400"
+                    )}
+                  >
                     PDF, DOC, DOCX (Max 5MB)
                   </p>
                 </div>
-                {uploadError && (
-                  <p className="text-sm text-red-500 mt-2">{uploadError}</p>
+                {/* Zod Validation Error Message */}
+                {(fieldError || uploadError) && (
+                  <p className="text-sm text-red-500 mt-2 font-medium">
+                    {String(fieldError?.message || uploadError)}
+                  </p>
                 )}
               </div>
             )}
           </FormControl>
-          <FormMessage />
         </FormItem>
       )}
     />

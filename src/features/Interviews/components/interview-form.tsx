@@ -59,6 +59,7 @@ const step1Fields: (keyof InterviewFormValues)[] = [
   "expectedCtc",
   "noticePeriod",
   "resume",
+  "resumeS3Key",
 ];
 const step2Fields: (keyof InterviewFormValues)[] = [
   "interviewerName",
@@ -101,7 +102,7 @@ export const InterviewForm = ({
       interviewerName: "",
       startTime: "10:00",
       endTime: "11:00",
-      interviewType: "video_call",
+      interviewType: "on_site",
       interviewUrl: "",
       interviewRound: "",
       interviewerComment: "",
@@ -136,7 +137,7 @@ export const InterviewForm = ({
         interviewerName: initialData.interviewer?.id?.toString() || "",
         startTime: initialData.interviewStart,
         endTime: initialData.interviewEnd,
-        interviewType: initialData.interviewType || "video_call",
+        interviewType: initialData.interviewType || "on_site",
         interviewUrl: initialData.interviewUrl || "",
         interviewRound: initialData.interviewRound || "",
         interviewerComment: initialData.interviewerComments || "",
@@ -154,6 +155,24 @@ export const InterviewForm = ({
   const startTime = form.watch("startTime");
   const { mutateAsync: uploadResume } = useCreateInterviewResumeLink();
 
+  // Automatically set endTime to startTime + 30 minutes
+  useEffect(() => {
+    if (startTime) {
+      const [hours, minutes] = startTime.split(":").map(Number);
+      const startDate = new Date();
+      startDate.setHours(hours, minutes, 0, 0);
+
+      // Add 30 minutes
+      const endDate = new Date(startDate.getTime() + 30 * 60 * 1000);
+
+      const endHours = String(endDate.getHours()).padStart(2, "0");
+      const endMinutes = String(endDate.getMinutes()).padStart(2, "0");
+      const calculatedEndTime = `${endHours}:${endMinutes}`;
+
+      form.setValue("endTime", calculatedEndTime, { shouldValidate: false });
+    }
+  }, [startTime, form]);
+
   // Re-validate interviewUrl when interviewType changes (only if we're on step 2)
   useEffect(() => {
     if (interviewType && currentStep === 2) {
@@ -166,10 +185,20 @@ export const InterviewForm = ({
     formData.append("file", file);
     formData.append("folder", "interview-resumes");
 
-    const response: any = await uploadResume(formData);
+    try {
+      const response: any = await uploadResume(formData);
 
-    if (response?.key) {
-      setUploadedResumeKey(response.key);
+      if (response?.key) {
+        setUploadedResumeKey(response.key);
+
+        // IMPORTANT: Form state update karein taaki validation pass ho
+        form.setValue("resumeS3Key", response.key, { shouldValidate: true });
+
+        // Optional: Error clear karein
+        form.clearErrors("resumeS3Key");
+      }
+    } catch (error) {
+      console.error("Upload failed", error);
     }
   };
 
@@ -440,6 +469,11 @@ export const InterviewForm = ({
                       label="Resume (CV)"
                       onFileSelect={handleResumeUpload}
                     />
+                    {/* {form.formState.errors.resumeS3Key && (
+                      <p className="text-sm font-medium text-destructive mt-2">
+                        {form.formState.errors.resumeS3Key.message}
+                      </p>
+                    )} */}
                   </div>
                   <FormField
                     control={form.control}
@@ -493,7 +527,7 @@ export const InterviewForm = ({
                     name="startTime"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Start Time</FormLabel>
+                        <FormLabel>Interview Time</FormLabel>
                         <FormControl>
                           <TimePicker
                             // minTime={startTime}
@@ -503,10 +537,16 @@ export const InterviewForm = ({
                           />
                         </FormControl>
                         <FormMessage />
+                        {/* {field.value && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            End time: {form.watch("endTime")} (30 min duration)
+                          </p>
+                        )} */}
                       </FormItem>
                     )}
                   />
-                  <FormField
+                  {/* End Time is now automatically calculated as startTime + 30 minutes */}
+                  {/* <FormField
                     control={form.control}
                     name="endTime"
                     render={({ field }) => (
@@ -523,7 +563,7 @@ export const InterviewForm = ({
                         <FormMessage />
                       </FormItem>
                     )}
-                  />
+                  /> */}
                   <CustomDropDownSearchable
                     form={form}
                     name="interviewType"
