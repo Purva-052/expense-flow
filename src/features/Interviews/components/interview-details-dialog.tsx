@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/tooltip";
 import { InterviewEvent } from "../types";
 import { interviewTypes } from "../constants";
+import { interviewStatuses } from "@/utils/constant";
 
 interface InterviewDetailsDialogProps {
   event: InterviewEvent | null;
@@ -150,18 +151,35 @@ export const InterviewDetailsDialog = ({
             </div>
             <div className="inline-flex items-center gap-2 rounded-full bg-background px-4 py-1.5 text-sm font-medium shadow-sm">
               <Tag className="h-4 w-4 text-primary" />
-              <Badge
-                variant={
-                  details.status === "scheduled"
-                    ? "default"
-                    : details.status === "pending"
-                      ? "secondary"
-                      : "outline"
-                }
-                className="text-xs"
-              >
-                {details.status}
-              </Badge>
+              {(() => {
+                // find correct status from constant
+                const statusItem = interviewStatuses.find(
+                  (s) => s.value === details.status
+                );
+
+                // badge variant choose dynamically
+                // const variant =
+                //   details.status === "selected"
+                //     ? "default"
+                //     : details.status === "pending"
+                //       ? "secondary"
+                //       : "outline";
+
+                return (
+                  <Badge
+                    variant={
+                      details.status === "selected"
+                        ? "default"
+                        : details.status === "pending"
+                          ? "secondary"
+                          : "outline"
+                    }
+                    className="mt-1"
+                  >
+                    {statusItem?.label ?? details.status}
+                  </Badge>
+                );
+              })()}
             </div>
           </div>
         </div>
@@ -196,7 +214,7 @@ export const InterviewDetailsDialog = ({
                         Phone
                       </p>
                       <p className="text-sm font-medium">
-                        {details.phoneNumber}
+                        {details.phoneNumber || "NA"}
                       </p>
                     </div>
                   </div>
@@ -206,7 +224,9 @@ export const InterviewDetailsDialog = ({
                       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
                         Location
                       </p>
-                      <p className="text-sm font-medium">{details.location}</p>
+                      <p className="text-sm font-medium">
+                        {details.location || "NA"}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
@@ -366,22 +386,41 @@ export const InterviewDetailsDialog = ({
                   </div>
                   <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                     <Tag className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
                         Status
                       </p>
-                      <Badge
-                        variant={
-                          details.status === "scheduled"
-                            ? "default"
-                            : details.status === "pending"
-                              ? "secondary"
-                              : "outline"
-                        }
-                        className="mt-1"
-                      >
-                        {details.status}
-                      </Badge>
+
+                      {(() => {
+                        // find correct status from constant
+                        const statusItem = interviewStatuses.find(
+                          (s) => s.value === details.status
+                        );
+
+                        // badge variant choose dynamically
+                        // const variant =
+                        //   details.status === "selected"
+                        //     ? "default"
+                        //     : details.status === "pending"
+                        //       ? "secondary"
+                        //       : "outline";
+
+                        return (
+                          <Badge
+                            variant={
+                              details.status === "selected"
+                                ? "default"
+                                : details.status === "pending"
+                                  ? "secondary"
+                                  : "outline"
+                            }
+                            className="mt-1"
+                          >
+                            {statusItem?.label ?? details.status}
+                          </Badge>
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>

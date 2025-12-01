@@ -22,7 +22,7 @@ export function ActionFormModal() {
     const payload = {
       name: values.name,
       company: values.company,
-      country: values.country,
+      countryId: values.countryId,
       timezone: values.timezone,
     };
     createMutate(payload);
@@ -32,7 +32,7 @@ export function ActionFormModal() {
     const payload = {
       name: values.name,
       company: values.company,
-      country: values.country,
+      countryId: values.countryId,
       timezone: values.timezone,
     };
     updateMutate(payload);

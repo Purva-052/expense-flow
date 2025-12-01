@@ -99,3 +99,18 @@ export const ProjectServerStatusOptions = [
     value: "INACTIVE",
   },
 ];
+
+export const interviewStatuses = [
+  {
+    value: "selected",
+    label: "Selected",
+  },
+  {
+    value: "rejected",
+    label: "Rejected",
+  },
+  {
+    value: "pending",
+    label: "Pending",
+  },
+];

@@ -37,7 +37,6 @@ export const UpdatePasswordCard = ({ onClose }: { onClose: () => void }) => {
   } = form;
 
   const onSubmit = async (values: UpdatePasswordFormValues) => {
-    console.log("Submitted:", values);
     updatePassword({
       email: user?.user?.email,
       oldPassword: values.currentPassword,

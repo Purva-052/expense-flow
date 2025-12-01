@@ -237,7 +237,7 @@ const InquiryPage = () => {
     return (
       <>
         <div className="w-[180px]">
-          {canEditStatus && activeTab === "active" ? (
+          {canEditStatus ? (
             <SimpleDropDownSearchable
               value={selectedValue}
               onChange={handleChange}
@@ -285,7 +285,7 @@ const InquiryPage = () => {
       },
     },
     {
-      accessorKey: "countryName",
+      accessorKey: "country.name",
       header: "Country",
     },
     {

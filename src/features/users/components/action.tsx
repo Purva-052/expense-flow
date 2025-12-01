@@ -49,8 +49,6 @@ export function ActionFormModal({
   };
 
   const handleEdit = (values: any) => {
-    console.log("🚀 ~ handleEdit ~ values:", values);
-
     const payload = {
       fullName: values.fullName,
       email: values.email,

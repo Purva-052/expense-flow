@@ -17,7 +17,7 @@ import "./index.css";
 // Generated Routes
 import { routeTree } from "./routeTree.gen";
 import { useAuthStore } from "./stores/use-auth-store";
-import { Toaster } from "./components/ui/sonner";
+// import { Toaster } from "./components/ui/sonner";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -101,7 +101,7 @@ if (!rootElement.innerHTML) {
         <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
           <FontProvider>
             <RouterProvider router={router} />
-            <Toaster />
+            {/* <Toaster /> */}
           </FontProvider>
         </ThemeProvider>
       </QueryClientProvider>

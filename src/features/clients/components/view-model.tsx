@@ -28,7 +28,6 @@ export function ViewClientsModal() {
         const time = formatInTimeZone(new Date(), timezone, "hh:mm a");
         setCurrentTime(time);
       } catch (error) {
-        console.log("🚀 ~ updateTime ~ error:", error)
         setCurrentTime("Invalid timezone");
       }
     };

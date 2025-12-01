@@ -24,7 +24,7 @@ export const columns: ColumnDef<any>[] = [
     header: "Company",
   },
   {
-    accessorKey: "country",
+    accessorKey: "country.name",
     header: "Country",
   },
   {

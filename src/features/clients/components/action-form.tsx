@@ -53,13 +53,13 @@ export function ClientActionForm({
       ? {
           name: currentRow?.name ?? "",
           company: currentRow?.company ?? "",
-          country: currentRow?.country ?? "",
+          countryId: currentRow?.countryId ?? "",
           timezone: currentRow?.timezone ?? "",
         }
       : {
           name: "",
           company: "",
-          country: "",
+          countryId: "",
           timezone: "",
         },
   });
@@ -103,12 +103,12 @@ export function ClientActionForm({
               />
               <CustomDropDownSearchable
                 form={form}
-                name="country"
+                name="countryId"
                 label="Country"
                 placeholder="Select country"
                 sortOptions={false}
                 options={countryList?.data?.map((opt: any) => {
-                  return { value: opt.name, label: opt.name };
+                  return { value: opt.id, label: opt.name };
                 })}
               />
               <CustomDropDownSearchable

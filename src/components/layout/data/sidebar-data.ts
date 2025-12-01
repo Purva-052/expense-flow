@@ -17,10 +17,10 @@ import { Command } from "lucide-react";
 import { type SidebarData } from "../types";
 import { useAuthStore } from "@/stores/use-auth-store";
 
-const {user} = useAuthStore.getState();
+const { user } = useAuthStore.getState();
 const userID = user?.user?.id;
 
-const allowUserID1  = userID === 1 ? true :false ;
+const allowUserID1 = userID === 1 ? true : false;
 
 export const sidebarData: SidebarData = {
   user: {
@@ -72,13 +72,13 @@ export const sidebarData: SidebarData = {
           title: "Inquiries",
           url: "/Inquiry",
           icon: IconMessage2Question,
-          allowUserID1: allowUserID1, 
+          allowUserID1: allowUserID1,
         },
         {
           title: "Interviews",
           url: "/Interviews",
           icon: IconLayersIntersect,
-          requiredRoles: [roles.ADMIN],
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER, roles.TEAM_LEAD],
         },
       ],
     },

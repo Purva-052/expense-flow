@@ -41,7 +41,7 @@ export function InquiryActionForm({
     defaultValues: {
       projectName: currentRow?.projectName ?? "",
       clientName: currentRow?.clientName ?? "",
-      countryName: currentRow?.countryName ?? "",
+      countryId: currentRow?.countryId ?? "",
       requirements: currentRow?.modules?.map((item: any) => item?.id) ?? [],
       status: currentRow?.status ?? "",
       notes: currentRow?.notes ?? "",
@@ -139,19 +139,19 @@ export function InquiryActionForm({
               {/* Country */}
               {/* <TextInputField
                 control={form.control}
-                name="countryName"
+                name="countryId"
                 label="Country"
                 placeholder="Enter country name"
               /> */}
               <CustomDropDownSearchable
                 form={form}
-                name="countryName"
+                name="countryId"
                 label="Country"
                 placeholder="Select country"
                 sortOptions={false}
                 isLoading={loadingCountry}
                 options={countryList?.data?.map((opt: any) => {
-                  return { value: opt.name, label: opt.name };
+                  return { value: opt.id, label: opt.name };
                 })}
               />
 
