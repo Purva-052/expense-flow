@@ -40,6 +40,7 @@ import {
 import { InterviewApiResponse, InterviewEvent } from "./types";
 import { FilterConfig } from "@/components/table/table-toolbar";
 import GlobalFilterSection from "@/components/table/global-table-filter";
+import { roles } from "@/utils/constant";
 
 // --- MAIN PAGE COMPONENT ---
 const InterviewsPage = () => {
@@ -117,6 +118,7 @@ const InterviewsPage = () => {
 
   const { data: usersList, isPending: usersListLoading } = useGetUsersList({
     pagination: false,
+    role: [roles.TEAM_LEAD, roles.PROJECT_MANAGER],
   });
 
   // Format current calendar date as YYYY-MM-DD
