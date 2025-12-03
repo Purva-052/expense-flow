@@ -186,9 +186,9 @@ export const InterviewForm = ({
         interviewerComment: initialData.interviewerComments || "",
         interviewStatus: initialData.status || "pending",
         resume: null,
-        resumeS3Key: initialData.resumeS3Key || "",
+        resumeS3Key: initialData.resumeLink || "",
       });
-      setUploadedResumeKey(initialData.resumeS3Key || "");
+      setUploadedResumeKey(initialData.resumeLink || "");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialData, currentStep]);
@@ -511,6 +511,16 @@ export const InterviewForm = ({
                       name="resume"
                       label="Resume (CV)"
                       onFileSelect={handleResumeUpload}
+                      existingFileUrl={
+                        isEditMode && initialData?.resumeLink
+                          ? initialData.resumeLink
+                          : undefined
+                      }
+                      existingFileName={
+                        isEditMode && initialData?.resumeLink
+                          ? `${initialData.candidateName || "Candidate"} Resume`
+                          : undefined
+                      }
                     />
                     {/* {form.formState.errors.resumeS3Key && (
                       <p className="text-sm font-medium text-destructive mt-2">
