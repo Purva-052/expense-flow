@@ -56,6 +56,7 @@ export function ActionFormModal({
       technologyId: values.technologyId,
       careerStartDate: values.careerStartDate,
       status: values.status ? "active" : "inactive",
+      joining: values.joining ? "true" : "false",
       currentWorkingProjectId: values.currentWorkingProjectId,
     };
     updateMutate(payload);

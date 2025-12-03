@@ -22,7 +22,9 @@ export const interviewRounds = [
 ];
 
 export const interviewStatuses = [
-  { value: "selected", label: "Selected" },
-  { value: "rejected", label: "Rejected" },
   { value: "pending", label: "Pending" },
+  { value: "technical_completed", label: "Technical Completed" },
+  { value: "practical_completed", label: "Practical Completed" },
+  { value: "joining", label: "Joining" },
+  { value: "rejected", label: "Rejected" },
 ];

@@ -102,7 +102,7 @@ const InquiryStatusHistoryComponent = ({
           <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex flex-col">
               <span className="font-medium text-foreground">Country:</span>{" "}
-              <span>{Details?.countryName ?? "-"}</span>
+              <span>{Details?.country?.name ?? "-"}</span>
             </div>
           </div>
         </div>

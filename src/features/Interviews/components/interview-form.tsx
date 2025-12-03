@@ -83,6 +83,7 @@ export const InterviewForm = ({
 }: InterviewFormProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [uploadedResumeKey, setUploadedResumeKey] = useState<string>("");
+  const isEditMode = !!initialData;
 
   const form = useForm<InterviewFormValues>({
     resolver: zodResolver(interviewFormSchema),
@@ -111,9 +112,23 @@ export const InterviewForm = ({
       resumeS3Key: "",
     },
   });
+
+  const extractTime = (isoString: string) => {
+    if (!isoString) return "";
+    const date = new Date(isoString);
+    const h = String(date.getHours()).padStart(2, "0");
+    const m = String(date.getMinutes()).padStart(2, "0");
+    return `${h}:${m}`;
+  };
+
   const formatNoticePeriod = (days: number): string => {
     return `${days} Days`;
   };
+
+  const filteredInterviewStatuses = interviewStatuses.filter(
+    (s) => s.value !== "joining" && s.value !== "rejected"
+  );
+
   // const formatTimeFromISO = (isoString: string): string => {
   //   const date = new Date(isoString);
   //   const hours = String(date.getHours()).padStart(2, "0");
@@ -135,8 +150,8 @@ export const InterviewForm = ({
         expectedCtc: Number(initialData.expectedCtc) || 0,
         noticePeriod: formatNoticePeriod(initialData.noticePeriodInDays || 0),
         interviewerName: initialData.interviewer?.id?.toString() || "",
-        startTime: initialData.interviewStart,
-        endTime: initialData.interviewEnd,
+        startTime: extractTime(initialData.interviewStart),
+        endTime: extractTime(initialData.interviewEnd),
         interviewType: initialData.interviewType || "on_site",
         interviewUrl: initialData.interviewUrl || "",
         interviewRound: initialData.interviewRound || "",
@@ -594,10 +609,14 @@ export const InterviewForm = ({
                     form={form}
                     name="interviewStatus"
                     label="Interview Status"
-                    options={interviewStatuses}
+                    options={
+                      isEditMode ? interviewStatuses : filteredInterviewStatuses
+                    }
                     placeholder="Select status"
                     searchEnabled={false}
+                    sortOptions={false}
                   />
+
                   <FormField
                     control={form.control}
                     name="interviewerComment"
@@ -659,7 +678,11 @@ export const InterviewForm = ({
                 className="flex-1 sm:flex-initial"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Scheduling..." : "Schedule Interview"}
+                {isEditMode
+                  ? "Update Interview"
+                  : isSubmitting
+                    ? "Scheduling..."
+                    : "Schedule Interview"}
               </Button>
             )}
           </div>

@@ -27,6 +27,7 @@ import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
 import { Route as AuthenticatedServerIndexRouteImport } from './routes/_authenticated/Server/index'
 import { Route as AuthenticatedProjectTypeIndexRouteImport } from './routes/_authenticated/Project-type/index'
+import { Route as AuthenticatedNewJoineesIndexRouteImport } from './routes/_authenticated/New-joinees/index'
 import { Route as AuthenticatedInterviewsIndexRouteImport } from './routes/_authenticated/Interviews/index'
 import { Route as AuthenticatedInquiryIndexRouteImport } from './routes/_authenticated/Inquiry/index'
 import { Route as AuthenticatedInquiryTypeIndexRouteImport } from './routes/_authenticated/Inquiry-type/index'
@@ -127,6 +128,12 @@ const AuthenticatedProjectTypeIndexRoute =
     path: '/Project-type/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedNewJoineesIndexRoute =
+  AuthenticatedNewJoineesIndexRouteImport.update({
+    id: '/New-joinees/',
+    path: '/New-joinees/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedInterviewsIndexRoute =
   AuthenticatedInterviewsIndexRouteImport.update({
     id: '/Interviews/',
@@ -166,6 +173,7 @@ export interface FileRoutesByFullPath {
   '/Inquiry-type': typeof AuthenticatedInquiryTypeIndexRoute
   '/Inquiry': typeof AuthenticatedInquiryIndexRoute
   '/Interviews': typeof AuthenticatedInterviewsIndexRoute
+  '/New-joinees': typeof AuthenticatedNewJoineesIndexRoute
   '/Project-type': typeof AuthenticatedProjectTypeIndexRoute
   '/Server': typeof AuthenticatedServerIndexRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
@@ -189,6 +197,7 @@ export interface FileRoutesByTo {
   '/Inquiry-type': typeof AuthenticatedInquiryTypeIndexRoute
   '/Inquiry': typeof AuthenticatedInquiryIndexRoute
   '/Interviews': typeof AuthenticatedInterviewsIndexRoute
+  '/New-joinees': typeof AuthenticatedNewJoineesIndexRoute
   '/Project-type': typeof AuthenticatedProjectTypeIndexRoute
   '/Server': typeof AuthenticatedServerIndexRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
@@ -214,6 +223,7 @@ export interface FileRoutesById {
   '/_authenticated/Inquiry-type/': typeof AuthenticatedInquiryTypeIndexRoute
   '/_authenticated/Inquiry/': typeof AuthenticatedInquiryIndexRoute
   '/_authenticated/Interviews/': typeof AuthenticatedInterviewsIndexRoute
+  '/_authenticated/New-joinees/': typeof AuthenticatedNewJoineesIndexRoute
   '/_authenticated/Project-type/': typeof AuthenticatedProjectTypeIndexRoute
   '/_authenticated/Server/': typeof AuthenticatedServerIndexRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
@@ -239,6 +249,7 @@ export interface FileRouteTypes {
     | '/Inquiry-type'
     | '/Inquiry'
     | '/Interviews'
+    | '/New-joinees'
     | '/Project-type'
     | '/Server'
     | '/clients'
@@ -262,6 +273,7 @@ export interface FileRouteTypes {
     | '/Inquiry-type'
     | '/Inquiry'
     | '/Interviews'
+    | '/New-joinees'
     | '/Project-type'
     | '/Server'
     | '/clients'
@@ -286,6 +298,7 @@ export interface FileRouteTypes {
     | '/_authenticated/Inquiry-type/'
     | '/_authenticated/Inquiry/'
     | '/_authenticated/Interviews/'
+    | '/_authenticated/New-joinees/'
     | '/_authenticated/Project-type/'
     | '/_authenticated/Server/'
     | '/_authenticated/clients/'
@@ -437,6 +450,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectTypeIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/New-joinees/': {
+      id: '/_authenticated/New-joinees/'
+      path: '/New-joinees'
+      fullPath: '/New-joinees'
+      preLoaderRoute: typeof AuthenticatedNewJoineesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/Interviews/': {
       id: '/_authenticated/Interviews/'
       path: '/Interviews'
@@ -473,6 +493,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInquiryTypeIndexRoute: typeof AuthenticatedInquiryTypeIndexRoute
   AuthenticatedInquiryIndexRoute: typeof AuthenticatedInquiryIndexRoute
   AuthenticatedInterviewsIndexRoute: typeof AuthenticatedInterviewsIndexRoute
+  AuthenticatedNewJoineesIndexRoute: typeof AuthenticatedNewJoineesIndexRoute
   AuthenticatedProjectTypeIndexRoute: typeof AuthenticatedProjectTypeIndexRoute
   AuthenticatedServerIndexRoute: typeof AuthenticatedServerIndexRoute
   AuthenticatedClientsIndexRoute: typeof AuthenticatedClientsIndexRoute
@@ -488,6 +509,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInquiryTypeIndexRoute: AuthenticatedInquiryTypeIndexRoute,
   AuthenticatedInquiryIndexRoute: AuthenticatedInquiryIndexRoute,
   AuthenticatedInterviewsIndexRoute: AuthenticatedInterviewsIndexRoute,
+  AuthenticatedNewJoineesIndexRoute: AuthenticatedNewJoineesIndexRoute,
   AuthenticatedProjectTypeIndexRoute: AuthenticatedProjectTypeIndexRoute,
   AuthenticatedServerIndexRoute: AuthenticatedServerIndexRoute,
   AuthenticatedClientsIndexRoute: AuthenticatedClientsIndexRoute,
