@@ -80,6 +80,12 @@ export const sidebarData: SidebarData = {
           icon: IconLayersIntersect,
           requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER, roles.TEAM_LEAD],
         },
+        {
+          title: "New Joinees",
+          url: "/New-joinees",
+          icon: IconUsers,
+          requiredRoles: [roles.ADMIN],
+        },
       ],
     },
     {

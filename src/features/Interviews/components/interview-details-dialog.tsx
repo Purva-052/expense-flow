@@ -34,8 +34,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { InterviewEvent } from "../types";
-import { interviewTypes } from "../constants";
-import { interviewStatuses } from "@/utils/constant";
+import { interviewStatuses, interviewTypes } from "../constants";
 
 interface InterviewDetailsDialogProps {
   event: InterviewEvent | null;

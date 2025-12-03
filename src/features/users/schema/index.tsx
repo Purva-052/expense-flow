@@ -21,10 +21,11 @@ const baseUserSchema = z.object({
     .number({ invalid_type_error: "Technology is required." })
     .min(1, { message: "Please select a technology." })
     .optional(),
-    careerStartDate: z.any().refine((val) => !isNaN(Date.parse(val)), {
+  careerStartDate: z.any().refine((val) => !isNaN(Date.parse(val)), {
     message: "Invalid date format.",
   }),
   status: z.boolean(),
+  joining: z.boolean(),
   currentWorkingProjectId: z.any().optional(),
 });
 
