@@ -41,7 +41,7 @@ export function InquiryActionForm({
     defaultValues: {
       projectName: currentRow?.projectName ?? "",
       clientName: currentRow?.clientName ?? "",
-      countryId: currentRow?.countryId ?? "",
+      countryId: currentRow?.country.id ?? "",
       requirements: currentRow?.modules?.map((item: any) => item?.id) ?? [],
       status: currentRow?.status ?? "",
       notes: currentRow?.notes ?? "",

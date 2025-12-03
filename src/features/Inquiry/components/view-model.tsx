@@ -96,7 +96,7 @@ export function ViewInquiryModal() {
           <div className="flex justify-between">
             <span className="font-medium text-gray-700">Country:</span>
             <span className="text-gray-900">
-              {currentRow?.countryName ?? "-"}
+              {currentRow?.country?.name ?? "-"}
             </span>
           </div>
           <Separator />

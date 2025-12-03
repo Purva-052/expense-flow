@@ -292,7 +292,8 @@ export const ReactBigCalendar = ({
             onSelectSlot={(slotInfo: SlotInfo) => onDateClick(slotInfo.start)}
             onSelectEvent={(event: any) => onEventClick(event)}
             eventPropGetter={eventPropGetter}
-            selectable
+            // FIXED: selectable condition
+            selectable={userRole === roles.ADMIN}
             popup
             components={{
               toolbar: () => null,

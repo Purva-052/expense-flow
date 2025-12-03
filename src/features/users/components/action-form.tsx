@@ -16,6 +16,7 @@ import { addUserSchema, editUserSchema, TUserFormSchema } from "../schema";
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 import { roles } from "@/utils/constant";
+// import { Switch } from "@/components/ui/switch";
 
 interface Props {
   currentRow?: any;
@@ -58,6 +59,7 @@ export function UserActionForm({
             ? currentRow.careerStartDate.slice(0, 10)
             : "",
           status: currentRow?.status === "active",
+          joining: currentRow?.joining ?? false, // ✅ FIXED
           currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
         }
       : {
@@ -67,6 +69,7 @@ export function UserActionForm({
           technologyId: undefined,
           careerStartDate: "",
           status: true,
+          joining: false,
           password: "",
         },
   });
@@ -190,19 +193,35 @@ export function UserActionForm({
               />
 
               {/* ✅ Status Checkbox */}
-              <Controller
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                    <label className="text-sm font-medium">Active</label>
-                  </div>
-                )}
-              />
+              <div className="flex gap-6">
+                <Controller
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                      <label className="text-sm font-medium">Active</label>
+                    </div>
+                  )}
+                />
+
+                <Controller
+                  control={form.control}
+                  name="joining"
+                  render={({ field }) => (
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                      <label className="text-sm font-medium">Joined</label>
+                    </div>
+                  )}
+                />
+              </div>
             </form>
           </Form>
         </div>

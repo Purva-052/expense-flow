@@ -18,6 +18,7 @@ const UsersPage = () => {
   const { open, setOpen } = useUsersStore();
   const user = useAuthStore((state) => state.user);
   const UserRole = user?.user?.role;
+  const isNewJoinee = location.pathname.includes("/New-joinees");
   const [listParams, setListParams] = useState({
     pageSize: 10,
     currentPage: 1,
@@ -37,7 +38,11 @@ const UsersPage = () => {
     status: listParams.status,
   };
 
-  const { data: listData, isPending: loading } = useGetUsersList(apiParams);
+  const { data: listData, isPending: loading } = useGetUsersList({
+    ...apiParams,
+    ...(isNewJoinee ? { is_joining: false } : { is_joining: true }),
+  });
+
   const { data: technologyList, isPending: technologyListLoading }: any =
     useGetTechnologyDropdownList();
 
@@ -146,7 +151,7 @@ const UsersPage = () => {
   return (
     <PageLayout>
       <TablePageHeader
-        title="Users"
+        title={`${isNewJoinee ? "New Joinee" : "Users"}`}
         buttonText="Add User"
         onButtonClick={handleAdd}
         showActionButton={
@@ -155,7 +160,10 @@ const UsersPage = () => {
             : false
         }
       >
-        Manage your Users here.
+        {isNewJoinee
+          ? "Manage your New Joinee here."
+          : "Manage your Users here"}
+        .
       </TablePageHeader>
       <GlobalFilterSection filters={filters ?? []} />
       <GlobalTable
