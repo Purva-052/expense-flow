@@ -19,6 +19,8 @@ interface FileUploadProps {
   name: string;
   label: string;
   onFileSelect?: (file: File) => Promise<void>;
+  existingFileUrl?: string; // URL or S3 key of existing file
+  existingFileName?: string; // Optional display name for existing file
 }
 
 const formatBytes = (bytes: number) => {
@@ -29,7 +31,7 @@ const formatBytes = (bytes: number) => {
   return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
 };
 
-export const FileUpload = ({ name, label, onFileSelect }: FileUploadProps) => {
+export const FileUpload = ({ name, label, onFileSelect, existingFileUrl, existingFileName }: FileUploadProps) => {
   const form = useFormContext();
   const file = form.watch(name);
   const [isUploading, setIsUploading] = useState(false);
@@ -98,6 +100,10 @@ export const FileUpload = ({ name, label, onFileSelect }: FileUploadProps) => {
     setUploadError(null);
   };
 
+  // Check if we have an existing file (when no new file is selected)
+  const hasExistingFile = !file && existingFileUrl;
+  const displayFileName = existingFileName || "Uploaded Resume";
+
   return (
     <FormField
       control={form.control}
@@ -110,7 +116,7 @@ export const FileUpload = ({ name, label, onFileSelect }: FileUploadProps) => {
           </FormLabel>
           <FormControl>
             {file ? (
-              // --- View after file is selected ---
+              // --- View after NEW file is selected ---
               <div className="space-y-2">
                 <div
                   className={cn(
@@ -166,8 +172,54 @@ export const FileUpload = ({ name, label, onFileSelect }: FileUploadProps) => {
                   <p className="text-sm text-red-500">{uploadError}</p>
                 )}
               </div>
+            ) : hasExistingFile ? (
+              // --- View for EXISTING file (edit mode) ---
+              <div className="space-y-2">
+                <div
+                  className={cn(
+                    "flex items-center justify-between rounded-md border p-3",
+                    fieldError ? "border-red-500 bg-red-50" : "border-green-100 bg-green-50"
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <FileIcon
+                      className={cn(
+                        "h-6 w-6",
+                        fieldError ? "text-red-500" : "text-green-600"
+                      )}
+                    />
+                    <div className="flex flex-col">
+                      <span
+                        className={cn(
+                          "font-medium text-sm",
+                          fieldError ? "text-red-700" : "text-green-700"
+                        )}
+                      >
+                        {displayFileName}
+                      </span>
+                      <a
+                        href={existingFileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-blue-600 hover:underline"
+                      >
+                        View/Download
+                      </a>
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="text-red-500 hover:text-red-600"
+                    onClick={handleRemove}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             ) : (
-              // --- Dropzone view ---
+              // --- Dropzone view (no file) ---
               <div>
                 <div
                   {...getRootProps()}
