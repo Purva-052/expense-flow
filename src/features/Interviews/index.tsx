@@ -519,6 +519,18 @@ const InterviewsPage = () => {
             setIsDeleteDialogOpen(true);
             setIsViewDialogOpen(false);
           }}
+          onStatusUpdate={(eventId, newStatus) => {
+            // Update the selectedEvent state with the new status
+            if (selectedEvent && selectedEvent.id === eventId) {
+              setSelectedEvent({
+                ...selectedEvent,
+                extendedProps: {
+                  ...selectedEvent.extendedProps,
+                  status: newStatus,
+                },
+              });
+            }
+          }}
         />
       )}
 

@@ -33,8 +33,16 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { InterviewEvent } from "../types";
 import { interviewStatuses, interviewTypes } from "../constants";
+import { useUpdateInterview } from "../services";
 
 interface InterviewDetailsDialogProps {
   event: InterviewEvent | null;
@@ -42,6 +50,7 @@ interface InterviewDetailsDialogProps {
   onOpenChange: (open: boolean) => void;
   onEdit?: (event: InterviewEvent) => void;
   onDelete?: (event: InterviewEvent) => void;
+  onStatusUpdate?: (eventId: string, newStatus: string) => void;
 }
 
 export const InterviewDetailsDialog = ({
@@ -50,6 +59,7 @@ export const InterviewDetailsDialog = ({
   onOpenChange,
   onEdit,
   onDelete,
+  onStatusUpdate,
 }: InterviewDetailsDialogProps) => {
   if (!event) return null;
 
@@ -57,6 +67,13 @@ export const InterviewDetailsDialog = ({
   const interviewStart = new Date(details.interviewStart);
   const interviewEnd = new Date(details.interviewEnd);
   const techColor = details.technology?.colour || "#10B981";
+
+  const updateInterviewMutation = useUpdateInterview(() => {
+    // This callback runs after successful update
+    if (onStatusUpdate && event.id) {
+      // The mutation already invalidates queries, but we also update local state
+    }
+  });
 
   const handleEdit = () => {
     if (onEdit) {
@@ -68,6 +85,25 @@ export const InterviewDetailsDialog = ({
   const handleDelete = () => {
     if (onDelete) {
       onDelete(event);
+    }
+  };
+
+  const handleStatusChange = (newStatus: string) => {
+    if (event.id) {
+      updateInterviewMutation.mutate(
+        {
+          id: Number(event.id),
+          data: { status: newStatus },
+        },
+        {
+          onSuccess: () => {
+            // Update the local event state immediately for real-time UI update
+            if (onStatusUpdate) {
+              onStatusUpdate(event.id, newStatus);
+            }
+          },
+        }
+      );
     }
   };
 
@@ -90,6 +126,22 @@ export const InterviewDetailsDialog = ({
                     {details.technology.name}
                   </Badge>
                 )}
+                <Select
+                  value={details.status}
+                  onValueChange={handleStatusChange}
+                  disabled={updateInterviewMutation.isPending}
+                >
+                  <SelectTrigger className="w-[200px] h-9">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {interviewStatuses.map((status) => (
+                      <SelectItem key={status.value} value={status.value}>
+                        {status.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <div className="flex items-center gap-2 pr-4">
                   {onEdit && (
                     <Tooltip>
