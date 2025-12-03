@@ -29,6 +29,8 @@ import {
 import { useCreateInterviewResumeLink } from "../services";
 import { FileUpload } from "@/components/shared/custome-file-upload";
 import TimePicker from "@/components/shared/custome-timepicker";
+import { roles } from "@/utils/constant";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 interface InterviewFormProps {
   selectedDate: Date;
@@ -83,7 +85,9 @@ export const InterviewForm = ({
 }: InterviewFormProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [uploadedResumeKey, setUploadedResumeKey] = useState<string>("");
+  const user = useAuthStore((state) => state.user);
   const isEditMode = !!initialData;
+  const userRole = user?.user?.role;
 
   const form = useForm<InterviewFormValues>({
     resolver: zodResolver(interviewFormSchema),
@@ -125,9 +129,33 @@ export const InterviewForm = ({
     return `${days} Days`;
   };
 
-  const filteredInterviewStatuses = interviewStatuses.filter(
-    (s) => s.value !== "joining" && s.value !== "rejected"
-  );
+  const baseStatuses = interviewStatuses;
+
+  // Step 1: extract values for reuse
+  const ADD_STATUSES = [
+    "pending",
+    "technical_completed",
+    "practical_completed",
+    "hr_round",
+  ];
+  const EDIT_STATUSES = [...ADD_STATUSES, "rejected"]; // same as add but + rejected
+  // const ADMIN_STATUSES = [
+  //   "pending",
+  //   "technical_completed",
+  //   "practical_completed",
+  //   "hr_round",
+  //   "joining",
+  //   "rejected",
+  // ];
+
+  // Step 2: final list logic
+  const filteredStatuses = isEditMode
+    ? userRole === roles.ADMIN
+      ? baseStatuses // admin in edit → all statuses
+      : baseStatuses.filter((s) => EDIT_STATUSES.includes(s.value))
+    : userRole === roles.ADMIN
+      ? baseStatuses // admin on add → all statuses
+      : baseStatuses.filter((s) => ADD_STATUSES.includes(s.value));
 
   // const formatTimeFromISO = (isoString: string): string => {
   //   const date = new Date(isoString);
@@ -609,9 +637,7 @@ export const InterviewForm = ({
                     form={form}
                     name="interviewStatus"
                     label="Interview Status"
-                    options={
-                      isEditMode ? interviewStatuses : filteredInterviewStatuses
-                    }
+                    options={filteredStatuses}
                     placeholder="Select status"
                     searchEnabled={false}
                     sortOptions={false}
