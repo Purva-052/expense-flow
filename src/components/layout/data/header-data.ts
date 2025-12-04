@@ -10,5 +10,5 @@ export const URL_TO_TITLE_MAP: Record<string, string> = {
   "/Inquiry": "Inquiry",
   "/Inquiry-type": "Inquiry Types",
   "/Server": "Servers",
-  "/New-joinees": "New Joinees",
+  "/New-joinees": "To be Join",
 };

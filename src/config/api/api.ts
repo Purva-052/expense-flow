@@ -60,6 +60,7 @@ const API = {
     update: "/interviews",
     upload: "/files/upload",
     delete: "/interviews",
+    toBeJoined: "/interviews/to-be-joined",
   },
   inquiry_status: {
     list: "/project-lead-status-logs",

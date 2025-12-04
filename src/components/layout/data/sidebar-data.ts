@@ -81,7 +81,7 @@ export const sidebarData: SidebarData = {
           requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER, roles.TEAM_LEAD],
         },
         {
-          title: "New Joinees",
+          title: "To be Join",
           url: "/New-joinees",
           icon: IconUsers,
           requiredRoles: [roles.ADMIN],
