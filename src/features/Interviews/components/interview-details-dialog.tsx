@@ -90,10 +90,36 @@ export const InterviewDetailsDialog = ({
 
   const handleStatusChange = (newStatus: string) => {
     if (event.id) {
+      // Parse notice period to extract days
+      const noticePeriodInDays = details.noticePeriodInDays || 0;
+
+      // Prepare complete API body with all required fields
+      const apiBody = {
+        candidateName: details.candidateName,
+        technology: Number(details.technology?.id),
+        email: details.email,
+        phoneNumber: details.phoneNumber,
+        location: details.location,
+        notes: details.notes || "",
+        experienceInYears: Number(details.experienceInYears),
+        resumeS3Key: details.resumeLink || "",
+        currentCtc: Number(details.currentCtc),
+        expectedCtc: Number(details.expectedCtc),
+        noticePeriodInDays: noticePeriodInDays,
+        interviewType: details.interviewType,
+        interviewRound: details.interviewRound,
+        interviewerComments: details.interviewerComments || "",
+        status: newStatus, // Update the status
+        interviewerId: Number(details.interviewer?.id),
+        interviewStart: new Date(details.interviewStart).toISOString(),
+        interviewEnd: new Date(details.interviewEnd).toISOString(),
+        ...(details.joiningDate && { joiningDate: details.joiningDate }),
+      };
+
       updateInterviewMutation.mutate(
         {
           id: Number(event.id),
-          data: { status: newStatus },
+          data: apiBody,
         },
         {
           onSuccess: () => {
