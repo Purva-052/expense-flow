@@ -46,7 +46,7 @@ export const interviewFormSchema = z
       .number()
       .min(0, "Experience must be a positive number"),
     resume: z.any().optional(), // Making resume optional as it can be complex to require
-    resumeS3Key: z.string().optional(),
+    resumeS3Key: z.string().min(1, "Resume is required"),
     currentCtc: z.coerce.number().min(0, "CTC must be a positive number"),
     expectedCtc: z.coerce.number().min(0, "CTC must be a positive number"),
     noticePeriod: z.string().optional(),
