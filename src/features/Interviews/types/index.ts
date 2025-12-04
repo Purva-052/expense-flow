@@ -37,6 +37,7 @@ export interface InterviewApiResponse {
   interviewEnd: string;
   interviewer: Interviewer;
   createdBy: CreatedBy;
+  joiningDate?: string;
 }
 
 export interface InterviewEvent {
