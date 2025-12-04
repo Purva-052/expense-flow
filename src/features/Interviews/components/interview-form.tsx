@@ -31,6 +31,7 @@ import { FileUpload } from "@/components/shared/custome-file-upload";
 import TimePicker from "@/components/shared/custome-timepicker";
 import { roles } from "@/utils/constant";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 
 interface InterviewFormProps {
   selectedDate: Date;
@@ -71,6 +72,7 @@ const step2Fields: (keyof InterviewFormValues)[] = [
   "interviewType",
   "interviewUrl",
   "interviewStatus",
+  "joiningDate",
 ];
 
 export const InterviewForm = ({
@@ -114,6 +116,7 @@ export const InterviewForm = ({
       interviewStatus: "pending",
       resume: null,
       resumeS3Key: "",
+      joiningDate: "",
     },
   });
 
@@ -187,6 +190,7 @@ export const InterviewForm = ({
         interviewStatus: initialData.status || "pending",
         resume: null,
         resumeS3Key: initialData.resumeLink || "",
+        joiningDate: initialData.joiningDate || "",
       });
       setUploadedResumeKey(initialData.resumeLink || "");
     }
@@ -652,6 +656,14 @@ export const InterviewForm = ({
                     searchEnabled={false}
                     sortOptions={false}
                   />
+
+                  {isEditMode && userRole === roles.ADMIN && (
+                    <CustomDatePicker
+                      control={form.control}
+                      name="joiningDate"
+                      label="Joining Date"
+                    />
+                  )}
 
                   <FormField
                     control={form.control}

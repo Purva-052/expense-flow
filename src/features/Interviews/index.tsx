@@ -316,6 +316,7 @@ const InterviewsPage = () => {
         interviewerId: Number(data.interviewerName),
         interviewStart: interviewStart.toISOString(),
         interviewEnd: interviewEnd.toISOString(),
+        ...(data.joiningDate && { joiningDate: data.joiningDate }),
       };
 
       // Call the appropriate API
@@ -518,6 +519,18 @@ const InterviewsPage = () => {
             setEventToDelete(event);
             setIsDeleteDialogOpen(true);
             setIsViewDialogOpen(false);
+          }}
+          onStatusUpdate={(eventId, newStatus) => {
+            // Update the selectedEvent state with the new status
+            if (selectedEvent && selectedEvent.id === eventId) {
+              setSelectedEvent({
+                ...selectedEvent,
+                extendedProps: {
+                  ...selectedEvent.extendedProps,
+                  status: newStatus,
+                },
+              });
+            }
           }}
         />
       )}
