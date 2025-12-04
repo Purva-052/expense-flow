@@ -138,6 +138,12 @@ export function NewJoineeActionForm({
                 isLoading={technologyListLoading}
               />
 
+              <CustomDatePicker
+                control={form.control}
+                name="joiningDate"
+                label="Joining Date"
+              />
+
               <TextInputField
                 control={form.control}
                 name="notes"
@@ -150,12 +156,6 @@ export function NewJoineeActionForm({
                 name="interviewerComments"
                 label="Interviewer Comments"
                 placeholder="Enter interviewer comments (optional)"
-              />
-
-              <CustomDatePicker
-                control={form.control}
-                name="joiningDate"
-                label="Joining Date"
               />
             </form>
           </Form>

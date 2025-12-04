@@ -126,6 +126,7 @@ export const InterviewDetailsDialog = ({
                     {details.technology.name}
                   </Badge>
                 )}
+                <p className="text-lg">Status :</p>
                 <Select
                   value={details.status}
                   onValueChange={handleStatusChange}

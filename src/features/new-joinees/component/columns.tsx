@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAuthStore } from "@/stores/use-auth-store";
+// import { useAuthStore } from "@/stores/use-auth-store";
 // import { formatRole } from "@/utils/commonFunctions";
 // import { roles } from "@/utils/constant";
 import { useNewJoineeStore } from "../stores/useNewJoineeStore";
@@ -37,7 +37,7 @@ export const columns: ColumnDef<any>[] = [
             className="h-2.5 w-2.5 rounded-full"
             style={{ backgroundColor: tech?.color }}
           />
-          <span>{tech?.name}</span>
+          <span>{tech?.name || "N/A"}</span>
         </div>
       );
     },
@@ -81,8 +81,8 @@ export const columns: ColumnDef<any>[] = [
     cell: function Cell({ row }) {
       const operator = row.original;
       const { setOpen, setCurrentRow } = useNewJoineeStore();
-      const user = useAuthStore((state) => state.user);
-      const UserRole = user?.user?.role;
+      // const user = useAuthStore((state) => state.user);
+      // const UserRole = user?.user?.role;
 
       //   const handleEdit = () => {
       //     setOpen("edit");

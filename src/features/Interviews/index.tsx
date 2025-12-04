@@ -316,6 +316,7 @@ const InterviewsPage = () => {
         interviewerId: Number(data.interviewerName),
         interviewStart: interviewStart.toISOString(),
         interviewEnd: interviewEnd.toISOString(),
+        ...(data.joiningDate && { joiningDate: data.joiningDate }),
       };
 
       // Call the appropriate API

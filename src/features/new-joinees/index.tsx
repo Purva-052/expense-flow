@@ -65,18 +65,10 @@ const NewJoineesPage = () => {
     });
   };
 
-  const handleStatusChange = (value: any) => {
-    setListParams({
-      ...listParams,
-      status: value ?? undefined,
-      currentPage: 1,
-    });
-  };
-
   const filters: FilterConfig[] = [
     {
       type: "search",
-      placeholder: "Search by name ...",
+      placeholder: "Search by Candidate name ...",
       key: "search",
       value: listParams.search,
       onChange: handleSearch,
@@ -118,7 +110,7 @@ const NewJoineesPage = () => {
   return (
     <PageLayout>
       <TablePageHeader
-        title="New Joinees"
+        title="To be Join"
         buttonText="Add New Joinee"
         onButtonClick={handleAdd}
         showActionButton={
@@ -127,7 +119,7 @@ const NewJoineesPage = () => {
             : false
         }
       >
-        Manage your New Joinees here.
+        Manage your new joinees here.
       </TablePageHeader>
       <GlobalFilterSection filters={filters ?? []} />
       <GlobalTable
