@@ -28,10 +28,12 @@ import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedServerIndexRouteImport } from './routes/_authenticated/Server/index'
 import { Route as AuthenticatedProjectTypeIndexRouteImport } from './routes/_authenticated/Project-type/index'
 import { Route as AuthenticatedNewJoineesIndexRouteImport } from './routes/_authenticated/New-joinees/index'
+import { Route as AuthenticatedLinodeServerDashboardIndexRouteImport } from './routes/_authenticated/Linode-server-dashboard/index'
 import { Route as AuthenticatedInterviewsIndexRouteImport } from './routes/_authenticated/Interviews/index'
 import { Route as AuthenticatedInquiryIndexRouteImport } from './routes/_authenticated/Inquiry/index'
 import { Route as AuthenticatedInquiryTypeIndexRouteImport } from './routes/_authenticated/Inquiry-type/index'
 import { Route as AuthenticatedProjectsDetailIdRouteImport } from './routes/_authenticated/projects/detail.$id'
+import { Route as AuthenticatedLinodeServerDashboardDetailIdRouteImport } from './routes/_authenticated/Linode-server-dashboard/detail.$id'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -134,6 +136,12 @@ const AuthenticatedNewJoineesIndexRoute =
     path: '/New-joinees/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedLinodeServerDashboardIndexRoute =
+  AuthenticatedLinodeServerDashboardIndexRouteImport.update({
+    id: '/Linode-server-dashboard/',
+    path: '/Linode-server-dashboard/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedInterviewsIndexRoute =
   AuthenticatedInterviewsIndexRouteImport.update({
     id: '/Interviews/',
@@ -158,6 +166,12 @@ const AuthenticatedProjectsDetailIdRoute =
     path: '/projects/detail/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedLinodeServerDashboardDetailIdRoute =
+  AuthenticatedLinodeServerDashboardDetailIdRouteImport.update({
+    id: '/Linode-server-dashboard/detail/$id',
+    path: '/Linode-server-dashboard/detail/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/forgot-password': typeof authForgotPasswordRoute
@@ -173,6 +187,7 @@ export interface FileRoutesByFullPath {
   '/Inquiry-type': typeof AuthenticatedInquiryTypeIndexRoute
   '/Inquiry': typeof AuthenticatedInquiryIndexRoute
   '/Interviews': typeof AuthenticatedInterviewsIndexRoute
+  '/Linode-server-dashboard': typeof AuthenticatedLinodeServerDashboardIndexRoute
   '/New-joinees': typeof AuthenticatedNewJoineesIndexRoute
   '/Project-type': typeof AuthenticatedProjectTypeIndexRoute
   '/Server': typeof AuthenticatedServerIndexRoute
@@ -181,6 +196,7 @@ export interface FileRoutesByFullPath {
   '/projects': typeof AuthenticatedProjectsIndexRoute
   '/technology': typeof AuthenticatedTechnologyIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/Linode-server-dashboard/detail/$id': typeof AuthenticatedLinodeServerDashboardDetailIdRoute
   '/projects/detail/$id': typeof AuthenticatedProjectsDetailIdRoute
 }
 export interface FileRoutesByTo {
@@ -197,6 +213,7 @@ export interface FileRoutesByTo {
   '/Inquiry-type': typeof AuthenticatedInquiryTypeIndexRoute
   '/Inquiry': typeof AuthenticatedInquiryIndexRoute
   '/Interviews': typeof AuthenticatedInterviewsIndexRoute
+  '/Linode-server-dashboard': typeof AuthenticatedLinodeServerDashboardIndexRoute
   '/New-joinees': typeof AuthenticatedNewJoineesIndexRoute
   '/Project-type': typeof AuthenticatedProjectTypeIndexRoute
   '/Server': typeof AuthenticatedServerIndexRoute
@@ -205,6 +222,7 @@ export interface FileRoutesByTo {
   '/projects': typeof AuthenticatedProjectsIndexRoute
   '/technology': typeof AuthenticatedTechnologyIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/Linode-server-dashboard/detail/$id': typeof AuthenticatedLinodeServerDashboardDetailIdRoute
   '/projects/detail/$id': typeof AuthenticatedProjectsDetailIdRoute
 }
 export interface FileRoutesById {
@@ -223,6 +241,7 @@ export interface FileRoutesById {
   '/_authenticated/Inquiry-type/': typeof AuthenticatedInquiryTypeIndexRoute
   '/_authenticated/Inquiry/': typeof AuthenticatedInquiryIndexRoute
   '/_authenticated/Interviews/': typeof AuthenticatedInterviewsIndexRoute
+  '/_authenticated/Linode-server-dashboard/': typeof AuthenticatedLinodeServerDashboardIndexRoute
   '/_authenticated/New-joinees/': typeof AuthenticatedNewJoineesIndexRoute
   '/_authenticated/Project-type/': typeof AuthenticatedProjectTypeIndexRoute
   '/_authenticated/Server/': typeof AuthenticatedServerIndexRoute
@@ -231,6 +250,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
   '/_authenticated/technology/': typeof AuthenticatedTechnologyIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/_authenticated/Linode-server-dashboard/detail/$id': typeof AuthenticatedLinodeServerDashboardDetailIdRoute
   '/_authenticated/projects/detail/$id': typeof AuthenticatedProjectsDetailIdRoute
 }
 export interface FileRouteTypes {
@@ -249,6 +269,7 @@ export interface FileRouteTypes {
     | '/Inquiry-type'
     | '/Inquiry'
     | '/Interviews'
+    | '/Linode-server-dashboard'
     | '/New-joinees'
     | '/Project-type'
     | '/Server'
@@ -257,6 +278,7 @@ export interface FileRouteTypes {
     | '/projects'
     | '/technology'
     | '/users'
+    | '/Linode-server-dashboard/detail/$id'
     | '/projects/detail/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -273,6 +295,7 @@ export interface FileRouteTypes {
     | '/Inquiry-type'
     | '/Inquiry'
     | '/Interviews'
+    | '/Linode-server-dashboard'
     | '/New-joinees'
     | '/Project-type'
     | '/Server'
@@ -281,6 +304,7 @@ export interface FileRouteTypes {
     | '/projects'
     | '/technology'
     | '/users'
+    | '/Linode-server-dashboard/detail/$id'
     | '/projects/detail/$id'
   id:
     | '__root__'
@@ -298,6 +322,7 @@ export interface FileRouteTypes {
     | '/_authenticated/Inquiry-type/'
     | '/_authenticated/Inquiry/'
     | '/_authenticated/Interviews/'
+    | '/_authenticated/Linode-server-dashboard/'
     | '/_authenticated/New-joinees/'
     | '/_authenticated/Project-type/'
     | '/_authenticated/Server/'
@@ -306,6 +331,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/'
     | '/_authenticated/technology/'
     | '/_authenticated/users/'
+    | '/_authenticated/Linode-server-dashboard/detail/$id'
     | '/_authenticated/projects/detail/$id'
   fileRoutesById: FileRoutesById
 }
@@ -457,6 +483,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNewJoineesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/Linode-server-dashboard/': {
+      id: '/_authenticated/Linode-server-dashboard/'
+      path: '/Linode-server-dashboard'
+      fullPath: '/Linode-server-dashboard'
+      preLoaderRoute: typeof AuthenticatedLinodeServerDashboardIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/Interviews/': {
       id: '/_authenticated/Interviews/'
       path: '/Interviews'
@@ -485,6 +518,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsDetailIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/Linode-server-dashboard/detail/$id': {
+      id: '/_authenticated/Linode-server-dashboard/detail/$id'
+      path: '/Linode-server-dashboard/detail/$id'
+      fullPath: '/Linode-server-dashboard/detail/$id'
+      preLoaderRoute: typeof AuthenticatedLinodeServerDashboardDetailIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -493,6 +533,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInquiryTypeIndexRoute: typeof AuthenticatedInquiryTypeIndexRoute
   AuthenticatedInquiryIndexRoute: typeof AuthenticatedInquiryIndexRoute
   AuthenticatedInterviewsIndexRoute: typeof AuthenticatedInterviewsIndexRoute
+  AuthenticatedLinodeServerDashboardIndexRoute: typeof AuthenticatedLinodeServerDashboardIndexRoute
   AuthenticatedNewJoineesIndexRoute: typeof AuthenticatedNewJoineesIndexRoute
   AuthenticatedProjectTypeIndexRoute: typeof AuthenticatedProjectTypeIndexRoute
   AuthenticatedServerIndexRoute: typeof AuthenticatedServerIndexRoute
@@ -501,6 +542,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
   AuthenticatedTechnologyIndexRoute: typeof AuthenticatedTechnologyIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
+  AuthenticatedLinodeServerDashboardDetailIdRoute: typeof AuthenticatedLinodeServerDashboardDetailIdRoute
   AuthenticatedProjectsDetailIdRoute: typeof AuthenticatedProjectsDetailIdRoute
 }
 
@@ -509,6 +551,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInquiryTypeIndexRoute: AuthenticatedInquiryTypeIndexRoute,
   AuthenticatedInquiryIndexRoute: AuthenticatedInquiryIndexRoute,
   AuthenticatedInterviewsIndexRoute: AuthenticatedInterviewsIndexRoute,
+  AuthenticatedLinodeServerDashboardIndexRoute:
+    AuthenticatedLinodeServerDashboardIndexRoute,
   AuthenticatedNewJoineesIndexRoute: AuthenticatedNewJoineesIndexRoute,
   AuthenticatedProjectTypeIndexRoute: AuthenticatedProjectTypeIndexRoute,
   AuthenticatedServerIndexRoute: AuthenticatedServerIndexRoute,
@@ -517,6 +561,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
   AuthenticatedTechnologyIndexRoute: AuthenticatedTechnologyIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
+  AuthenticatedLinodeServerDashboardDetailIdRoute:
+    AuthenticatedLinodeServerDashboardDetailIdRoute,
   AuthenticatedProjectsDetailIdRoute: AuthenticatedProjectsDetailIdRoute,
 }
 

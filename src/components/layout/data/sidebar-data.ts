@@ -13,7 +13,7 @@ import {
   IconUsers,
   IconUserScreen,
 } from "@tabler/icons-react";
-import { Command } from "lucide-react";
+import { Command, Cpu } from "lucide-react";
 import { type SidebarData } from "../types";
 import { useAuthStore } from "@/stores/use-auth-store";
 
@@ -85,6 +85,12 @@ export const sidebarData: SidebarData = {
           url: "/New-joinees",
           icon: IconUsers,
           requiredRoles: [roles.ADMIN],
+        },
+        {
+          title: "Linode Server Dashboard",
+          url: "/Linode-server-dashboard",
+          icon: Cpu,
+          requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
       ],
     },
