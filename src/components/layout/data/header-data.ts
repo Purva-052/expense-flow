@@ -11,4 +11,5 @@ export const URL_TO_TITLE_MAP: Record<string, string> = {
   "/Inquiry-type": "Inquiry Types",
   "/Server": "Servers",
   "/New-joinees": "To be Join",
+  "/Linode-server-dashboard": "Linode Server Dashboard",
 };
