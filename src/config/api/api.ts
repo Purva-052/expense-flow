@@ -89,6 +89,13 @@ const API = {
     client: "/clients/dropdown",
     country: "/country/dropdown",
   },
+  linode_api: {
+    list: "/linode/instances",
+    details: "/linode/instances/stats",
+    dashboardAnalytics: "/linode/instance/dashboard",
+    instances: "/linode/mock/instances",
+    instanceDetail: "/linode/mock/instances/stats",
+  },
 };
 
 Object.freeze(API);

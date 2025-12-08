@@ -15,6 +15,8 @@ import {
 // import { formatRole } from "@/utils/commonFunctions";
 // import { roles } from "@/utils/constant";
 import { useNewJoineeStore } from "../stores/useNewJoineeStore";
+import { useAuthStore } from "@/stores/use-auth-store";
+import { roles } from "@/utils/constant";
 
 // 🎯 Columns
 export const columns: ColumnDef<any>[] = [
@@ -81,18 +83,18 @@ export const columns: ColumnDef<any>[] = [
     cell: function Cell({ row }) {
       const operator = row.original;
       const { setOpen, setCurrentRow } = useNewJoineeStore();
-      // const user = useAuthStore((state) => state.user);
-      // const UserRole = user?.user?.role;
+      const user = useAuthStore((state) => state.user);
+      const UserRole = user?.user?.role;
 
-      //   const handleEdit = () => {
-      //     setOpen("edit");
-      //     setCurrentRow(operator);
-      //   };
+      // const handleEdit = () => {
+      //   setOpen("edit");
+      //   setCurrentRow(operator);
+      // };
 
-      //   const handleDelete = () => {
-      //     setOpen("delete");
-      //     setCurrentRow(operator);
-      //   };
+      const handleDelete = () => {
+        setOpen("delete");
+        setCurrentRow(operator);
+      };
 
       const handleView = () => {
         setOpen("view");
@@ -113,20 +115,19 @@ export const columns: ColumnDef<any>[] = [
             <DropdownMenuItem onClick={handleView}>
               View Joinee
             </DropdownMenuItem>
-            {/* {(UserRole === roles.ADMIN ||
-              UserRole === roles.PROJECT_MANAGER) && (
+            {UserRole === roles.ADMIN && (
               <>
-                <DropdownMenuItem onClick={handleEdit}>
+                {/* <DropdownMenuItem onClick={handleEdit}>
                   Edit User
-                </DropdownMenuItem>
+                </DropdownMenuItem> */}
                 <DropdownMenuItem
                   className="text-red-600 focus:bg-red-50 focus:text-red-600"
                   onClick={handleDelete}
                 >
-                  Delete User
+                  Delete Joinee
                 </DropdownMenuItem>
               </>
-            )} */}
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       );

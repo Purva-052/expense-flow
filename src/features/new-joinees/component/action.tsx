@@ -1,27 +1,31 @@
+import { useDeleteInterview } from "@/features/Interviews/services";
 import { useCreateUserData } from "../services";
 import { useNewJoineeStore } from "../stores/useNewJoineeStore";
 import { NewJoineeActionForm } from "./action-form";
+import { DeleteModal } from "@/components/model/delete-model";
+import { useState } from "react";
 
 export function ActionFormModal({
   technologyList,
   technologyListLoading,
 }: any) {
-  const { open, setOpen } = useNewJoineeStore();
+  const { open, setOpen, currentRow, setCurrentRow } = useNewJoineeStore();
+  const [_, setIsDeleteDialogOpen] = useState(false);
+
+  const onSuccessDeleteInterview = () => {
+    setIsDeleteDialogOpen(false);
+  };
 
   const { mutateAsync: createMutate, isPending: isCreateLoading } =
     useCreateUserData();
-  //   const { mutateAsync: updateMutate, isPending: isUpdateLoading } =
-  //     useUpdateUserData(currentRow?.id || "");
-  //   const { mutateAsync: deleteMutate, isPending: isDeleteLoading } =
-  //     useDeleteUserData(currentRow?.id || "");
-  //   const { data: projectList }: any = useGetInterview({
-  //     view: "to_be_joined" || "calender",
-  //   });
 
-  //   const projectListdata = projectList?.data;
-  //   const technologyListData = technologyList?.data;
+  const { mutateAsync: deleteMutate, isPending: isDeleteLoading } =
+    useDeleteInterview(onSuccessDeleteInterview);
 
-  const handleCreate = (values: any) => {
+  // -----------------------------
+  // CREATE HANDLER
+  // -----------------------------
+  const handleCreate = async (values: any) => {
     const payload = {
       candidateName: values.candidateName,
       technology: values.technology,
@@ -33,29 +37,37 @@ export function ActionFormModal({
       joiningDate: values.joiningDate,
     };
 
-    createMutate(payload);
+    await createMutate(payload);
+    handleCloseDialog();
   };
 
-  //   const handleEdit = (values: any) => {
-  //     const payload = {
-  //       fullName: values.fullName,
-  //       email: values.email,
-  //       role: values.role,
-  //       technologyId: values.technologyId,
-  //       careerStartDate: values.careerStartDate,
-  //       status: values.status ? "active" : "inactive",
-  //       joining: values.joining ? "true" : "false",
-  //       currentWorkingProjectId: values.currentWorkingProjectId,
-  //     };
-  //     updateMutate(payload);
-  //   };
+  // -----------------------------
+  // CLOSE MODAL HANDLER
+  // -----------------------------
+  const handleCloseDialog = () => {
+    setOpen(null);
 
-  //   const handleDelete = () => {
-  //     deleteMutate();
-  //   };
+    // Only clear currentRow after transition
+    setTimeout(() => {
+      setCurrentRow(null);
+    }, 300);
+  };
+
+  // -----------------------------
+  // DELETE HANDLER
+  // -----------------------------
+  const handleDelete = async () => {
+    if (!currentRow?.id) return;
+
+    await deleteMutate(currentRow.id);
+
+    // Close modal + clear row
+    handleCloseDialog();
+  };
 
   return (
     <>
+      {/* ------ ADD NEW JOINEE MODAL ------ */}
       <NewJoineeActionForm
         key="add-new-joinee"
         open={open === "add"}
@@ -66,32 +78,17 @@ export function ActionFormModal({
         technologyListLoading={technologyListLoading}
       />
 
-      {/* {currentRow && (
-        <>
-          <UserActionForm
-            key={`user-edit-${currentRow.id}`}
-            open={open === "edit"}
-            onSubmit={handleEdit}
-            loading={isUpdateLoading}
-            onOpenChange={handleCloseDialog}
-            currentRow={currentRow}
-            projectListdata={projectListdata}
-            projectListLoading={projectListLoading}
-            technologyListData={technologyListData}
-            technologyListLoading={technologyListLoading}
-            roleList={roleList}
-            roleListLoading={roleListLoading}
-          />
-          <DeleteModal
-            onConfirm={handleDelete}
-            key={`user-delete-${currentRow.id}`}
-            isOpen={open === "delete"}
-            onClose={handleCloseDialog}
-            itemName={currentRow.fullName}
-            loading={isDeleteLoading}
-          />
-        </>
-      )} */}
+      {/* ------ DELETE MODAL ------ */}
+      {currentRow?.id && (
+        <DeleteModal
+          key={`delete-joinee-${currentRow.id}`}
+          isOpen={open === "delete"}
+          onClose={handleCloseDialog}
+          onConfirm={handleDelete}
+          itemName={currentRow.candidateName || "this candidate"}
+          loading={isDeleteLoading}
+        />
+      )}
     </>
   );
 }
