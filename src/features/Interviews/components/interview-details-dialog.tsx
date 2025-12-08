@@ -43,6 +43,8 @@ import {
 import { InterviewEvent } from "../types";
 import { interviewStatuses, interviewTypes } from "../constants";
 import { useUpdateInterview } from "../services";
+import { useAuthStore } from "@/stores/use-auth-store";
+import { roles } from "@/utils/constant";
 
 interface InterviewDetailsDialogProps {
   event: InterviewEvent | null;
@@ -62,6 +64,36 @@ export const InterviewDetailsDialog = ({
   onStatusUpdate,
 }: InterviewDetailsDialogProps) => {
   if (!event) return null;
+
+  const user = useAuthStore((state) => state.user);
+  const userRole = user?.user?.role;
+  const baseStatuses = interviewStatuses;
+
+  // Step 1: extract values for reuse
+  const ADD_STATUSES = [
+    "pending",
+    "technical_completed",
+    "practical_completed",
+    "hr_round",
+  ];
+  const EDIT_STATUSES = [...ADD_STATUSES, "rejected"]; // same as add but + rejected
+  // const ADMIN_STATUSES = [
+  //   "pending",
+  //   "technical_completed",
+  //   "practical_completed",
+  //   "hr_round",
+  //   "joining",
+  //   "rejected",
+  // ];
+
+  // Step 2: final list logic
+  const filteredStatuses = onEdit
+    ? userRole === roles.ADMIN
+      ? baseStatuses // admin in edit → all statuses
+      : baseStatuses.filter((s) => EDIT_STATUSES.includes(s.value))
+    : userRole === roles.ADMIN
+      ? baseStatuses // admin on add → all statuses
+      : baseStatuses.filter((s) => ADD_STATUSES.includes(s.value));
 
   const details = event.extendedProps;
   const interviewStart = new Date(details.interviewStart);
@@ -153,16 +185,18 @@ export const InterviewDetailsDialog = ({
                   </Badge>
                 )}
                 <p className="text-lg">Status :</p>
+
                 <Select
                   value={details.status}
-                  onValueChange={handleStatusChange}
                   disabled={updateInterviewMutation.isPending}
+                  onValueChange={handleStatusChange}
                 >
                   <SelectTrigger className="w-[200px] h-9">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
+
                   <SelectContent>
-                    {interviewStatuses.map((status) => (
+                    {filteredStatuses.map((status) => (
                       <SelectItem key={status.value} value={status.value}>
                         {status.label}
                       </SelectItem>
