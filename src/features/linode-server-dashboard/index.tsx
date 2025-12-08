@@ -9,6 +9,7 @@ import { useGetLinodeList, useGetLinodeDashboardAnalytics } from "./services";
 import { FilterType } from "./types";
 import { Card, CardContent } from "@/components/ui/card";
 import { CalendarClock, DollarSign, Ghost, CheckCircle2 } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const LinodeDashboard = () => {
   const [filter, setFilter] = useState<FilterType>(FilterType.ALL);
@@ -235,7 +236,7 @@ const LinodeDashboard = () => {
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex bg-slate-100 p-1 rounded-2xl w-full md:w-auto gap-2 items-center">
+        {/* <div className="flex bg-slate-100 p-1 rounded-2xl w-full md:w-auto gap-2 items-center">
           {[
             { label: "All Instances", value: FilterType.ALL },
             { label: "Zombies", value: FilterType.ZOMBIE },
@@ -255,7 +256,21 @@ const LinodeDashboard = () => {
               {tab.label}
             </button>
           ))}
-        </div>
+        </div> */}
+
+        <Tabs
+          value={filter}
+          onValueChange={(val) => {
+            setFilter(val as FilterType);
+            setListParams({ ...listParams, currentPage: 1 });
+          }}
+          className="w-full"
+        >
+          <TabsList>
+            <TabsTrigger value={FilterType.ALL}>All Instances</TabsTrigger>
+            <TabsTrigger value={FilterType.ZOMBIE}>Zombies</TabsTrigger>
+          </TabsList>
+        </Tabs>
 
         {/* Filters */}
         <GlobalFilterSection filters={filters ?? []} />
