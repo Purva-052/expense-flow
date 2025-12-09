@@ -17,6 +17,7 @@ import {
   UserCircle,
   Edit2,
   Trash2,
+  ShieldCheck,
 } from "lucide-react";
 import {
   Dialog,
@@ -77,14 +78,6 @@ export const InterviewDetailsDialog = ({
     "hr_round",
   ];
   const EDIT_STATUSES = [...ADD_STATUSES, "rejected"]; // same as add but + rejected
-  // const ADMIN_STATUSES = [
-  //   "pending",
-  //   "technical_completed",
-  //   "practical_completed",
-  //   "hr_round",
-  //   "joining",
-  //   "rejected",
-  // ];
 
   // Step 2: final list logic
   const filteredStatuses = onEdit
@@ -184,25 +177,67 @@ export const InterviewDetailsDialog = ({
                     {details.technology.name}
                   </Badge>
                 )}
-                <p className="text-lg">Status :</p>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/30 border border-border/50">
+                  <Tag className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-muted-foreground">Status:</span>
+                  
+                  <Select
+                    value={details.status}
+                    disabled={updateInterviewMutation.isPending}
+                    onValueChange={handleStatusChange}
+                  >
+                    <SelectTrigger className="w-[180px] h-8 border-primary/20 bg-background hover:bg-accent">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
 
-                <Select
-                  value={details.status}
-                  disabled={updateInterviewMutation.isPending}
-                  onValueChange={handleStatusChange}
-                >
-                  <SelectTrigger className="w-[200px] h-9">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
+                    <SelectContent>
+                      {(() => {
+                        // Check if current status is in filtered list
+                        const currentStatusInList = filteredStatuses.some(s => s.value === details.status);
+                        const currentStatusObj = baseStatuses.find(s => s.value === details.status);
+                        
+                        // If current status is not in filtered list (e.g., "joining" for PM/TL), add it as disabled
+                        const statusesToShow = !currentStatusInList && currentStatusObj
+                          ? [currentStatusObj, ...filteredStatuses]
+                          : filteredStatuses;
 
-                  <SelectContent>
-                    {filteredStatuses.map((status) => (
-                      <SelectItem key={status.value} value={status.value}>
-                        {status.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                        return statusesToShow.map((status) => {
+                          const isCurrentStatus = status.value === details.status;
+                          const isJoiningStatus = status.value === "joining";
+                          const isPMorTL = userRole === roles.PROJECT_MANAGER || userRole === roles.TEAM_LEAD;
+                          
+                          // Disable "joining" for PM/TL (they can only view it, not select it)
+                          const isDisabled = isJoiningStatus && isPMorTL && !isCurrentStatus;
+                          
+                          return (
+                            <SelectItem 
+                              key={status.value} 
+                              value={status.value}
+                              disabled={isDisabled}
+                              className="flex items-center justify-between"
+                            >
+                              <div className="flex items-center gap-2 w-full">
+                                <span>{status.label}</span>
+                                {isJoiningStatus && (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <ShieldCheck className="h-3.5 w-3.5 text-amber-500 ml-auto" />
+                                    </TooltipTrigger>
+                                    <TooltipContent side="right">
+                                      <p className="text-xs">
+                                        {isPMorTL ? "View only - Admin can change" : "Admin only"}
+                                      </p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                )}
+                              </div>
+                            </SelectItem>
+                          );
+                        });
+                      })()}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="flex items-center gap-2 pr-4">
                   {onEdit && (
                     <Tooltip>

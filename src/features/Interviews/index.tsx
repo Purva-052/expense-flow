@@ -317,6 +317,9 @@ const InterviewsPage = () => {
         interviewStart: interviewStart.toISOString(),
         interviewEnd: interviewEnd.toISOString(),
         ...(data.joiningDate && { joiningDate: data.joiningDate }),
+        ...(data.interviewType === "video_call" && {
+          interviewUrl: data.interviewUrl,
+        }),
       };
 
       // Call the appropriate API
