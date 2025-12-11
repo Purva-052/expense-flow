@@ -19,6 +19,7 @@ interface FileUploadProps {
   name: string;
   label: string;
   onFileSelect?: (file: File) => Promise<void>;
+  onFileRemove?: () => void; // Callback when file is removed
   existingFileUrl?: string; // URL or S3 key of existing file
   existingFileName?: string; // Optional display name for existing file
 }
@@ -31,19 +32,23 @@ const formatBytes = (bytes: number) => {
   return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
 };
 
-export const FileUpload = ({ name, label, onFileSelect, existingFileUrl, existingFileName }: FileUploadProps) => {
+export const FileUpload = ({
+  name,
+  label,
+  onFileSelect,
+  onFileRemove,
+  existingFileUrl,
+  existingFileName,
+}: FileUploadProps) => {
   const form = useFormContext();
   const file = form.watch(name);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  // 1. Form state se errors nikalein
+  // Form state se errors nikalein
   const { formState } = form;
 
-  // 2. Error detection logic
-  // Hum check kar rahe hain:
-  // - Direct field error (e.g. "resume")
-  // - OR agar field "resume" hai, toh "resumeS3Key" ka error bhi check karein (kyunki schema wahan validation laga raha hai)
+  // Error detection logic
   const fieldError =
     formState.errors[name] ||
     (name === "resume" ? formState.errors.resumeS3Key : undefined);
@@ -93,11 +98,24 @@ export const FileUpload = ({ name, label, onFileSelect, existingFileUrl, existin
   });
 
   const handleRemove = () => {
+    // Clear form values
     form.setValue(name, null, { shouldValidate: true });
-    // Remove par key bhi hatana zaroori hai
-    if (name === "resume")
+    if (name === "resume") {
       form.setValue("resumeS3Key", "", { shouldValidate: true });
+    }
+
+    // Clear errors
+    form.clearErrors(name);
+    if (name === "resume") {
+      form.clearErrors("resumeS3Key");
+    }
+
     setUploadError(null);
+
+    // Notify parent component that file was removed
+    if (onFileRemove) {
+      onFileRemove();
+    }
   };
 
   // Check if we have an existing file (when no new file is selected)
@@ -178,7 +196,9 @@ export const FileUpload = ({ name, label, onFileSelect, existingFileUrl, existin
                 <div
                   className={cn(
                     "flex items-center justify-between rounded-md border p-3",
-                    fieldError ? "border-red-500 bg-red-50" : "border-green-100 bg-green-50"
+                    fieldError
+                      ? "border-red-500 bg-red-50"
+                      : "border-green-100 bg-green-50"
                   )}
                 >
                   <div className="flex items-center gap-2">
@@ -225,15 +245,11 @@ export const FileUpload = ({ name, label, onFileSelect, existingFileUrl, existin
                   {...getRootProps()}
                   className={cn(
                     "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-center transition-colors",
-                    // Priority Logic:
-                    // 1. Drag Active -> Primary Color
-                    // 2. Error -> Red Color & Red Background
-                    // 3. Default -> Gray Color
                     isDragActive
                       ? "border-primary bg-primary/10"
                       : fieldError
-                        ? "border-red-500 bg-red-50 hover:bg-red-100/50" // Red Style
-                        : "border-gray-300 hover:bg-gray-50", // Default Style
+                        ? "border-red-500 bg-red-50 hover:bg-red-100/50"
+                        : "border-gray-300 hover:bg-gray-50",
                     isUploading && "opacity-50 cursor-not-allowed"
                   )}
                 >

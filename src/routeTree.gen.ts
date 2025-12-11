@@ -32,6 +32,7 @@ import { Route as AuthenticatedLinodeServerDashboardIndexRouteImport } from './r
 import { Route as AuthenticatedInterviewsIndexRouteImport } from './routes/_authenticated/Interviews/index'
 import { Route as AuthenticatedInquiryIndexRouteImport } from './routes/_authenticated/Inquiry/index'
 import { Route as AuthenticatedInquiryTypeIndexRouteImport } from './routes/_authenticated/Inquiry-type/index'
+import { Route as AuthenticatedConferenceRoomBookingIndexRouteImport } from './routes/_authenticated/Conference-room-booking/index'
 import { Route as AuthenticatedProjectsDetailIdRouteImport } from './routes/_authenticated/projects/detail.$id'
 import { Route as AuthenticatedLinodeServerDashboardDetailIdRouteImport } from './routes/_authenticated/Linode-server-dashboard/detail.$id'
 
@@ -160,6 +161,12 @@ const AuthenticatedInquiryTypeIndexRoute =
     path: '/Inquiry-type/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedConferenceRoomBookingIndexRoute =
+  AuthenticatedConferenceRoomBookingIndexRouteImport.update({
+    id: '/Conference-room-booking/',
+    path: '/Conference-room-booking/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProjectsDetailIdRoute =
   AuthenticatedProjectsDetailIdRouteImport.update({
     id: '/projects/detail/$id',
@@ -184,6 +191,7 @@ export interface FileRoutesByFullPath {
   '/503': typeof errors503Route
   '/unauthorized': typeof errorsUnauthorizedRoute
   '/': typeof AuthenticatedIndexRoute
+  '/Conference-room-booking': typeof AuthenticatedConferenceRoomBookingIndexRoute
   '/Inquiry-type': typeof AuthenticatedInquiryTypeIndexRoute
   '/Inquiry': typeof AuthenticatedInquiryIndexRoute
   '/Interviews': typeof AuthenticatedInterviewsIndexRoute
@@ -210,6 +218,7 @@ export interface FileRoutesByTo {
   '/503': typeof errors503Route
   '/unauthorized': typeof errorsUnauthorizedRoute
   '/': typeof AuthenticatedIndexRoute
+  '/Conference-room-booking': typeof AuthenticatedConferenceRoomBookingIndexRoute
   '/Inquiry-type': typeof AuthenticatedInquiryTypeIndexRoute
   '/Inquiry': typeof AuthenticatedInquiryIndexRoute
   '/Interviews': typeof AuthenticatedInterviewsIndexRoute
@@ -238,6 +247,7 @@ export interface FileRoutesById {
   '/(errors)/503': typeof errors503Route
   '/(errors)/unauthorized': typeof errorsUnauthorizedRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/Conference-room-booking/': typeof AuthenticatedConferenceRoomBookingIndexRoute
   '/_authenticated/Inquiry-type/': typeof AuthenticatedInquiryTypeIndexRoute
   '/_authenticated/Inquiry/': typeof AuthenticatedInquiryIndexRoute
   '/_authenticated/Interviews/': typeof AuthenticatedInterviewsIndexRoute
@@ -266,6 +276,7 @@ export interface FileRouteTypes {
     | '/503'
     | '/unauthorized'
     | '/'
+    | '/Conference-room-booking'
     | '/Inquiry-type'
     | '/Inquiry'
     | '/Interviews'
@@ -292,6 +303,7 @@ export interface FileRouteTypes {
     | '/503'
     | '/unauthorized'
     | '/'
+    | '/Conference-room-booking'
     | '/Inquiry-type'
     | '/Inquiry'
     | '/Interviews'
@@ -319,6 +331,7 @@ export interface FileRouteTypes {
     | '/(errors)/503'
     | '/(errors)/unauthorized'
     | '/_authenticated/'
+    | '/_authenticated/Conference-room-booking/'
     | '/_authenticated/Inquiry-type/'
     | '/_authenticated/Inquiry/'
     | '/_authenticated/Interviews/'
@@ -511,6 +524,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInquiryTypeIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/Conference-room-booking/': {
+      id: '/_authenticated/Conference-room-booking/'
+      path: '/Conference-room-booking'
+      fullPath: '/Conference-room-booking'
+      preLoaderRoute: typeof AuthenticatedConferenceRoomBookingIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/projects/detail/$id': {
       id: '/_authenticated/projects/detail/$id'
       path: '/projects/detail/$id'
@@ -530,6 +550,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedConferenceRoomBookingIndexRoute: typeof AuthenticatedConferenceRoomBookingIndexRoute
   AuthenticatedInquiryTypeIndexRoute: typeof AuthenticatedInquiryTypeIndexRoute
   AuthenticatedInquiryIndexRoute: typeof AuthenticatedInquiryIndexRoute
   AuthenticatedInterviewsIndexRoute: typeof AuthenticatedInterviewsIndexRoute
@@ -548,6 +569,8 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedConferenceRoomBookingIndexRoute:
+    AuthenticatedConferenceRoomBookingIndexRoute,
   AuthenticatedInquiryTypeIndexRoute: AuthenticatedInquiryTypeIndexRoute,
   AuthenticatedInquiryIndexRoute: AuthenticatedInquiryIndexRoute,
   AuthenticatedInterviewsIndexRoute: AuthenticatedInterviewsIndexRoute,
