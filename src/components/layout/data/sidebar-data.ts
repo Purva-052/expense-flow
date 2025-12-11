@@ -13,7 +13,7 @@ import {
   IconUsers,
   IconUserScreen,
 } from "@tabler/icons-react";
-import { Command, Cpu } from "lucide-react";
+import { CalendarCheck, Command, Cpu } from "lucide-react";
 import { type SidebarData } from "../types";
 import { useAuthStore } from "@/stores/use-auth-store";
 
@@ -92,6 +92,17 @@ export const sidebarData: SidebarData = {
           icon: Cpu,
           requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
+        {
+          title: "Conference Room Booking",
+          url: "/Conference-room-booking",
+          icon: CalendarCheck,
+          requiredRoles: [
+            roles.ADMIN,
+            roles.TEAM_LEAD,
+            roles.PROJECT_MANAGER,
+            roles.BDE,
+          ],
+        },
       ],
     },
     {
@@ -120,7 +131,7 @@ export const sidebarData: SidebarData = {
           title: "Inquiry Types",
           url: "/Inquiry-type",
           icon: IconPencilSearch,
-          requiredRoles: [roles.ADMIN],
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
         },
         {
           title: "Clients",
