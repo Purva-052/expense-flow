@@ -88,6 +88,7 @@ const API = {
     priority: "/projects/priority-dropdown",
     client: "/clients/dropdown",
     country: "/country/dropdown",
+    project_list: "/projects/dropdown/list",
   },
   linode_api: {
     list: "/linode/instances",
@@ -95,6 +96,12 @@ const API = {
     dashboardAnalytics: "/linode/instance/dashboard",
     instances: "/linode/mock/instances",
     instanceDetail: "/linode/mock/instances/stats",
+  },
+  conference_room: {
+    list: "/conference",
+    create: "/conference/create",
+    update: "/conference/update",
+    delete: "/conference/delete",
   },
 };
 
