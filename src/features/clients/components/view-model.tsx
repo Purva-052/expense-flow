@@ -1,4 +1,5 @@
-/* eslint-disable no-console */
+import { useEffect, useState } from "react";
+import { formatInTimeZone } from "date-fns-tz";
 import {
   Dialog,
   DialogContent,
@@ -6,37 +7,52 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useClientsStore } from "../stores/useClientsStore";
-import { useEffect, useState } from "react";
-import { formatInTimeZone } from "date-fns-tz";
 
 export function ViewClientsModal() {
   const { open, setOpen, currentRow } = useClientsStore();
-  const timezone = currentRow?.timezone;
+  const rawTimezone = currentRow?.timezone;
 
   const [currentTime, setCurrentTime] = useState<string>("");
 
-  // 🕒 Update time whenever timezone changes or every 60s
+  // ------------------------------
+  // 🛡️ Normalize all values safely
+  // ------------------------------
+
+  const timezoneValue =
+    typeof rawTimezone === "string"
+      ? rawTimezone
+      : typeof rawTimezone === "object" && rawTimezone?.name
+        ? rawTimezone.name
+        : null;
+
+  const countryValue =
+    typeof currentRow?.country === "object"
+      ? currentRow?.country?.name
+      : currentRow?.country || null;
+
+  // ------------------------------
+  // 🕒 Handle timezone time updates
+  // ------------------------------
   useEffect(() => {
-    if (!timezone) {
-      setCurrentTime("");
+    if (!timezoneValue) {
+      setCurrentTime("NA");
       return;
     }
 
-    // ✅ Immediately set correct time once timezone is available
     const updateTime = () => {
       try {
-        const time = formatInTimeZone(new Date(), timezone, "hh:mm a");
+        const time = formatInTimeZone(new Date(), timezoneValue, "hh:mm a");
         setCurrentTime(time);
-      } catch (error) {
+      } catch (err) {
         setCurrentTime("Invalid timezone");
       }
     };
 
-    updateTime(); // Run once right away
-    const interval = setInterval(updateTime, 60000); // Then update every 60s
+    updateTime();
+    const interval = setInterval(updateTime, 60000);
 
     return () => clearInterval(interval);
-  }, [timezone]);
+  }, [timezoneValue]);
 
   if (open !== "view" || !currentRow) return null;
 
@@ -44,37 +60,47 @@ export function ViewClientsModal() {
     <Dialog open={open === "view"} onOpenChange={() => setOpen(null)}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Company Details</DialogTitle>
+          <DialogTitle>Client Details</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* Name */}
           <div>
             <h3 className="text-sm font-medium">Name</h3>
-            <p className="text-sm text-gray-600">{currentRow.name}</p>
+            <p className="text-sm text-gray-600">{currentRow.name || "NA"}</p>
           </div>
 
+          {/* Company */}
           <div>
             <h3 className="text-sm font-medium">Company</h3>
-            <p className="text-sm text-gray-600">{currentRow.company}</p>
+            <p className="text-sm text-gray-600">
+              {currentRow.company || "NA"}
+            </p>
           </div>
 
+          {/* Country */}
           <div>
             <h3 className="text-sm font-medium">Country</h3>
-            <p className="text-sm text-gray-600">{currentRow.country}</p>
+            <p className="text-sm text-gray-600">{countryValue || "NA"}</p>
           </div>
 
-          {/* 🕓 Timezone + Local Time */}
-          {timezone && (
-            <div>
-              <h3 className="text-sm font-medium">Timezone</h3>
+          {/* Timezone + Local Time */}
+          <div>
+            <h3 className="text-sm font-medium">Timezone</h3>
+
+            {!timezoneValue ? (
+              // If no timezone → show single NA only
+              <p className="text-sm text-gray-600">NA</p>
+            ) : (
+              // If valid → show time + timezone
               <p className="text-sm text-gray-600">
-                {currentTime || "Loading..."}
+                {currentTime || "NA"}
                 <span className="block text-xs text-muted-foreground mt-1">
-                  {timezone}
+                  {timezoneValue}
                 </span>
               </p>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>
