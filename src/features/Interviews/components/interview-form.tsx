@@ -87,6 +87,7 @@ export const InterviewForm = ({
 }: InterviewFormProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [uploadedResumeKey, setUploadedResumeKey] = useState<string>("");
+  const [hasExistingFile, setHasExistingFile] = useState(false);
   const user = useAuthStore((state) => state.user);
   const isEditMode = !!initialData;
   const userRole = user?.user?.role;
@@ -142,14 +143,6 @@ export const InterviewForm = ({
     "hr_round",
   ];
   const EDIT_STATUSES = [...ADD_STATUSES, "rejected"]; // same as add but + rejected
-  // const ADMIN_STATUSES = [
-  //   "pending",
-  //   "technical_completed",
-  //   "practical_completed",
-  //   "hr_round",
-  //   "joining",
-  //   "rejected",
-  // ];
 
   // Step 2: final list logic
   const filteredStatuses = isEditMode
@@ -159,13 +152,6 @@ export const InterviewForm = ({
     : userRole === roles.ADMIN
       ? baseStatuses // admin on add → all statuses
       : baseStatuses.filter((s) => ADD_STATUSES.includes(s.value));
-
-  // const formatTimeFromISO = (isoString: string): string => {
-  //   const date = new Date(isoString);
-  //   const hours = String(date.getHours()).padStart(2, "0");
-  //   const minutes = String(date.getMinutes()).padStart(2, "0");
-  //   return `${hours}:${minutes}`;
-  // };
 
   useEffect(() => {
     if (initialData && currentStep === 1) {
@@ -193,6 +179,7 @@ export const InterviewForm = ({
         joiningDate: initialData.joiningDate || "",
       });
       setUploadedResumeKey(initialData.resumeLink || "");
+      setHasExistingFile(!!initialData.resumeLink);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialData, currentStep]);
@@ -237,6 +224,7 @@ export const InterviewForm = ({
 
       if (response?.key) {
         setUploadedResumeKey(response.key);
+        setHasExistingFile(true);
 
         // IMPORTANT: Form state update karein taaki validation pass ho
         form.setValue("resumeS3Key", response.key, { shouldValidate: true });
@@ -247,6 +235,20 @@ export const InterviewForm = ({
     } catch (error) {
       console.error("Upload failed", error);
     }
+  };
+
+  const handleResumeRemove = () => {
+    // Clear all resume-related state
+    setUploadedResumeKey("");
+    setHasExistingFile(false);
+
+    // Clear form values
+    form.setValue("resume", null, { shouldValidate: true });
+    form.setValue("resumeS3Key", "", { shouldValidate: true });
+
+    // Clear any errors
+    form.clearErrors("resume");
+    form.clearErrors("resumeS3Key");
   };
 
   const handleNextStep = async (e?: React.MouseEvent) => {
@@ -515,22 +517,18 @@ export const InterviewForm = ({
                       name="resume"
                       label="Resume (CV)"
                       onFileSelect={handleResumeUpload}
+                      onFileRemove={handleResumeRemove}
                       existingFileUrl={
-                        isEditMode && initialData?.resumeLink
+                        hasExistingFile && initialData?.resumeLink
                           ? initialData.resumeLink
                           : undefined
                       }
                       existingFileName={
-                        isEditMode && initialData?.resumeLink
+                        hasExistingFile && initialData?.resumeLink
                           ? `${initialData.candidateName || "Candidate"} Resume`
                           : undefined
                       }
                     />
-                    {/* {form.formState.errors.resumeS3Key && (
-                      <p className="text-sm font-medium text-destructive mt-2">
-                        {form.formState.errors.resumeS3Key.message}
-                      </p>
-                    )} */}
                   </div>
                   <FormField
                     control={form.control}
@@ -587,40 +585,15 @@ export const InterviewForm = ({
                         <FormLabel>Interview Time</FormLabel>
                         <FormControl>
                           <TimePicker
-                            // minTime={startTime}
                             value={field.value}
                             onChange={field.onChange}
                             placeholder="Select start time"
                           />
                         </FormControl>
                         <FormMessage />
-                        {/* {field.value && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            End time: {form.watch("endTime")} (30 min duration)
-                          </p>
-                        )} */}
                       </FormItem>
                     )}
                   />
-                  {/* End Time is now automatically calculated as startTime + 30 minutes */}
-                  {/* <FormField
-                    control={form.control}
-                    name="endTime"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>End Time</FormLabel>
-                        <FormControl>
-                          <TimePicker
-                            minTime={startTime}
-                            value={field.value}
-                            onChange={field.onChange}
-                            placeholder="Select end time"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  /> */}
                   <CustomDropDownSearchable
                     form={form}
                     name="interviewType"
