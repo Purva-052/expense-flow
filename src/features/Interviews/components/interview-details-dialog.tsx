@@ -17,7 +17,7 @@ import {
   UserCircle,
   Edit2,
   Trash2,
-  ShieldCheck,
+  // ShieldCheck,
 } from "lucide-react";
 import {
   Dialog,
@@ -34,18 +34,18 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select";
 import { InterviewEvent } from "../types";
 import { interviewStatuses, interviewTypes } from "../constants";
-import { useUpdateInterview } from "../services";
-import { useAuthStore } from "@/stores/use-auth-store";
-import { roles } from "@/utils/constant";
+// import { useUpdateInterview } from "../services";
+// import { useAuthStore } from "@/stores/use-auth-store";
+// import { roles } from "@/utils/constant";
 
 interface InterviewDetailsDialogProps {
   event: InterviewEvent | null;
@@ -62,43 +62,43 @@ export const InterviewDetailsDialog = ({
   onOpenChange,
   onEdit,
   onDelete,
-  onStatusUpdate,
+  // onStatusUpdate,
 }: InterviewDetailsDialogProps) => {
   if (!event) return null;
 
-  const user = useAuthStore((state) => state.user);
-  const userRole = user?.user?.role;
-  const baseStatuses = interviewStatuses;
+  // const user = useAuthStore((state) => state.user);
+  // const userRole = user?.user?.role;
+  // const baseStatuses = interviewStatuses;
 
   // Step 1: extract values for reuse
-  const ADD_STATUSES = [
-    "pending",
-    "technical_completed",
-    "practical_completed",
-    "hr_round",
-  ];
-  const EDIT_STATUSES = [...ADD_STATUSES, "rejected"]; // same as add but + rejected
+  // const ADD_STATUSES = [
+  //   "pending",
+  //   "technical_completed",
+  //   "practical_completed",
+  //   "hr_round",
+  // ];
+  // const EDIT_STATUSES = [...ADD_STATUSES, "rejected"]; // same as add but + rejected
 
   // Step 2: final list logic
-  const filteredStatuses = onEdit
-    ? userRole === roles.ADMIN
-      ? baseStatuses // admin in edit → all statuses
-      : baseStatuses.filter((s) => EDIT_STATUSES.includes(s.value))
-    : userRole === roles.ADMIN
-      ? baseStatuses // admin on add → all statuses
-      : baseStatuses.filter((s) => ADD_STATUSES.includes(s.value));
+  // const filteredStatuses = onEdit
+  //   ? userRole === roles.ADMIN
+  //     ? baseStatuses // admin in edit → all statuses
+  //     : baseStatuses.filter((s) => EDIT_STATUSES.includes(s.value))
+  //   : userRole === roles.ADMIN
+  //     ? baseStatuses // admin on add → all statuses
+  //     : baseStatuses.filter((s) => ADD_STATUSES.includes(s.value));
 
   const details = event.extendedProps;
   const interviewStart = new Date(details.interviewStart);
   const interviewEnd = new Date(details.interviewEnd);
   const techColor = details.technology?.colour || "#10B981";
 
-  const updateInterviewMutation = useUpdateInterview(() => {
-    // This callback runs after successful update
-    if (onStatusUpdate && event.id) {
-      // The mutation already invalidates queries, but we also update local state
-    }
-  });
+  // const updateInterviewMutation = useUpdateInterview(() => {
+  //   // This callback runs after successful update
+  //   if (onStatusUpdate && event.id) {
+  //     // The mutation already invalidates queries, but we also update local state
+  //   }
+  // });
 
   const handleEdit = () => {
     if (onEdit) {
@@ -113,50 +113,50 @@ export const InterviewDetailsDialog = ({
     }
   };
 
-  const handleStatusChange = (newStatus: string) => {
-    if (event.id) {
-      // Parse notice period to extract days
-      const noticePeriodInDays = details.noticePeriodInDays || 0;
+  // const handleStatusChange = (newStatus: string) => {
+  //   if (event.id) {
+  //     // Parse notice period to extract days
+  //     const noticePeriodInDays = details.noticePeriodInDays || 0;
 
-      // Prepare complete API body with all required fields
-      const apiBody = {
-        candidateName: details.candidateName,
-        technology: Number(details.technology?.id),
-        email: details.email,
-        phoneNumber: details.phoneNumber,
-        location: details.location,
-        notes: details.notes || "",
-        experienceInYears: Number(details.experienceInYears),
-        resumeS3Key: details.resumeLink || "",
-        currentCtc: Number(details.currentCtc),
-        expectedCtc: Number(details.expectedCtc),
-        noticePeriodInDays: noticePeriodInDays,
-        interviewType: details.interviewType,
-        interviewRound: details.interviewRound,
-        interviewerComments: details.interviewerComments || "",
-        status: newStatus, // Update the status
-        interviewerId: Number(details.interviewer?.id),
-        interviewStart: new Date(details.interviewStart).toISOString(),
-        interviewEnd: new Date(details.interviewEnd).toISOString(),
-        ...(details.joiningDate && { joiningDate: details.joiningDate }),
-      };
+  //     // Prepare complete API body with all required fields
+  //     const apiBody = {
+  //       candidateName: details.candidateName,
+  //       technology: Number(details.technology?.id),
+  //       email: details.email,
+  //       phoneNumber: details.phoneNumber,
+  //       location: details.location,
+  //       notes: details.notes || "",
+  //       experienceInYears: Number(details.experienceInYears),
+  //       resumeS3Key: details.resumeLink || "",
+  //       currentCtc: Number(details.currentCtc),
+  //       expectedCtc: Number(details.expectedCtc),
+  //       noticePeriodInDays: noticePeriodInDays,
+  //       interviewType: details.interviewType,
+  //       interviewRound: details.interviewRound,
+  //       interviewerComments: details.interviewerComments || "",
+  //       status: newStatus, // Update the status
+  //       interviewerId: Number(details.interviewer?.id),
+  //       interviewStart: new Date(details.interviewStart).toISOString(),
+  //       interviewEnd: new Date(details.interviewEnd).toISOString(),
+  //       ...(details.joiningDate && { joiningDate: details.joiningDate }),
+  //     };
 
-      updateInterviewMutation.mutate(
-        {
-          id: Number(event.id),
-          data: apiBody,
-        },
-        {
-          onSuccess: () => {
-            // Update the local event state immediately for real-time UI update
-            if (onStatusUpdate) {
-              onStatusUpdate(event.id, newStatus);
-            }
-          },
-        }
-      );
-    }
-  };
+  //     updateInterviewMutation.mutate(
+  //       {
+  //         id: Number(event.id),
+  //         data: apiBody,
+  //       },
+  //       {
+  //         onSuccess: () => {
+  //           // Update the local event state immediately for real-time UI update
+  //           if (onStatusUpdate) {
+  //             onStatusUpdate(event.id, newStatus);
+  //           }
+  //         },
+  //       }
+  //     );
+  //   }
+  // };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -177,7 +177,7 @@ export const InterviewDetailsDialog = ({
                     {details.technology.name}
                   </Badge>
                 )}
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/30 border border-border/50">
+                {/* <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/30 border border-border/50">
                   <Tag className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-muted-foreground">Status:</span>
                   
@@ -237,7 +237,7 @@ export const InterviewDetailsDialog = ({
                       })()}
                     </SelectContent>
                   </Select>
-                </div>
+                </div> */}
                 <div className="flex items-center gap-2 pr-4">
                   {onEdit && (
                     <Tooltip>
