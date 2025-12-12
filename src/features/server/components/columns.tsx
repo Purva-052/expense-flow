@@ -61,10 +61,10 @@ export const columns: ColumnDef<any>[] = [
         setCurrentRow(server);
       };
 
-      const handleView = () => {
-        setOpen("view");
-        setCurrentRow(server);
-      };
+      // const handleView = () => {
+      //   setOpen("view");
+      //   setCurrentRow(server);
+      // };
 
       return (
         <DropdownMenu>
@@ -76,7 +76,7 @@ export const columns: ColumnDef<any>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleView}>View</DropdownMenuItem>
+            {/* <DropdownMenuItem onClick={handleView}>View</DropdownMenuItem> */}
             <DropdownMenuItem onClick={handleEdit}>Edit</DropdownMenuItem>
             <DropdownMenuItem
               className="text-red-600 focus:bg-red-50 focus:text-red-600"

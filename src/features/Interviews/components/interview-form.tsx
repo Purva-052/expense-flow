@@ -92,34 +92,6 @@ export const InterviewForm = ({
   const isEditMode = !!initialData;
   const userRole = user?.user?.role;
 
-  const form = useForm<InterviewFormValues>({
-    resolver: zodResolver(interviewFormSchema),
-    mode: "onSubmit",
-    reValidateMode: "onChange",
-    defaultValues: {
-      candidateName: "",
-      technology: "",
-      email: "",
-      phoneNumber: "",
-      location: "",
-      notes: "",
-      experience: 0,
-      currentCtc: 0,
-      expectedCtc: 0,
-      noticePeriod: "",
-      interviewerName: "",
-      startTime: "10:00",
-      endTime: "11:00",
-      interviewType: "on_site",
-      interviewUrl: "",
-      interviewRound: "",
-      interviewerComment: "",
-      interviewStatus: "pending",
-      resume: null,
-      resumeS3Key: "",
-      joiningDate: "",
-    },
-  });
 
   const extractTime = (isoString: string) => {
     if (!isoString) return "";
@@ -153,6 +125,54 @@ export const InterviewForm = ({
       ? baseStatuses // admin on add → all statuses
       : baseStatuses.filter((s) => ADD_STATUSES.includes(s.value));
 
+
+  // Adjust schema based on edit mode and role
+  let activeSchema = interviewFormSchema;
+  if (isEditMode && userRole === roles.ADMIN) {
+    activeSchema = interviewFormSchema.refine(
+      (data) => {
+        const val = data.joiningDate;
+        if (val instanceof Date) return true;
+        return !!val && typeof val === "string" && val.trim().length > 0;
+      },
+      {
+        message: "Joining Date is required",
+        path: ["joiningDate"],
+      }
+    ) as any;
+  }
+
+  const form = useForm<InterviewFormValues>({
+    resolver: zodResolver(activeSchema),
+    mode: "onSubmit",
+    reValidateMode: "onChange",
+    defaultValues: {
+      candidateName: "",
+      technology: "",
+      email: "",
+      phoneNumber: "",
+      location: "",
+      notes: "",
+      experience: 0,
+      currentCtc: 0,
+      expectedCtc: 0,
+      noticePeriod: "",
+      interviewerName: "",
+      startTime: "10:00",
+      endTime: "11:00",
+      interviewType: "on_site",
+      interviewUrl: "",
+      interviewRound: "",
+      interviewerComment: "",
+      interviewStatus: "pending",
+      resume: null,
+      resumeS3Key: "",
+      joiningDate: "",
+    },
+  });
+
+  const { trigger, formState } = form;
+
   useEffect(() => {
     if (initialData && currentStep === 1) {
       form.reset({
@@ -183,8 +203,6 @@ export const InterviewForm = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialData, currentStep]);
-
-  const { trigger, formState } = form;
   const interviewType = form.watch("interviewType");
   const startTime = form.watch("startTime");
   const { mutateAsync: uploadResume } = useCreateInterviewResumeLink();
@@ -303,6 +321,10 @@ export const InterviewForm = ({
       const submissionData = {
         ...data,
         resumeS3Key: uploadedResumeKey || data.resumeS3Key || "",
+        joiningDate:
+          data.joiningDate instanceof Date
+            ? data.joiningDate.toISOString()
+            : data.joiningDate,
       };
       onSubmit(submissionData);
     } else {
@@ -310,9 +332,12 @@ export const InterviewForm = ({
       const step2Errors = step2Fields.filter(
         (field) => formState.errors[field]
       );
+      console.log('step2Errors: ', step2Errors);
       if (step2Errors.length > 0) {
         const firstError = step2Errors[0];
+        console.log('firstError: ', firstError);
         const errorElement = document.querySelector(`[name="${firstError}"]`);
+        console.log('errorElement: ', errorElement);
         if (errorElement) {
           errorElement.scrollIntoView({
             behavior: "smooth",
@@ -698,6 +723,7 @@ export const InterviewForm = ({
                 type="submit"
                 className="flex-1 sm:flex-initial"
                 disabled={isSubmitting}
+                onClick={() => console.log("clicked")}
               >
                 {isEditMode
                   ? "Update Interview"
