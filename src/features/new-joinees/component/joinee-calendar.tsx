@@ -7,13 +7,13 @@ import { format } from "date-fns";
 import moment from "moment";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ConferenceRoomEvent } from "../types";
+// import {
+//   // DropdownMenu,
+//   // DropdownMenuContent,
+//   // DropdownMenuItem,
+//   DropdownMenuTrigger,
+// } from "@/components/ui/dropdown-menu";
+import { JoineeEvent } from "../component/joinee-details-dialog";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import {
   Tooltip,
@@ -26,19 +26,18 @@ import { roles } from "@/utils/constant";
 
 const localizer = momentLocalizer(moment);
 
-interface ReactBigCalendarProps {
-  events: ConferenceRoomEvent[];
+interface JoineeCalendarProps {
+  events: JoineeEvent[];
   currentDate: Date;
   onDateClick: (date: Date) => void;
-  onEventClick: (event: ConferenceRoomEvent) => void;
-  onEventEdit: (event: ConferenceRoomEvent, e: React.MouseEvent) => void;
-  onEventDelete: (event: ConferenceRoomEvent, e: React.MouseEvent) => void;
+  onEventClick: (event: JoineeEvent) => void;
+  onEventEdit: (event: JoineeEvent, e: React.MouseEvent) => void;
   onNavigate: (date: Date) => void;
   view?: View;
   onViewChange?: (view: View) => void;
 }
 
-export const ReactBigCalendar = ({
+export const JoineeCalendar = ({
   events,
   currentDate,
   onDateClick,
@@ -46,7 +45,7 @@ export const ReactBigCalendar = ({
   onNavigate,
   view = "month",
   onViewChange,
-}: ReactBigCalendarProps) => {
+}: JoineeCalendarProps) => {
   const [hoveredEvent, setHoveredEvent] = useState<string | null>(null);
   const user = useAuthStore((state) => state.user);
   const userRole = user?.user?.role;
@@ -55,7 +54,7 @@ export const ReactBigCalendar = ({
     if (!events) return [];
 
     return events.map((event) => {
-      const defaultColor = "#039be5";
+      const defaultColor = "#10b981";
 
       return {
         ...event,
@@ -97,7 +96,7 @@ export const ReactBigCalendar = ({
 
   const onTodayClick = () => handleNavigate(new Date());
 
-  // Custom Event Component
+  // Custom Event Component with Joinee-specific tooltip
   const CustomEvent = ({ event }: { event: any }) => {
     const isHovered = hoveredEvent === event.id;
 
@@ -106,7 +105,7 @@ export const ReactBigCalendar = ({
         <Tooltip>
           <TooltipTrigger asChild>
             <div
-              className="h-full w-full px-1.5 py-0.5 flex flex-col justify-center text-white cursor-pointer transition-all duration-200"
+              className="h-full w-full px-1.5 py-0.5 flex items-center text-white cursor-pointer transition-all duration-200"
               onMouseEnter={() => setHoveredEvent(event.id)}
               onMouseLeave={() => setHoveredEvent(null)}
               onClick={(e) => {
@@ -115,12 +114,7 @@ export const ReactBigCalendar = ({
               }}
               style={{ opacity: isHovered ? 0.85 : 1 }}
             >
-              <div className="flex items-center gap-1 text-[11px] font-medium leading-tight truncate">
-                {view === "month" && (
-                  <span className="text-[9px] font-medium opacity-95 shrink-0">
-                    {format(event.start, "h:mma")}
-                  </span>
-                )}
+              <div className="flex items-center gap-1 text-[11px] font-medium leading-tight truncate flex-1">
                 <span className="truncate font-medium">{event.title}</span>
               </div>
             </div>
@@ -128,15 +122,23 @@ export const ReactBigCalendar = ({
 
           <TooltipContent side="right" className="p-3 text-sm rounded-md">
             <div className="font-semibold">{event.title}</div>
-            <div className="text-gray-600 mt-1">
-              Project: {event.extendedProps?.project?.name}
+            <div className="text-gray-600 mt-1 flex items-center gap-2">
+              <span>Technology:</span>
+              {event.extendedProps?.technology && (
+                <>
+                  <span
+                    className="h-2 w-2 rounded-full inline-block"
+                    style={{
+                      backgroundColor: event.extendedProps.technology.color,
+                    }}
+                  />
+                  <span>{event.extendedProps.technology.name}</span>
+                </>
+              )}
             </div>
             <div className="text-gray-600">
-              Time: {format(event.start, "hh:mm a")} –{" "}
-              {format(event.end, "hh:mm a")}
-            </div>
-            <div className="text-gray-500 text-xs mt-1">
-              {format(event.start, "MMMM dd, yyyy")}
+              Experience: {event.extendedProps?.experienceInYears || "N/A"}{" "}
+              Years
             </div>
           </TooltipContent>
         </Tooltip>
@@ -147,8 +149,8 @@ export const ReactBigCalendar = ({
   const eventPropGetter = useCallback((event: any) => {
     return {
       style: {
-        backgroundColor: event.backgroundColor || "#039be5",
-        borderColor: event.borderColor || event.backgroundColor || "#039be5",
+        backgroundColor: event.backgroundColor || "#10b981",
+        borderColor: event.borderColor || event.backgroundColor || "#10b981",
         color: "#ffffff",
         borderRadius: "4px",
         border: "none",
@@ -242,8 +244,8 @@ export const ReactBigCalendar = ({
         <div className="flex items-center gap-4">
           {onViewChange && (
             <>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
+              {/* <DropdownMenu> */}
+              {/* <DropdownMenuTrigger asChild>
                   <Button
                     variant="outline"
                     className="min-w-[90px] justify-between border-gray-300 text-gray-700 hover:bg-gray-50"
@@ -251,19 +253,19 @@ export const ReactBigCalendar = ({
                     {view.charAt(0).toUpperCase() + view.slice(1)}
                     <ChevronLeft className="h-4 w-4 rotate-270 ml-2" />
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-40">
-                  <DropdownMenuItem onClick={() => handleViewChange("day")}>
+                </DropdownMenuTrigger> */}
+              {/* <DropdownMenuContent align="end" className="w-40"> */}
+              {/* <DropdownMenuItem onClick={() => handleViewChange("day")}>
                     Day
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleViewChange("week")}>
                     Week
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleViewChange("month")}>
+                  </DropdownMenuItem> */}
+              {/* <DropdownMenuItem onClick={() => handleViewChange("month")}>
                     Month
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                  </DropdownMenuItem> */}
+              {/* </DropdownMenuContent> */}
+              {/* </DropdownMenu> */}
             </>
           )}
         </div>
@@ -284,7 +286,7 @@ export const ReactBigCalendar = ({
             onSelectSlot={(slotInfo: SlotInfo) => onDateClick(slotInfo.start)}
             onSelectEvent={(event: any) => onEventClick(event)}
             eventPropGetter={eventPropGetter}
-            selectable={userRole != roles.DEVELOPER}
+            selectable={userRole === roles.ADMIN}
             popup
             components={{
               toolbar: () => null,
