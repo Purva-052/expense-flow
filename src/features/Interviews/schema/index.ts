@@ -68,17 +68,18 @@ export const interviewFormSchema = z
     interviewerComment: z.string().optional(),
     interviewStatus: z.string().min(1, "Status is required"),
     joiningDate: z
-      .any()
+      .union([z.date(), z.string()])
+      .optional()
       .refine(
         (val) => {
-          if (val === null || val === undefined || val === "") return true; // allow optional
-          return !isNaN(Date.parse(val)); // validate only if value exists
+          if (!val) return true;
+          if (val instanceof Date) return true;
+          return !isNaN(Date.parse(val));
         },
         {
           message: "Invalid date format.",
         }
-      )
-      .optional(),
+      ),
   })
   // This refine function ensures that the interviewUrl is provided only when 'video_call' is selected
   .refine(

@@ -31,6 +31,7 @@ const ProjectDocumentComponent = ({ projectId, projectName }: any) => {
     page: 1,
     search: "",
     pagination: true,
+    projectId: projectId,
   });
 
   const {

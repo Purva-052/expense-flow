@@ -8,6 +8,7 @@ import { useState } from "react";
 export function ActionFormModal({
   technologyList,
   technologyListLoading,
+  selectedDate,
 }: any) {
   const { open, setOpen, currentRow, setCurrentRow } = useNewJoineeStore();
   const [_, setIsDeleteDialogOpen] = useState(false);
@@ -76,6 +77,7 @@ export function ActionFormModal({
         onSubmit={handleCreate}
         technologyListData={technologyList?.data}
         technologyListLoading={technologyListLoading}
+        selectedDate={selectedDate}
       />
 
       {/* ------ DELETE MODAL ------ */}

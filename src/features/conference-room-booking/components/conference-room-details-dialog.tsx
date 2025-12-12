@@ -62,7 +62,7 @@ export const ConferenceRoomDetailsDialog = ({
 
   // Parse dates
   const startDate = new Date(details.startDate);
-  // const endDate = new Date(details.endDate);
+  const endDate = new Date(details.endDate);
 
   // Combine date + time (VALID JS Dates)
   const startDateTime = new Date(`${details.startDate}T${details.startTime}`);
@@ -227,6 +227,16 @@ export const ConferenceRoomDetailsDialog = ({
                           (r) => r.value === details.recurringType
                         )?.label || details.recurringType}
                       </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                    <Tag className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-xs text-muted-foreground uppercase mb-1">
+                        Recurring End Date
+                      </p>
+                      <p className="text-sm font-medium">{format(endDate, "PPP")}</p>
                     </div>
                   </div>
                 </div>

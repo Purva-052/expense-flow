@@ -30,6 +30,7 @@ interface Props {
   onSubmit: (values: TJoineeFormSchema) => void;
   technologyListData?: { id: number; name: string }[];
   technologyListLoading?: boolean;
+  selectedDate?: Date | null;
 }
 
 export function NewJoineeActionForm({
@@ -40,6 +41,7 @@ export function NewJoineeActionForm({
   loading,
   technologyListData,
   technologyListLoading,
+  selectedDate,
 }: Readonly<Props>) {
   const isEdit = !!currentRow;
 
@@ -64,7 +66,7 @@ export function NewJoineeActionForm({
           experienceInYears: "",
           notes: "",
           interviewerComments: "",
-          joiningDate: "",
+          joiningDate: selectedDate || "",
         },
   });
 

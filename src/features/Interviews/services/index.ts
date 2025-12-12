@@ -30,7 +30,10 @@ export const useGetInterview = (params?: {
 }) => {
   return useFetchData({
     url: Interview_list,
-    params,
+    params: {
+      ...params,
+      view: "calender",
+    },
     enabled: !!params?.timezone && !!params?.startDate && !!params?.endDate,
   });
 };
