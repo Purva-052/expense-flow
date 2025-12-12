@@ -92,7 +92,6 @@ export const InterviewForm = ({
   const isEditMode = !!initialData;
   const userRole = user?.user?.role;
 
-
   const extractTime = (isoString: string) => {
     if (!isoString) return "";
     const date = new Date(isoString);
@@ -125,18 +124,20 @@ export const InterviewForm = ({
       ? baseStatuses // admin on add → all statuses
       : baseStatuses.filter((s) => ADD_STATUSES.includes(s.value));
 
-
-  // Adjust schema based on edit mode and role
+  // Adjust schema based on edit mode, role, and status
   let activeSchema = interviewFormSchema;
   if (isEditMode && userRole === roles.ADMIN) {
     activeSchema = interviewFormSchema.refine(
       (data) => {
+        // Only require joining date if status is "joining"
+        if (data.interviewStatus !== "joining") return true;
+
         const val = data.joiningDate;
         if (val instanceof Date) return true;
         return !!val && typeof val === "string" && val.trim().length > 0;
       },
       {
-        message: "Joining Date is required",
+        message: "Joining Date is required when status is Joining",
         path: ["joiningDate"],
       }
     ) as any;
@@ -204,6 +205,7 @@ export const InterviewForm = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialData, currentStep]);
   const interviewType = form.watch("interviewType");
+  const interviewStatus = form.watch("interviewStatus");
   const startTime = form.watch("startTime");
   const { mutateAsync: uploadResume } = useCreateInterviewResumeLink();
 
@@ -332,12 +334,12 @@ export const InterviewForm = ({
       const step2Errors = step2Fields.filter(
         (field) => formState.errors[field]
       );
-      console.log('step2Errors: ', step2Errors);
+      console.log("step2Errors: ", step2Errors);
       if (step2Errors.length > 0) {
         const firstError = step2Errors[0];
-        console.log('firstError: ', firstError);
+        console.log("firstError: ", firstError);
         const errorElement = document.querySelector(`[name="${firstError}"]`);
-        console.log('errorElement: ', errorElement);
+        console.log("errorElement: ", errorElement);
         if (errorElement) {
           errorElement.scrollIntoView({
             behavior: "smooth",
@@ -655,13 +657,15 @@ export const InterviewForm = ({
                     sortOptions={false}
                   />
 
-                  {isEditMode && userRole === roles.ADMIN && (
-                    <CustomDatePicker
-                      control={form.control}
-                      name="joiningDate"
-                      label="Joining Date"
-                    />
-                  )}
+                  {isEditMode &&
+                    userRole === roles.ADMIN &&
+                    interviewStatus === "joining" && (
+                      <CustomDatePicker
+                        control={form.control}
+                        name="joiningDate"
+                        label="Joining Date"
+                      />
+                    )}
 
                   <FormField
                     control={form.control}
