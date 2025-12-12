@@ -54,6 +54,15 @@ export const JoineeDetailsDialog = ({
   const canDelete =
     userRole === roles.ADMIN || userRole === roles.PROJECT_MANAGER;
 
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
   const joinee = event.extendedProps;
 
   return (
@@ -132,7 +141,7 @@ export const JoineeDetailsDialog = ({
           <div>
             <h3 className="text-sm font-medium">Joining Date</h3>
             <p className="text-sm text-gray-600">
-              {joinee.joiningDate || "N/A"}
+              {formatDate(joinee.joiningDate) || "N/A"}
             </p>
           </div>
           <div>
