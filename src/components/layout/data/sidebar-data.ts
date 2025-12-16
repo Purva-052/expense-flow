@@ -13,7 +13,7 @@ import {
   IconUsers,
   IconUserScreen,
 } from "@tabler/icons-react";
-import { CalendarCheck, Command, Cpu } from "lucide-react";
+import { CalendarCheck, Command, Cpu, ScrollText } from "lucide-react";
 import { type SidebarData } from "../types";
 import { useAuthStore } from "@/stores/use-auth-store";
 
@@ -132,6 +132,12 @@ export const sidebarData: SidebarData = {
           url: "/Inquiry-type",
           icon: IconPencilSearch,
           requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+        },
+        {
+          title: "Transactions",
+          url: "/transactions-logs",
+          icon: ScrollText,
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER, roles.TEAM_LEAD],
         },
         {
           title: "Clients",

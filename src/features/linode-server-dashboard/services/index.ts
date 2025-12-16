@@ -18,6 +18,13 @@ export const useGetLinodeInstanceDetail = (
   });
 };
 
+export const useGetInstanceDetailById = (id?: any) => {
+  return useFetchData({
+    url: `${API.linode_api.detailsById}/${id}`,
+    enabled: !!id,
+  });
+};
+
 export const useGetLinodeDashboardAnalytics = () => {
   return useFetchData({ url: API.linode_api.dashboardAnalytics });
 };

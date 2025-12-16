@@ -93,6 +93,7 @@ const API = {
   linode_api: {
     list: "/linode/instances",
     details: "/linode/instances/stats",
+    detailsById: "/linode/instances",
     dashboardAnalytics: "/linode/instance/dashboard",
     instances: "/linode/mock/instances",
     instanceDetail: "/linode/mock/instances/stats",
@@ -102,6 +103,12 @@ const API = {
     create: "/conference/create",
     update: "/conference/update",
     delete: "/conference/delete",
+  },
+  transaction_logs: {
+    list: "/transaction-logs",
+    create: "/transaction-logs",
+    update: "/transaction-logs",
+    delete: "/transaction-logs",
   },
 };
 
