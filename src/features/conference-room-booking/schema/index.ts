@@ -3,10 +3,10 @@ import * as z from "zod";
 export const conferenceRoomBookingFormSchema = z
   .object({
     meetingName: z.string().min(1, "Meeting name is required"),
-    projectId: z.preprocess(
-      (val) => (val === "" ? undefined : val),
-      z.string().optional()
-    ),
+    projectId: z.preprocess((val) => {
+      if (val === "" || val === null) return undefined;
+      return String(val); // number -> string
+    }, z.string().optional()),
     color: z
       .string()
       .regex(/^#([0-9A-Fa-f]{6})$/, "Invalid HEX color")
