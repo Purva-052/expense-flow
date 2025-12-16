@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Cpu, HardDrive, MemoryStick, Server } from "lucide-react";
+import { Cpu, HardDrive, MapPin, MemoryStick, Server } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useGetLinodeInstanceDetail, useGetLinodeList } from "../services";
 import {
@@ -38,7 +38,7 @@ export default function LinodeInstanceDetail({
     currentDate.getMonth() + 1
   );
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
-  
+
   // State for synchronized tooltips
   const [syncId] = useState("performanceCharts");
 
@@ -130,7 +130,7 @@ export default function LinodeInstanceDetail({
 
           {/* Specs Cards Skeleton */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((i) => (
+            {[1, 2, 3, 4, 5].map((i) => (
               <Card key={i}>
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3">
@@ -246,6 +246,22 @@ export default function LinodeInstanceDetail({
                     Type
                   </p>
                   <p className="text-lg font-bold">{instance.type}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
+                  <MapPin className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                    Region
+                  </p>
+                  <p className="text-lg font-bold">{instance.region}</p>
                 </div>
               </div>
             </CardContent>
