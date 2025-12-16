@@ -43,6 +43,8 @@ import {
 // } from "@/components/ui/select";
 import { InterviewEvent } from "../types";
 import { interviewStatuses, interviewTypes } from "../constants";
+import { useAuthStore } from "@/stores/use-auth-store";
+import { roles } from "@/utils/constant";
 // import { useUpdateInterview } from "../services";
 // import { useAuthStore } from "@/stores/use-auth-store";
 // import { roles } from "@/utils/constant";
@@ -66,8 +68,8 @@ export const InterviewDetailsDialog = ({
 }: InterviewDetailsDialogProps) => {
   if (!event) return null;
 
-  // const user = useAuthStore((state) => state.user);
-  // const userRole = user?.user?.role;
+  const user = useAuthStore((state) => state.user);
+  const userRole = user?.user?.role;
   // const baseStatuses = interviewStatuses;
 
   // Step 1: extract values for reuse
@@ -255,7 +257,7 @@ export const InterviewDetailsDialog = ({
                       <TooltipContent>Edit interview</TooltipContent>
                     </Tooltip>
                   )}
-                  {onDelete && (
+                  {onDelete && userRole === roles.ADMIN && (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button

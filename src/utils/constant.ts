@@ -39,6 +39,14 @@ export const roles: Roles = {
   BDE: "bde",
 };
 
+export const roleToDisplay = [
+  { label: "Admin", value: roles.ADMIN },
+  { label: "Project Manager", value: roles.PROJECT_MANAGER },
+  { label: "Team Lead", value: roles.TEAM_LEAD },
+  { label: "Developer", value: roles.DEVELOPER },
+  { label: "Business Development Team", value: roles.BDE },
+];
+
 export const roleLabels: Record<string, string> = {
   bde: "Business Development Team",
 };

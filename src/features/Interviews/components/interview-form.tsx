@@ -234,28 +234,7 @@ export const InterviewForm = ({
     }
   }, [interviewType, currentStep, form]);
 
-  const handleResumeUpload = async (file: File) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("folder", "interview-resumes");
 
-    try {
-      const response: any = await uploadResume(formData);
-
-      if (response?.key) {
-        setUploadedResumeKey(response.key);
-        setHasExistingFile(true);
-
-        // IMPORTANT: Form state update karein taaki validation pass ho
-        form.setValue("resumeS3Key", response.key, { shouldValidate: true });
-
-        // Optional: Error clear karein
-        form.clearErrors("resumeS3Key");
-      }
-    } catch (error) {
-      console.error("Upload failed", error);
-    }
-  };
 
   const handleResumeRemove = () => {
     // Clear all resume-related state
@@ -277,6 +256,19 @@ export const InterviewForm = ({
 
     if (currentStep === 1) {
       const isValid = await trigger(step1Fields, { shouldFocus: true });
+      
+      // Manual validation for resume
+      const resumeFile = form.getValues("resume");
+      const resumeKey = form.getValues("resumeS3Key");
+      
+      if (!resumeFile && !resumeKey) {
+        form.setError("resume", {
+          type: "manual",
+          message: "Resume is required",
+        });
+        return; // Stop if resume is missing
+      }
+
       if (isValid) {
         // Clear any step 2 errors before moving forward
         step2Fields.forEach((field) => {
@@ -319,10 +311,30 @@ export const InterviewForm = ({
     const isValid = await trigger(step2Fields, { shouldFocus: true });
 
     if (isValid) {
-      // Add the uploaded resume key to form data before submitting
+      let finalResumeKey = uploadedResumeKey || data.resumeS3Key || "";
+
+      // Handle file upload if new file is selected
+      const resumeFile = data.resume;
+      if (resumeFile instanceof File) {
+        const formData = new FormData();
+        formData.append("file", resumeFile);
+        formData.append("folder", "interview-resumes");
+
+        try {
+          const response: any = await uploadResume(formData);
+          if (response?.key) {
+            finalResumeKey = response.key;
+          }
+        } catch (error) {
+          console.error("Upload failed", error);
+          // Optional: handle upload error (e.g. show toast, stay on page)
+          return; 
+        }
+      }
+
       const submissionData = {
         ...data,
-        resumeS3Key: uploadedResumeKey || data.resumeS3Key || "",
+        resumeS3Key: finalResumeKey,
         joiningDate:
           data.joiningDate instanceof Date
             ? data.joiningDate.toISOString()
@@ -334,12 +346,12 @@ export const InterviewForm = ({
       const step2Errors = step2Fields.filter(
         (field) => formState.errors[field]
       );
-      console.log("step2Errors: ", step2Errors);
+      // console.log("step2Errors: ", step2Errors);
       if (step2Errors.length > 0) {
         const firstError = step2Errors[0];
-        console.log("firstError: ", firstError);
+        // console.log("firstError: ", firstError);
         const errorElement = document.querySelector(`[name="${firstError}"]`);
-        console.log("errorElement: ", errorElement);
+        // console.log("errorElement: ", errorElement);
         if (errorElement) {
           errorElement.scrollIntoView({
             behavior: "smooth",
@@ -543,7 +555,7 @@ export const InterviewForm = ({
                     <FileUpload
                       name="resume"
                       label="Resume (CV)"
-                      onFileSelect={handleResumeUpload}
+                      onFileSelect={undefined}
                       onFileRemove={handleResumeRemove}
                       existingFileUrl={
                         hasExistingFile && initialData?.resumeLink
@@ -727,7 +739,7 @@ export const InterviewForm = ({
                 type="submit"
                 className="flex-1 sm:flex-initial"
                 disabled={isSubmitting}
-                onClick={() => console.log("clicked")}
+                // onClick={() => console.log("clicked")}
               >
                 {isEditMode
                   ? "Update Interview"
