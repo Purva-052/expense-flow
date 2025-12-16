@@ -84,7 +84,7 @@ export const sidebarData: SidebarData = {
           title: "To be Join",
           url: "/New-joinees",
           icon: IconUsers,
-          requiredRoles: [roles.ADMIN],
+          requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
         {
           title: "Linode Server Dashboard",

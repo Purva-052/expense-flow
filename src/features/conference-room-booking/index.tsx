@@ -38,7 +38,7 @@ import { ConferenceRoomApiResponse, ConferenceRoomEvent } from "./types";
 import { FilterConfig } from "@/components/table/table-toolbar";
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import { useGetProjectSDropdownList } from "../Project-type/services";
-  
+
 // --- MAIN PAGE COMPONENT ---
 const ConferenceRoomBookingPage = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -301,11 +301,13 @@ const ConferenceRoomBookingPage = () => {
       const apiBody = {
         meetingName: data.meetingName,
         projectId: Number(data.projectId),
+        color: data.color,
         startDate: startDateForAPI, // YYYY-MM-DD format
         endDate: endDateForAPI, // YYYY-MM-DD format
         startTime: formatTimeForAPI(data.startTime), // HH:mm:ss format
         endTime: formatTimeForAPI(data.endTime), // HH:mm:ss format
         recurringType: data.recurringType,
+        daysOfWeek: data.daysOfWeek,
         // notes: data.notes || "",
       };
 
@@ -425,6 +427,7 @@ const ConferenceRoomBookingPage = () => {
               projectsList={projectsList}
               projectsListLoading={projectsListLoading}
               isSubmitting={isCreatingBooking}
+              existingEvents={events}
             />
           </DialogContent>
         </Dialog>
@@ -450,6 +453,7 @@ const ConferenceRoomBookingPage = () => {
               projectsListLoading={projectsListLoading}
               isSubmitting={isUpdatingBooking}
               initialData={eventToEdit.extendedProps}
+              existingEvents={events}
             />
           </DialogContent>
         </Dialog>

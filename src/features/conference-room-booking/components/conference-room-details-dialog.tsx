@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/tooltip";
 import { ConferenceRoomEvent } from "../types";
 import { recurringTypes } from "../constants";
+import { roleToDisplay } from "@/utils/constant";
 // import { useGetProjectSDropdownList } from "@/features/Project-type/services";
 
 interface ConferenceRoomDetailsDialogProps {
@@ -94,7 +95,7 @@ export const ConferenceRoomDetailsDialog = ({
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/30 border border-border/50">
                   <Tag className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-muted-foreground">
-                    {details.project.name}
+                    {details.project?.name}
                   </span>
                 </div>
 
@@ -183,7 +184,7 @@ export const ConferenceRoomDetailsDialog = ({
                         Project
                       </p>
                       <p className="text-sm font-medium">
-                        {details.project.name || "N/A"}
+                        {details.project?.name || "N/A"}
                       </p>
                     </div>
                   </div>
@@ -234,9 +235,13 @@ export const ConferenceRoomDetailsDialog = ({
                     <Tag className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                     <div className="flex-1">
                       <p className="text-xs text-muted-foreground uppercase mb-1">
-                        Recurring End Date
+                        {details.recurringType === "none"
+                          ? "End Date"
+                          : "Recurrence End Date"}
                       </p>
-                      <p className="text-sm font-medium">{format(endDate, "PPP")}</p>
+                      <p className="text-sm font-medium">
+                        {format(endDate, "PPP")}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -286,7 +291,9 @@ export const ConferenceRoomDetailsDialog = ({
                       {details.createdBy.fullName}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {details.createdBy.role}
+                      {roleToDisplay.find(
+                        (r) => r.value === details.createdBy.role
+                      )?.label || details.createdBy.role}
                     </p>
                   </div>
                 </div>

@@ -3,25 +3,38 @@ import * as z from "zod";
 export const conferenceRoomBookingFormSchema = z
   .object({
     meetingName: z.string().min(1, "Meeting name is required"),
-    projectId: z.any().refine(
-      (val) => {
-        return val != null && val !== "" && String(val).trim().length > 0;
-      },
-      {
-        message: "Project is required",
-      }
+    projectId: z.preprocess(
+      (val) => (val === "" ? undefined : val),
+      z.string().optional()
     ),
+    color: z
+      .string()
+      .regex(/^#([0-9A-Fa-f]{6})$/, "Invalid HEX color")
+      .optional(),
     startTime: z.string().min(1, "Start time is required"),
     endTime: z.string().min(1, "End time is required"),
     recurringType: z.string().min(1, "Recurring type is required"),
     notes: z.string().optional(),
     // Optional endDate for recurring bookings (startDate comes from calendar selection)
     endDate: z.date().optional(),
+    daysOfWeek: z
+      .object({
+        mon: z.boolean().optional(),
+        tue: z.boolean().optional(),
+        wed: z.boolean().optional(),
+        thu: z.boolean().optional(),
+        fri: z.boolean().optional(),
+        sat: z.boolean().optional(),
+        sun: z.boolean().optional(),
+      })
+      .optional(),
   })
   .refine(
     (data) => {
       if (data.startTime && data.endTime) {
-        const [startHours, startMinutes] = data.startTime.split(":").map(Number);
+        const [startHours, startMinutes] = data.startTime
+          .split(":")
+          .map(Number);
         const [endHours, endMinutes] = data.endTime.split(":").map(Number);
         const startTotal = startHours * 60 + startMinutes;
         const endTotal = endHours * 60 + endMinutes;

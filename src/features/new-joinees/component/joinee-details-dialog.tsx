@@ -51,8 +51,7 @@ export const JoineeDetailsDialog = ({
 }: JoineeDetailsDialogProps) => {
   const user = useAuthStore((state) => state.user);
   const userRole = user?.user?.role;
-  const canDelete =
-    userRole === roles.ADMIN || userRole === roles.PROJECT_MANAGER;
+  const canDelete = userRole === roles.ADMIN;
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "N/A";
