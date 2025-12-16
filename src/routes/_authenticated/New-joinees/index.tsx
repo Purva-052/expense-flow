@@ -5,7 +5,8 @@ import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/New-joinees/")({
   component: RouteComponent,
-  beforeLoad: () => requireRole([roles.ADMIN]),
+  beforeLoad: () =>
+    requireRole([roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER]),
 });
 
 function RouteComponent() {

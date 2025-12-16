@@ -127,9 +127,12 @@ export const ReactBigCalendar = ({
           </TooltipTrigger>
 
           <TooltipContent side="right" className="p-3 text-sm rounded-md">
-            <div className="font-semibold">{event.title}</div>
+            {/* <div className="font-semibold"></div> */}
+            <div className="font-bold">
+              {event.extendedProps?.createdBy?.fullName} - {event.title}
+            </div>
             <div className="text-gray-600 mt-1">
-              Project: {event.extendedProps?.project?.name}
+              Project: {event.extendedProps?.project?.name || "NA"}
             </div>
             <div className="text-gray-600">
               Time: {format(event.start, "hh:mm a")} –{" "}

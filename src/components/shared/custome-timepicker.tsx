@@ -10,6 +10,7 @@ interface TimePickerProps {
   onChange: (val: string) => void;
   placeholder?: string;
   minTime?: string;
+  className?: string;
 }
 
 const TimePicker = ({
@@ -17,6 +18,7 @@ const TimePicker = ({
   onChange,
   placeholder,
   minTime,
+  className,
 }: TimePickerProps) => {
   const [open, setOpen] = useState(false);
   const [selectedHour, setSelectedHour] = useState("00");
@@ -152,6 +154,7 @@ const TimePicker = ({
             placeholder={placeholder || "Select time"}
             readOnly
             onClick={() => setOpen(true)}
+            className={className}
           />
           <Clock
             className="absolute top-1/2 right-2 h-5 w-5 -translate-y-1/2 cursor-pointer text-gray-500"
