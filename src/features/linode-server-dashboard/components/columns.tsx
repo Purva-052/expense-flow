@@ -9,7 +9,7 @@ import { LinodeInstance } from "../types";
 export const columns: ColumnDef<LinodeInstance>[] = [
   {
     accessorKey: "label",
-    header: "Label",
+    header: "Server Name",
     cell: ({ row }) => (
       <span className="font-medium">{row.original.label}</span>
     ),
@@ -44,11 +44,11 @@ export const columns: ColumnDef<LinodeInstance>[] = [
     accessorKey: "type",
     header: "Type",
   },
-  {
-    accessorKey: "region",
-    header: "Region",
-    cell: ({ row }) => <span className="uppercase">{row.original.region}</span>,
-  },
+  // {
+  //   accessorKey: "region",
+  //   header: "Region",
+  //   cell: ({ row }) => <span className="uppercase">{row.original.region}</span>,
+  // },
   {
     accessorKey: "ipv4",
     header: "IPv4 Address",
@@ -93,8 +93,40 @@ export const columns: ColumnDef<LinodeInstance>[] = [
     ),
   },
   {
+    accessorKey: "backups.enabled",
+    header: "Backups",
+    cell: ({ row }) => {
+      const backupsEnabled = row.original.backups.enabled;
+      return backupsEnabled ? (
+        <Badge variant="success">Enabled</Badge>
+      ) : (
+        <Badge variant="destructive">Disabled</Badge>
+      );
+    },
+  },
+  {
+    accessorKey: "backups.last_successful",
+    header: "Last Backup",
+    cell: ({ row }) => {
+      const lastBackup = row.original.backups.last_successful;
+      if (!lastBackup) {
+        return <span className="text-sm">N/A</span>;
+      }
+      const date = new Date(lastBackup);
+      return (
+        <span className="text-sm">
+          {date.toLocaleDateString("en-IN", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          })}
+        </span>
+      );
+    },
+  },
+  {
     accessorKey: "created",
-    header: "Created",
+    header: "Created Date",
     cell: ({ row }) => {
       const date = new Date(row.original.created);
       return (
@@ -126,7 +158,7 @@ export const columns: ColumnDef<LinodeInstance>[] = [
           className="gap-2"
         >
           <Eye className="h-4 w-4" />
-          View Instance
+          View
         </Button>
       );
     },

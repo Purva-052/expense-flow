@@ -115,7 +115,9 @@ export const JoineeCalendar = ({
               style={{ opacity: isHovered ? 0.85 : 1 }}
             >
               <div className="flex items-center gap-1 text-[11px] font-medium leading-tight truncate flex-1">
-                <span className="truncate font-medium">{event.title}</span>
+                <span className="truncate font-medium">
+                  {event.title} - {event.extendedProps?.technology?.name}
+                </span>
               </div>
             </div>
           </TooltipTrigger>
