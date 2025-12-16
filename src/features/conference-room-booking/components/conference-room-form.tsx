@@ -194,41 +194,41 @@ export const ConferenceRoomForm = ({
 
         while (current <= limitDate) {
           if (type === "daily") {
-             // For daily, check if current day of week is selected
-             // daysOfWeek keys: mon, tue, wed, thu, fri, sat, sun
-             // current.getDay(): 0=Sun, 1=Mon, ..., 6=Sat
-             const mapDay: Record<number, string> = {
-               0: "sun",
-               1: "mon",
-               2: "tue",
-               3: "wed",
-               4: "thu",
-               5: "fri",
-               6: "sat"
-             };
-             const dayKey = mapDay[current.getDay()];
-             if (days && days[dayKey]) {
-                dates.push(new Date(current));
-             }
+            // For daily, check if current day of week is selected
+            // daysOfWeek keys: mon, tue, wed, thu, fri, sat, sun
+            // current.getDay(): 0=Sun, 1=Mon, ..., 6=Sat
+            const mapDay: Record<number, string> = {
+              0: "sun",
+              1: "mon",
+              2: "tue",
+              3: "wed",
+              4: "thu",
+              5: "fri",
+              6: "sat",
+            };
+            const dayKey = mapDay[current.getDay()];
+            if (days && days[dayKey]) {
+              dates.push(new Date(current));
+            }
           } else if (type === "weekly") {
-             dates.push(new Date(current)); // already initialized to start date, so adds first, then adds 7 days
+            dates.push(new Date(current)); // already initialized to start date, so adds first, then adds 7 days
           } else if (type === "biweekly") {
-             dates.push(new Date(current));
+            dates.push(new Date(current));
           } else if (type === "monthly") {
-             dates.push(new Date(current));
+            dates.push(new Date(current));
           }
 
           // Advance current date
           if (type === "daily") {
-             current.setDate(current.getDate() + 1);
+            current.setDate(current.getDate() + 1);
           } else if (type === "weekly") {
-             current.setDate(current.getDate() + 7);
+            current.setDate(current.getDate() + 7);
           } else if (type === "biweekly") {
-             current.setDate(current.getDate() + 14);
+            current.setDate(current.getDate() + 14);
           } else if (type === "monthly") {
-             current.setMonth(current.getMonth() + 1);
+            current.setMonth(current.getMonth() + 1);
           } else {
-             break; // prevent infinite loop for unknown types
+            break; // prevent infinite loop for unknown types
           }
         }
         return dates;
@@ -246,32 +246,32 @@ export const ConferenceRoomForm = ({
       let overlappingEventFound = false;
 
       for (const instanceDate of instancesToCheck) {
-         const currentStart = parseDateTime(instanceDate, data.startTime);
-         const currentEnd = parseDateTime(instanceDate, data.endTime);
+        const currentStart = parseDateTime(instanceDate, data.startTime);
+        const currentEnd = parseDateTime(instanceDate, data.endTime);
 
-         const hasOverlap = existingEvents.some((event) => {
-            if (initialData && String(initialData.id) === event.id) {
-               return false;
-            }
+        const hasOverlap = existingEvents.some((event) => {
+          if (initialData && String(initialData.id) === event.id) {
+            return false;
+          }
 
-            const eventStart = new Date(event.start || "");
-            const eventEnd = new Date(event.end || "");
+          const eventStart = new Date(event.start || "");
+          const eventEnd = new Date(event.end || "");
 
-            // Check if event is on the same day as this instance
-            const isSameDay =
-              currentStart.getFullYear() === eventStart.getFullYear() &&
-              currentStart.getMonth() === eventStart.getMonth() &&
-              currentStart.getDate() === eventStart.getDate();
+          // Check if event is on the same day as this instance
+          const isSameDay =
+            currentStart.getFullYear() === eventStart.getFullYear() &&
+            currentStart.getMonth() === eventStart.getMonth() &&
+            currentStart.getDate() === eventStart.getDate();
 
-            if (!isSameDay) return false;
+          if (!isSameDay) return false;
 
-            return currentStart < eventEnd && currentEnd > eventStart;
-         });
+          return currentStart < eventEnd && currentEnd > eventStart;
+        });
 
-         if (hasOverlap) {
-            overlappingEventFound = true;
-            break; // Stop checking if we found one
-         }
+        if (hasOverlap) {
+          overlappingEventFound = true;
+          break; // Stop checking if we found one
+        }
       }
 
       if (overlappingEventFound) {
@@ -481,7 +481,7 @@ export const ConferenceRoomForm = ({
                                     className={cn(
                                       "flex h-9 min-w-[3rem] cursor-pointer items-center justify-center rounded-md border text-xs font-medium transition-all select-none shadow-sm hover:shadow-md",
                                       field.value
-                                        ? "border-primary bg-primary text-primary-foreground hover:bg-primary/90"
+                                        ? "border-primary bg-gradient-primary text-primary-foreground hover:bg-primary/90"
                                         : "border-input bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground/30"
                                     )}
                                   >
