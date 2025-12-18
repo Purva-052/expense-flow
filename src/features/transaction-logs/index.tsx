@@ -34,6 +34,7 @@ const TransactionPage = () => {
     pagination: true,
     projectId: listParams.projectId,
     transactionType: listParams.transactionType,
+    subscriptionCycle: listParams.subscriptionCycle,
   };
 
   const handleProjectChange = (value: any) => {
