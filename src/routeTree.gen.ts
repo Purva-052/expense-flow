@@ -21,6 +21,7 @@ import { Route as authSignInRouteImport } from './routes/(auth)/sign-in'
 import { Route as authOtpRouteImport } from './routes/(auth)/otp'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
+import { Route as AuthenticatedTransactionsLogsIndexRouteImport } from './routes/_authenticated/transactions-logs/index'
 import { Route as AuthenticatedTechnologyIndexRouteImport } from './routes/_authenticated/technology/index'
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects/index'
 import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authenticated/profile/index'
@@ -95,6 +96,12 @@ const AuthenticatedUsersIndexRoute = AuthenticatedUsersIndexRouteImport.update({
   path: '/users/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTransactionsLogsIndexRoute =
+  AuthenticatedTransactionsLogsIndexRouteImport.update({
+    id: '/transactions-logs/',
+    path: '/transactions-logs/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedTechnologyIndexRoute =
   AuthenticatedTechnologyIndexRouteImport.update({
     id: '/technology/',
@@ -203,6 +210,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AuthenticatedProfileIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
   '/technology': typeof AuthenticatedTechnologyIndexRoute
+  '/transactions-logs': typeof AuthenticatedTransactionsLogsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
   '/Linode-server-dashboard/detail/$id': typeof AuthenticatedLinodeServerDashboardDetailIdRoute
   '/projects/detail/$id': typeof AuthenticatedProjectsDetailIdRoute
@@ -230,6 +238,7 @@ export interface FileRoutesByTo {
   '/profile': typeof AuthenticatedProfileIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
   '/technology': typeof AuthenticatedTechnologyIndexRoute
+  '/transactions-logs': typeof AuthenticatedTransactionsLogsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
   '/Linode-server-dashboard/detail/$id': typeof AuthenticatedLinodeServerDashboardDetailIdRoute
   '/projects/detail/$id': typeof AuthenticatedProjectsDetailIdRoute
@@ -259,6 +268,7 @@ export interface FileRoutesById {
   '/_authenticated/profile/': typeof AuthenticatedProfileIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
   '/_authenticated/technology/': typeof AuthenticatedTechnologyIndexRoute
+  '/_authenticated/transactions-logs/': typeof AuthenticatedTransactionsLogsIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
   '/_authenticated/Linode-server-dashboard/detail/$id': typeof AuthenticatedLinodeServerDashboardDetailIdRoute
   '/_authenticated/projects/detail/$id': typeof AuthenticatedProjectsDetailIdRoute
@@ -288,6 +298,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/projects'
     | '/technology'
+    | '/transactions-logs'
     | '/users'
     | '/Linode-server-dashboard/detail/$id'
     | '/projects/detail/$id'
@@ -315,6 +326,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/projects'
     | '/technology'
+    | '/transactions-logs'
     | '/users'
     | '/Linode-server-dashboard/detail/$id'
     | '/projects/detail/$id'
@@ -343,6 +355,7 @@ export interface FileRouteTypes {
     | '/_authenticated/profile/'
     | '/_authenticated/projects/'
     | '/_authenticated/technology/'
+    | '/_authenticated/transactions-logs/'
     | '/_authenticated/users/'
     | '/_authenticated/Linode-server-dashboard/detail/$id'
     | '/_authenticated/projects/detail/$id'
@@ -445,6 +458,13 @@ declare module '@tanstack/react-router' {
       path: '/users'
       fullPath: '/users'
       preLoaderRoute: typeof AuthenticatedUsersIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/transactions-logs/': {
+      id: '/_authenticated/transactions-logs/'
+      path: '/transactions-logs'
+      fullPath: '/transactions-logs'
+      preLoaderRoute: typeof AuthenticatedTransactionsLogsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/technology/': {
@@ -562,6 +582,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProfileIndexRoute: typeof AuthenticatedProfileIndexRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
   AuthenticatedTechnologyIndexRoute: typeof AuthenticatedTechnologyIndexRoute
+  AuthenticatedTransactionsLogsIndexRoute: typeof AuthenticatedTransactionsLogsIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
   AuthenticatedLinodeServerDashboardDetailIdRoute: typeof AuthenticatedLinodeServerDashboardDetailIdRoute
   AuthenticatedProjectsDetailIdRoute: typeof AuthenticatedProjectsDetailIdRoute
@@ -583,6 +604,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProfileIndexRoute: AuthenticatedProfileIndexRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
   AuthenticatedTechnologyIndexRoute: AuthenticatedTechnologyIndexRoute,
+  AuthenticatedTransactionsLogsIndexRoute:
+    AuthenticatedTransactionsLogsIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
   AuthenticatedLinodeServerDashboardDetailIdRoute:
     AuthenticatedLinodeServerDashboardDetailIdRoute,

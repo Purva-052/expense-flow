@@ -107,3 +107,25 @@ export const ProjectServerStatusOptions = [
     value: "INACTIVE",
   },
 ];
+
+export const TransactionTypeOptions = [
+  {
+    label: "One Time",
+    value: "onetime",
+  },
+  {
+    label: "Subscription",
+    value: "subscription",
+  },
+];
+
+export const SubscriptionTypeOptions = [
+  {
+    label: "Monthly",
+    value: "monthly",
+  },
+  {
+    label: "Yearly",
+    value: "yearly",
+  },
+];

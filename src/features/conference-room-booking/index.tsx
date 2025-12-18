@@ -1,15 +1,15 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select";
 import { format } from "date-fns";
-import { Calendar } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 // ShadCN UI Imports
@@ -38,6 +38,7 @@ import { ConferenceRoomApiResponse, ConferenceRoomEvent } from "./types";
 import { FilterConfig } from "@/components/table/table-toolbar";
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import { useGetProjectSDropdownList } from "../Project-type/services";
+import { Button } from "@/components/ui/button";
 
 // --- MAIN PAGE COMPONENT ---
 const ConferenceRoomBookingPage = () => {
@@ -75,13 +76,13 @@ const ConferenceRoomBookingPage = () => {
     projectId: listParams.projectId,
   };
 
-  const currentYear = new Date().getFullYear();
-  const startYear = 2020;
+  // const currentYear = new Date().getFullYear();
+  // const startYear = 2020;
 
-  const years = Array.from(
-    { length: currentYear - startYear + 1 + 3 },
-    (_, i) => startYear + i
-  );
+  // const years = Array.from(
+  //   { length: currentYear - startYear + 1 + 3 },
+  //   (_, i) => startYear + i
+  // );
 
   // Get browser timezone dynamically
   useEffect(() => {
@@ -200,8 +201,8 @@ const ConferenceRoomBookingPage = () => {
           title: booking.meetingName || "Untitled Meeting",
           start: startDateTime.toISOString(),
           end: endDateTime.toISOString(),
-          backgroundColor: "#039be5",
-          borderColor: "#039be5",
+          backgroundColor: booking.color,
+          borderColor: booking.color,
           extendedProps: booking,
         };
       })
@@ -330,12 +331,26 @@ const ConferenceRoomBookingPage = () => {
     setSelectedYear(date.getFullYear());
   };
 
-  const handleYearChange = (year: string) => {
-    const newYear = parseInt(year, 10);
+  const handleYearChange = (direction: "prev" | "next" | "current") => {
+    let newYear: number;
+
+    if (direction === "current") {
+      newYear = new Date().getFullYear();
+    } else if (direction === "prev") {
+      newYear = selectedYear - 1;
+    } else {
+      newYear = selectedYear + 1;
+    }
+
     setSelectedYear(newYear);
 
+    // Update calendar date to selected year with today's month and day
     const today = new Date();
-    const newDate = new Date(newYear, today.getMonth(), today.getDate());
+    const newDate = new Date(
+      newYear,
+      today.getMonth(), // Current month
+      today.getDate() // Current day
+    );
     setCurrentCalendarDate(newDate);
   };
 
@@ -370,23 +385,40 @@ const ConferenceRoomBookingPage = () => {
             <div className="flex items-center gap-2">
               <Calendar className="h-5 w-5 text-muted-foreground" />
               <span className="text-sm font-medium text-muted-foreground">
-                Select Year:
+                Year:
               </span>
-              <Select
-                value={selectedYear.toString()}
-                onValueChange={handleYearChange}
-              >
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Select year" />
-                </SelectTrigger>
-                <SelectContent>
-                  {years.map((year) => (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleYearChange("prev")}
+                  className="h-8 px-3"
+                >
+                  <ChevronLeft /> {selectedYear - 1}
+                </Button>
+                <Button
+                  variant={
+                    selectedYear === new Date().getFullYear()
+                      ? "default"
+                      : "outline"
+                  }
+                  size="sm"
+                  onClick={() => handleYearChange("current")}
+                  className="h-8 px-4 font-semibold"
+                >
+                  {selectedYear === new Date().getFullYear()
+                    ? selectedYear
+                    : "Today"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleYearChange("next")}
+                  className="h-8 px-3"
+                >
+                  {selectedYear + 1} <ChevronRight />
+                </Button>
+              </div>
             </div>
             <GlobalFilterSection filters={filters ?? []} />
           </div>
