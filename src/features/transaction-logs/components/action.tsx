@@ -11,6 +11,7 @@ import { useGetProjectSDropdownList } from "@/features/Project-type/services";
 
 export function ActionFormModal() {
   const { open, setOpen, currentRow, setCurrentRow } = useTransactionStore();
+  // console.log("currentRow: ", currentRow);
 
   const { data: projectsList, isPending: projectsListLoading }: any =
     useGetProjectSDropdownList();
@@ -22,6 +23,10 @@ export function ActionFormModal() {
   const { mutateAsync: deleteMutate, isPending: isDeleteLoading } =
     useDeleteTransactionData(currentRow?.id || "");
 
+  const deleteInfoText = currentRow.project?.name
+    ? `This will permanently delete the transaction for project ${currentRow.project.name} with amount $${currentRow.amount}.`
+    : `This will permanently delete the transaction of amount $${currentRow.amount}.`;
+
   const handleCreate = (values: TTransactionFormSchema) => {
     const payload = {
       reason: values.reason,
@@ -29,6 +34,8 @@ export function ActionFormModal() {
       amount: values.amount,
       cardLast4: values.cardLast4,
       transactionDate: values.transactionDate,
+      transactionType: values.transactionType,
+      subscriptionCycle: values.subscriptionCycle,
     };
     createMutate(payload);
   };
@@ -40,6 +47,8 @@ export function ActionFormModal() {
       amount: values.amount,
       cardLast4: values.cardLast4,
       transactionDate: values.transactionDate,
+      transactionType: values.transactionType,
+      subscriptionCycle: values.subscriptionCycle,
     };
     updateMutate(payload);
   };
@@ -84,7 +93,7 @@ export function ActionFormModal() {
             key={`transaction-delete-${currentRow.id}`}
             isOpen={open === "delete"}
             onClose={handleCloseDialog}
-            itemName={currentRow.name}
+            itemName={deleteInfoText}
             loading={isDeleteLoading}
           />
         </>

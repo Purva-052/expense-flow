@@ -17,8 +17,8 @@ export const interviewTypes = [
 ];
 
 export const interviewRounds = [
-  { value: "technical", label: "Technical" },
-  { value: "practical", label: "Practical" },
+  { value: "Technical", label: "Technical" },
+  { value: "Practical", label: "Practical" },
 ];
 
 export const interviewStatuses = [

@@ -9,7 +9,7 @@ import ServerDetailsCard from "./server-detail-card";
 
 const ProjectServerComponent = ({ projectId, projectName }: any) => {
   const { data: projectServerList, isFetching: projectServerListFetched }: any =
-    useGetProjectServerList({ pagination: false });
+    useGetProjectServerList({ pagination: false, projectId: projectId });
   const {
     setOpen: setOpenProjectServerModal,
     setCurrentRow: setProjectServerCurrentRow,

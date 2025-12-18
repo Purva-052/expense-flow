@@ -49,20 +49,6 @@ export function TransactionLogsActionForm({
   onSubmit: onSubmitValues,
   loading,
 }: Readonly<Props>) {
-  //   const labelStyle = "original";
-  //   const timezones = {
-  //     ...allTimezones,
-  //     "Europe/Berlin": "Frankfurt",
-  //   };
-
-  //   const { options } = useTimezoneSelect({
-  //     labelStyle,
-  //     timezones,
-  //   });
-
-  //   const { data: countryList, isPending: loadingCountry }: any =
-  //     useGetCountryDropdownList();
-
   const isEdit = !!currentRow;
 
   const form = useForm<TTransactionFormSchema>({
@@ -70,28 +56,44 @@ export function TransactionLogsActionForm({
     defaultValues: isEdit
       ? {
           reason: currentRow?.reason ?? "",
-          projectId: currentRow?.projectId ?? "",
+          projectId: currentRow?.projectId ? String(currentRow.projectId) : "",
           amount: currentRow?.amount ?? "",
           cardLast4: currentRow?.cardLast4 ?? "",
-          transactionDate: currentRow?.transactionDate ?? "",
+          transactionDate: currentRow?.transactionDate
+            ? new Date(currentRow.transactionDate)
+            : undefined,
           transactionType: currentRow?.transactionType ?? "",
-          subscriptionType: currentRow?.subscriptionType ?? "",
+          subscriptionCycle: currentRow?.subscriptionCycle ?? "",
         }
       : {
           reason: "",
           projectId: "",
-          amount: 0,
+          amount: "",
           cardLast4: "",
-          transactionDate: "",
+          transactionDate: undefined,
           transactionType: "",
-          subscriptionType: "",
+          subscriptionCycle: "",
         },
   });
 
   const transactionType = form.watch("transactionType");
 
   const onSubmit: SubmitHandler<TTransactionFormSchema> = (values) => {
-    onSubmitValues(values);
+    const payload = {
+      ...values,
+      transactionDate: new Date(values.transactionDate).toISOString(),
+      ...(values.transactionType === "subscription"
+        ? { subscriptionCycle: values.subscriptionCycle }
+        : { subscriptionCycle: undefined }),
+      // Convert empty projectId to undefined
+      projectId: values.projectId || undefined,
+    };
+
+    if (payload.transactionType !== "subscription") {
+      delete payload.subscriptionCycle;
+    }
+
+    onSubmitValues(payload as any);
   };
 
   return (
@@ -138,16 +140,17 @@ export function TransactionLogsActionForm({
               {transactionType === "subscription" && (
                 <CustomDropDownSearchable
                   form={form}
-                  name="subscriptionType"
-                  label="Subscription Type"
+                  name="subscriptionCycle"
+                  label="Subscription Cycle"
                   options={SubscriptionTypeOptions}
-                  placeholder="Select type"
+                  placeholder="Select cycle"
                   searchEnabled={false}
                 />
               )}
               <TextInputField
                 control={form.control}
                 name="amount"
+                type="number"
                 label="Transaction Amount"
                 placeholder="Enter amount"
               />
@@ -178,18 +181,6 @@ export function TransactionLogsActionForm({
                   </FormItem>
                 )}
               />
-              {/* <CustomDropDownSearchable
-                form={form}
-                name="timezone"
-                label="Timezone"
-                isLoading={loadingCountry}
-                sortOptions={true}
-                options={options?.map((opt) => {
-                  return { value: opt.value, label: opt.label };
-                })}
-                placeholder="Select Timezone"
-                searchEnabled={true}
-              /> */}
             </form>
           </Form>
         </div>

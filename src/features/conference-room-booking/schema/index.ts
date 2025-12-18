@@ -59,6 +59,22 @@ export const conferenceRoomBookingFormSchema = z
       message: "End date is required for recurring bookings",
       path: ["endDate"],
     }
+  )
+  .refine(
+    (data) => {
+      // If recurring type is "daily", at least one day must be selected
+      if (data.recurringType === "daily" && data.daysOfWeek) {
+        const hasAtLeastOneDay = Object.values(data.daysOfWeek).some(
+          (day) => day === true
+        );
+        return hasAtLeastOneDay;
+      }
+      return true;
+    },
+    {
+      message: "Please select at least one day for daily recurring meetings",
+      path: ["daysOfWeek"],
+    }
   );
 
 // Export the inferred TypeScript type for use in your components

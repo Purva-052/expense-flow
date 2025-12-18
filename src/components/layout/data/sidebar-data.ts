@@ -134,7 +134,7 @@ export const sidebarData: SidebarData = {
           requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
         },
         {
-          title: "Transactions",
+          title: "Transaction Logs",
           url: "/transactions-logs",
           icon: ScrollText,
           requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER, roles.TEAM_LEAD],

@@ -234,8 +234,6 @@ export const InterviewForm = ({
     }
   }, [interviewType, currentStep, form]);
 
-
-
   const handleResumeRemove = () => {
     // Clear all resume-related state
     setUploadedResumeKey("");
@@ -256,11 +254,11 @@ export const InterviewForm = ({
 
     if (currentStep === 1) {
       const isValid = await trigger(step1Fields, { shouldFocus: true });
-      
+
       // Manual validation for resume
       const resumeFile = form.getValues("resume");
       const resumeKey = form.getValues("resumeS3Key");
-      
+
       if (!resumeFile && !resumeKey) {
         form.setError("resume", {
           type: "manual",
@@ -328,7 +326,7 @@ export const InterviewForm = ({
         } catch (error) {
           console.error("Upload failed", error);
           // Optional: handle upload error (e.g. show toast, stay on page)
-          return; 
+          return;
         }
       }
 
@@ -615,6 +613,7 @@ export const InterviewForm = ({
                     options={interviewRounds}
                     placeholder="Select round"
                     searchEnabled={false}
+                    sortOptions={false}
                   />
                   <FormField
                     control={form.control}

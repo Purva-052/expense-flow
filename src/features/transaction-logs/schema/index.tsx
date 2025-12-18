@@ -8,27 +8,30 @@ export const transactionLogSchema = z
       return String(val); // number -> string
     }, z.string().optional()),
     transactionType: z.string().min(1, "Transaction Type is required"),
-    subscriptionType: z.string().optional(),
+    subscriptionCycle: z.string().optional(),
     amount: z.preprocess(
-      (val) => Number(val),
-      z.number().min(1, "Amount must be at least 1")
+      (val) => String(val),
+      z.string().min(1, "Amount must be at least 1")
     ),
     cardLast4: z
       .string()
       .min(1, "Card last 4 digits is required")
       .max(4, "Card last 4 digits must be 4 characters"),
-    transactionDate: z.string().min(1, "Transaction Date is required"),
+    transactionDate: z.date({
+      required_error: "Transaction Date is required",
+      invalid_type_error: "That's not a date!",
+    }),
   })
   .refine(
     (data) => {
       if (data.transactionType === "subscription") {
-        return !!data.subscriptionType;
+        return !!data.subscriptionCycle;
       }
       return true;
     },
     {
-      message: "Subscription Type is required required",
-      path: ["subscriptionType"],
+      message: "Subscription Cycle is required",
+      path: ["subscriptionCycle"],
     }
   );
 

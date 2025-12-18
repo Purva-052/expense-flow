@@ -111,7 +111,7 @@ export const ProjectServerStatusOptions = [
 export const TransactionTypeOptions = [
   {
     label: "One Time",
-    value: "one_time",
+    value: "onetime",
   },
   {
     label: "Subscription",

@@ -14,13 +14,87 @@ import { useTransactionStore } from "../stores";
 
 export const columns: ColumnDef<any>[] = [
   {
-    accessorKey: "projectId",
+    accessorKey: "project.name",
     header: "Project",
+    cell: ({ row }) => {
+      const projectName = row.original.project?.name;
+      return (
+        <span className="text-sm">{projectName ? projectName : "N/A"}</span>
+      );
+    },
   },
   {
     accessorKey: "amount",
     header: "Amount",
+    cell: ({ row }) => {
+      const amount = row.original.amount;
+
+      if (amount === null || amount === undefined) {
+        return <span className="text-sm">N/A</span>;
+      }
+
+      const formattedAmount =
+        Number(amount) % 1 === 0
+          ? Number(amount).toFixed(0)
+          : Number(amount).toFixed(2);
+
+      return <span className="text-sm">{formattedAmount}</span>;
+    },
   },
+  {
+    accessorKey: "transactionType",
+    header: "Transaction Type",
+    cell: ({ row }) => {
+      const transactionType = row.original.transactionType;
+      return (
+        <span className="text-sm">
+          {transactionType
+            ? transactionType.charAt(0).toUpperCase() + transactionType.slice(1)
+            : "N/A"}
+        </span>
+      );
+    },
+  },
+  {
+    accessorKey: "subscriptionCycle",
+    header: "Subscription Cycle",
+    cell: ({ row }) => {
+      const subscriptionCycle = row.original.subscriptionCycle;
+      return (
+        <span className="text-sm">
+          {subscriptionCycle
+            ? subscriptionCycle.charAt(0).toUpperCase() +
+              subscriptionCycle.slice(1)
+            : "N/A"}
+        </span>
+      );
+    },
+  },
+  {
+    accessorKey: "cardLast4",
+    header: "Card Last 4 Digits",
+  },
+  {
+    accessorKey: "reason",
+    header: "Reason",
+    cell: ({ row }) => {
+      const reason = row.original.reason;
+
+      if (!reason) {
+        return <span className="text-sm">N/A</span>;
+      }
+
+      const truncated =
+        reason.length > 30 ? `${reason.slice(0, 30)}...` : reason;
+
+      return (
+        <span className="text-sm" title={reason}>
+          {truncated}
+        </span>
+      );
+    },
+  },
+
   {
     accessorKey: "transactionDate",
     header: "Transaction Date",

@@ -323,7 +323,9 @@ export default function LinodeInstanceDetail({
                     Encryption
                   </p>
                   <p className="text-sm font-bold">
-                    {instance.diskEncryption === "enabled" ? "On" : "Off"}
+                    {instance.diskEncryption === "enabled"
+                      ? "Enabled"
+                      : "Disabled"}
                   </p>
                 </div>
               </div>
