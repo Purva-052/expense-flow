@@ -113,7 +113,7 @@ export const InterviewForm = ({
     "practical_completed",
     "hr_round",
   ];
-  const EDIT_STATUSES = [...ADD_STATUSES, "rejected"]; // same as add but + rejected
+  const EDIT_STATUSES = [...ADD_STATUSES, "rejected", "joining"]; // add mode + rejected + joining
 
   // Step 2: final list logic
   const filteredStatuses = isEditMode
@@ -121,7 +121,7 @@ export const InterviewForm = ({
       ? baseStatuses // admin in edit → all statuses
       : baseStatuses.filter((s) => EDIT_STATUSES.includes(s.value))
     : userRole === roles.ADMIN
-      ? baseStatuses // admin on add → all statuses
+      ? baseStatuses.filter((s) => s.value !== "joining") // admin on add → all except joining
       : baseStatuses.filter((s) => ADD_STATUSES.includes(s.value));
 
   // Adjust schema based on edit mode, role, and status
