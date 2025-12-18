@@ -1,15 +1,9 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import { Calendar } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 // ShadCN UI Imports
@@ -96,16 +90,6 @@ const InterviewsPage = () => {
   // } | null>(null);
 
   // console.log("currentDateRange", currentDateRange);
-
-  const currentYear = new Date().getFullYear();
-
-  // previous years (example: from 1900)
-  const startYear = 2020;
-
-  const years = Array.from(
-    { length: currentYear - startYear + 1 + 3 }, // total count
-    (_, i) => startYear + i
-  );
 
   // Get browser timezone dynamically
   useEffect(() => {
@@ -342,8 +326,17 @@ const InterviewsPage = () => {
     setSelectedYear(date.getFullYear());
   };
 
-  const handleYearChange = (year: string) => {
-    const newYear = parseInt(year, 10);
+  const handleYearChange = (direction: "prev" | "next" | "current") => {
+    let newYear: number;
+
+    if (direction === "current") {
+      newYear = new Date().getFullYear();
+    } else if (direction === "prev") {
+      newYear = selectedYear - 1;
+    } else {
+      newYear = selectedYear + 1;
+    }
+
     setSelectedYear(newYear);
 
     // Update calendar date to selected year with today's month and day
@@ -408,29 +401,45 @@ const InterviewsPage = () => {
     <Main>
       <div className="p-4">
         <div className="mb-4 space-y-3">
-          {/* Year Selector */}
-          <div className="mb-4 flex items-center gap-4">
+          {/* Year Navigation */}
+          <div className="mb-4 flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
               <Calendar className="h-5 w-5 text-muted-foreground" />
               <span className="text-sm font-medium text-muted-foreground">
-                Select Year:
+                Year:
               </span>
-              {/* <span>{interview.technology?.colour}</span> */}
-              <Select
-                value={selectedYear.toString()}
-                onValueChange={handleYearChange}
-              >
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Select year" />
-                </SelectTrigger>
-                <SelectContent>
-                  {years.map((year) => (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleYearChange("prev")}
+                  className="h-8 px-3"
+                >
+                  <ChevronLeft /> {selectedYear - 1}
+                </Button>
+                <Button
+                  variant={
+                    selectedYear === new Date().getFullYear()
+                      ? "default"
+                      : "outline"
+                  }
+                  size="sm"
+                  onClick={() => handleYearChange("current")}
+                  className="h-8 px-4 font-semibold"
+                >
+                  {selectedYear === new Date().getFullYear()
+                    ? selectedYear
+                    : "Today"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleYearChange("next")}
+                  className="h-8 px-3"
+                >
+                  {selectedYear + 1} <ChevronRight />
+                </Button>
+              </div>
             </div>
             <GlobalFilterSection filters={filters ?? []} />
           </div>

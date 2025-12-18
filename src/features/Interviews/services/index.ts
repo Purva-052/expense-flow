@@ -32,7 +32,7 @@ export const useGetInterview = (params?: {
     url: Interview_list,
     params: {
       ...params,
-      view: "calender",
+      view: "calendar",
     },
     enabled: !!params?.timezone && !!params?.startDate && !!params?.endDate,
   });

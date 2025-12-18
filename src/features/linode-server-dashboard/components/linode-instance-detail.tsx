@@ -1,10 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMemo, useState } from "react";
 import PageLayout from "@/components/layout/layout-provider";
 import TablePageHeader from "@/components/table/table-page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-// import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -12,9 +10,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Cpu, HardDrive, MapPin, MemoryStick, Server } from "lucide-react";
+import {
+  ArrowUpDown,
+  Cpu,
+  HardDrive,
+  MapPin,
+  MemoryStick,
+  Server,
+  ShieldCheck,
+  Terminal,
+} from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
-import { useGetLinodeInstanceDetail, useGetLinodeList } from "../services";
+import {
+  useGetInstanceDetailById,
+  useGetLinodeInstanceDetail,
+} from "../services";
 import {
   Area,
   AreaChart,
@@ -49,19 +59,15 @@ export default function LinodeInstanceDetail({
       year: selectedYear,
     });
 
-  // Fetch list to get the instance basic info
-  const { data: listData } = useGetLinodeList();
-  const instances = (listData as any)?.data || [];
-  const instance = instances.find((i: any) => i.id === parseInt(instanceId));
+  // Fetch instance basic info directly by ID
+  const { data: instanceData, isPending: instanceLoading } =
+    useGetInstanceDetailById(instanceId);
+  const instance = (instanceData as any)?.data;
 
-  // Extract performance data - FIX: Access nested data.data structure
+  // Extract performance data
   const performanceData = Array.isArray((detailData as any)?.data?.data)
     ? (detailData as any)?.data?.data
     : [];
-
-  // Check if it's a zombie instance
-  // const isZombie =
-  //   instance?.status === "running" && (instance?.utilizationScore || 0) < 1;
 
   // Format chart data
   const chartData = useMemo(() => {
@@ -111,14 +117,14 @@ export default function LinodeInstanceDetail({
     { value: 12, label: "December" },
   ];
 
-  // Generate year options (current year and past 2 years)
+  // Generate year options
   const years = [
     currentDate.getFullYear(),
     currentDate.getFullYear() - 1,
     currentDate.getFullYear() - 2,
   ];
 
-  if (detailLoading || !instance) {
+  if (detailLoading || instanceLoading || !instance) {
     return (
       <PageLayout>
         <div className="space-y-6">
@@ -128,24 +134,25 @@ export default function LinodeInstanceDetail({
             <div className="h-4 w-64 bg-slate-200 rounded animate-pulse"></div>
           </div>
 
-          {/* Specs Cards Skeleton */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <Card key={i}>
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-3 bg-slate-100 rounded-lg">
-                      <div className="h-6 w-6 bg-slate-200 rounded animate-pulse"></div>
-                    </div>
+          {/* Specs Cards Skeleton - UPDATED TO UNIFIED STRIP */}
+          <Card className="w-full overflow-hidden">
+            <div className="w-full overflow-x-auto">
+              <div className="flex divide-x divide-slate-100 min-w-max">
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                  <div
+                    key={i}
+                    className="flex-1 p-4 min-w-[150px] flex items-center gap-3"
+                  >
+                    <div className="h-10 w-10 bg-slate-100 rounded-lg animate-pulse flex-shrink-0" />
                     <div className="space-y-2 flex-1">
-                      <div className="h-3 w-12 bg-slate-200 rounded animate-pulse"></div>
-                      <div className="h-5 w-20 bg-slate-200 rounded animate-pulse"></div>
+                      <div className="h-2 w-10 bg-slate-200 rounded animate-pulse" />
+                      <div className="h-4 w-16 bg-slate-200 rounded animate-pulse" />
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                ))}
+              </div>
+            </div>
+          </Card>
 
           {/* Performance Section Skeleton */}
           <Card>
@@ -203,124 +210,141 @@ export default function LinodeInstanceDetail({
           </div>
         </TablePageHeader>
 
-        {/* Zombie Alert */}
-        {/* {isZombie && (
-          <Card className="border-orange-200 bg-orange-50">
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex gap-3">
-                  <AlertCircle className="h-5 w-5 text-orange-600 mt-0.5" />
-                  <div>
-                    <h3 className="font-semibold text-orange-900">
-                      Zombie Instance Detected
-                    </h3>
-                    <p className="text-sm text-orange-700 mt-1">
-                      This instance has averaged &lt; 1% CPU usage. It's likely
-                      a forgotten test environment. Deleting it could save $
-                      {instance.monthlyCost?.toFixed(2)}/mo.
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-orange-700 border-orange-300"
-                >
-                  Mark for Deletion
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )} */}
-
-        {/* Specs Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
-                  <Server className="h-6 w-6" />
+        {/* Specs Cards - UNIFIED DATA STRIP */}
+        <Card className="w-full overflow-hidden">
+          <div className="w-full overflow-x-auto">
+            <div className="flex divide-x divide-slate-100 min-w-max">
+              {/* Item 1 */}
+              <div className="flex-1 p-4 min-w-[150px] flex items-center gap-3 hover:bg-slate-50 transition-colors">
+                <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                  <Server className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
                     Type
                   </p>
-                  <p className="text-lg font-bold">{instance.type}</p>
+                  <p
+                    className="text-sm font-bold truncate"
+                    title={instance.type}
+                  >
+                    {instance.type}
+                  </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
-                  <MapPin className="h-6 w-6" />
+              {/* Item 2 */}
+              <div className="flex-1 p-4 min-w-[150px] flex items-center gap-3 hover:bg-slate-50 transition-colors">
+                <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                  <MapPin className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
                     Region
                   </p>
-                  <p className="text-lg font-bold">{instance.region}</p>
+                  <p
+                    className="text-sm font-bold truncate"
+                    title={instance.region}
+                  >
+                    {instance.region}
+                  </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-purple-50 text-purple-600 rounded-lg">
-                  <Cpu className="h-6 w-6" />
+              {/* Item 3 */}
+              <div className="flex-1 p-4 min-w-[150px] flex items-center gap-3 hover:bg-slate-50 transition-colors">
+                <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
+                  <Cpu className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
                     Cores
                   </p>
-                  <p className="text-lg font-bold">
+                  <p className="text-sm font-bold">
                     {instance.specs?.vcpus} CPU
                   </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-pink-50 text-pink-600 rounded-lg">
-                  <MemoryStick className="h-6 w-6" />
+              {/* Item 4 */}
+              <div className="flex-1 p-4 min-w-[150px] flex items-center gap-3 hover:bg-slate-50 transition-colors">
+                <div className="p-2 bg-pink-50 text-pink-600 rounded-lg">
+                  <MemoryStick className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
                     Memory
                   </p>
-                  <p className="text-lg font-bold">
+                  <p className="text-sm font-bold">
                     {instance.specs?.memory / 1024} GB
                   </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-green-50 text-green-600 rounded-lg">
-                  <HardDrive className="h-6 w-6" />
+              {/* Item 5 */}
+              <div className="flex-1 p-4 min-w-[150px] flex items-center gap-3 hover:bg-slate-50 transition-colors">
+                <div className="p-2 bg-green-50 text-green-600 rounded-lg">
+                  <HardDrive className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
                     Storage
                   </p>
-                  <p className="text-lg font-bold">
+                  <p className="text-sm font-bold">
                     {instance.specs?.disk / 1024} GB
                   </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+
+              {/* Item 6 */}
+              <div className="flex-1 p-4 min-w-[150px] flex items-center gap-3 hover:bg-slate-50 transition-colors">
+                <div className="p-2 bg-green-50 text-green-600 rounded-lg">
+                  <Terminal className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+                    OS
+                  </p>
+                  <p
+                    className="text-sm font-bold truncate"
+                    title={instance.ubuntuVersion}
+                  >
+                    {instance.ubuntuVersion || "N/A"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Item 7 */}
+              <div className="flex-1 p-4 min-w-[150px] flex items-center gap-3 hover:bg-slate-50 transition-colors">
+                <div className="p-2 bg-green-50 text-green-600 rounded-lg">
+                  <ShieldCheck className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+                    Encryption
+                  </p>
+                  <p className="text-sm font-bold">
+                    {instance.diskEncryption === "enabled"
+                      ? "Enabled"
+                      : "Disabled"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Item 8 */}
+              <div className="flex-1 p-4 min-w-[150px] flex items-center gap-3 hover:bg-slate-50 transition-colors">
+                <div className="p-2 bg-green-50 text-green-600 rounded-lg">
+                  <ArrowUpDown className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+                    Transfer
+                  </p>
+                  <p className="text-sm font-bold">{instance.transfer}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Card>
 
         {/* Performance Section */}
         <Card>

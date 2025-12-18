@@ -12,16 +12,17 @@ import {
   JoineeEvent,
 } from "./component/joinee-details-dialog";
 import { JoineeCalendar } from "./component/joinee-calendar";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Calendar } from "lucide-react";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select";
+import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useDeleteInterview } from "../Interviews/services";
+import { Button } from "@/components/ui/button";
 
 const NewJoineesPage = () => {
   const { open, setOpen, setCurrentRow } = useNewJoineeStore();
@@ -102,12 +103,12 @@ const NewJoineesPage = () => {
   const { data: technologyList, isPending: technologyListLoading }: any =
     useGetTechnologyDropdownList();
 
-  const currentYear = new Date().getFullYear();
-  const startYear = 2020;
-  const years = Array.from(
-    { length: currentYear - startYear + 1 + 3 },
-    (_, i) => startYear + i
-  );
+  // const currentYear = new Date().getFullYear();
+  // const startYear = 2020;
+  // const years = Array.from(
+  //   { length: currentYear - startYear + 1 + 3 },
+  //   (_, i) => startYear + i
+  // );
 
   // Transform joinees data to calendar events
   const events: JoineeEvent[] = ((listData as any)?.data || [])
@@ -209,12 +210,26 @@ const NewJoineesPage = () => {
     setSelectedYear(date.getFullYear());
   };
 
-  const handleYearChange = (year: string) => {
-    const newYear = parseInt(year, 10);
+  const handleYearChange = (direction: "prev" | "next" | "current") => {
+    let newYear: number;
+
+    if (direction === "current") {
+      newYear = new Date().getFullYear();
+    } else if (direction === "prev") {
+      newYear = selectedYear - 1;
+    } else {
+      newYear = selectedYear + 1;
+    }
+
     setSelectedYear(newYear);
 
+    // Update calendar date to selected year with today's month and day
     const today = new Date();
-    const newDate = new Date(newYear, today.getMonth(), today.getDate());
+    const newDate = new Date(
+      newYear,
+      today.getMonth(), // Current month
+      today.getDate() // Current day
+    );
     setCurrentCalendarDate(newDate);
   };
 
@@ -227,23 +242,40 @@ const NewJoineesPage = () => {
             <div className="flex items-center gap-2">
               <Calendar className="h-5 w-5 text-muted-foreground" />
               <span className="text-sm font-medium text-muted-foreground">
-                Select Year:
+                Year:
               </span>
-              <Select
-                value={selectedYear.toString()}
-                onValueChange={handleYearChange}
-              >
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Select year" />
-                </SelectTrigger>
-                <SelectContent>
-                  {years.map((year) => (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleYearChange("prev")}
+                  className="h-8 px-3"
+                >
+                  <ChevronLeft /> {selectedYear - 1}
+                </Button>
+                <Button
+                  variant={
+                    selectedYear === new Date().getFullYear()
+                      ? "default"
+                      : "outline"
+                  }
+                  size="sm"
+                  onClick={() => handleYearChange("current")}
+                  className="h-8 px-4 font-semibold"
+                >
+                  {selectedYear === new Date().getFullYear()
+                    ? selectedYear
+                    : "Today"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleYearChange("next")}
+                  className="h-8 px-3"
+                >
+                  {selectedYear + 1} <ChevronRight />
+                </Button>
+              </div>
             </div>
             <GlobalFilterSection filters={filters ?? []} />
           </div>
