@@ -23,9 +23,9 @@ export function ActionFormModal() {
   const { mutateAsync: deleteMutate, isPending: isDeleteLoading } =
     useDeleteTransactionData(currentRow?.id || "");
 
-  const deleteInfoText = currentRow.project?.name
-    ? `This will permanently delete the transaction for project ${currentRow.project.name} with amount $${currentRow.amount}.`
-    : `This will permanently delete the transaction of amount $${currentRow.amount}.`;
+  const deleteInfoText = currentRow?.project?.name
+    ? `${currentRow.project.name} Transaction with amount $${currentRow?.amount}.`
+    : `the Transaction with amount $${currentRow?.amount}.`;
 
   const handleCreate = (values: TTransactionFormSchema) => {
     const payload = {
