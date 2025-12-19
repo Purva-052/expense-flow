@@ -88,7 +88,7 @@ const InquiryPage = () => {
   const filters: FilterConfig[] = [
     {
       type: "search",
-      placeholder: "Search by name ...",
+      placeholder: "Search by client name ...",
       key: "search",
       value: listParams.search,
       onChange: handleSearch,

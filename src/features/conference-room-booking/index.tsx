@@ -469,7 +469,10 @@ const ConferenceRoomBookingPage = () => {
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent className="w-[95vw] sm:w-full sm:max-w-[850px] h-fit! overflow-y-auto p-4 sm:p-6">
             <DialogHeader>
-              <DialogTitle>Edit Conference Room Booking</DialogTitle>
+              <DialogTitle>
+                Edit Conference Room Booking for{" "}
+                {format(new Date(eventToEdit.extendedProps.startDate), "PPP")}
+              </DialogTitle>
               <DialogDescription>
                 Update the booking details below.
               </DialogDescription>

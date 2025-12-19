@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { ChevronLeft, ChevronRight, CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -28,6 +28,7 @@ interface CustomDatePickerProps {
   disabled?: boolean;
   dateFormat?: string;
   disabledDays?: (day: Date) => boolean;
+  defaultMonth?: Date;
 }
 
 export function CustomDatePicker({
@@ -38,9 +39,17 @@ export function CustomDatePicker({
   disabled = false,
   dateFormat = "PPP",
   disabledDays,
+  defaultMonth,
 }: Readonly<CustomDatePickerProps>) {
   const [open, setOpen] = useState(false);
-  const [month, setMonth] = useState(new Date());
+  const [month, setMonth] = useState(defaultMonth || new Date());
+  
+  // Update month when defaultMonth changes
+  useEffect(() => {
+    if (defaultMonth) {
+      setMonth(defaultMonth);
+    }
+  }, [defaultMonth]);
 
   const handleMonthChange = (offset: number) => {
     const newMonth = new Date(month);
