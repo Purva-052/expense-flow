@@ -26,6 +26,9 @@ export const columns: ColumnDef<any>[] = [
   {
     accessorKey: "country.name",
     header: "Country",
+    cell: function Cell({ row }) {
+      return row.original.country?.name || "N/A";
+    },
   },
   {
     accessorKey: "timezone",

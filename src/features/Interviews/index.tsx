@@ -494,7 +494,10 @@ const InterviewsPage = () => {
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent className="w-[95vw] sm:w-full sm:max-w-[850px] h-fit!  overflow-y-auto p-4 sm:p-6">
             <DialogHeader>
-              <DialogTitle>Edit Interview</DialogTitle>
+              <DialogTitle>
+                Edit Interview Details for{" "}
+                {format(new Date(eventToEdit.extendedProps.interviewStart), "PPP")}
+              </DialogTitle>
               <DialogDescription>
                 Update the interview details below.
               </DialogDescription>
