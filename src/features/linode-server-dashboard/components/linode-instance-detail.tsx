@@ -302,7 +302,7 @@ export default function LinodeInstanceDetail({
                 </div>
                 <div>
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
-                    OS
+                    Ubuntu Version
                   </p>
                   <p
                     className="text-sm font-bold truncate"
