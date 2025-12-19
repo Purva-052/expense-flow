@@ -68,14 +68,14 @@ const DAYS_OF_WEEK = [
 ] as const;
 
 export const ConferenceRoomForm = ({
-  // selectedDate,
+  selectedDate,
   onSubmit,
   onClose,
   projectsList,
   projectsListLoading,
   isSubmitting = false,
   initialData,
-  // existingEvents = [],
+  existingEvents = [],
 }: ConferenceRoomFormProps) => {
   const currentStep = 1;
   const isEditMode = !!initialData;
@@ -136,6 +136,15 @@ export const ConferenceRoomForm = ({
         recurringType: initialData.recurringType || "none",
         notes: initialData.notes || "",
         color: initialData.color || "#2563eb",
+        daysOfWeek: {
+          mon: initialData.daysOfWeek?.mon || false,
+          tue: initialData.daysOfWeek?.tue || false,
+          wed: initialData.daysOfWeek?.wed || false,
+          thu: initialData.daysOfWeek?.thu || false,
+          fri: initialData.daysOfWeek?.fri || false,
+          sat: initialData.daysOfWeek?.sat || false,
+          sun: initialData.daysOfWeek?.sun || false,
+        },
       };
 
       // Add endDate for recurring bookings
@@ -163,12 +172,12 @@ export const ConferenceRoomForm = ({
 
     if (isValid) {
       // --- Client-Side Overlap Validation ---
-      // const parseDateTime = (dateStr: Date | string, timeStr: string) => {
-      //   const d = new Date(dateStr);
-      //   const [h, m] = timeStr.split(":").map(Number);
-      //   d.setHours(h, m, 0, 0);
-      //   return d;
-      // };
+      const parseDateTime = (dateStr: Date | string, timeStr: string) => {
+        const d = new Date(dateStr);
+        const [h, m] = timeStr.split(":").map(Number);
+        d.setHours(h, m, 0, 0);
+        return d;
+      };
 
       // Only validate for single instances for now or the start of a recurring series
       // Validating entire recurring series on client side against other series is complex
@@ -176,116 +185,116 @@ export const ConferenceRoomForm = ({
       // Here we validate the *first* instance or the single booking.
 
       // --- recurring date generation helper ---
-      // const generateRecurringDates = (
-      //   start: Date,
-      //   end: Date | undefined,
-      //   type: string,
-      //   days: any
-      // ): Date[] => {
-      //   const dates: Date[] = [];
-      //   const current = new Date(start);
-      //   // If no end date for recurring, default to occurrence limit or some reasonable future limit
-      //   // For UI validation, if endDate is missing, we might just validate the start date (or assume single occurrence for safety)
-      //   // But schema usually requires endDate for recurring.
-      //   const limitDate = end ? new Date(end) : new Date(start);
-      //   limitDate.setHours(23, 59, 59, 999); // ensure we include the full end day
+      const generateRecurringDates = (
+        start: Date,
+        end: Date | undefined,
+        type: string,
+        days: any
+      ): Date[] => {
+        const dates: Date[] = [];
+        const current = new Date(start);
+        // If no end date for recurring, default to occurrence limit or some reasonable future limit
+        // For UI validation, if endDate is missing, we might just validate the start date (or assume single occurrence for safety)
+        // But schema usually requires endDate for recurring.
+        const limitDate = end ? new Date(end) : new Date(start);
+        limitDate.setHours(23, 59, 59, 999); // ensure we include the full end day
 
-      //   // If 'none', just return start
-      //   if (type === "none") return [new Date(start)];
+        // If 'none', just return start
+        if (type === "none") return [new Date(start)];
 
-      //   while (current <= limitDate) {
-      //     if (type === "daily") {
-      //       // For daily, check if current day of week is selected
-      //       // daysOfWeek keys: mon, tue, wed, thu, fri, sat, sun
-      //       // current.getDay(): 0=Sun, 1=Mon, ..., 6=Sat
-      //       const mapDay: Record<number, string> = {
-      //         0: "sun",
-      //         1: "mon",
-      //         2: "tue",
-      //         3: "wed",
-      //         4: "thu",
-      //         5: "fri",
-      //         6: "sat",
-      //       };
-      //       const dayKey = mapDay[current.getDay()];
-      //       if (days && days[dayKey]) {
-      //         dates.push(new Date(current));
-      //       }
-      //     } else if (type === "weekly") {
-      //       dates.push(new Date(current)); // already initialized to start date, so adds first, then adds 7 days
-      //     } else if (type === "biweekly") {
-      //       dates.push(new Date(current));
-      //     } else if (type === "monthly") {
-      //       dates.push(new Date(current));
-      //     }
+        while (current <= limitDate) {
+          if (type === "daily") {
+            // For daily, check if current day of week is selected
+            // daysOfWeek keys: mon, tue, wed, thu, fri, sat, sun
+            // current.getDay(): 0=Sun, 1=Mon, ..., 6=Sat
+            const mapDay: Record<number, string> = {
+              0: "sun",
+              1: "mon",
+              2: "tue",
+              3: "wed",
+              4: "thu",
+              5: "fri",
+              6: "sat",
+            };
+            const dayKey = mapDay[current.getDay()];
+            if (days && days[dayKey]) {
+              dates.push(new Date(current));
+            }
+          } else if (type === "weekly") {
+            dates.push(new Date(current)); // already initialized to start date, so adds first, then adds 7 days
+          } else if (type === "biweekly") {
+            dates.push(new Date(current));
+          } else if (type === "monthly") {
+            dates.push(new Date(current));
+          }
 
-      //     // Advance current date
-      //     if (type === "daily") {
-      //       current.setDate(current.getDate() + 1);
-      //     } else if (type === "weekly") {
-      //       current.setDate(current.getDate() + 7);
-      //     } else if (type === "biweekly") {
-      //       current.setDate(current.getDate() + 14);
-      //     } else if (type === "monthly") {
-      //       current.setMonth(current.getMonth() + 1);
-      //     } else {
-      //       break; // prevent infinite loop for unknown types
-      //     }
-      //   }
-      //   return dates;
-      // };
+          // Advance current date
+          if (type === "daily") {
+            current.setDate(current.getDate() + 1);
+          } else if (type === "weekly") {
+            current.setDate(current.getDate() + 7);
+          } else if (type === "biweekly") {
+            current.setDate(current.getDate() + 14);
+          } else if (type === "monthly") {
+            current.setMonth(current.getMonth() + 1);
+          } else {
+            break; // prevent infinite loop for unknown types
+          }
+        }
+        return dates;
+      };
 
-      // const baseStart = selectedDate || new Date(initialData.startDate);
-      // const instancesToCheck = generateRecurringDates(
-      //   baseStart,
-      //   data.endDate ? new Date(data.endDate) : undefined,
-      //   data.recurringType,
-      //   data.daysOfWeek
-      // );
+      const baseStart = selectedDate || new Date(initialData.startDate);
+      const instancesToCheck = generateRecurringDates(
+        baseStart,
+        data.endDate ? new Date(data.endDate) : undefined,
+        data.recurringType,
+        data.daysOfWeek
+      );
 
       // Loop through all instances
-      // let overlappingEventFound = false;
+      let overlappingEventFound = false;
 
-      // for (const instanceDate of instancesToCheck) {
-      //   const currentStart = parseDateTime(instanceDate, data.startTime);
-      //   const currentEnd = parseDateTime(instanceDate, data.endTime);
+      for (const instanceDate of instancesToCheck) {
+        const currentStart = parseDateTime(instanceDate, data.startTime);
+        const currentEnd = parseDateTime(instanceDate, data.endTime);
 
-      //   const hasOverlap = existingEvents.some((event) => {
-      //     if (initialData && String(initialData.id) === event.id) {
-      //       return false;
-      //     }
+        const hasOverlap = existingEvents.some((event) => {
+          if (initialData && String(initialData.id) === event.id) {
+            return false;
+          }
 
-      //     const eventStart = new Date(event.start || "");
-      //     const eventEnd = new Date(event.end || "");
+          const eventStart = new Date(event.start || "");
+          const eventEnd = new Date(event.end || "");
 
-      //     // Check if event is on the same day as this instance
-      //     const isSameDay =
-      //       currentStart.getFullYear() === eventStart.getFullYear() &&
-      //       currentStart.getMonth() === eventStart.getMonth() &&
-      //       currentStart.getDate() === eventStart.getDate();
+          // Check if event is on the same day as this instance
+          const isSameDay =
+            currentStart.getFullYear() === eventStart.getFullYear() &&
+            currentStart.getMonth() === eventStart.getMonth() &&
+            currentStart.getDate() === eventStart.getDate();
 
-      //     if (!isSameDay) return false;
+          if (!isSameDay) return false;
 
-      //     return currentStart < eventEnd && currentEnd > eventStart;
-      //   });
+          return currentStart < eventEnd && currentEnd > eventStart;
+        });
 
-      //   if (hasOverlap) {
-      //     overlappingEventFound = true;
-      //     break; // Stop checking if we found one
-      //   }
-      // }
+        if (hasOverlap) {
+          overlappingEventFound = true;
+          break; // Stop checking if we found one
+        }
+      }
 
-      // if (overlappingEventFound) {
-      //   form.setError("startTime", {
-      //     type: "manual",
-      //     message: "Time slot overlaps with existing meeting",
-      //   });
-      //   form.setError("endTime", {
-      //     type: "manual",
-      //     message: "Time slot overlaps with existing meeting",
-      //   });
-      //   return;
-      // }
+      if (overlappingEventFound) {
+        form.setError("startTime", {
+          type: "manual",
+          message: "Time slot overlaps with existing meeting",
+        });
+        form.setError("endTime", {
+          type: "manual",
+          message: "Time slot overlaps with existing meeting",
+        });
+        return;
+      }
 
       onSubmit(data);
     } else {
@@ -461,6 +470,7 @@ export const ConferenceRoomForm = ({
                       name="endDate"
                       label="Recurring End Date"
                       placeholder="Select end date for recurring"
+                      defaultMonth={selectedDate}
                     />
                   )}
 
