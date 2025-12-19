@@ -390,6 +390,7 @@ export const ConferenceRoomForm = ({
                     })}
                     placeholder="Select project"
                     isLoading={projectsListLoading}
+                    sortOptions={false}
                   />
                   <FormField
                     control={form.control}
