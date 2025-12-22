@@ -18,6 +18,7 @@ import { useGetUserDropdownList } from "../users/services";
 import { useGetProjectTypesDropdownList } from "../Project-type/services";
 import { HistoryProjectModal } from "./components/history-modal";
 import { useGetTechnologyDropdownList } from "../technology/services";
+import { roles } from "@/utils/constant";
 
 const ProjectsPage = () => {
   const { open, setOpen } = useProjectsStore();
@@ -49,7 +50,9 @@ const ProjectsPage = () => {
   const { data: ProjectType, isPending: LoadingProjectType }: any =
     useGetProjectTypesDropdownList();
   const { data: projecthandler, isPending: projecthandlerLoading }: any =
-    useGetUserDropdownList();
+    useGetUserDropdownList({
+      role: [roles.TEAM_LEAD, roles.PROJECT_MANAGER],
+    });
   const { data: PriorityList, isPending: PriorityListLoading }: any =
     useGetProjectPriorityDropdownList();
   const { data: technologyList, isPending: technologyListLoading }: any =

@@ -56,7 +56,7 @@ export const columns: ColumnDef<LinodeInstance>[] = [
       <span className="font-mono text-sm">
         {row.original.ipv4 && row.original.ipv4.length > 0
           ? row.original.ipv4[0]
-          : "N/A"}
+          : "-"}
       </span>
     ),
   },
@@ -110,7 +110,7 @@ export const columns: ColumnDef<LinodeInstance>[] = [
     cell: ({ row }) => {
       const lastBackup = row.original.backups.last_successful;
       if (!lastBackup) {
-        return <span className="text-sm">N/A</span>;
+        return <span className="text-sm">-</span>;
       }
       const date = new Date(lastBackup);
       return (

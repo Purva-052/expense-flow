@@ -16,7 +16,7 @@ export function ViewNewJoineeModal() {
         month: "short",
         day: "numeric",
       })
-    : "N/A";
+    : "-";
 
   return (
     <Dialog open={open === "view"} onOpenChange={() => setOpen(null)}>
@@ -35,7 +35,7 @@ export function ViewNewJoineeModal() {
           </div>
           <div>
             <h3 className="text-sm font-medium">Phone</h3>
-            <p className="text-sm text-gray-600">{currentRow.phoneNumber || "N/A"}</p>
+            <p className="text-sm text-gray-600">{currentRow.phoneNumber || "-"}</p>
           </div>
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-medium">Technology</h3>
@@ -46,11 +46,11 @@ export function ViewNewJoineeModal() {
                   style={{ backgroundColor: currentRow.technology.color }}
                 />
                 <span className="text-sm text-gray-600">
-                  {currentRow.technology.name || "N/A"}
+                  {currentRow.technology.name || "-"}
                 </span>
               </>
             ) : (
-              <span className="text-sm text-gray-600">N/A</span>
+              <span className="text-sm text-gray-600">-</span>
             )}
           </div>
           <div>

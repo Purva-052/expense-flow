@@ -147,6 +147,9 @@ export function CustomDatePicker({
                   }}
                   disabled={disabledDays}
                   initialFocus
+                  classNames={{
+                    month_caption: "hidden",
+                  }}
                 />
               </div>
             </PopoverContent>

@@ -27,7 +27,7 @@ export const columns: ColumnDef<any>[] = [
     accessorKey: "country.name",
     header: "Country",
     cell: function Cell({ row }) {
-      return row.original.country?.name || "N/A";
+      return row.original.country?.name || "-";
     },
   },
   {
@@ -35,25 +35,35 @@ export const columns: ColumnDef<any>[] = [
     header: "Timezone (Local Time)",
     cell: function Cell({ row }) {
       const timezone = row.original.timezone;
-      const [currentTime, setCurrentTime] = useState(
-        formatInTimeZone(new Date(), timezone, "hh:mm a")
+
+      const [currentTime, setCurrentTime] = useState(() =>
+        timezone ? formatInTimeZone(new Date(), timezone, "hh:mm a") : "-"
       );
 
-      // ⏱️ Update every 60 seconds
       useEffect(() => {
-        const interval = setInterval(() => {
-          setCurrentTime(formatInTimeZone(new Date(), timezone, "hh:mm a"));
-        }, 60000);
+        if (!timezone) {
+          setCurrentTime("");
+          return;
+        }
 
+        const updateTime = () => {
+          setCurrentTime(formatInTimeZone(new Date(), timezone, "hh:mm a"));
+        };
+
+        updateTime(); // initial update
+
+        const interval = setInterval(updateTime, 60000);
         return () => clearInterval(interval);
       }, [timezone]);
 
-      return timezone ? (
-        <div className="flex flex-col ">
-          <span className="text-md ">{currentTime}</span>
-          <span className="text-xs text-muted-foreground">{timezone}</span>
+      return (
+        <div className="flex flex-col">
+          <span className="text-md">{currentTime}</span>
+          <span className="text-xs text-muted-foreground">
+            {timezone || "-"}
+          </span>
         </div>
-      ) : null;
+      );
     },
   },
   {

@@ -39,7 +39,7 @@ export const columns: ColumnDef<any>[] = [
             className="h-2.5 w-2.5 rounded-full"
             style={{ backgroundColor: tech?.color }}
           />
-          <span>{tech?.name || "N/A"}</span>
+          <span>{tech?.name || "-"}</span>
         </div>
       );
     },
@@ -49,7 +49,7 @@ export const columns: ColumnDef<any>[] = [
     header: "Experience (Years)",
     cell: ({ row }) => {
       const experience = row.original.experienceInYears;
-      return <span>{experience ?? "N/A"}</span>;
+      return <span>{experience ?? "-"}</span>;
     },
   },
   {
@@ -57,7 +57,7 @@ export const columns: ColumnDef<any>[] = [
     header: "Joining Date",
     cell: ({ row }) => {
       const date = row.original.joiningDate;
-      if (!date) return "N/A";
+      if (!date) return "-";
       return new Date(date).toLocaleDateString("en-IN", {
         year: "numeric",
         month: "short",

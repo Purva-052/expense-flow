@@ -18,6 +18,7 @@ import {
   Edit2,
   Trash2,
   Link,
+  SquareArrowOutUpRight,
   // ShieldCheck,
 } from "lucide-react";
 import {
@@ -46,6 +47,7 @@ import { InterviewEvent } from "../types";
 import { interviewStatuses, interviewTypes } from "../constants";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
+import { capitalizeFirstLetter } from "@/utils/commonFunctions";
 // import { useUpdateInterview } from "../services";
 // import { useAuthStore } from "@/stores/use-auth-store";
 // import { roles } from "@/utils/constant";
@@ -116,6 +118,11 @@ export const InterviewDetailsDialog = ({
     }
   };
 
+  const handleRedirectToInterviewLink = () => {
+    if (details.interviewUrl) {
+      window.open(details.interviewUrl, "_blank");
+    }
+  };
   // const handleStatusChange = (newStatus: string) => {
   //   if (event.id) {
   //     // Parse notice period to extract days
@@ -364,7 +371,7 @@ export const InterviewDetailsDialog = ({
                         Phone
                       </p>
                       <p className="text-sm font-medium">
-                        {details.phoneNumber || "NA"}
+                        {details.phoneNumber || "-"}
                       </p>
                     </div>
                   </div>
@@ -375,7 +382,7 @@ export const InterviewDetailsDialog = ({
                         Location
                       </p>
                       <p className="text-sm font-medium">
-                        {details.location || "NA"}
+                        {details.location || "-"}
                       </p>
                     </div>
                   </div>
@@ -478,7 +485,7 @@ export const InterviewDetailsDialog = ({
                         Interviewer
                       </p>
                       <p className="text-sm font-medium">
-                        {details.interviewer?.name || "N/A"}
+                        {details.interviewer?.name || "-"}
                       </p>
                       {details.interviewer?.email && (
                         <p className="text-xs text-muted-foreground mt-1">
@@ -494,7 +501,7 @@ export const InterviewDetailsDialog = ({
                         Round
                       </p>
                       <p className="text-sm font-medium">
-                        {details.interviewRound}
+                        {capitalizeFirstLetter(details.interviewRound)}
                       </p>
                     </div>
                   </div>
@@ -542,8 +549,17 @@ export const InterviewDetailsDialog = ({
                           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
                             Meeting Link
                           </p>
-                          <p className="text-sm font-medium">
+                          <p
+                            className="text-sm font-medium cursor-pointer hover:underline"
+                            onClick={handleRedirectToInterviewLink}
+                          >
                             {details.interviewUrl}
+                            <div
+                              className="inline-block"
+                              onClick={handleRedirectToInterviewLink}
+                            >
+                              <SquareArrowOutUpRight className="inline-block ml-1 h-3.5 w-3.5 text-primary shrink-0 cursor-pointer" />
+                            </div>
                           </p>
                         </div>
                       </div>

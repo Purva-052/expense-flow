@@ -271,7 +271,9 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
   };
 
   const { data: projecthandler, isPending: projecthandlerLoading }: any =
-    useGetUserDropdownList();
+    useGetUserDropdownList({
+      role: [roles.TEAM_LEAD, roles.PROJECT_MANAGER],
+    });
 
   const { data: PriorityList, isPending: PriorityListLoading }: any =
     useGetProjectPriorityDropdownList();

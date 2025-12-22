@@ -35,7 +35,7 @@ export function ViewClientsModal() {
   // ------------------------------
   useEffect(() => {
     if (!timezoneValue) {
-      setCurrentTime("NA");
+      setCurrentTime("-");
       return;
     }
 
@@ -67,21 +67,21 @@ export function ViewClientsModal() {
           {/* Name */}
           <div>
             <h3 className="text-sm font-medium">Name</h3>
-            <p className="text-sm text-gray-600">{currentRow.name || "NA"}</p>
+            <p className="text-sm text-gray-600">{currentRow.name || "-"}</p>
           </div>
 
           {/* Company */}
           <div>
             <h3 className="text-sm font-medium">Company</h3>
             <p className="text-sm text-gray-600">
-              {currentRow.company || "NA"}
+              {currentRow.company || "-"}
             </p>
           </div>
 
           {/* Country */}
           <div>
             <h3 className="text-sm font-medium">Country</h3>
-            <p className="text-sm text-gray-600">{countryValue || "NA"}</p>
+            <p className="text-sm text-gray-600">{countryValue || "-"}</p>
           </div>
 
           {/* Timezone + Local Time */}
@@ -89,12 +89,12 @@ export function ViewClientsModal() {
             <h3 className="text-sm font-medium">Timezone</h3>
 
             {!timezoneValue ? (
-              // If no timezone → show single NA only
-              <p className="text-sm text-gray-600">NA</p>
+              // If no timezone → show single - only
+              <p className="text-sm text-gray-600">-</p>
             ) : (
               // If valid → show time + timezone
               <p className="text-sm text-gray-600">
-                {currentTime || "NA"}
+                {currentTime || "-"}
                 <span className="block text-xs text-muted-foreground mt-1">
                   {timezoneValue}
                 </span>
