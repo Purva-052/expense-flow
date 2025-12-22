@@ -13,7 +13,7 @@ export interface FilterConfig {
   placeholder?: string;
   value?: any;
   options?: Option[];
-  onChange?: (value: string | undefined) => void;
+  onChange?: (value?: any) => void;
   isLoading?: any;
   disable?: any;
   className?: any;

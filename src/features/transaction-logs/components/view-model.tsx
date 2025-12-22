@@ -28,6 +28,12 @@ export function ViewTransactionModal() {
         </DialogHeader>
 
         <div className="space-y-4">
+          <div>
+            <h3 className="text-sm font-medium">User</h3>
+            <p className="text-sm text-gray-600">
+              {currentRow.user?.name || "NA"}
+            </p>
+          </div>
           {/* Name */}
           <div>
             <h3 className="text-sm font-medium">Project</h3>
@@ -53,7 +59,11 @@ export function ViewTransactionModal() {
           <div>
             <h3 className="text-sm font-medium">Transaction Type</h3>
             <p className="text-sm text-gray-600">
-              {currentRow.transactionType || "NA"}
+              {currentRow.transactionType
+                ? currentRow.transactionType === "subscription"
+                  ? "Subscription"
+                  : "One Time"
+                : "NA"}
             </p>
           </div>
 
@@ -61,9 +71,22 @@ export function ViewTransactionModal() {
           <div>
             <h3 className="text-sm font-medium">Subscription cycle</h3>
             <p className="text-sm text-gray-600">
-              {currentRow.subscriptionCycle || "NA"}
+              {currentRow.subscriptionCycle
+                ? currentRow.subscriptionCycle === "yearly"
+                  ? "Yearly"
+                  : "Monthly"
+                : "NA"}
             </p>
           </div>
+
+          {currentRow.transactionType === "subscription" && (
+            <div>
+              <h3 className="text-sm font-medium">Subscription End Date</h3>
+              <p className="text-sm text-gray-600">
+                {formatDate(currentRow.subscriptionEndDate) || "NA"}
+              </p>
+            </div>
+          )}
 
           <div>
             <h3 className="text-sm font-medium">Transaction Date</h3>
