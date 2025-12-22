@@ -54,7 +54,7 @@ export const JoineeDetailsDialog = ({
   const canDelete = userRole === roles.ADMIN;
 
   const formatDate = (dateString: string) => {
-    if (!dateString) return "N/A";
+    if (!dateString) return "-";
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
@@ -111,9 +111,7 @@ export const JoineeDetailsDialog = ({
           </div>
           <div>
             <h3 className="text-sm font-medium">Phone</h3>
-            <p className="text-sm text-gray-600">
-              {joinee.phoneNumber || "N/A"}
-            </p>
+            <p className="text-sm text-gray-600">{joinee.phoneNumber || "-"}</p>
           </div>
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-medium">Technology</h3>
@@ -124,11 +122,11 @@ export const JoineeDetailsDialog = ({
                   style={{ backgroundColor: joinee.technology.color }}
                 />
                 <span className="text-sm text-gray-600">
-                  {joinee.technology.name || "N/A"}
+                  {joinee.technology.name || "-"}
                 </span>
               </>
             ) : (
-              <span className="text-sm text-gray-600">N/A</span>
+              <span className="text-sm text-gray-600">-</span>
             )}
           </div>
           <div>
@@ -140,7 +138,7 @@ export const JoineeDetailsDialog = ({
           <div>
             <h3 className="text-sm font-medium">Joining Date</h3>
             <p className="text-sm text-gray-600">
-              {formatDate(joinee.joiningDate) || "N/A"}
+              {formatDate(joinee.joiningDate) || "-"}
             </p>
           </div>
           <div>

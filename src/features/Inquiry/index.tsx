@@ -287,6 +287,10 @@ const InquiryPage = () => {
     {
       accessorKey: "country.name",
       header: "Country",
+      cell: ({ row }) => {
+        const country = row.original?.country?.name ?? "-";
+        return <span className="capitalize">{country}</span>;
+      },
     },
     {
       accessorKey: "generatedByUser",

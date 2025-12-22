@@ -139,8 +139,7 @@ export const JoineeCalendar = ({
               )}
             </div>
             <div className="text-gray-600">
-              Experience: {event.extendedProps?.experienceInYears || "N/A"}{" "}
-              Years
+              Experience: {event.extendedProps?.experienceInYears || "-"} Years
             </div>
           </TooltipContent>
         </Tooltip>

@@ -12,6 +12,7 @@ import { useTransactionStore } from "./stores";
 import { useGetTransactionData } from "./services";
 import { useGetProjectSDropdownList } from "../Project-type/services";
 import {
+  roles,
   SubscriptionTypeOptions,
   TransactionTypeOptions,
 } from "@/utils/constant";
@@ -68,7 +69,9 @@ const TransactionPage = () => {
     useGetProjectSDropdownList();
   const totalCount = (listData as any)?.metadata?.totalCount;
   const { data: usersList, isPending: usersListLoading }: any =
-    useGetUserDropdownList();
+    useGetUserDropdownList({
+      role: [roles.TEAM_LEAD, roles.ADMIN, roles.PROJECT_MANAGER],
+    });
 
   const handleSearch = (search: string | undefined) => {
     setListParams({ ...listParams, search: search ?? "", currentPage: 1 });
@@ -159,7 +162,7 @@ const TransactionPage = () => {
       type: "select",
       key: "userId",
       placeholder: "Filter by User",
-      options: usersList?.data?.map((user: any) => {
+      options: usersList?.data.map((user: any) => {
         return { value: user.id, label: user.fullName };
       }),
       value: listParams.userId,
