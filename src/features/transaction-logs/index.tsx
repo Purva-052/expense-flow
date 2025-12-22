@@ -15,6 +15,7 @@ import {
   SubscriptionTypeOptions,
   TransactionTypeOptions,
 } from "@/utils/constant";
+import { useGetUserDropdownList } from "../users/services";
 
 const TransactionPage = () => {
   const { open, setOpen } = useTransactionStore();
@@ -25,6 +26,9 @@ const TransactionPage = () => {
     projectId: undefined,
     transactionType: undefined,
     subscriptionCycle: undefined,
+    userId: undefined,
+    transactionStartDate: undefined as string | undefined,
+    transactionEndDate: undefined as string | undefined,
   });
 
   const apiParams = {
@@ -35,6 +39,19 @@ const TransactionPage = () => {
     projectId: listParams.projectId,
     transactionType: listParams.transactionType,
     subscriptionCycle: listParams.subscriptionCycle,
+    userId: listParams.userId,
+    transactionStartDate: listParams.transactionStartDate,
+    transactionEndDate: listParams.transactionEndDate,
+  };
+
+  const formatDate = (date?: Date) => {
+    if (!date) return undefined;
+
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+
+    return `${yyyy}-${mm}-${dd}`;
   };
 
   const handleProjectChange = (value: any) => {
@@ -50,6 +67,8 @@ const TransactionPage = () => {
   const { data: projectsList, isPending: projectsListLoading }: any =
     useGetProjectSDropdownList();
   const totalCount = (listData as any)?.metadata?.totalCount;
+  const { data: usersList, isPending: usersListLoading }: any =
+    useGetUserDropdownList();
 
   const handleSearch = (search: string | undefined) => {
     setListParams({ ...listParams, search: search ?? "", currentPage: 1 });
@@ -69,10 +88,31 @@ const TransactionPage = () => {
   const filters: FilterConfig[] = [
     {
       type: "search",
-      placeholder: "Search by reason or card number ...",
+      placeholder: "Search by reason , amount or card number ...",
       key: "search",
       value: listParams.search,
       onChange: handleSearch,
+    },
+    {
+      type: "dateRange",
+      key: "transactionDate",
+      placeholder: "Filter by Transaction Date",
+      value: {
+        from: listParams.transactionStartDate
+          ? new Date(listParams.transactionStartDate)
+          : undefined,
+        to: listParams.transactionEndDate
+          ? new Date(listParams.transactionEndDate)
+          : undefined,
+      },
+      onChange: (range: { from?: Date; to?: Date } | undefined) => {
+        setListParams({
+          ...listParams,
+          transactionStartDate: formatDate(range?.from) ?? undefined,
+          transactionEndDate: formatDate(range?.to) ?? undefined,
+          currentPage: 1,
+        });
+      },
     },
     {
       type: "select",
@@ -114,6 +154,23 @@ const TransactionPage = () => {
         });
       },
       isLoading: false,
+    },
+    {
+      type: "select",
+      key: "userId",
+      placeholder: "Filter by User",
+      options: usersList?.data?.map((user: any) => {
+        return { value: user.id, label: user.fullName };
+      }),
+      value: listParams.userId,
+      onChange: (value: any) => {
+        setListParams({
+          ...listParams,
+          userId: value ?? null,
+          currentPage: 1,
+        });
+      },
+      isLoading: usersListLoading,
     },
   ];
 

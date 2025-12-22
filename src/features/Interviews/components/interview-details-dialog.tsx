@@ -17,6 +17,7 @@ import {
   UserCircle,
   Edit2,
   Trash2,
+  Link,
   // ShieldCheck,
 } from "lucide-react";
 import {
@@ -533,6 +534,20 @@ export const InterviewDetailsDialog = ({
                       </p>
                     </div>
                   </div>
+                  {details.interviewType === "video_call" &&
+                    details.interviewUrl && (
+                      <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                        <Link className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+                            Meeting Link
+                          </p>
+                          <p className="text-sm font-medium">
+                            {details.interviewUrl}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                     <Tag className="h-5 w-5 text-primary mt-0.5 shrink-0" />
 

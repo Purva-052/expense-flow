@@ -19,6 +19,7 @@ export interface CreatedBy {
 export interface InterviewApiResponse {
   id: number;
   candidateName: string;
+  interviewUrl: string;
   technology: Technology;
   email: string;
   phoneNumber: string;

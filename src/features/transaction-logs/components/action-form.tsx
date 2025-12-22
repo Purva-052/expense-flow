@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -53,6 +54,8 @@ export function TransactionLogsActionForm({
 
   const form = useForm<TTransactionFormSchema>({
     resolver: zodResolver(transactionLogSchema) as any,
+    mode: "onSubmit", // or "onChange" / "onBlur" / "onTouched"
+    reValidateMode: "onChange",
     defaultValues: isEdit
       ? {
           reason: currentRow?.reason ?? "",
@@ -64,6 +67,9 @@ export function TransactionLogsActionForm({
             : undefined,
           transactionType: currentRow?.transactionType ?? "",
           subscriptionCycle: currentRow?.subscriptionCycle ?? "",
+          subscriptionEndDate: currentRow?.subscriptionEndDate
+            ? new Date(currentRow.subscriptionEndDate)
+            : undefined,
         }
       : {
           reason: "",
@@ -73,27 +79,42 @@ export function TransactionLogsActionForm({
           transactionDate: undefined,
           transactionType: "",
           subscriptionCycle: "",
+          subscriptionEndDate: undefined,
         },
   });
 
   const transactionType = form.watch("transactionType");
 
+  useEffect(() => {
+    if (transactionType === "subscription") {
+      form.trigger(["subscriptionCycle", "subscriptionEndDate"]);
+    } else {
+      form.clearErrors(["subscriptionCycle", "subscriptionEndDate"]);
+    }
+  }, [transactionType, form]);
+
   const onSubmit: SubmitHandler<TTransactionFormSchema> = (values) => {
-    const payload = {
+    const payload: any = {
       ...values,
       transactionDate: new Date(values.transactionDate).toISOString(),
-      ...(values.transactionType === "subscription"
-        ? { subscriptionCycle: values.subscriptionCycle }
-        : { subscriptionCycle: undefined }),
+      subscriptionEndDate:
+        values.transactionType === "subscription" && values.subscriptionEndDate
+          ? new Date(values.subscriptionEndDate).toISOString()
+          : undefined,
+      subscriptionCycle:
+        values.transactionType === "subscription"
+          ? values.subscriptionCycle
+          : undefined,
       // Convert empty projectId to undefined
       projectId: values.projectId || undefined,
     };
 
     if (payload.transactionType !== "subscription") {
       delete payload.subscriptionCycle;
+      delete payload.subscriptionEndDate;
     }
 
-    onSubmitValues(payload as any);
+    onSubmitValues(payload);
   };
 
   return (
@@ -145,6 +166,14 @@ export function TransactionLogsActionForm({
                   options={SubscriptionTypeOptions}
                   placeholder="Select cycle"
                   searchEnabled={false}
+                />
+              )}
+              {transactionType === "subscription" && (
+                <CustomDatePicker
+                  control={form.control}
+                  name="subscriptionEndDate"
+                  label="Subscription End Date"
+                  placeholder="Select Subscription End Date"
                 />
               )}
               <TextInputField

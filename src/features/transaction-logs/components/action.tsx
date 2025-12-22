@@ -36,6 +36,7 @@ export function ActionFormModal() {
       transactionDate: values.transactionDate,
       transactionType: values.transactionType,
       subscriptionCycle: values.subscriptionCycle,
+      subscriptionEndDate: values.subscriptionEndDate,
     };
     createMutate(payload);
   };
@@ -49,6 +50,7 @@ export function ActionFormModal() {
       transactionDate: values.transactionDate,
       transactionType: values.transactionType,
       subscriptionCycle: values.subscriptionCycle,
+      subscriptionEndDate: values.subscriptionEndDate,
     };
     updateMutate(payload);
   };
