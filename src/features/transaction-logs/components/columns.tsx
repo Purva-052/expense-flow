@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,6 +11,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTransactionStore } from "../stores";
+import { roles } from "@/utils/constant";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 export const columns: ColumnDef<any>[] = [
   {
@@ -18,7 +20,7 @@ export const columns: ColumnDef<any>[] = [
     header: "User",
     cell: ({ row }) => {
       const createdBy = row.original.user?.name;
-      return <span className="text-sm">{createdBy ? createdBy : "N/A"}</span>;
+      return <span className="text-sm">{createdBy ? createdBy : "-"}</span>;
     },
   },
   {
@@ -28,7 +30,7 @@ export const columns: ColumnDef<any>[] = [
       const amount = row.original.amount;
 
       if (amount === null || amount === undefined) {
-        return <span className="text-sm">N/A</span>;
+        return <span className="text-sm">-</span>;
       }
 
       const formattedAmount =
@@ -46,7 +48,7 @@ export const columns: ColumnDef<any>[] = [
       const reason = row.original.reason;
 
       if (!reason) {
-        return <span className="text-sm">N/A</span>;
+        return <span className="text-sm">-</span>;
       }
 
       const truncated =
@@ -68,7 +70,7 @@ export const columns: ColumnDef<any>[] = [
         <span className="text-sm">
           {transactionType
             ? transactionType.charAt(0).toUpperCase() + transactionType.slice(1)
-            : "N/A"}
+            : "-"}
         </span>
       );
     },
@@ -102,13 +104,31 @@ export const columns: ColumnDef<any>[] = [
   },
   {
     accessorKey: "transactionDate",
-    header: "Transaction Date",
+    header: ({ column }) => {
+      const sorted = column.getIsSorted();
+
+      return (
+        <button
+          type="button"
+          onClick={() => column.toggleSorting(sorted === "asc")}
+          className="flex items-center gap-1 text-left text-sm font-medium hover:text-primary"
+        >
+          Transaction Date
+          {sorted === "asc" && <ArrowUp className="h-4 w-4" />}
+          {sorted === "desc" && <ArrowDown className="h-4 w-4" />}
+          {!sorted && <ArrowUpDown className="h-4 w-4 opacity-50" />}
+        </button>
+      );
+    },
+
     cell: ({ row }) => {
       const transactionDate = row.original.transactionDate;
       if (!transactionDate) {
-        return <span className="text-sm">N/A</span>;
+        return <span className="text-sm">-</span>;
       }
+
       const date = new Date(transactionDate);
+
       return (
         <span className="text-sm">
           {date.toLocaleDateString("en-IN", {
@@ -119,14 +139,29 @@ export const columns: ColumnDef<any>[] = [
         </span>
       );
     },
-  },
 
+    enableSorting: true,
+    sortingFn: (rowA, rowB) => {
+      const a = rowA.original.transactionDate
+        ? new Date(rowA.original.transactionDate).getTime()
+        : 0;
+
+      const b = rowB.original.transactionDate
+        ? new Date(rowB.original.transactionDate).getTime()
+        : 0;
+
+      return a - b;
+    },
+  },
   {
     id: "actions",
     header: "Actions",
     cell: function Cell({ row }) {
       const operator = row.original;
       const { setOpen, setCurrentRow } = useTransactionStore();
+
+      const user = useAuthStore((state) => state.user);
+      const userRole = user?.user?.role;
 
       const handleEdit = () => {
         setOpen("edit");
@@ -160,12 +195,14 @@ export const columns: ColumnDef<any>[] = [
             <DropdownMenuItem onClick={handleEdit}>
               Edit Transaction
             </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-red-600 focus:bg-red-50 focus:text-red-600"
-              onClick={handleDelete}
-            >
-              Delete Transaction
-            </DropdownMenuItem>
+            {userRole === roles.ADMIN && (
+              <DropdownMenuItem
+                className="text-red-600 focus:bg-red-50 focus:text-red-600"
+                onClick={handleDelete}
+              >
+                Delete Transaction
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       );

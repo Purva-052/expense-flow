@@ -10,7 +10,7 @@ export function ViewTransactionModal() {
   const { open, setOpen, currentRow } = useTransactionStore();
 
   const formatDate = (dateString: string) => {
-    if (!dateString) return "N/A";
+    if (!dateString) return "-";
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
@@ -31,27 +31,27 @@ export function ViewTransactionModal() {
           <div>
             <h3 className="text-sm font-medium">User</h3>
             <p className="text-sm text-gray-600">
-              {currentRow.user?.name || "NA"}
+              {currentRow.user?.name || "-"}
             </p>
           </div>
           {/* Name */}
           <div>
             <h3 className="text-sm font-medium">Project</h3>
             <p className="text-sm text-gray-600">
-              {currentRow?.project?.name || "NA"}
+              {currentRow?.project?.name || "-"}
             </p>
           </div>
 
           {/* Company */}
           <div>
             <h3 className="text-sm font-medium">Amount</h3>
-            <p className="text-sm text-gray-600">{currentRow.amount || "NA"}</p>
+            <p className="text-sm text-gray-600">{currentRow.amount || "-"}</p>
           </div>
 
           <div>
             <h3 className="text-sm font-medium">Card Last 4 Digits</h3>
             <p className="text-sm text-gray-600">
-              {currentRow.cardLast4 || "NA"}
+              {currentRow.cardLast4 || "-"}
             </p>
           </div>
 
@@ -63,7 +63,7 @@ export function ViewTransactionModal() {
                 ? currentRow.transactionType === "subscription"
                   ? "Subscription"
                   : "One Time"
-                : "NA"}
+                : "-"}
             </p>
           </div>
 
@@ -75,7 +75,7 @@ export function ViewTransactionModal() {
                 ? currentRow.subscriptionCycle === "yearly"
                   ? "Yearly"
                   : "Monthly"
-                : "NA"}
+                : "-"}
             </p>
           </div>
 
@@ -83,7 +83,7 @@ export function ViewTransactionModal() {
             <div>
               <h3 className="text-sm font-medium">Subscription End Date</h3>
               <p className="text-sm text-gray-600">
-                {formatDate(currentRow.subscriptionEndDate) || "NA"}
+                {formatDate(currentRow.subscriptionEndDate) || "-"}
               </p>
             </div>
           )}
@@ -91,13 +91,13 @@ export function ViewTransactionModal() {
           <div>
             <h3 className="text-sm font-medium">Transaction Date</h3>
             <p className="text-sm text-gray-600">
-              {formatDate(currentRow.transactionDate) || "NA"}
+              {formatDate(currentRow.transactionDate) || "-"}
             </p>
           </div>
 
           <div>
             <h3 className="text-sm font-medium">Reason</h3>
-            <p className="text-sm text-gray-600">{currentRow.reason || "NA"}</p>
+            <p className="text-sm text-gray-600">{currentRow.reason || "-"}</p>
           </div>
         </div>
       </DialogContent>

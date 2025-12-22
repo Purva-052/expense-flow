@@ -43,7 +43,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
       .toUpperCase();
 
   const formatDate = (dateString: string) => {
-    if (!dateString) return "N/A";
+    if (!dateString) return "-";
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
@@ -82,7 +82,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
               className="text-white"
               style={{ backgroundColor: user?.technology?.color || "#333" }}
             >
-              {user?.technology?.name || "N/A"}
+              {user?.technology?.name || "-"}
             </Badge>
           }
         />

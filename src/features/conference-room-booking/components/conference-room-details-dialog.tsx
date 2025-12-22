@@ -10,6 +10,8 @@ import {
   UserCircle,
   Edit2,
   Trash2,
+  Users,
+  Repeat,
 } from "lucide-react";
 import {
   Dialog,
@@ -54,11 +56,11 @@ export const ConferenceRoomDetailsDialog = ({
   // console.log("details: ", details);
 
   // const getProjectName = (projectId: number) => {
-  //   if (!Array.isArray(projectsList)) return "N/A";
+  //   if (!Array.isArray(projectsList)) return "-";
   //   const project = projectsList.find((p: any) => p.id === projectId);
   //   console.log("project: ", project);
   //   console.log("project?.name: ", project?.name);
-  //   return project?.name || "N/A";
+  //   return project?.name || "-";
   // };
 
   // Parse dates
@@ -92,12 +94,14 @@ export const ConferenceRoomDetailsDialog = ({
                 {details.meetingName}
 
                 {/* Recurring Type Chip */}
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/30 border border-border/50">
-                  <Tag className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-muted-foreground">
-                    {details.project?.name}
-                  </span>
-                </div>
+                {details.project?.name && (
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/30 border border-border/50">
+                    <Tag className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {details.project?.name}
+                    </span>
+                  </div>
+                )}
 
                 {/* Action Buttons */}
                 <div className="flex items-center gap-2 pr-4">
@@ -176,6 +180,18 @@ export const ConferenceRoomDetailsDialog = ({
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                    <Users className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-muted-foreground uppercase mb-1">
+                        Meeting Name
+                      </p>
+                      <p className="text-sm font-medium">
+                        {details.meetingName || "-"}
+                      </p>
+                    </div>
+                  </div>
+
                   {/* Project */}
                   <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                     <Briefcase className="h-5 w-5 text-primary mt-0.5 shrink-0" />
@@ -184,7 +200,7 @@ export const ConferenceRoomDetailsDialog = ({
                         Project
                       </p>
                       <p className="text-sm font-medium">
-                        {details.project?.name || "N/A"}
+                        {details.project?.name || "-"}
                       </p>
                     </div>
                   </div>
@@ -218,7 +234,7 @@ export const ConferenceRoomDetailsDialog = ({
 
                   {/* Recurring Type */}
                   <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                    <Tag className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                    <Repeat className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                     <div className="flex-1">
                       <p className="text-xs text-muted-foreground uppercase mb-1">
                         Recurring Type
@@ -232,7 +248,7 @@ export const ConferenceRoomDetailsDialog = ({
                   </div>
 
                   <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                    <Tag className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                    <CalendarIcon className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                     <div className="flex-1">
                       <p className="text-xs text-muted-foreground uppercase mb-1">
                         {details.recurringType === "none"

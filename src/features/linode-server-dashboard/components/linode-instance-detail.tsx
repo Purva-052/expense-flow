@@ -206,7 +206,7 @@ export default function LinodeInstanceDetail({
             </Badge>
           </div>
           <div className="text-sm text-muted-foreground mt-1">
-            {instance.region?.toUpperCase()} • {instance.ipv4?.[0] || "N/A"}
+            {instance.region?.toUpperCase()} • {instance.ipv4?.[0] || "-"}
           </div>
         </TablePageHeader>
 
@@ -308,7 +308,7 @@ export default function LinodeInstanceDetail({
                     className="text-sm font-bold truncate"
                     title={instance.ubuntuVersion}
                   >
-                    {instance.ubuntuVersion || "N/A"}
+                    {instance.ubuntuVersion || "-"}
                   </p>
                 </div>
               </div>
