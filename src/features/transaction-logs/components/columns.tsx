@@ -14,13 +14,11 @@ import { useTransactionStore } from "../stores";
 
 export const columns: ColumnDef<any>[] = [
   {
-    accessorKey: "project.name",
-    header: "Project",
+    accessorKey: "Created By",
+    header: "User",
     cell: ({ row }) => {
-      const projectName = row.original.project?.name;
-      return (
-        <span className="text-sm">{projectName ? projectName : "N/A"}</span>
-      );
+      const createdBy = row.original.user?.name;
+      return <span className="text-sm">{createdBy ? createdBy : "N/A"}</span>;
     },
   },
   {
@@ -39,6 +37,26 @@ export const columns: ColumnDef<any>[] = [
           : Number(amount).toFixed(2);
 
       return <span className="text-sm">{formattedAmount}</span>;
+    },
+  },
+  {
+    accessorKey: "reason",
+    header: "Reason",
+    cell: ({ row }) => {
+      const reason = row.original.reason;
+
+      if (!reason) {
+        return <span className="text-sm">N/A</span>;
+      }
+
+      const truncated =
+        reason.length > 30 ? `${reason.slice(0, 30)}...` : reason;
+
+      return (
+        <span className="text-sm" title={reason}>
+          {truncated}
+        </span>
+      );
     },
   },
   {
@@ -65,7 +83,7 @@ export const columns: ColumnDef<any>[] = [
           {subscriptionCycle
             ? subscriptionCycle.charAt(0).toUpperCase() +
               subscriptionCycle.slice(1)
-            : "N/A"}
+            : "-"}
         </span>
       );
     },
@@ -75,26 +93,13 @@ export const columns: ColumnDef<any>[] = [
     header: "Card Last 4 Digits",
   },
   {
-    accessorKey: "reason",
-    header: "Reason",
+    accessorKey: "project.name",
+    header: "Project",
     cell: ({ row }) => {
-      const reason = row.original.reason;
-
-      if (!reason) {
-        return <span className="text-sm">N/A</span>;
-      }
-
-      const truncated =
-        reason.length > 30 ? `${reason.slice(0, 30)}...` : reason;
-
-      return (
-        <span className="text-sm" title={reason}>
-          {truncated}
-        </span>
-      );
+      const projectName = row.original.project?.name;
+      return <span className="text-sm">{projectName ? projectName : "-"}</span>;
     },
   },
-
   {
     accessorKey: "transactionDate",
     header: "Transaction Date",
@@ -115,6 +120,7 @@ export const columns: ColumnDef<any>[] = [
       );
     },
   },
+
   {
     id: "actions",
     header: "Actions",
