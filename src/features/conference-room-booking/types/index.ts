@@ -20,6 +20,7 @@ export interface ConferenceRoomApiResponse {
   meetingName: string;
   project: Project;
   endDate: string;
+  startDate: string;
   slotStartDate: string;
   slotEndDate: string;
   startTime: string;

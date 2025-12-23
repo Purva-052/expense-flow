@@ -153,6 +153,10 @@ export const ConferenceRoomForm = ({
         formData.endDate = extractDate(initialData.endDate);
       }
 
+      // if (initialData.recurringType && initialData.recurringType !== "none") {
+      //   formData.startDate = extractDate(initialData.startDate);
+      // }
+
       if (initialData.recurringType === "daily" && initialData.daysOfWeek) {
         formData.daysOfWeek = initialData.daysOfWeek;
       }

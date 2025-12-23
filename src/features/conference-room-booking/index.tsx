@@ -267,7 +267,7 @@ const ConferenceRoomBookingPage = () => {
       // For recurring bookings, use selectedDate as startDate and form endDate
       if (data.recurringType && data.recurringType !== "none") {
         const dateToUse = eventToEdit
-          ? new Date(eventToEdit.extendedProps.slotStartDate)
+          ? new Date(eventToEdit.extendedProps.startDate)
           : selectedDate;
 
         if (!dateToUse) {
