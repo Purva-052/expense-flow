@@ -149,6 +149,7 @@ export function TransactionLogsActionForm({
                 })}
                 placeholder="Select project"
                 isLoading={projectsListLoading}
+                sortOptions={false}
               />
               <CustomDropDownSearchable
                 form={form}

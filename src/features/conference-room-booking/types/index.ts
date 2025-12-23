@@ -19,8 +19,9 @@ export interface ConferenceRoomApiResponse {
   id: number;
   meetingName: string;
   project: Project;
-  startDate: string;
   endDate: string;
+  slotStartDate: string;
+  slotEndDate: string;
   startTime: string;
   endTime: string;
   recurringType: string;

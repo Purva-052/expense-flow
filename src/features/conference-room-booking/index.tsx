@@ -154,8 +154,8 @@ const ConferenceRoomBookingPage = () => {
     return conferenceRoomsData.data
       .map((booking: ConferenceRoomApiResponse) => {
         // Parse the startDate (YYYY-MM-DD format)
-        const startDateOnly = booking.startDate
-          ? new Date(booking.startDate)
+        const startDateOnly = booking.slotStartDate
+          ? new Date(booking.slotStartDate)
           : new Date();
 
         // Parse startTime and endTime (HH:mm:ss format)
@@ -267,7 +267,7 @@ const ConferenceRoomBookingPage = () => {
       // For recurring bookings, use selectedDate as startDate and form endDate
       if (data.recurringType && data.recurringType !== "none") {
         const dateToUse = eventToEdit
-          ? new Date(eventToEdit.extendedProps.startDate)
+          ? new Date(eventToEdit.extendedProps.slotStartDate)
           : selectedDate;
 
         if (!dateToUse) {
@@ -287,7 +287,7 @@ const ConferenceRoomBookingPage = () => {
       } else {
         // For non-recurring bookings, use the selected date for both
         const dateToUse = eventToEdit
-          ? new Date(eventToEdit.extendedProps.startDate)
+          ? new Date(eventToEdit.extendedProps.slotStartDate)
           : selectedDate;
 
         if (!dateToUse) return;
@@ -469,14 +469,17 @@ const ConferenceRoomBookingPage = () => {
             <DialogHeader>
               <DialogTitle>
                 Edit Conference Room Booking for{" "}
-                {format(new Date(eventToEdit.extendedProps.startDate), "PPP")}
+                {format(
+                  new Date(eventToEdit.extendedProps.slotStartDate),
+                  "PPP"
+                )}
               </DialogTitle>
               <DialogDescription>
                 Update the booking details below.
               </DialogDescription>
             </DialogHeader>
             <ConferenceRoomForm
-              selectedDate={new Date(eventToEdit.extendedProps.startDate)}
+              selectedDate={new Date(eventToEdit.extendedProps.slotStartDate)}
               onClose={() => {
                 setIsEditDialogOpen(false);
                 setEventToEdit(null);
