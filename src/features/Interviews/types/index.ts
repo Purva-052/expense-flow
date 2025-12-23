@@ -19,6 +19,7 @@ export interface CreatedBy {
 export interface InterviewApiResponse {
   id: number;
   candidateName: string;
+  interviewUrl: string;
   technology: Technology;
   email: string;
   phoneNumber: string;
@@ -37,6 +38,7 @@ export interface InterviewApiResponse {
   interviewEnd: string;
   interviewer: Interviewer;
   createdBy: CreatedBy;
+  joiningDate?: string;
 }
 
 export interface InterviewEvent {

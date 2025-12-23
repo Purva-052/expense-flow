@@ -17,14 +17,15 @@ export const interviewTypes = [
 ];
 
 export const interviewRounds = [
-  { value: "technical", label: "Technical" },
-  { value: "practical", label: "Practical" },
+  { value: "Technical", label: "Technical" },
+  { value: "Practical", label: "Practical" },
 ];
 
 export const interviewStatuses = [
   { value: "pending", label: "Pending" },
   { value: "technical_completed", label: "Technical Completed" },
   { value: "practical_completed", label: "Practical Completed" },
+  { value: "hr_round", label: "HR Round" },
   { value: "joining", label: "Joining" },
   { value: "rejected", label: "Rejected" },
 ];

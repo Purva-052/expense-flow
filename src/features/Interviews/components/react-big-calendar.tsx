@@ -125,7 +125,9 @@ export const ReactBigCalendar = ({
                     {format(event.start, "h:mma")}
                   </span>
                 )}
-                <span className="truncate font-medium">{event.title}</span>
+                <span className="truncate font-medium">
+                  {event.title} - {event.extendedProps?.interviewer?.name}
+                </span>
               </div>
             </div>
           </TooltipTrigger>

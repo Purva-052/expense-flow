@@ -13,7 +13,7 @@ import {
   IconUsers,
   IconUserScreen,
 } from "@tabler/icons-react";
-import { Command } from "lucide-react";
+import { CalendarCheck, Command, Cpu, ScrollText } from "lucide-react";
 import { type SidebarData } from "../types";
 import { useAuthStore } from "@/stores/use-auth-store";
 
@@ -80,12 +80,29 @@ export const sidebarData: SidebarData = {
           icon: IconLayersIntersect,
           requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER, roles.TEAM_LEAD],
         },
-        // {
-        //   title: "New Joinees",
-        //   url: "/New-joinees",
-        //   icon: IconUsers,
-        //   requiredRoles: [roles.ADMIN],
-        // },
+        {
+          title: "To be Join",
+          url: "/New-joinees",
+          icon: IconUsers,
+          requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
+        },
+        {
+          title: "Linode Server Dashboard",
+          url: "/Linode-server-dashboard",
+          icon: Cpu,
+          requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
+        },
+        {
+          title: "Conference Room Booking",
+          url: "/Conference-room-booking",
+          icon: CalendarCheck,
+          requiredRoles: [
+            roles.ADMIN,
+            roles.TEAM_LEAD,
+            roles.PROJECT_MANAGER,
+            roles.BDE,
+          ],
+        },
       ],
     },
     {
@@ -114,7 +131,13 @@ export const sidebarData: SidebarData = {
           title: "Inquiry Types",
           url: "/Inquiry-type",
           icon: IconPencilSearch,
-          requiredRoles: [roles.ADMIN],
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+        },
+        {
+          title: "Transaction Logs",
+          url: "/transactions-logs",
+          icon: ScrollText,
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER, roles.TEAM_LEAD],
         },
         {
           title: "Clients",

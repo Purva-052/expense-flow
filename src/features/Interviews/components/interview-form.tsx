@@ -29,6 +29,9 @@ import {
 import { useCreateInterviewResumeLink } from "../services";
 import { FileUpload } from "@/components/shared/custome-file-upload";
 import TimePicker from "@/components/shared/custome-timepicker";
+import { roles } from "@/utils/constant";
+import { useAuthStore } from "@/stores/use-auth-store";
+import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 
 interface InterviewFormProps {
   selectedDate: Date;
@@ -69,6 +72,7 @@ const step2Fields: (keyof InterviewFormValues)[] = [
   "interviewType",
   "interviewUrl",
   "interviewStatus",
+  "joiningDate",
 ];
 
 export const InterviewForm = ({
@@ -83,10 +87,64 @@ export const InterviewForm = ({
 }: InterviewFormProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [uploadedResumeKey, setUploadedResumeKey] = useState<string>("");
+  const [hasExistingFile, setHasExistingFile] = useState(false);
+  const user = useAuthStore((state) => state.user);
   const isEditMode = !!initialData;
+  const userRole = user?.user?.role;
+
+  const extractTime = (isoString: string) => {
+    if (!isoString) return "";
+    const date = new Date(isoString);
+    const h = String(date.getHours()).padStart(2, "0");
+    const m = String(date.getMinutes()).padStart(2, "0");
+    return `${h}:${m}`;
+  };
+
+  const formatNoticePeriod = (days: number): string => {
+    return `${days} Days`;
+  };
+
+  const baseStatuses = interviewStatuses;
+
+  // Step 1: extract values for reuse
+  const ADD_STATUSES = [
+    "pending",
+    "technical_completed",
+    "practical_completed",
+    "hr_round",
+  ];
+  const EDIT_STATUSES = [...ADD_STATUSES, "rejected", "joining"]; // add mode + rejected + joining
+
+  // Step 2: final list logic
+  const filteredStatuses = isEditMode
+    ? userRole === roles.ADMIN
+      ? baseStatuses // admin in edit → all statuses
+      : baseStatuses.filter((s) => EDIT_STATUSES.includes(s.value))
+    : userRole === roles.ADMIN
+      ? baseStatuses.filter((s) => s.value !== "joining") // admin on add → all except joining
+      : baseStatuses.filter((s) => ADD_STATUSES.includes(s.value));
+
+  // Adjust schema based on edit mode, role, and status
+  let activeSchema = interviewFormSchema;
+  if (isEditMode && userRole === roles.ADMIN) {
+    activeSchema = interviewFormSchema.refine(
+      (data) => {
+        // Only require joining date if status is "joining"
+        if (data.interviewStatus !== "joining") return true;
+
+        const val = data.joiningDate;
+        if (val instanceof Date) return true;
+        return !!val && typeof val === "string" && val.trim().length > 0;
+      },
+      {
+        message: "Joining Date is required when status is Joining",
+        path: ["joiningDate"],
+      }
+    ) as any;
+  }
 
   const form = useForm<InterviewFormValues>({
-    resolver: zodResolver(interviewFormSchema),
+    resolver: zodResolver(activeSchema),
     mode: "onSubmit",
     reValidateMode: "onChange",
     defaultValues: {
@@ -110,31 +168,11 @@ export const InterviewForm = ({
       interviewStatus: "pending",
       resume: null,
       resumeS3Key: "",
+      joiningDate: "",
     },
   });
 
-  const extractTime = (isoString: string) => {
-    if (!isoString) return "";
-    const date = new Date(isoString);
-    const h = String(date.getHours()).padStart(2, "0");
-    const m = String(date.getMinutes()).padStart(2, "0");
-    return `${h}:${m}`;
-  };
-
-  const formatNoticePeriod = (days: number): string => {
-    return `${days} Days`;
-  };
-
-  const filteredInterviewStatuses = interviewStatuses.filter(
-    (s) => s.value !== "joining" && s.value !== "rejected"
-  );
-
-  // const formatTimeFromISO = (isoString: string): string => {
-  //   const date = new Date(isoString);
-  //   const hours = String(date.getHours()).padStart(2, "0");
-  //   const minutes = String(date.getMinutes()).padStart(2, "0");
-  //   return `${hours}:${minutes}`;
-  // };
+  const { trigger, formState } = form;
 
   useEffect(() => {
     if (initialData && currentStep === 1) {
@@ -158,15 +196,16 @@ export const InterviewForm = ({
         interviewerComment: initialData.interviewerComments || "",
         interviewStatus: initialData.status || "pending",
         resume: null,
-        resumeS3Key: initialData.resumeS3Key || "",
+        resumeS3Key: initialData.resumeLink || "",
+        joiningDate: initialData.joiningDate || "",
       });
-      setUploadedResumeKey(initialData.resumeS3Key || "");
+      setUploadedResumeKey(initialData.resumeLink || "");
+      setHasExistingFile(!!initialData.resumeLink);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialData, currentStep]);
-
-  const { trigger, formState } = form;
   const interviewType = form.watch("interviewType");
+  const interviewStatus = form.watch("interviewStatus");
   const startTime = form.watch("startTime");
   const { mutateAsync: uploadResume } = useCreateInterviewResumeLink();
 
@@ -195,26 +234,18 @@ export const InterviewForm = ({
     }
   }, [interviewType, currentStep, form]);
 
-  const handleResumeUpload = async (file: File) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("folder", "interview-resumes");
+  const handleResumeRemove = () => {
+    // Clear all resume-related state
+    setUploadedResumeKey("");
+    setHasExistingFile(false);
 
-    try {
-      const response: any = await uploadResume(formData);
+    // Clear form values
+    form.setValue("resume", null, { shouldValidate: true });
+    form.setValue("resumeS3Key", "", { shouldValidate: true });
 
-      if (response?.key) {
-        setUploadedResumeKey(response.key);
-
-        // IMPORTANT: Form state update karein taaki validation pass ho
-        form.setValue("resumeS3Key", response.key, { shouldValidate: true });
-
-        // Optional: Error clear karein
-        form.clearErrors("resumeS3Key");
-      }
-    } catch (error) {
-      console.error("Upload failed", error);
-    }
+    // Clear any errors
+    form.clearErrors("resume");
+    form.clearErrors("resumeS3Key");
   };
 
   const handleNextStep = async (e?: React.MouseEvent) => {
@@ -223,6 +254,19 @@ export const InterviewForm = ({
 
     if (currentStep === 1) {
       const isValid = await trigger(step1Fields, { shouldFocus: true });
+
+      // Manual validation for resume
+      const resumeFile = form.getValues("resume");
+      const resumeKey = form.getValues("resumeS3Key");
+
+      if (!resumeFile && !resumeKey) {
+        form.setError("resume", {
+          type: "manual",
+          message: "Resume is required",
+        });
+        return; // Stop if resume is missing
+      }
+
       if (isValid) {
         // Clear any step 2 errors before moving forward
         step2Fields.forEach((field) => {
@@ -265,10 +309,34 @@ export const InterviewForm = ({
     const isValid = await trigger(step2Fields, { shouldFocus: true });
 
     if (isValid) {
-      // Add the uploaded resume key to form data before submitting
+      let finalResumeKey = uploadedResumeKey || data.resumeS3Key || "";
+
+      // Handle file upload if new file is selected
+      const resumeFile = data.resume;
+      if (resumeFile instanceof File) {
+        const formData = new FormData();
+        formData.append("file", resumeFile);
+        formData.append("folder", "interview-resumes");
+
+        try {
+          const response: any = await uploadResume(formData);
+          if (response?.key) {
+            finalResumeKey = response.key;
+          }
+        } catch (error) {
+          console.error("Upload failed", error);
+          // Optional: handle upload error (e.g. show toast, stay on page)
+          return;
+        }
+      }
+
       const submissionData = {
         ...data,
-        resumeS3Key: uploadedResumeKey || data.resumeS3Key || "",
+        resumeS3Key: finalResumeKey,
+        joiningDate:
+          data.joiningDate instanceof Date
+            ? data.joiningDate.toISOString()
+            : data.joiningDate,
       };
       onSubmit(submissionData);
     } else {
@@ -276,9 +344,12 @@ export const InterviewForm = ({
       const step2Errors = step2Fields.filter(
         (field) => formState.errors[field]
       );
+      // console.log("step2Errors: ", step2Errors);
       if (step2Errors.length > 0) {
         const firstError = step2Errors[0];
+        // console.log("firstError: ", firstError);
         const errorElement = document.querySelector(`[name="${firstError}"]`);
+        // console.log("errorElement: ", errorElement);
         if (errorElement) {
           errorElement.scrollIntoView({
             behavior: "smooth",
@@ -482,13 +553,19 @@ export const InterviewForm = ({
                     <FileUpload
                       name="resume"
                       label="Resume (CV)"
-                      onFileSelect={handleResumeUpload}
+                      onFileSelect={undefined}
+                      onFileRemove={handleResumeRemove}
+                      existingFileUrl={
+                        hasExistingFile && initialData?.resumeLink
+                          ? initialData.resumeLink
+                          : undefined
+                      }
+                      existingFileName={
+                        hasExistingFile && initialData?.resumeLink
+                          ? `${initialData.candidateName || "Candidate"} Resume`
+                          : undefined
+                      }
                     />
-                    {/* {form.formState.errors.resumeS3Key && (
-                      <p className="text-sm font-medium text-destructive mt-2">
-                        {form.formState.errors.resumeS3Key.message}
-                      </p>
-                    )} */}
                   </div>
                   <FormField
                     control={form.control}
@@ -536,6 +613,7 @@ export const InterviewForm = ({
                     options={interviewRounds}
                     placeholder="Select round"
                     searchEnabled={false}
+                    sortOptions={false}
                   />
                   <FormField
                     control={form.control}
@@ -545,40 +623,15 @@ export const InterviewForm = ({
                         <FormLabel>Interview Time</FormLabel>
                         <FormControl>
                           <TimePicker
-                            // minTime={startTime}
                             value={field.value}
                             onChange={field.onChange}
                             placeholder="Select start time"
                           />
                         </FormControl>
                         <FormMessage />
-                        {/* {field.value && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            End time: {form.watch("endTime")} (30 min duration)
-                          </p>
-                        )} */}
                       </FormItem>
                     )}
                   />
-                  {/* End Time is now automatically calculated as startTime + 30 minutes */}
-                  {/* <FormField
-                    control={form.control}
-                    name="endTime"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>End Time</FormLabel>
-                        <FormControl>
-                          <TimePicker
-                            minTime={startTime}
-                            value={field.value}
-                            onChange={field.onChange}
-                            placeholder="Select end time"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  /> */}
                   <CustomDropDownSearchable
                     form={form}
                     name="interviewType"
@@ -609,13 +662,21 @@ export const InterviewForm = ({
                     form={form}
                     name="interviewStatus"
                     label="Interview Status"
-                    options={
-                      isEditMode ? interviewStatuses : filteredInterviewStatuses
-                    }
+                    options={filteredStatuses}
                     placeholder="Select status"
                     searchEnabled={false}
                     sortOptions={false}
                   />
+
+                  {isEditMode &&
+                    userRole === roles.ADMIN &&
+                    interviewStatus === "joining" && (
+                      <CustomDatePicker
+                        control={form.control}
+                        name="joiningDate"
+                        label="Joining Date"
+                      />
+                    )}
 
                   <FormField
                     control={form.control}
@@ -677,6 +738,7 @@ export const InterviewForm = ({
                 type="submit"
                 className="flex-1 sm:flex-initial"
                 disabled={isSubmitting}
+                // onClick={() => console.log("clicked")}
               >
                 {isEditMode
                   ? "Update Interview"

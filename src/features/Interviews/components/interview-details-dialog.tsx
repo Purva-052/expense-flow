@@ -17,6 +17,9 @@ import {
   UserCircle,
   Edit2,
   Trash2,
+  Link,
+  SquareArrowOutUpRight,
+  // ShieldCheck,
 } from "lucide-react";
 import {
   Dialog,
@@ -33,8 +36,21 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select";
 import { InterviewEvent } from "../types";
 import { interviewStatuses, interviewTypes } from "../constants";
+import { useAuthStore } from "@/stores/use-auth-store";
+import { roles } from "@/utils/constant";
+import { capitalizeFirstLetter } from "@/utils/commonFunctions";
+// import { useUpdateInterview } from "../services";
+// import { useAuthStore } from "@/stores/use-auth-store";
+// import { roles } from "@/utils/constant";
 
 interface InterviewDetailsDialogProps {
   event: InterviewEvent | null;
@@ -42,6 +58,7 @@ interface InterviewDetailsDialogProps {
   onOpenChange: (open: boolean) => void;
   onEdit?: (event: InterviewEvent) => void;
   onDelete?: (event: InterviewEvent) => void;
+  onStatusUpdate?: (eventId: string, newStatus: string) => void;
 }
 
 export const InterviewDetailsDialog = ({
@@ -50,13 +67,43 @@ export const InterviewDetailsDialog = ({
   onOpenChange,
   onEdit,
   onDelete,
+  // onStatusUpdate,
 }: InterviewDetailsDialogProps) => {
   if (!event) return null;
+
+  const user = useAuthStore((state) => state.user);
+  const userRole = user?.user?.role;
+  // const baseStatuses = interviewStatuses;
+
+  // Step 1: extract values for reuse
+  // const ADD_STATUSES = [
+  //   "pending",
+  //   "technical_completed",
+  //   "practical_completed",
+  //   "hr_round",
+  // ];
+  // const EDIT_STATUSES = [...ADD_STATUSES, "rejected"]; // same as add but + rejected
+
+  // Step 2: final list logic
+  // const filteredStatuses = onEdit
+  //   ? userRole === roles.ADMIN
+  //     ? baseStatuses // admin in edit → all statuses
+  //     : baseStatuses.filter((s) => EDIT_STATUSES.includes(s.value))
+  //   : userRole === roles.ADMIN
+  //     ? baseStatuses // admin on add → all statuses
+  //     : baseStatuses.filter((s) => ADD_STATUSES.includes(s.value));
 
   const details = event.extendedProps;
   const interviewStart = new Date(details.interviewStart);
   const interviewEnd = new Date(details.interviewEnd);
   const techColor = details.technology?.colour || "#10B981";
+
+  // const updateInterviewMutation = useUpdateInterview(() => {
+  //   // This callback runs after successful update
+  //   if (onStatusUpdate && event.id) {
+  //     // The mutation already invalidates queries, but we also update local state
+  //   }
+  // });
 
   const handleEdit = () => {
     if (onEdit) {
@@ -70,6 +117,56 @@ export const InterviewDetailsDialog = ({
       onDelete(event);
     }
   };
+
+  const handleRedirectToInterviewLink = () => {
+    if (details.interviewUrl) {
+      window.open(details.interviewUrl, "_blank");
+    }
+  };
+  // const handleStatusChange = (newStatus: string) => {
+  //   if (event.id) {
+  //     // Parse notice period to extract days
+  //     const noticePeriodInDays = details.noticePeriodInDays || 0;
+
+  //     // Prepare complete API body with all required fields
+  //     const apiBody = {
+  //       candidateName: details.candidateName,
+  //       technology: Number(details.technology?.id),
+  //       email: details.email,
+  //       phoneNumber: details.phoneNumber,
+  //       location: details.location,
+  //       notes: details.notes || "",
+  //       experienceInYears: Number(details.experienceInYears),
+  //       resumeS3Key: details.resumeLink || "",
+  //       currentCtc: Number(details.currentCtc),
+  //       expectedCtc: Number(details.expectedCtc),
+  //       noticePeriodInDays: noticePeriodInDays,
+  //       interviewType: details.interviewType,
+  //       interviewRound: details.interviewRound,
+  //       interviewerComments: details.interviewerComments || "",
+  //       status: newStatus, // Update the status
+  //       interviewerId: Number(details.interviewer?.id),
+  //       interviewStart: new Date(details.interviewStart).toISOString(),
+  //       interviewEnd: new Date(details.interviewEnd).toISOString(),
+  //       ...(details.joiningDate && { joiningDate: details.joiningDate }),
+  //     };
+
+  //     updateInterviewMutation.mutate(
+  //       {
+  //         id: Number(event.id),
+  //         data: apiBody,
+  //       },
+  //       {
+  //         onSuccess: () => {
+  //           // Update the local event state immediately for real-time UI update
+  //           if (onStatusUpdate) {
+  //             onStatusUpdate(event.id, newStatus);
+  //           }
+  //         },
+  //       }
+  //     );
+  //   }
+  // };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -90,6 +187,67 @@ export const InterviewDetailsDialog = ({
                     {details.technology.name}
                   </Badge>
                 )}
+                {/* <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/30 border border-border/50">
+                  <Tag className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-muted-foreground">Status:</span>
+                  
+                  <Select
+                    value={details.status}
+                    disabled={updateInterviewMutation.isPending}
+                    onValueChange={handleStatusChange}
+                  >
+                    <SelectTrigger className="w-[180px] h-8 border-primary/20 bg-background hover:bg-accent">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+
+                    <SelectContent>
+                      {(() => {
+                        // Check if current status is in filtered list
+                        const currentStatusInList = filteredStatuses.some(s => s.value === details.status);
+                        const currentStatusObj = baseStatuses.find(s => s.value === details.status);
+                        
+                        // If current status is not in filtered list (e.g., "joining" for PM/TL), add it as disabled
+                        const statusesToShow = !currentStatusInList && currentStatusObj
+                          ? [currentStatusObj, ...filteredStatuses]
+                          : filteredStatuses;
+
+                        return statusesToShow.map((status) => {
+                          const isCurrentStatus = status.value === details.status;
+                          const isJoiningStatus = status.value === "joining";
+                          const isPMorTL = userRole === roles.PROJECT_MANAGER || userRole === roles.TEAM_LEAD;
+                          
+                          // Disable "joining" for PM/TL (they can only view it, not select it)
+                          const isDisabled = isJoiningStatus && isPMorTL && !isCurrentStatus;
+                          
+                          return (
+                            <SelectItem 
+                              key={status.value} 
+                              value={status.value}
+                              disabled={isDisabled}
+                              className="flex items-center justify-between"
+                            >
+                              <div className="flex items-center gap-2 w-full">
+                                <span>{status.label}</span>
+                                {isJoiningStatus && (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <ShieldCheck className="h-3.5 w-3.5 text-amber-500 ml-auto" />
+                                    </TooltipTrigger>
+                                    <TooltipContent side="right">
+                                      <p className="text-xs">
+                                        {isPMorTL ? "View only - Admin can change" : "Admin only"}
+                                      </p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                )}
+                              </div>
+                            </SelectItem>
+                          );
+                        });
+                      })()}
+                    </SelectContent>
+                  </Select>
+                </div> */}
                 <div className="flex items-center gap-2 pr-4">
                   {onEdit && (
                     <Tooltip>
@@ -107,7 +265,7 @@ export const InterviewDetailsDialog = ({
                       <TooltipContent>Edit interview</TooltipContent>
                     </Tooltip>
                   )}
-                  {onDelete && (
+                  {onDelete && userRole === roles.ADMIN && (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
@@ -213,7 +371,7 @@ export const InterviewDetailsDialog = ({
                         Phone
                       </p>
                       <p className="text-sm font-medium">
-                        {details.phoneNumber || "NA"}
+                        {details.phoneNumber || "-"}
                       </p>
                     </div>
                   </div>
@@ -224,7 +382,7 @@ export const InterviewDetailsDialog = ({
                         Location
                       </p>
                       <p className="text-sm font-medium">
-                        {details.location || "NA"}
+                        {details.location || "-"}
                       </p>
                     </div>
                   </div>
@@ -327,7 +485,7 @@ export const InterviewDetailsDialog = ({
                         Interviewer
                       </p>
                       <p className="text-sm font-medium">
-                        {details.interviewer?.name || "N/A"}
+                        {details.interviewer?.name || "-"}
                       </p>
                       {details.interviewer?.email && (
                         <p className="text-xs text-muted-foreground mt-1">
@@ -343,7 +501,7 @@ export const InterviewDetailsDialog = ({
                         Round
                       </p>
                       <p className="text-sm font-medium">
-                        {details.interviewRound}
+                        {capitalizeFirstLetter(details.interviewRound)}
                       </p>
                     </div>
                   </div>
@@ -383,6 +541,29 @@ export const InterviewDetailsDialog = ({
                       </p>
                     </div>
                   </div>
+                  {details.interviewType === "video_call" &&
+                    details.interviewUrl && (
+                      <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                        <Link className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+                            Meeting Link
+                          </p>
+                          <p
+                            className="text-sm font-medium cursor-pointer hover:underline"
+                            onClick={handleRedirectToInterviewLink}
+                          >
+                            {details.interviewUrl}
+                            <div
+                              className="inline-block"
+                              onClick={handleRedirectToInterviewLink}
+                            >
+                              <SquareArrowOutUpRight className="inline-block ml-1 h-3.5 w-3.5 text-primary shrink-0 cursor-pointer" />
+                            </div>
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                     <Tag className="h-5 w-5 text-primary mt-0.5 shrink-0" />
 

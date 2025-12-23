@@ -16,14 +16,37 @@ export const interviewFormSchema = z
       .string()
       .min(1, "Email is required")
       .email("Invalid email address"),
-    phoneNumber: z.string().optional(),
+    phoneNumber: z
+      .string()
+      .optional()
+      .refine(
+        (val) => {
+          if (!val) return true; // optional
+
+          // allow: +1 (827) 943-2645, +91 9876543210, (123) 456-7890, 987-654-3210
+          return /^[+0-9()\-\s]+$/.test(val);
+        },
+        { message: "Phone number contains invalid characters." }
+      )
+      .refine(
+        (val) => {
+          if (!val) return true;
+
+          // remove all non-digits
+          const digits = val.replace(/\D/g, "");
+
+          // Phone length should be reasonable (min 7, max 15 — international standard)
+          return digits.length >= 7 && digits.length <= 15;
+        },
+        { message: "Invalid phone number length." }
+      ),
     location: z.string().optional(),
     notes: z.string().optional(),
     experience: z.coerce
       .number()
       .min(0, "Experience must be a positive number"),
     resume: z.any().optional(), // Making resume optional as it can be complex to require
-    resumeS3Key: z.string().min(1, "Resume is required"),
+    resumeS3Key: z.string().optional(),
     currentCtc: z.coerce.number().min(0, "CTC must be a positive number"),
     expectedCtc: z.coerce.number().min(0, "CTC must be a positive number"),
     noticePeriod: z.string().optional(),
@@ -44,6 +67,19 @@ export const interviewFormSchema = z
     interviewRound: z.string().min(1, "Interview round is required"),
     interviewerComment: z.string().optional(),
     interviewStatus: z.string().min(1, "Status is required"),
+    joiningDate: z
+      .union([z.date(), z.string()])
+      .optional()
+      .refine(
+        (val) => {
+          if (!val) return true;
+          if (val instanceof Date) return true;
+          return !isNaN(Date.parse(val));
+        },
+        {
+          message: "Invalid date format.",
+        }
+      ),
   })
   // This refine function ensures that the interviewUrl is provided only when 'video_call' is selected
   .refine(

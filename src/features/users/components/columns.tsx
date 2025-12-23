@@ -49,7 +49,7 @@ export const columns: ColumnDef<any>[] = [
             className="h-2.5 w-2.5 rounded-full"
             style={{ backgroundColor: tech?.color }}
           />
-          <span>{tech?.name}</span>
+          <span>{tech?.name ?? "-"}</span>
         </div>
       );
     },

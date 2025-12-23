@@ -60,6 +60,7 @@ const API = {
     update: "/interviews",
     upload: "/files/upload",
     delete: "/interviews",
+    toBeJoined: "/interviews/to-be-joined",
   },
   inquiry_status: {
     list: "/project-lead-status-logs",
@@ -87,6 +88,27 @@ const API = {
     priority: "/projects/priority-dropdown",
     client: "/clients/dropdown",
     country: "/country/dropdown",
+    project_list: "/projects/dropdown/list",
+  },
+  linode_api: {
+    list: "/linode/instances",
+    details: "/linode/instances/stats",
+    detailsById: "/linode/instances",
+    dashboardAnalytics: "/linode/instance/dashboard",
+    instances: "/linode/mock/instances",
+    instanceDetail: "/linode/mock/instances/stats",
+  },
+  conference_room: {
+    list: "/conference",
+    create: "/conference/create",
+    update: "/conference/update",
+    delete: "/conference/delete",
+  },
+  transaction_logs: {
+    list: "/transaction-logs",
+    create: "/transaction-logs",
+    update: "/transaction-logs",
+    delete: "/transaction-logs",
   },
 };
 

@@ -117,17 +117,7 @@ export function ProjectActionForm({
               />
 
               {/* Project Description */}
-              <div className="flex flex-col space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Description
-                </label>
-                <Textarea
-                  {...form.register("description")}
-                  placeholder="Enter project description"
-                  rows={3}
-                  className="resize-none"
-                />
-              </div>
+
               {!isEdit && (
                 <CustomDropDownSearchable
                   form={form}
@@ -229,6 +219,18 @@ export function ProjectActionForm({
                 placeholder="Select Priority"
                 searchEnabled={false}
               />
+
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Description
+                </label>
+                <Textarea
+                  {...form.register("description")}
+                  placeholder="Enter project description"
+                  rows={3}
+                  className="resize-none"
+                />
+              </div>
             </form>
           </Form>
         </div>

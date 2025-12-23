@@ -88,7 +88,7 @@ const InquiryPage = () => {
   const filters: FilterConfig[] = [
     {
       type: "search",
-      placeholder: "Search by name ...",
+      placeholder: "Search by client name ...",
       key: "search",
       value: listParams.search,
       onChange: handleSearch,
@@ -287,6 +287,10 @@ const InquiryPage = () => {
     {
       accessorKey: "country.name",
       header: "Country",
+      cell: ({ row }) => {
+        const country = row.original?.country?.name ?? "-";
+        return <span className="capitalize">{country}</span>;
+      },
     },
     {
       accessorKey: "generatedByUser",

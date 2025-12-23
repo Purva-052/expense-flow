@@ -208,7 +208,7 @@ export function UserActionForm({
                   )}
                 />
 
-                <Controller
+                {/* <Controller
                   control={form.control}
                   name="joining"
                   render={({ field }) => (
@@ -220,7 +220,7 @@ export function UserActionForm({
                       <label className="text-sm font-medium">Joined</label>
                     </div>
                   )}
-                />
+                /> */}
               </div>
             </form>
           </Form>
