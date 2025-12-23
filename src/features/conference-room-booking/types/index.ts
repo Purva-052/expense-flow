@@ -27,7 +27,7 @@ export interface ConferenceRoomApiResponse {
   bookedBy: BookedBy;
   createdBy: CreatedBy;
   projectId: any;
-  color: string;
+  meetingType: string;
 }
 
 export interface ConferenceRoomEvent {

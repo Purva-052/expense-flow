@@ -29,6 +29,7 @@ import CustomDropDownSearchable from "@/components/shared/custome-searchable-dro
 import { recurringTypes } from "../constants";
 import TimePicker from "@/components/shared/custome-timepicker";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
+import { MeetingType } from "@/utils/constant";
 
 interface ConferenceRoomFormProps {
   selectedDate: Date;
@@ -46,7 +47,7 @@ const steps = [{ id: 1, name: "Meeting Details", icon: CalendarClock }];
 const step1Fields: (keyof ConferenceRoomFormValues)[] = [
   "meetingName",
   "projectId",
-  "color",
+  "meetingType",
   "startTime",
   "endTime",
   "recurringType",
@@ -89,7 +90,7 @@ export const ConferenceRoomForm = ({
     defaultValues: {
       meetingName: "",
       projectId: "",
-      color: "#2563eb",
+      meetingType: "internal",
       startTime: "10:00",
       endTime: "11:00",
       recurringType: "none",
@@ -135,7 +136,7 @@ export const ConferenceRoomForm = ({
         endTime: toHM(initialData.endTime),
         recurringType: initialData.recurringType || "none",
         notes: initialData.notes || "",
-        color: initialData.color || "#2563eb",
+        meetingType: initialData.meetingType || "internal",
         daysOfWeek: {
           mon: initialData.daysOfWeek?.mon || false,
           tue: initialData.daysOfWeek?.tue || false,
@@ -444,6 +445,16 @@ export const ConferenceRoomForm = ({
                       </FormItem>
                     )}
                   />
+
+                  <CustomDropDownSearchable
+                    form={form}
+                    name="meetingType"
+                    label="Meeting Type"
+                    options={MeetingType}
+                    placeholder="Select Meeting type"
+                    searchEnabled={false}
+                  />
+
                   <CustomDropDownSearchable
                     form={form}
                     name="recurringType"
@@ -517,7 +528,7 @@ export const ConferenceRoomForm = ({
                     />
                   )}
 
-                  <FormField
+                  {/* <FormField
                     control={form.control}
                     name="color"
                     render={({ field }) => (
@@ -525,7 +536,6 @@ export const ConferenceRoomForm = ({
                         <FormLabel>Meeting Color</FormLabel>
                         <FormControl>
                           <div className="flex items-center gap-3">
-                            {/*  Color Picker */}
                             <input
                               type="color"
                               value={field.value}
@@ -533,7 +543,6 @@ export const ConferenceRoomForm = ({
                               className="h-10 w-12 cursor-pointer rounded border"
                             />
 
-                            {/*  Manual HEX Input */}
                             <Input
                               value={field.value}
                               onChange={(e) => field.onChange(e.target.value)}
@@ -545,7 +554,7 @@ export const ConferenceRoomForm = ({
                         <FormMessage />
                       </FormItem>
                     )}
-                  />
+                  /> */}
 
                   {/* Show end date field only when recurring type is not "none" */}
 
