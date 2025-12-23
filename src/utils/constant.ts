@@ -129,3 +129,8 @@ export const SubscriptionTypeOptions = [
     value: "yearly",
   },
 ];
+
+export const MeetingType = [
+  { label: "Client", value: "client" },
+  { label: "Internal", value: "internal" },
+];

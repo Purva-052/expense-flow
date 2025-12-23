@@ -7,12 +7,14 @@ export const conferenceRoomBookingFormSchema = z
       if (val === "" || val === null) return undefined;
       return String(val); // number -> string
     }, z.string().optional()),
-    color: z
-      .string()
-      .regex(/^#([0-9A-Fa-f]{6})$/, "Invalid HEX color")
-      .optional(),
     startTime: z.string().min(1, "Start time is required"),
     endTime: z.string().min(1, "End time is required"),
+    meetingType: z
+      .string()
+      .nullable()
+      .refine((val) => val !== null && val !== "", {
+        message: "Meeting type is required",
+      }),
     recurringType: z.string().min(1, "Recurring type is required"),
     notes: z.string().optional(),
     // Optional endDate for recurring bookings (startDate comes from calendar selection)
