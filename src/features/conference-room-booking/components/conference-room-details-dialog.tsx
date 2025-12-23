@@ -65,12 +65,15 @@ export const ConferenceRoomDetailsDialog = ({
   // };
 
   // Parse dates
-  const startDate = new Date(details.startDate);
+  const slotStartDate = new Date(details.slotStartDate);
+  // const slotEndDate = new Date(details.slotEndDate);
   const endDate = new Date(details.endDate);
 
   // Combine date + time (VALID JS Dates)
-  const startDateTime = new Date(`${details.startDate}T${details.startTime}`);
-  const endDateTime = new Date(`${details.endDate}T${details.endTime}`);
+  const startDateTime = new Date(
+    `${details.slotStartDate}T${details.startTime}`
+  );
+  const endDateTime = new Date(`${details.slotEndDate}T${details.endTime}`);
 
   const handleEdit = () => {
     if (onEdit) {
@@ -141,7 +144,7 @@ export const ConferenceRoomDetailsDialog = ({
               </DialogTitle>
 
               <DialogDescription className="text-base">
-                Conference Room Booking – {format(startDate, "PPP")}
+                Conference Room Booking – {format(slotStartDate, "PPP")}
               </DialogDescription>
             </div>
           </div>
@@ -152,7 +155,7 @@ export const ConferenceRoomDetailsDialog = ({
           <div className="flex flex-wrap gap-3">
             <div className="inline-flex items-center gap-2 rounded-full bg-background px-4 py-1.5 text-sm font-medium shadow-sm">
               <CalendarIcon className="h-4 w-4 text-primary" />
-              {format(startDate, "PPP")}
+              {format(slotStartDate, "PPP")}
             </div>
 
             <div className="inline-flex items-center gap-2 rounded-full bg-background px-4 py-1.5 text-sm font-medium shadow-sm">
@@ -226,7 +229,7 @@ export const ConferenceRoomDetailsDialog = ({
                         Date
                       </p>
                       <p className="text-sm font-medium">
-                        {format(startDate, "PPP")}
+                        {format(slotStartDate, "PPP")}
                       </p>
                     </div>
                   </div>

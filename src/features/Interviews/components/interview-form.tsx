@@ -113,7 +113,7 @@ export const InterviewForm = ({
     "practical_completed",
     "hr_round",
   ];
-  const EDIT_STATUSES = [...ADD_STATUSES, "rejected", "joining"]; // add mode + rejected + joining
+  const EDIT_STATUSES = [...ADD_STATUSES, "rejected"]; // add mode + rejected + joining
 
   // Step 2: final list logic
   const filteredStatuses = isEditMode
