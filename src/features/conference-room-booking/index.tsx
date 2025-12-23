@@ -76,14 +76,6 @@ const ConferenceRoomBookingPage = () => {
     projectId: listParams.projectId,
   };
 
-  // const currentYear = new Date().getFullYear();
-  // const startYear = 2020;
-
-  // const years = Array.from(
-  //   { length: currentYear - startYear + 1 + 3 },
-  //   (_, i) => startYear + i
-  // );
-
   // Get browser timezone dynamically
   useEffect(() => {
     const browserTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -196,13 +188,19 @@ const ConferenceRoomBookingPage = () => {
           return null;
         }
 
+        // --- MODIFICATION START: Determine color based on meetingType ---
+        // If 'client', use red (#e80339), otherwise use blue (#039be5)
+        const eventColor =
+          booking.meetingType === "client" ? "#e80339" : "#039be5";
+        // --- MODIFICATION END ---
+
         return {
           id: booking.id.toString(),
           title: booking.meetingName || "Untitled Meeting",
           start: startDateTime.toISOString(),
           end: endDateTime.toISOString(),
-          backgroundColor: booking.color,
-          borderColor: booking.color,
+          backgroundColor: eventColor, // Use derived color
+          borderColor: eventColor, // Use derived color
           extendedProps: booking,
         };
       })
@@ -302,14 +300,14 @@ const ConferenceRoomBookingPage = () => {
       const apiBody = {
         meetingName: data.meetingName,
         projectId: Number(data.projectId),
-        color: data.color,
+        meetingType: data.meetingType,
         startDate: startDateForAPI, // YYYY-MM-DD format
         endDate: endDateForAPI, // YYYY-MM-DD format
         startTime: formatTimeForAPI(data.startTime), // HH:mm:ss format
         endTime: formatTimeForAPI(data.endTime), // HH:mm:ss format
         recurringType: data.recurringType,
         daysOfWeek: data.daysOfWeek,
-        // notes: data.notes || "",
+        // --- MODIFICATION: Removed 'color' from payload ---
       };
 
       // Call the appropriate API

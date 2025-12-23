@@ -31,6 +31,7 @@ import {
 import { ConferenceRoomEvent } from "../types";
 import { recurringTypes } from "../constants";
 import { roleToDisplay } from "@/utils/constant";
+import { capitalizeFirstLetter } from "@/utils/commonFunctions";
 // import { useGetProjectSDropdownList } from "@/features/Project-type/services";
 
 interface ConferenceRoomDetailsDialogProps {
@@ -188,6 +189,18 @@ export const ConferenceRoomDetailsDialog = ({
                       </p>
                       <p className="text-sm font-medium">
                         {details.meetingName || "-"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                    <Users className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-muted-foreground uppercase mb-1">
+                        Meeting Type
+                      </p>
+                      <p className="text-sm font-medium">
+                        {capitalizeFirstLetter(details.meetingType) || "-"}
                       </p>
                     </div>
                   </div>
