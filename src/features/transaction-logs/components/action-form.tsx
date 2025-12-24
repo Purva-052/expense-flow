@@ -27,6 +27,10 @@ import {
 } from "@/utils/constant";
 import { Textarea } from "@/components/ui/textarea";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
+import {
+  preventNegativeInput,
+  preventNegativePaste,
+} from "@/utils/commonFunctions";
 // import { useTimezoneSelect, allTimezones } from "react-timezone-select";
 // import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 // import { useGetCountryDropdownList } from "../services";
@@ -149,6 +153,7 @@ export function TransactionLogsActionForm({
                 })}
                 placeholder="Select project"
                 isLoading={projectsListLoading}
+                sortOptions={false}
               />
               <CustomDropDownSearchable
                 form={form}
@@ -182,6 +187,9 @@ export function TransactionLogsActionForm({
                 type="number"
                 label="Transaction Amount"
                 placeholder="Enter amount"
+                min={0}
+                onKeyDown={preventNegativeInput}
+                onPaste={preventNegativePaste}
               />
               <TextInputField
                 control={form.control}

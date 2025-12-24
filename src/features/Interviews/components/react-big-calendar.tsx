@@ -244,7 +244,9 @@ export const ReactBigCalendar = ({
               </Button>
             </div>
             <h2 className="text-xl font-normal text-gray-800 min-w-[160px]">
-              {format(currentDate, "MMMM yyyy")}
+              {view === "day"
+                ? format(currentDate, "MMMM d, yyyy")
+                : format(currentDate, "MMMM yyyy")}
             </h2>
           </div>
         </div>

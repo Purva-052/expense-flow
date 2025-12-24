@@ -45,6 +45,10 @@ const ConferenceRoomBookingPage = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedRange, setSelectedRange] = useState<{
+    start: Date;
+    end: Date;
+  } | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] =
     useState<ConferenceRoomEvent | null>(null);
@@ -75,14 +79,6 @@ const ConferenceRoomBookingPage = () => {
     page: listParams.currentPage,
     projectId: listParams.projectId,
   };
-
-  // const currentYear = new Date().getFullYear();
-  // const startYear = 2020;
-
-  // const years = Array.from(
-  //   { length: currentYear - startYear + 1 + 3 },
-  //   (_, i) => startYear + i
-  // );
 
   // Get browser timezone dynamically
   useEffect(() => {
@@ -162,8 +158,8 @@ const ConferenceRoomBookingPage = () => {
     return conferenceRoomsData.data
       .map((booking: ConferenceRoomApiResponse) => {
         // Parse the startDate (YYYY-MM-DD format)
-        const startDateOnly = booking.startDate
-          ? new Date(booking.startDate)
+        const startDateOnly = booking.slotStartDate
+          ? new Date(booking.slotStartDate)
           : new Date();
 
         // Parse startTime and endTime (HH:mm:ss format)
@@ -196,13 +192,19 @@ const ConferenceRoomBookingPage = () => {
           return null;
         }
 
+        // --- MODIFICATION START: Determine color based on meetingType ---
+        // If 'client', use red (#e80339), otherwise use blue (#039be5)
+        const eventColor =
+          booking.meetingType === "client" ? "#e80339" : "#039be5";
+        // --- MODIFICATION END ---
+
         return {
           id: booking.id.toString(),
           title: booking.meetingName || "Untitled Meeting",
           start: startDateTime.toISOString(),
           end: endDateTime.toISOString(),
-          backgroundColor: booking.color,
-          borderColor: booking.color,
+          backgroundColor: eventColor, // Use derived color
+          borderColor: eventColor, // Use derived color
           extendedProps: booking,
         };
       })
@@ -211,8 +213,15 @@ const ConferenceRoomBookingPage = () => {
       ) as ConferenceRoomEvent[];
   }, [conferenceRoomsData]);
 
-  const handleDateClick = (date: Date) => {
-    setSelectedDate(date);
+  const handleDateClick = (slotInfo: { start: Date; end: Date }) => {
+    setSelectedDate(slotInfo.start);
+    // Only use the selected range if NOT in month view
+    // In month view, we want to default to 10:00 - 11:00 AM
+    if (calendarView !== "month") {
+      setSelectedRange(slotInfo);
+    } else {
+      setSelectedRange(null);
+    }
     setIsAddDialogOpen(true);
   };
 
@@ -289,7 +298,7 @@ const ConferenceRoomBookingPage = () => {
       } else {
         // For non-recurring bookings, use the selected date for both
         const dateToUse = eventToEdit
-          ? new Date(eventToEdit.extendedProps.startDate)
+          ? new Date(eventToEdit.extendedProps.slotStartDate)
           : selectedDate;
 
         if (!dateToUse) return;
@@ -302,14 +311,14 @@ const ConferenceRoomBookingPage = () => {
       const apiBody = {
         meetingName: data.meetingName,
         projectId: Number(data.projectId),
-        color: data.color,
+        meetingType: data.meetingType,
         startDate: startDateForAPI, // YYYY-MM-DD format
         endDate: endDateForAPI, // YYYY-MM-DD format
         startTime: formatTimeForAPI(data.startTime), // HH:mm:ss format
         endTime: formatTimeForAPI(data.endTime), // HH:mm:ss format
         recurringType: data.recurringType,
         daysOfWeek: data.daysOfWeek,
-        // notes: data.notes || "",
+        // --- MODIFICATION: Removed 'color' from payload ---
       };
 
       // Call the appropriate API
@@ -454,6 +463,14 @@ const ConferenceRoomBookingPage = () => {
             </DialogHeader>
             <ConferenceRoomForm
               selectedDate={selectedDate}
+              initialStartTime={
+                selectedRange
+                  ? format(selectedRange.start, "HH:mm")
+                  : undefined
+              }
+              initialEndTime={
+                selectedRange ? format(selectedRange.end, "HH:mm") : undefined
+              }
               onClose={() => setIsAddDialogOpen(false)}
               onSubmit={handleFormSubmit}
               projectsList={projectsList}
@@ -471,14 +488,17 @@ const ConferenceRoomBookingPage = () => {
             <DialogHeader>
               <DialogTitle>
                 Edit Conference Room Booking for{" "}
-                {format(new Date(eventToEdit.extendedProps.startDate), "PPP")}
+                {format(
+                  new Date(eventToEdit.extendedProps.slotStartDate),
+                  "PPP"
+                )}
               </DialogTitle>
               <DialogDescription>
                 Update the booking details below.
               </DialogDescription>
             </DialogHeader>
             <ConferenceRoomForm
-              selectedDate={new Date(eventToEdit.extendedProps.startDate)}
+              selectedDate={new Date(eventToEdit.extendedProps.slotStartDate)}
               onClose={() => {
                 setIsEditDialogOpen(false);
                 setEventToEdit(null);

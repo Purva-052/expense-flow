@@ -19,15 +19,17 @@ export interface ConferenceRoomApiResponse {
   id: number;
   meetingName: string;
   project: Project;
-  startDate: string;
   endDate: string;
+  startDate: string;
+  slotStartDate: string;
+  slotEndDate: string;
   startTime: string;
   endTime: string;
   recurringType: string;
   bookedBy: BookedBy;
   createdBy: CreatedBy;
   projectId: any;
-  color: string;
+  meetingType: string;
 }
 
 export interface ConferenceRoomEvent {

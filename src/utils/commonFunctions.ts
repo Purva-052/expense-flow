@@ -23,3 +23,21 @@ export const formatRole = (str: string = "") => {
         .map((word: string) => word[0].toUpperCase() + word.slice(1))
         .join(" ");
 };
+
+export const preventNegativeInput = (
+  e: React.KeyboardEvent<HTMLInputElement> | React.WheelEvent<HTMLInputElement>
+) => {
+  // Block minus sign typing
+  if ("key" in e && e.key === "-") {
+    e.preventDefault();
+  }
+};
+
+export const preventNegativePaste = (
+  e: React.ClipboardEvent<HTMLInputElement>
+) => {
+  const pasted = e.clipboardData.getData("text");
+  if (pasted.includes("-")) {
+    e.preventDefault();
+  }
+};

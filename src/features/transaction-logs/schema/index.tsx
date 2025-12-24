@@ -16,8 +16,12 @@ export const transactionLogSchema = z
       z.string().optional()
     ),
     amount: z.preprocess(
-      (val) => String(val),
-      z.string().min(1, "Amount must be at least 1")
+      (val) => Number(val),
+      z
+        .number({
+          invalid_type_error: "Amount is required",
+        })
+        .positive("Amount must be greater than 0")
     ),
     cardLast4: z
       .string()
