@@ -53,3 +53,10 @@ export const useDeleteTransactionData = (id: string) => {
     },
   });
 };
+
+export const useUploadTransactionFile = () => {
+  return usePostData({
+    url: API.interview.upload,
+    refetchQueries: [GET_API_URL],
+  });
+};

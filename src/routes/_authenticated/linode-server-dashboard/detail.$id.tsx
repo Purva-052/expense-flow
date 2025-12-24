@@ -4,7 +4,7 @@ import { requireRole } from "@/utils/requireRole";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute(
-  "/_authenticated/Linode-server-dashboard/detail/$id"
+  "/_authenticated/linode-server-dashboard/detail/$id"
 )({
   component: RouteComponent,
   beforeLoad: () =>

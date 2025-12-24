@@ -31,6 +31,9 @@ export const transactionLogSchema = z
       required_error: "Transaction Date is required",
       invalid_type_error: "Please select a valid date",
     }),
+    referenceKey: z.string().optional(),
+    referenceFileS3Key: z.string().optional(),
+    file: z.any().optional().nullable(),
     subscriptionEndDate: z.date().optional().nullable(),
   })
   .superRefine((data, ctx) => {
