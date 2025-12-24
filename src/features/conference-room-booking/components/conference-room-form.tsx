@@ -40,6 +40,8 @@ interface ConferenceRoomFormProps {
   isSubmitting?: boolean;
   initialData?: any; // ConferenceRoomApiResponse for edit mode
   existingEvents?: ConferenceRoomEvent[];
+  initialStartTime?: string;
+  initialEndTime?: string;
 }
 
 const steps = [{ id: 1, name: "Meeting Details", icon: CalendarClock }];
@@ -77,6 +79,8 @@ export const ConferenceRoomForm = ({
   isSubmitting = false,
   initialData,
   existingEvents = [],
+  initialStartTime,
+  initialEndTime,
 }: ConferenceRoomFormProps) => {
   const currentStep = 1;
   const isEditMode = !!initialData;
@@ -162,9 +166,15 @@ export const ConferenceRoomForm = ({
       }
 
       form.reset(formData);
+    } else if (!initialData && initialStartTime && initialEndTime) {
+      form.reset({
+        ...form.getValues(),
+        startTime: initialStartTime,
+        endTime: initialEndTime,
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialData, currentStep]);
+  }, [initialData, currentStep, initialStartTime, initialEndTime]);
 
   const { trigger, formState } = form;
   const startTime = form.watch("startTime");

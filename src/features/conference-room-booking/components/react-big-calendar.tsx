@@ -29,7 +29,7 @@ const localizer = momentLocalizer(moment);
 interface ReactBigCalendarProps {
   events: ConferenceRoomEvent[];
   currentDate: Date;
-  onDateClick: (date: Date) => void;
+  onDateClick: (slotInfo: { start: Date; end: Date }) => void;
   onEventClick: (event: ConferenceRoomEvent) => void;
   onEventEdit: (event: ConferenceRoomEvent, e: React.MouseEvent) => void;
   onEventDelete: (event: ConferenceRoomEvent, e: React.MouseEvent) => void;
@@ -202,7 +202,12 @@ export const ReactBigCalendar = ({
             <div className="hidden lg:flex flex-col w-fit border-r border-gray-200 pr-6 bg-white/50">
               <Button
                 className="w-fit pl-3 pr-6 h-12 rounded-full shadow-md bg-white hover:bg-slate-50 text-slate-700 border border-gray-200 flex items-center gap-3 transition-all hover:shadow-lg"
-                onClick={() => onDateClick(new Date())}
+                onClick={() => {
+                  const start = new Date();
+                  const end = new Date();
+                  end.setHours(start.getHours() + 1);
+                  onDateClick({ start, end });
+                }}
               >
                 <div className="relative">
                   <Plus className="h-7 w-7 text-blue-600" />
@@ -286,7 +291,9 @@ export const ReactBigCalendar = ({
             onView={handleViewChange}
             date={currentDate}
             onNavigate={handleNavigate}
-            onSelectSlot={(slotInfo: SlotInfo) => onDateClick(slotInfo.start)}
+            onSelectSlot={(slotInfo: SlotInfo) =>
+              onDateClick({ start: slotInfo.start, end: slotInfo.end })
+            }
             onSelectEvent={(event: any) => onEventClick(event)}
             eventPropGetter={eventPropGetter}
             selectable={userRole != roles.DEVELOPER}
