@@ -1,14 +1,14 @@
-import InterviewsPage from "@/features/Interviews";
+import NewJoineesPage from "@/features/new-joinees";
 import { roles } from "@/utils/constant";
 import { requireRole } from "@/utils/requireRole";
 import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/_authenticated/Interviews/")({
+export const Route = createFileRoute("/_authenticated/new-joinees/")({
   component: RouteComponent,
   beforeLoad: () =>
     requireRole([roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER]),
 });
 
 function RouteComponent() {
-  return <InterviewsPage />;
+  return <NewJoineesPage />;
 }

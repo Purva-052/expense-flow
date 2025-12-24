@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -31,6 +31,8 @@ import {
   preventNegativeInput,
   preventNegativePaste,
 } from "@/utils/commonFunctions";
+import { FileUpload } from "@/components/shared/custome-file-upload";
+import { useUploadTransactionFile } from "../services";
 // import { useTimezoneSelect, allTimezones } from "react-timezone-select";
 // import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 // import { useGetCountryDropdownList } from "../services";
@@ -74,6 +76,8 @@ export function TransactionLogsActionForm({
           subscriptionEndDate: currentRow?.subscriptionEndDate
             ? new Date(currentRow.subscriptionEndDate)
             : undefined,
+          referenceFileS3Key: currentRow?.referenceFileLink ?? "",
+          file: null,
         }
       : {
           reason: "",
@@ -84,10 +88,22 @@ export function TransactionLogsActionForm({
           transactionType: "",
           subscriptionCycle: "",
           subscriptionEndDate: undefined,
+          referenceFileS3Key: "",
+          file: null,
         },
   });
+  const [uploadedFileKey, setUploadedFileKey] = useState<string>("");
+  const [hasExistingFile, setHasExistingFile] = useState(false);
+  const { mutateAsync: uploadFile } = useUploadTransactionFile();
 
   const transactionType = form.watch("transactionType");
+
+  useEffect(() => {
+    if (currentRow && open) {
+      setUploadedFileKey(currentRow.referenceFileLink || "");
+      setHasExistingFile(!!currentRow.referenceFileLink);
+    }
+  }, [currentRow, open]);
 
   useEffect(() => {
     if (transactionType === "subscription") {
@@ -97,9 +113,40 @@ export function TransactionLogsActionForm({
     }
   }, [transactionType, form]);
 
-  const onSubmit: SubmitHandler<TTransactionFormSchema> = (values) => {
+  const handleFileRemove = () => {
+    setUploadedFileKey("");
+    setHasExistingFile(false);
+
+    form.setValue("file", null, { shouldValidate: true });
+    form.setValue("referenceFileS3Key", "", { shouldValidate: true });
+
+    form.clearErrors("file");
+    form.clearErrors("referenceFileS3Key");
+  };
+
+  const onSubmit: SubmitHandler<TTransactionFormSchema> = async (values) => {
+    let finalFileKey = uploadedFileKey || values.referenceFileS3Key || "";
+
+    const fileToUpload = values.file;
+    if (fileToUpload instanceof File) {
+      const formData = new FormData();
+      formData.append("file", fileToUpload);
+      formData.append("folder", "transaction-documents");
+
+      try {
+        const response: any = await uploadFile(formData);
+        if (response?.key) {
+          finalFileKey = response.key;
+        }
+      } catch (error) {
+        console.error("Upload failed", error);
+        return;
+      }
+    }
+
     const payload: any = {
       ...values,
+      referenceFileS3Key: finalFileKey,
       transactionDate: new Date(values.transactionDate).toISOString(),
       subscriptionEndDate:
         values.transactionType === "subscription" && values.subscriptionEndDate
@@ -202,6 +249,23 @@ export function TransactionLogsActionForm({
                 name="transactionDate"
                 label="Transaction Date"
               />
+              <FileUpload
+                name="file"
+                label="Transaction Receipt"
+                onFileSelect={undefined}
+                onFileRemove={handleFileRemove}
+                existingFileUrl={
+                  hasExistingFile && currentRow?.referenceFileLink
+                    ? currentRow.referenceFileLink
+                    : undefined
+                }
+                existingFileName={
+                  hasExistingFile && currentRow?.referenceFileLink
+                    ? `Transaction Reference File`
+                    : undefined
+                }
+              />
+
               <FormField
                 control={form.control}
                 name="reason"

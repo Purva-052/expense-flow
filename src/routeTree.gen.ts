@@ -23,19 +23,19 @@ import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-p
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as AuthenticatedTransactionsLogsIndexRouteImport } from './routes/_authenticated/transactions-logs/index'
 import { Route as AuthenticatedTechnologyIndexRouteImport } from './routes/_authenticated/technology/index'
+import { Route as AuthenticatedServerIndexRouteImport } from './routes/_authenticated/server/index'
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects/index'
+import { Route as AuthenticatedProjectTypeIndexRouteImport } from './routes/_authenticated/project-type/index'
 import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authenticated/profile/index'
+import { Route as AuthenticatedNewJoineesIndexRouteImport } from './routes/_authenticated/new-joinees/index'
+import { Route as AuthenticatedLinodeServerDashboardIndexRouteImport } from './routes/_authenticated/linode-server-dashboard/index'
+import { Route as AuthenticatedInterviewsIndexRouteImport } from './routes/_authenticated/interviews/index'
+import { Route as AuthenticatedInquiryIndexRouteImport } from './routes/_authenticated/inquiry/index'
+import { Route as AuthenticatedInquiryTypeIndexRouteImport } from './routes/_authenticated/inquiry-type/index'
+import { Route as AuthenticatedConferenceRoomBookingIndexRouteImport } from './routes/_authenticated/conference-room-booking/index'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
-import { Route as AuthenticatedServerIndexRouteImport } from './routes/_authenticated/Server/index'
-import { Route as AuthenticatedProjectTypeIndexRouteImport } from './routes/_authenticated/Project-type/index'
-import { Route as AuthenticatedNewJoineesIndexRouteImport } from './routes/_authenticated/New-joinees/index'
-import { Route as AuthenticatedLinodeServerDashboardIndexRouteImport } from './routes/_authenticated/Linode-server-dashboard/index'
-import { Route as AuthenticatedInterviewsIndexRouteImport } from './routes/_authenticated/Interviews/index'
-import { Route as AuthenticatedInquiryIndexRouteImport } from './routes/_authenticated/Inquiry/index'
-import { Route as AuthenticatedInquiryTypeIndexRouteImport } from './routes/_authenticated/Inquiry-type/index'
-import { Route as AuthenticatedConferenceRoomBookingIndexRouteImport } from './routes/_authenticated/Conference-room-booking/index'
 import { Route as AuthenticatedProjectsDetailIdRouteImport } from './routes/_authenticated/projects/detail.$id'
-import { Route as AuthenticatedLinodeServerDashboardDetailIdRouteImport } from './routes/_authenticated/Linode-server-dashboard/detail.$id'
+import { Route as AuthenticatedLinodeServerDashboardDetailIdRouteImport } from './routes/_authenticated/linode-server-dashboard/detail.$id'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -108,10 +108,22 @@ const AuthenticatedTechnologyIndexRoute =
     path: '/technology/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedServerIndexRoute =
+  AuthenticatedServerIndexRouteImport.update({
+    id: '/server/',
+    path: '/server/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProjectsIndexRoute =
   AuthenticatedProjectsIndexRouteImport.update({
     id: '/projects/',
     path: '/projects/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProjectTypeIndexRoute =
+  AuthenticatedProjectTypeIndexRouteImport.update({
+    id: '/project-type/',
+    path: '/project-type/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedProfileIndexRoute =
@@ -120,58 +132,46 @@ const AuthenticatedProfileIndexRoute =
     path: '/profile/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedClientsIndexRoute =
-  AuthenticatedClientsIndexRouteImport.update({
-    id: '/clients/',
-    path: '/clients/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedServerIndexRoute =
-  AuthenticatedServerIndexRouteImport.update({
-    id: '/Server/',
-    path: '/Server/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedProjectTypeIndexRoute =
-  AuthenticatedProjectTypeIndexRouteImport.update({
-    id: '/Project-type/',
-    path: '/Project-type/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedNewJoineesIndexRoute =
   AuthenticatedNewJoineesIndexRouteImport.update({
-    id: '/New-joinees/',
-    path: '/New-joinees/',
+    id: '/new-joinees/',
+    path: '/new-joinees/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedLinodeServerDashboardIndexRoute =
   AuthenticatedLinodeServerDashboardIndexRouteImport.update({
-    id: '/Linode-server-dashboard/',
-    path: '/Linode-server-dashboard/',
+    id: '/linode-server-dashboard/',
+    path: '/linode-server-dashboard/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedInterviewsIndexRoute =
   AuthenticatedInterviewsIndexRouteImport.update({
-    id: '/Interviews/',
-    path: '/Interviews/',
+    id: '/interviews/',
+    path: '/interviews/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedInquiryIndexRoute =
   AuthenticatedInquiryIndexRouteImport.update({
-    id: '/Inquiry/',
-    path: '/Inquiry/',
+    id: '/inquiry/',
+    path: '/inquiry/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedInquiryTypeIndexRoute =
   AuthenticatedInquiryTypeIndexRouteImport.update({
-    id: '/Inquiry-type/',
-    path: '/Inquiry-type/',
+    id: '/inquiry-type/',
+    path: '/inquiry-type/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedConferenceRoomBookingIndexRoute =
   AuthenticatedConferenceRoomBookingIndexRouteImport.update({
-    id: '/Conference-room-booking/',
-    path: '/Conference-room-booking/',
+    id: '/conference-room-booking/',
+    path: '/conference-room-booking/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedClientsIndexRoute =
+  AuthenticatedClientsIndexRouteImport.update({
+    id: '/clients/',
+    path: '/clients/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedProjectsDetailIdRoute =
@@ -182,8 +182,8 @@ const AuthenticatedProjectsDetailIdRoute =
   } as any)
 const AuthenticatedLinodeServerDashboardDetailIdRoute =
   AuthenticatedLinodeServerDashboardDetailIdRouteImport.update({
-    id: '/Linode-server-dashboard/detail/$id',
-    path: '/Linode-server-dashboard/detail/$id',
+    id: '/linode-server-dashboard/detail/$id',
+    path: '/linode-server-dashboard/detail/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
@@ -198,21 +198,21 @@ export interface FileRoutesByFullPath {
   '/503': typeof errors503Route
   '/unauthorized': typeof errorsUnauthorizedRoute
   '/': typeof AuthenticatedIndexRoute
-  '/Conference-room-booking': typeof AuthenticatedConferenceRoomBookingIndexRoute
-  '/Inquiry-type': typeof AuthenticatedInquiryTypeIndexRoute
-  '/Inquiry': typeof AuthenticatedInquiryIndexRoute
-  '/Interviews': typeof AuthenticatedInterviewsIndexRoute
-  '/Linode-server-dashboard': typeof AuthenticatedLinodeServerDashboardIndexRoute
-  '/New-joinees': typeof AuthenticatedNewJoineesIndexRoute
-  '/Project-type': typeof AuthenticatedProjectTypeIndexRoute
-  '/Server': typeof AuthenticatedServerIndexRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
+  '/conference-room-booking': typeof AuthenticatedConferenceRoomBookingIndexRoute
+  '/inquiry-type': typeof AuthenticatedInquiryTypeIndexRoute
+  '/inquiry': typeof AuthenticatedInquiryIndexRoute
+  '/interviews': typeof AuthenticatedInterviewsIndexRoute
+  '/linode-server-dashboard': typeof AuthenticatedLinodeServerDashboardIndexRoute
+  '/new-joinees': typeof AuthenticatedNewJoineesIndexRoute
   '/profile': typeof AuthenticatedProfileIndexRoute
+  '/project-type': typeof AuthenticatedProjectTypeIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
+  '/server': typeof AuthenticatedServerIndexRoute
   '/technology': typeof AuthenticatedTechnologyIndexRoute
   '/transactions-logs': typeof AuthenticatedTransactionsLogsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
-  '/Linode-server-dashboard/detail/$id': typeof AuthenticatedLinodeServerDashboardDetailIdRoute
+  '/linode-server-dashboard/detail/$id': typeof AuthenticatedLinodeServerDashboardDetailIdRoute
   '/projects/detail/$id': typeof AuthenticatedProjectsDetailIdRoute
 }
 export interface FileRoutesByTo {
@@ -226,21 +226,21 @@ export interface FileRoutesByTo {
   '/503': typeof errors503Route
   '/unauthorized': typeof errorsUnauthorizedRoute
   '/': typeof AuthenticatedIndexRoute
-  '/Conference-room-booking': typeof AuthenticatedConferenceRoomBookingIndexRoute
-  '/Inquiry-type': typeof AuthenticatedInquiryTypeIndexRoute
-  '/Inquiry': typeof AuthenticatedInquiryIndexRoute
-  '/Interviews': typeof AuthenticatedInterviewsIndexRoute
-  '/Linode-server-dashboard': typeof AuthenticatedLinodeServerDashboardIndexRoute
-  '/New-joinees': typeof AuthenticatedNewJoineesIndexRoute
-  '/Project-type': typeof AuthenticatedProjectTypeIndexRoute
-  '/Server': typeof AuthenticatedServerIndexRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
+  '/conference-room-booking': typeof AuthenticatedConferenceRoomBookingIndexRoute
+  '/inquiry-type': typeof AuthenticatedInquiryTypeIndexRoute
+  '/inquiry': typeof AuthenticatedInquiryIndexRoute
+  '/interviews': typeof AuthenticatedInterviewsIndexRoute
+  '/linode-server-dashboard': typeof AuthenticatedLinodeServerDashboardIndexRoute
+  '/new-joinees': typeof AuthenticatedNewJoineesIndexRoute
   '/profile': typeof AuthenticatedProfileIndexRoute
+  '/project-type': typeof AuthenticatedProjectTypeIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
+  '/server': typeof AuthenticatedServerIndexRoute
   '/technology': typeof AuthenticatedTechnologyIndexRoute
   '/transactions-logs': typeof AuthenticatedTransactionsLogsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
-  '/Linode-server-dashboard/detail/$id': typeof AuthenticatedLinodeServerDashboardDetailIdRoute
+  '/linode-server-dashboard/detail/$id': typeof AuthenticatedLinodeServerDashboardDetailIdRoute
   '/projects/detail/$id': typeof AuthenticatedProjectsDetailIdRoute
 }
 export interface FileRoutesById {
@@ -256,21 +256,21 @@ export interface FileRoutesById {
   '/(errors)/503': typeof errors503Route
   '/(errors)/unauthorized': typeof errorsUnauthorizedRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
-  '/_authenticated/Conference-room-booking/': typeof AuthenticatedConferenceRoomBookingIndexRoute
-  '/_authenticated/Inquiry-type/': typeof AuthenticatedInquiryTypeIndexRoute
-  '/_authenticated/Inquiry/': typeof AuthenticatedInquiryIndexRoute
-  '/_authenticated/Interviews/': typeof AuthenticatedInterviewsIndexRoute
-  '/_authenticated/Linode-server-dashboard/': typeof AuthenticatedLinodeServerDashboardIndexRoute
-  '/_authenticated/New-joinees/': typeof AuthenticatedNewJoineesIndexRoute
-  '/_authenticated/Project-type/': typeof AuthenticatedProjectTypeIndexRoute
-  '/_authenticated/Server/': typeof AuthenticatedServerIndexRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
+  '/_authenticated/conference-room-booking/': typeof AuthenticatedConferenceRoomBookingIndexRoute
+  '/_authenticated/inquiry-type/': typeof AuthenticatedInquiryTypeIndexRoute
+  '/_authenticated/inquiry/': typeof AuthenticatedInquiryIndexRoute
+  '/_authenticated/interviews/': typeof AuthenticatedInterviewsIndexRoute
+  '/_authenticated/linode-server-dashboard/': typeof AuthenticatedLinodeServerDashboardIndexRoute
+  '/_authenticated/new-joinees/': typeof AuthenticatedNewJoineesIndexRoute
   '/_authenticated/profile/': typeof AuthenticatedProfileIndexRoute
+  '/_authenticated/project-type/': typeof AuthenticatedProjectTypeIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
+  '/_authenticated/server/': typeof AuthenticatedServerIndexRoute
   '/_authenticated/technology/': typeof AuthenticatedTechnologyIndexRoute
   '/_authenticated/transactions-logs/': typeof AuthenticatedTransactionsLogsIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
-  '/_authenticated/Linode-server-dashboard/detail/$id': typeof AuthenticatedLinodeServerDashboardDetailIdRoute
+  '/_authenticated/linode-server-dashboard/detail/$id': typeof AuthenticatedLinodeServerDashboardDetailIdRoute
   '/_authenticated/projects/detail/$id': typeof AuthenticatedProjectsDetailIdRoute
 }
 export interface FileRouteTypes {
@@ -286,21 +286,21 @@ export interface FileRouteTypes {
     | '/503'
     | '/unauthorized'
     | '/'
-    | '/Conference-room-booking'
-    | '/Inquiry-type'
-    | '/Inquiry'
-    | '/Interviews'
-    | '/Linode-server-dashboard'
-    | '/New-joinees'
-    | '/Project-type'
-    | '/Server'
     | '/clients'
+    | '/conference-room-booking'
+    | '/inquiry-type'
+    | '/inquiry'
+    | '/interviews'
+    | '/linode-server-dashboard'
+    | '/new-joinees'
     | '/profile'
+    | '/project-type'
     | '/projects'
+    | '/server'
     | '/technology'
     | '/transactions-logs'
     | '/users'
-    | '/Linode-server-dashboard/detail/$id'
+    | '/linode-server-dashboard/detail/$id'
     | '/projects/detail/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -314,21 +314,21 @@ export interface FileRouteTypes {
     | '/503'
     | '/unauthorized'
     | '/'
-    | '/Conference-room-booking'
-    | '/Inquiry-type'
-    | '/Inquiry'
-    | '/Interviews'
-    | '/Linode-server-dashboard'
-    | '/New-joinees'
-    | '/Project-type'
-    | '/Server'
     | '/clients'
+    | '/conference-room-booking'
+    | '/inquiry-type'
+    | '/inquiry'
+    | '/interviews'
+    | '/linode-server-dashboard'
+    | '/new-joinees'
     | '/profile'
+    | '/project-type'
     | '/projects'
+    | '/server'
     | '/technology'
     | '/transactions-logs'
     | '/users'
-    | '/Linode-server-dashboard/detail/$id'
+    | '/linode-server-dashboard/detail/$id'
     | '/projects/detail/$id'
   id:
     | '__root__'
@@ -343,21 +343,21 @@ export interface FileRouteTypes {
     | '/(errors)/503'
     | '/(errors)/unauthorized'
     | '/_authenticated/'
-    | '/_authenticated/Conference-room-booking/'
-    | '/_authenticated/Inquiry-type/'
-    | '/_authenticated/Inquiry/'
-    | '/_authenticated/Interviews/'
-    | '/_authenticated/Linode-server-dashboard/'
-    | '/_authenticated/New-joinees/'
-    | '/_authenticated/Project-type/'
-    | '/_authenticated/Server/'
     | '/_authenticated/clients/'
+    | '/_authenticated/conference-room-booking/'
+    | '/_authenticated/inquiry-type/'
+    | '/_authenticated/inquiry/'
+    | '/_authenticated/interviews/'
+    | '/_authenticated/linode-server-dashboard/'
+    | '/_authenticated/new-joinees/'
     | '/_authenticated/profile/'
+    | '/_authenticated/project-type/'
     | '/_authenticated/projects/'
+    | '/_authenticated/server/'
     | '/_authenticated/technology/'
     | '/_authenticated/transactions-logs/'
     | '/_authenticated/users/'
-    | '/_authenticated/Linode-server-dashboard/detail/$id'
+    | '/_authenticated/linode-server-dashboard/detail/$id'
     | '/_authenticated/projects/detail/$id'
   fileRoutesById: FileRoutesById
 }
@@ -474,11 +474,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTechnologyIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/server/': {
+      id: '/_authenticated/server/'
+      path: '/server'
+      fullPath: '/server'
+      preLoaderRoute: typeof AuthenticatedServerIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/projects/': {
       id: '/_authenticated/projects/'
       path: '/projects'
       fullPath: '/projects'
       preLoaderRoute: typeof AuthenticatedProjectsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/project-type/': {
+      id: '/_authenticated/project-type/'
+      path: '/project-type'
+      fullPath: '/project-type'
+      preLoaderRoute: typeof AuthenticatedProjectTypeIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/profile/': {
@@ -488,67 +502,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfileIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/new-joinees/': {
+      id: '/_authenticated/new-joinees/'
+      path: '/new-joinees'
+      fullPath: '/new-joinees'
+      preLoaderRoute: typeof AuthenticatedNewJoineesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/linode-server-dashboard/': {
+      id: '/_authenticated/linode-server-dashboard/'
+      path: '/linode-server-dashboard'
+      fullPath: '/linode-server-dashboard'
+      preLoaderRoute: typeof AuthenticatedLinodeServerDashboardIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/interviews/': {
+      id: '/_authenticated/interviews/'
+      path: '/interviews'
+      fullPath: '/interviews'
+      preLoaderRoute: typeof AuthenticatedInterviewsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/inquiry/': {
+      id: '/_authenticated/inquiry/'
+      path: '/inquiry'
+      fullPath: '/inquiry'
+      preLoaderRoute: typeof AuthenticatedInquiryIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/inquiry-type/': {
+      id: '/_authenticated/inquiry-type/'
+      path: '/inquiry-type'
+      fullPath: '/inquiry-type'
+      preLoaderRoute: typeof AuthenticatedInquiryTypeIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/conference-room-booking/': {
+      id: '/_authenticated/conference-room-booking/'
+      path: '/conference-room-booking'
+      fullPath: '/conference-room-booking'
+      preLoaderRoute: typeof AuthenticatedConferenceRoomBookingIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/clients/': {
       id: '/_authenticated/clients/'
       path: '/clients'
       fullPath: '/clients'
       preLoaderRoute: typeof AuthenticatedClientsIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/Server/': {
-      id: '/_authenticated/Server/'
-      path: '/Server'
-      fullPath: '/Server'
-      preLoaderRoute: typeof AuthenticatedServerIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/Project-type/': {
-      id: '/_authenticated/Project-type/'
-      path: '/Project-type'
-      fullPath: '/Project-type'
-      preLoaderRoute: typeof AuthenticatedProjectTypeIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/New-joinees/': {
-      id: '/_authenticated/New-joinees/'
-      path: '/New-joinees'
-      fullPath: '/New-joinees'
-      preLoaderRoute: typeof AuthenticatedNewJoineesIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/Linode-server-dashboard/': {
-      id: '/_authenticated/Linode-server-dashboard/'
-      path: '/Linode-server-dashboard'
-      fullPath: '/Linode-server-dashboard'
-      preLoaderRoute: typeof AuthenticatedLinodeServerDashboardIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/Interviews/': {
-      id: '/_authenticated/Interviews/'
-      path: '/Interviews'
-      fullPath: '/Interviews'
-      preLoaderRoute: typeof AuthenticatedInterviewsIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/Inquiry/': {
-      id: '/_authenticated/Inquiry/'
-      path: '/Inquiry'
-      fullPath: '/Inquiry'
-      preLoaderRoute: typeof AuthenticatedInquiryIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/Inquiry-type/': {
-      id: '/_authenticated/Inquiry-type/'
-      path: '/Inquiry-type'
-      fullPath: '/Inquiry-type'
-      preLoaderRoute: typeof AuthenticatedInquiryTypeIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/Conference-room-booking/': {
-      id: '/_authenticated/Conference-room-booking/'
-      path: '/Conference-room-booking'
-      fullPath: '/Conference-room-booking'
-      preLoaderRoute: typeof AuthenticatedConferenceRoomBookingIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/projects/detail/$id': {
@@ -558,10 +558,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsDetailIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/Linode-server-dashboard/detail/$id': {
-      id: '/_authenticated/Linode-server-dashboard/detail/$id'
-      path: '/Linode-server-dashboard/detail/$id'
-      fullPath: '/Linode-server-dashboard/detail/$id'
+    '/_authenticated/linode-server-dashboard/detail/$id': {
+      id: '/_authenticated/linode-server-dashboard/detail/$id'
+      path: '/linode-server-dashboard/detail/$id'
+      fullPath: '/linode-server-dashboard/detail/$id'
       preLoaderRoute: typeof AuthenticatedLinodeServerDashboardDetailIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
@@ -570,17 +570,17 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedClientsIndexRoute: typeof AuthenticatedClientsIndexRoute
   AuthenticatedConferenceRoomBookingIndexRoute: typeof AuthenticatedConferenceRoomBookingIndexRoute
   AuthenticatedInquiryTypeIndexRoute: typeof AuthenticatedInquiryTypeIndexRoute
   AuthenticatedInquiryIndexRoute: typeof AuthenticatedInquiryIndexRoute
   AuthenticatedInterviewsIndexRoute: typeof AuthenticatedInterviewsIndexRoute
   AuthenticatedLinodeServerDashboardIndexRoute: typeof AuthenticatedLinodeServerDashboardIndexRoute
   AuthenticatedNewJoineesIndexRoute: typeof AuthenticatedNewJoineesIndexRoute
-  AuthenticatedProjectTypeIndexRoute: typeof AuthenticatedProjectTypeIndexRoute
-  AuthenticatedServerIndexRoute: typeof AuthenticatedServerIndexRoute
-  AuthenticatedClientsIndexRoute: typeof AuthenticatedClientsIndexRoute
   AuthenticatedProfileIndexRoute: typeof AuthenticatedProfileIndexRoute
+  AuthenticatedProjectTypeIndexRoute: typeof AuthenticatedProjectTypeIndexRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
+  AuthenticatedServerIndexRoute: typeof AuthenticatedServerIndexRoute
   AuthenticatedTechnologyIndexRoute: typeof AuthenticatedTechnologyIndexRoute
   AuthenticatedTransactionsLogsIndexRoute: typeof AuthenticatedTransactionsLogsIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
@@ -590,6 +590,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedClientsIndexRoute: AuthenticatedClientsIndexRoute,
   AuthenticatedConferenceRoomBookingIndexRoute:
     AuthenticatedConferenceRoomBookingIndexRoute,
   AuthenticatedInquiryTypeIndexRoute: AuthenticatedInquiryTypeIndexRoute,
@@ -598,11 +599,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLinodeServerDashboardIndexRoute:
     AuthenticatedLinodeServerDashboardIndexRoute,
   AuthenticatedNewJoineesIndexRoute: AuthenticatedNewJoineesIndexRoute,
-  AuthenticatedProjectTypeIndexRoute: AuthenticatedProjectTypeIndexRoute,
-  AuthenticatedServerIndexRoute: AuthenticatedServerIndexRoute,
-  AuthenticatedClientsIndexRoute: AuthenticatedClientsIndexRoute,
   AuthenticatedProfileIndexRoute: AuthenticatedProfileIndexRoute,
+  AuthenticatedProjectTypeIndexRoute: AuthenticatedProjectTypeIndexRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
+  AuthenticatedServerIndexRoute: AuthenticatedServerIndexRoute,
   AuthenticatedTechnologyIndexRoute: AuthenticatedTechnologyIndexRoute,
   AuthenticatedTransactionsLogsIndexRoute:
     AuthenticatedTransactionsLogsIndexRoute,

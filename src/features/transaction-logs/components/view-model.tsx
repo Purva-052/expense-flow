@@ -96,6 +96,22 @@ export function ViewTransactionModal() {
           </div>
 
           <div>
+            <h3 className="text-sm font-medium">Transaction Receipt</h3>
+            {currentRow.referenceFileLink ? (
+              <a
+                href={currentRow.referenceFileLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-blue-600 hover:underline"
+              >
+                View/Download Receipt
+              </a>
+            ) : (
+              <p className="text-sm text-gray-600">-</p>
+            )}
+          </div>
+
+          <div>
             <h3 className="text-sm font-medium">Reason</h3>
             <p className="text-sm text-gray-600">{currentRow.reason || "-"}</p>
           </div>
