@@ -20,6 +20,7 @@ export interface TextInputFieldProps {
   max?: number;
   autoComplete?: string; // ✅ add this prop
   onKeyDown?: React.KeyboardEventHandler<HTMLInputElement> | undefined; // ✅ add this prop
+  onPaste?: React.ClipboardEventHandler<HTMLInputElement> | undefined; // ✅ add this prop
 }
 
 export function TextInputField({
@@ -34,6 +35,7 @@ export function TextInputField({
   valueAsNumber = false, // 👈 default false
   autoComplete = "off", // ✅ default to off
   onKeyDown = undefined, // ✅ add this prop
+  onPaste = undefined, // ✅ add this prop
 }: Readonly<TextInputFieldProps>) {
   return (
     <FormField
@@ -54,6 +56,7 @@ export function TextInputField({
                 autoComplete={autoComplete} // ✅ pass down to input
                 {...(valueAsNumber ? { valueAsNumber: true } : {})} // 👈 forward valueAsNumber
                 onKeyDown={onKeyDown}
+                onPaste={onPaste}
               />
             </FormControl>
             <FormMessage className="col-start-3" />
