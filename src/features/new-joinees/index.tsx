@@ -129,11 +129,11 @@ const NewJoineesPage = () => {
       }
 
       return {
-        id: joinee.id.toString(),
-        title: joinee.candidateName,
+        id: joinee?.id.toString(),
+        title: joinee?.candidateName,
         start: joiningDate.toISOString(),
         end: joiningDate.toISOString(),
-        backgroundColor: joinee.technology.color || "#10b981",
+        backgroundColor: joinee.technology?.color || "#10b981",
         borderColor: "#10b981",
         extendedProps: joinee,
       };
