@@ -37,6 +37,7 @@ export function ActionFormModal() {
       transactionType: values.transactionType,
       subscriptionCycle: values.subscriptionCycle,
       subscriptionEndDate: values.subscriptionEndDate,
+      referenceFileS3Key: values.referenceFileS3Key,
     };
     createMutate(payload);
   };
@@ -51,6 +52,7 @@ export function ActionFormModal() {
       transactionType: values.transactionType,
       subscriptionCycle: values.subscriptionCycle,
       subscriptionEndDate: values.subscriptionEndDate,
+      referenceFileS3Key: values.referenceFileS3Key,
     };
     updateMutate(payload);
   };
