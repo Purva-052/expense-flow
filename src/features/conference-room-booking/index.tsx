@@ -45,6 +45,10 @@ const ConferenceRoomBookingPage = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedRange, setSelectedRange] = useState<{
+    start: Date;
+    end: Date;
+  } | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] =
     useState<ConferenceRoomEvent | null>(null);
@@ -209,8 +213,15 @@ const ConferenceRoomBookingPage = () => {
       ) as ConferenceRoomEvent[];
   }, [conferenceRoomsData]);
 
-  const handleDateClick = (date: Date) => {
-    setSelectedDate(date);
+  const handleDateClick = (slotInfo: { start: Date; end: Date }) => {
+    setSelectedDate(slotInfo.start);
+    // Only use the selected range if NOT in month view
+    // In month view, we want to default to 10:00 - 11:00 AM
+    if (calendarView !== "month") {
+      setSelectedRange(slotInfo);
+    } else {
+      setSelectedRange(null);
+    }
     setIsAddDialogOpen(true);
   };
 
@@ -452,6 +463,14 @@ const ConferenceRoomBookingPage = () => {
             </DialogHeader>
             <ConferenceRoomForm
               selectedDate={selectedDate}
+              initialStartTime={
+                selectedRange
+                  ? format(selectedRange.start, "HH:mm")
+                  : undefined
+              }
+              initialEndTime={
+                selectedRange ? format(selectedRange.end, "HH:mm") : undefined
+              }
               onClose={() => setIsAddDialogOpen(false)}
               onSubmit={handleFormSubmit}
               projectsList={projectsList}
