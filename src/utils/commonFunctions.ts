@@ -32,3 +32,12 @@ export const preventNegativeInput = (
     e.preventDefault();
   }
 };
+
+export const preventNegativePaste = (
+  e: React.ClipboardEvent<HTMLInputElement>
+) => {
+  const pasted = e.clipboardData.getData("text");
+  if (pasted.includes("-")) {
+    e.preventDefault();
+  }
+};
