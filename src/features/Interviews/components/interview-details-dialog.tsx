@@ -96,8 +96,7 @@ export const InterviewDetailsDialog = ({
   const details = event.extendedProps;
   const interviewStart = new Date(details.interviewStart);
   const interviewEnd = new Date(details.interviewEnd);
-  const techColor = details.technology?.colour || "#10B981";
-
+  const techColor = details.technology?.color || "#10B981";
   // const updateInterviewMutation = useUpdateInterview(() => {
   //   // This callback runs after successful update
   //   if (onStatusUpdate && event.id) {
@@ -283,9 +282,15 @@ export const InterviewDetailsDialog = ({
                   )}
                 </div>
               </DialogTitle>
-              <DialogDescription className="text-base">
-                Interview Details - {format(interviewStart, "PPP")}
-              </DialogDescription>
+              <div className="flex justify-between">
+                <DialogDescription className="text-base">
+                  Interview Details - {format(interviewStart, "PPP")}
+                </DialogDescription>
+                <DialogDescription className="text-base">
+                  Created By - {details.createdBy.name}
+                  {details.createdBy.role === roles.ADMIN && " (Admin)"}
+                </DialogDescription>
+              </div>
             </div>
           </div>
         </DialogHeader>
@@ -624,7 +629,7 @@ export const InterviewDetailsDialog = ({
           </Card>
 
           {/* Created By */}
-          {details.createdBy && (
+          {/* {details.createdBy && (
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
@@ -644,7 +649,7 @@ export const InterviewDetailsDialog = ({
                 </div>
               </CardContent>
             </Card>
-          )}
+          )} */}
         </div>
       </DialogContent>
     </Dialog>

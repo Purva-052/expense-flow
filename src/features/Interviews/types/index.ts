@@ -1,7 +1,7 @@
 export interface Technology {
   id: number;
   name: string;
-  colour: string;
+  color: string;
 }
 
 export interface Interviewer {
