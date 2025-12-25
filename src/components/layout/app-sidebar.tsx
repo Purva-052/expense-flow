@@ -24,18 +24,37 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     // Also filter items inside groups by role
     .map((group) => ({
       ...group,
-      items: group.items.filter((item: any) => {
-        const role = user?.user?.role || "";
-        const id = user?.user?.id;
+      items: group.items
+        .filter((item: any) => {
+          const role = user?.user?.role || "";
+          const id = user?.user?.id;
 
-        // Condition 1: role match
-        const hasRoleAccess = item.requiredRoles?.includes(role);
+          // Condition 1: role match
+          const hasRoleAccess = item.requiredRoles?.includes(role);
 
-        // Condition 2: user ID is 1 (if allowed)
-        const hasIDAccess = item.allowUserID1 && id === 1;
+          // Condition 2: user ID is 1 (if allowed)
+          const hasIDAccess = item.allowUserID1 && id === 1;
 
-        return hasRoleAccess || hasIDAccess;
-      }),
+          return hasRoleAccess || hasIDAccess;
+        })
+        .map((item: any) => {
+          // If item has sub-items, filter them too
+          if (item.items && Array.isArray(item.items)) {
+            return {
+              ...item,
+              items: item.items.filter((subItem: any) => {
+                const role = user?.user?.role || "";
+                const id = user?.user?.id;
+
+                const hasRoleAccess = subItem.requiredRoles?.includes(role);
+                const hasIDAccess = subItem.allowUserID1 && id === 1;
+
+                return hasRoleAccess || hasIDAccess;
+              }),
+            };
+          }
+          return item;
+        }),
     }))
     // Remove empty groups (in case all items got filtered out)
     .filter((group) => group.items.length > 0);
@@ -47,7 +66,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <img
             className="h-12 w-full group-data-[state=collapsed]:h-10"
             src={sidebarLogo}
-            alt="klub Logo"
+            alt="Resource Logo"
           />
         </Link>
       </SidebarHeader>
