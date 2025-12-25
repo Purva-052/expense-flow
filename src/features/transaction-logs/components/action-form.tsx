@@ -202,53 +202,62 @@ export function TransactionLogsActionForm({
                 isLoading={projectsListLoading}
                 sortOptions={false}
               />
-              <CustomDropDownSearchable
-                form={form}
-                name="transactionType"
-                label="Transaction Type"
-                options={TransactionTypeOptions}
-                placeholder="Select Transaction Type"
-                searchEnabled={false}
-              />
-              {transactionType === "subscription" && (
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                 <CustomDropDownSearchable
                   form={form}
-                  name="subscriptionCycle"
-                  label="Subscription Cycle"
-                  options={SubscriptionTypeOptions}
-                  placeholder="Select cycle"
+                  name="transactionType"
+                  label="Transaction Type"
+                  options={TransactionTypeOptions}
+                  placeholder="Select Transaction Type"
                   searchEnabled={false}
                 />
-              )}
-              {transactionType === "subscription" && (
+
+                {transactionType === "subscription" && (
+                  <CustomDropDownSearchable
+                    form={form}
+                    name="subscriptionCycle"
+                    label="Subscription Cycle"
+                    options={SubscriptionTypeOptions}
+                    placeholder="Select cycle"
+                    searchEnabled={false}
+                  />
+                )}
+
+                {transactionType === "subscription" && (
+                  <CustomDatePicker
+                    control={form.control}
+                    name="subscriptionEndDate"
+                    label="Subscription End Date"
+                    placeholder="Select end date"
+                  />
+                )}
+
+                <TextInputField
+                  control={form.control}
+                  name="amount"
+                  type="number"
+                  label="Transaction Amount"
+                  placeholder="Enter amount"
+                  min={0}
+                  onKeyDown={preventNegativeInput}
+                  onPaste={preventNegativePaste}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+                <TextInputField
+                  control={form.control}
+                  name="cardLast4"
+                  label="Card Last 4 Digits"
+                  placeholder="Enter card last 4 digits"
+                />
                 <CustomDatePicker
                   control={form.control}
-                  name="subscriptionEndDate"
-                  label="Subscription End Date"
-                  placeholder="Select Subscription End Date"
+                  name="transactionDate"
+                  label="Transaction Date"
                 />
-              )}
-              <TextInputField
-                control={form.control}
-                name="amount"
-                type="number"
-                label="Transaction Amount"
-                placeholder="Enter amount"
-                min={0}
-                onKeyDown={preventNegativeInput}
-                onPaste={preventNegativePaste}
-              />
-              <TextInputField
-                control={form.control}
-                name="cardLast4"
-                label="Card Last 4 Digits"
-                placeholder="Enter card last 4 digits"
-              />
-              <CustomDatePicker
-                control={form.control}
-                name="transactionDate"
-                label="Transaction Date"
-              />
+              </div>
+
               <FileUpload
                 name="file"
                 label="Transaction Receipt"
