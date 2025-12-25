@@ -211,8 +211,8 @@ const InterviewsPage = () => {
           interViewer: interview.interviewer.name,
           start: startDate.toISOString(),
           end: endDate.toISOString(),
-          backgroundColor: interview.technology?.colour || "#10B981",
-          borderColor: interview.technology?.colour || "#10B981",
+          backgroundColor: interview.technology?.color || "#10B981",
+          borderColor: interview.technology?.color || "#10B981",
           extendedProps: interview,
         };
       })
@@ -496,7 +496,10 @@ const InterviewsPage = () => {
             <DialogHeader>
               <DialogTitle>
                 Edit Interview Details for{" "}
-                {format(new Date(eventToEdit.extendedProps.interviewStart), "PPP")}
+                {format(
+                  new Date(eventToEdit.extendedProps.interviewStart),
+                  "PPP"
+                )}
               </DialogTitle>
               <DialogDescription>
                 Update the interview details below.
