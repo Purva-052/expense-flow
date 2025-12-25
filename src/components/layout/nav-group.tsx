@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
 import {
@@ -28,9 +28,52 @@ import {
 } from "../ui/dropdown-menu";
 import { NavCollapsible, NavItem, NavLink, type NavGroup } from "./types";
 
-export function NavGroup({ title, items }: NavGroup) {
+export function NavGroup({ title, items, isCollapsible }: NavGroup) {
   const { state } = useSidebar();
   const href = useLocation({ select: (location) => location.href });
+  const [isOpen, setIsOpen] = useState(false);
+
+  // If the group is collapsible (like Masters), render with toggle functionality
+  if (isCollapsible) {
+    return (
+      <SidebarGroup>
+        <SidebarGroupLabel
+          className="cursor-pointer flex items-center justify-between hover:bg-accent transition-colors"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <span>{title}</span>
+          <ChevronRight
+            className={`h-4 w-4 transition-transform duration-200 ${isOpen ? "rotate-90" : ""}`}
+          />
+        </SidebarGroupLabel>
+        {isOpen && (
+          <SidebarMenu>
+            {items.map((item) => {
+              const key = `${item.title}-${item.url}`;
+
+              if (!item.items)
+                return <SidebarMenuLink key={key} item={item} href={href} />;
+
+              if (state === "collapsed")
+                return (
+                  <SidebarMenuCollapsedDropdown
+                    key={key}
+                    item={item}
+                    href={href}
+                  />
+                );
+
+              return (
+                <SidebarMenuCollapsible key={key} item={item} href={href} />
+              );
+            })}
+          </SidebarMenu>
+        )}
+      </SidebarGroup>
+    );
+  }
+
+  // Default rendering for non-collapsible groups
   return (
     <SidebarGroup>
       <SidebarGroupLabel>{title}</SidebarGroupLabel>
@@ -87,7 +130,7 @@ const SidebarMenuCollapsible = ({
   return (
     <Collapsible
       asChild
-      defaultOpen={checkIsActive(href, item, true)}
+      defaultOpen={item.defaultClosed ? false : checkIsActive(href, item, true)}
       className="group/collapsible"
     >
       <SidebarMenuItem>
