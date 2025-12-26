@@ -20,6 +20,7 @@ import {
 // Local Imports
 import { InterviewDetailsDialog } from "./components/interview-details-dialog";
 import { InterviewForm } from "./components/interview-form";
+import { HistoryInterviewModal } from "./components/history-modal";
 
 import { useGetTechnologyDropdownList } from "../technology/services";
 import { useGetUsersList } from "../users/services";
@@ -295,7 +296,7 @@ const InterviewsPage = () => {
         noticePeriodInDays: noticePeriodInDays,
         interviewType: data.interviewType,
         interviewRound: data.interviewRound,
-        interviewerComments: data.interviewerComment || "",
+        // interviewerComments: data.interviewerComment || "",
         status: data.interviewStatus,
         interviewerId: Number(data.interviewerName),
         interviewStart: interviewStart.toISOString(),
@@ -570,6 +571,8 @@ const InterviewsPage = () => {
           isLoading={isDeletingInterview}
         />
       )}
+
+      <HistoryInterviewModal />
     </Main>
   );
 };
