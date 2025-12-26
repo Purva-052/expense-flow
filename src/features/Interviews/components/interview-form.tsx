@@ -26,7 +26,10 @@ import {
   interviewRounds,
   interviewStatuses,
 } from "../constants";
-import { useCreateInterviewResumeLink } from "../services";
+import {
+  useCreateInterviewResumeLink,
+  useCreateInterviewStatusLog,
+} from "../services";
 import { FileUpload } from "@/components/shared/custome-file-upload";
 import TimePicker from "@/components/shared/custome-timepicker";
 import { roles } from "@/utils/constant";
@@ -164,7 +167,7 @@ export const InterviewForm = ({
       interviewType: "on_site",
       interviewUrl: "",
       interviewRound: "",
-      interviewerComment: "",
+      // interviewerComment: "",
       interviewStatus: "pending",
       resume: null,
       resumeS3Key: "",
@@ -193,7 +196,7 @@ export const InterviewForm = ({
         interviewType: initialData.interviewType || "on_site",
         interviewUrl: initialData.interviewUrl || "",
         interviewRound: initialData.interviewRound || "",
-        interviewerComment: initialData.interviewerComments || "",
+        // interviewerComment: initialData.interviewerComments || "",
         interviewStatus: initialData.status || "pending",
         resume: null,
         resumeS3Key: initialData.resumeLink || "",
@@ -208,6 +211,7 @@ export const InterviewForm = ({
   const interviewStatus = form.watch("interviewStatus");
   const startTime = form.watch("startTime");
   const { mutateAsync: uploadResume } = useCreateInterviewResumeLink();
+  const { mutateAsync: createStatusLog } = useCreateInterviewStatusLog();
 
   // Automatically set endTime to startTime + 30 minutes
   useEffect(() => {
@@ -327,6 +331,21 @@ export const InterviewForm = ({
           console.error("Upload failed", error);
           // Optional: handle upload error (e.g. show toast, stay on page)
           return;
+        }
+      }
+
+      // Send status log if in edit mode
+      if (isEditMode && initialData?.id) {
+        try {
+          await createStatusLog({
+            interviewId: initialData.id,
+            status: data.interviewStatus,
+            notes: data.notes || "",
+            effectiveDate: new Date().toISOString(),
+          });
+        } catch (error) {
+          console.error("Failed to create status log", error);
+          // Continue with submission even if status log fails
         }
       }
 
@@ -567,7 +586,7 @@ export const InterviewForm = ({
                       }
                     />
                   </div>
-                  <FormField
+                  {/* <FormField
                     control={form.control}
                     name="notes"
                     render={({ field }) => (
@@ -582,7 +601,7 @@ export const InterviewForm = ({
                         <FormMessage />
                       </FormItem>
                     )}
-                  />
+                  /> */}
                 </div>
               </div>
             </CardContent>
@@ -680,7 +699,7 @@ export const InterviewForm = ({
 
                   <FormField
                     control={form.control}
-                    name="interviewerComment"
+                    name="notes"
                     render={({ field }) => (
                       <FormItem className="md:col-span-2">
                         <FormLabel>Interviewer Comment</FormLabel>

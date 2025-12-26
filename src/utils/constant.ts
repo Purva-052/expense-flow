@@ -66,6 +66,16 @@ export const INQUIRY_STATUS_LABEL: any = {
   closed: "Closed",
   "opted-out": "Opted Out",
 };
+
+export const INTERVIEW_STATUS_LABEL: any = {
+  pending: "Pending",
+  technical_completed: "Technical Completed",
+  practical_completed: "Practical Completed",
+  hr_round: "HR Round",
+  joining: "Joining",
+  rejected: "Rejected",
+};
+
 export const ServerOwnerTypeLabel: any = {
   DEVSTREE: "Devstree",
   CLIENT: "Client",
