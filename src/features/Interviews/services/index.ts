@@ -121,3 +121,17 @@ export const useCreateInterviewResumeLink = () => {
     refetchQueries: [Interview_list],
   });
 };
+
+export const useCreateInterviewStatusLog = () => {
+  return usePostData({
+    url: API.interview.interviewStatusLogs,
+    refetchQueries: [Interview_list],
+  });
+};
+
+export const useGetinterviewLogHistoryData = (id?: any) => {
+  return useFetchData({
+    url: `${API.interview.interviewStatusLogsHistory}/${id}`,
+    enabled: !!id,
+  });
+};

@@ -61,6 +61,8 @@ const API = {
     upload: "/files/upload",
     delete: "/interviews",
     toBeJoined: "/interviews/to-be-joined",
+    interviewStatusLogs: "/interview-status-logs",
+    interviewStatusLogsHistory: "/interview-status-logs/interview",
   },
   inquiry_status: {
     list: "/project-lead-status-logs",

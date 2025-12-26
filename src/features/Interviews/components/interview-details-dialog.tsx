@@ -19,6 +19,7 @@ import {
   Trash2,
   Link,
   SquareArrowOutUpRight,
+  History,
   // ShieldCheck,
 } from "lucide-react";
 import {
@@ -48,6 +49,7 @@ import { interviewStatuses, interviewTypes } from "../constants";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
 import { capitalizeFirstLetter } from "@/utils/commonFunctions";
+import { useInterviewStore } from "../store/useInterviewStore";
 // import { useUpdateInterview } from "../services";
 // import { useAuthStore } from "@/stores/use-auth-store";
 // import { roles } from "@/utils/constant";
@@ -73,6 +75,7 @@ export const InterviewDetailsDialog = ({
 
   const user = useAuthStore((state) => state.user);
   const userRole = user?.user?.role;
+  const { setOpen: setInterviewStoreOpen, setCurrentRow } = useInterviewStore();
   // const baseStatuses = interviewStatuses;
 
   // Step 1: extract values for reuse
@@ -121,6 +124,12 @@ export const InterviewDetailsDialog = ({
     if (details.interviewUrl) {
       window.open(details.interviewUrl, "_blank");
     }
+  };
+
+  const handleViewHistory = () => {
+    setInterviewStoreOpen("history");
+    setCurrentRow(details);
+    onOpenChange(false);
   };
   // const handleStatusChange = (newStatus: string) => {
   //   if (event.id) {
@@ -248,6 +257,20 @@ export const InterviewDetailsDialog = ({
                   </Select>
                 </div> */}
                 <div className="flex items-center gap-2 pr-4">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={handleViewHistory}
+                        className="h-9 w-9 rounded-full border-border/80 shadow-sm hover:border-primary/40"
+                      >
+                        <History className="h-4 w-4" aria-hidden="true" />
+                        <span className="sr-only">View history</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>View Interview History</TooltipContent>
+                  </Tooltip>
                   {onEdit && (
                     <Tooltip>
                       <TooltipTrigger asChild>
