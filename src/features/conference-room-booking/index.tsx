@@ -74,6 +74,7 @@ const ConferenceRoomBookingPage = () => {
     currentPage: 1,
     projectId: undefined,
   });
+  const [headerDate, setHeaderDate] = useState<Date | null>(null);
 
   const apiParams = {
     page: listParams.currentPage,
@@ -215,6 +216,7 @@ const ConferenceRoomBookingPage = () => {
 
   const handleDateClick = (slotInfo: { start: Date; end: Date }) => {
     setSelectedDate(slotInfo.start);
+    setHeaderDate(slotInfo.start);
     // Only use the selected range if NOT in month view
     // In month view, we want to default to 10:00 - 11:00 AM
     if (calendarView !== "month") {
@@ -233,6 +235,7 @@ const ConferenceRoomBookingPage = () => {
   const handleEditClick = (e: React.MouseEvent, event: ConferenceRoomEvent) => {
     e.stopPropagation();
     setEventToEdit(event);
+    setHeaderDate(new Date(event.extendedProps.slotStartDate));
     setIsEditDialogOpen(true);
     setIsViewDialogOpen(false);
   };
@@ -259,12 +262,10 @@ const ConferenceRoomBookingPage = () => {
 
   const handleFormSubmit = async (data: ConferenceRoomFormValues) => {
     try {
-      // Helper to format time as HH:mm:ss
       const formatTimeForAPI = (time: string): string => {
-        return `${time}:00`; // Convert HH:mm to HH:mm:ss
+        return `${time}:00`;
       };
 
-      // Helper to format date as YYYY-MM-DD or ISO string
       const formatDateForAPI = (date: Date): string => {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -275,53 +276,44 @@ const ConferenceRoomBookingPage = () => {
       let startDateForAPI: string;
       let endDateForAPI: string;
 
-      // For recurring bookings, use selectedDate as startDate and form endDate
+      // --- CHANGE START: Use data.startDate from form ---
+
+      // We prioritize the date selected in the form
+      const formStartDate = new Date(data.startDate);
+
+      if (!formStartDate) {
+        console.error("Start date is required");
+        return;
+      }
+
+      startDateForAPI = formatDateForAPI(formStartDate);
+
+      // Handle End Date logic
       if (data.recurringType && data.recurringType !== "none") {
-        const dateToUse = eventToEdit
-          ? new Date(eventToEdit.extendedProps.startDate)
-          : selectedDate;
-
-        if (!dateToUse) {
-          console.error("Selected date is required");
-          return;
-        }
-
         if (!data.endDate) {
           console.error("End date is required for recurring bookings");
           return;
         }
-
-        // Use selectedDate (calendar date) as startDate
-        startDateForAPI = formatDateForAPI(dateToUse);
-        // Use form endDate as endDate
         endDateForAPI = formatDateForAPI(data.endDate);
       } else {
-        // For non-recurring bookings, use the selected date for both
-        const dateToUse = eventToEdit
-          ? new Date(eventToEdit.extendedProps.slotStartDate)
-          : selectedDate;
-
-        if (!dateToUse) return;
-
-        startDateForAPI = formatDateForAPI(dateToUse);
-        endDateForAPI = formatDateForAPI(dateToUse);
+        // For non-recurring, End Date is the same as Start Date
+        endDateForAPI = formatDateForAPI(formStartDate);
       }
 
-      // Transform form data to match API body structure
+      // --- CHANGE END ---
+
       const apiBody = {
         meetingName: data.meetingName,
         projectId: Number(data.projectId),
         meetingType: data.meetingType,
-        startDate: startDateForAPI, // YYYY-MM-DD format
-        endDate: endDateForAPI, // YYYY-MM-DD format
-        startTime: formatTimeForAPI(data.startTime), // HH:mm:ss format
-        endTime: formatTimeForAPI(data.endTime), // HH:mm:ss format
+        startDate: startDateForAPI,
+        endDate: endDateForAPI,
+        startTime: formatTimeForAPI(data.startTime),
+        endTime: formatTimeForAPI(data.endTime),
         recurringType: data.recurringType,
         daysOfWeek: data.daysOfWeek,
-        // --- MODIFICATION: Removed 'color' from payload ---
       };
 
-      // Call the appropriate API
       if (eventToEdit) {
         await updateBooking({
           id: eventToEdit.extendedProps.id,
@@ -455,7 +447,8 @@ const ConferenceRoomBookingPage = () => {
           <DialogContent className="w-[95vw] sm:w-full sm:max-w-[850px] p-4 sm:p-6">
             <DialogHeader>
               <DialogTitle>
-                Book Conference Room for {format(selectedDate, "PPP")}
+                Book Conference Room for{" "}
+                {headerDate ? format(headerDate, "PPP") : ""}
               </DialogTitle>
               <DialogDescription>
                 Fill in all details to book the conference room.
@@ -464,9 +457,7 @@ const ConferenceRoomBookingPage = () => {
             <ConferenceRoomForm
               selectedDate={selectedDate}
               initialStartTime={
-                selectedRange
-                  ? format(selectedRange.start, "HH:mm")
-                  : undefined
+                selectedRange ? format(selectedRange.start, "HH:mm") : undefined
               }
               initialEndTime={
                 selectedRange ? format(selectedRange.end, "HH:mm") : undefined
@@ -477,6 +468,7 @@ const ConferenceRoomBookingPage = () => {
               projectsListLoading={projectsListLoading}
               isSubmitting={isCreatingBooking}
               existingEvents={events}
+              onDateChange={setHeaderDate}
             />
           </DialogContent>
         </Dialog>
@@ -509,6 +501,7 @@ const ConferenceRoomBookingPage = () => {
               isSubmitting={isUpdatingBooking}
               initialData={eventToEdit.extendedProps}
               existingEvents={events}
+              onDateChange={setHeaderDate}
             />
           </DialogContent>
         </Dialog>
