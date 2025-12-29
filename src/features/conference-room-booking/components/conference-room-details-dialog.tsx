@@ -65,7 +65,7 @@ export const ConferenceRoomDetailsDialog = ({
   // };
 
   // Parse dates
-  const slotStartDate = new Date(details.slotStartDate);
+  const slotStartDate = details.startDate;
   // const slotEndDate = new Date(details.slotEndDate);
   const endDate = new Date(details.endDate);
 
@@ -226,7 +226,7 @@ export const ConferenceRoomDetailsDialog = ({
                     <CalendarIcon className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                     <div className="flex-1">
                       <p className="text-xs text-muted-foreground uppercase mb-1">
-                        Date
+                        Start Date
                       </p>
                       <p className="text-sm font-medium">
                         {format(slotStartDate, "PPP")}
