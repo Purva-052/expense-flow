@@ -160,7 +160,7 @@ export const JoineeDetailsDialog = ({
                 joinee.status === "active" ? "text-green-600" : "text-red-600"
               } capitalize`}
             >
-              {joinee.status}
+              {joinee.status || "-"}
             </p>
           </div>
         </div>

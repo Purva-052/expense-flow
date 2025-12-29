@@ -361,7 +361,7 @@ export const InterviewDetailsDialog = ({
                     }
                     className="mt-1"
                   >
-                    {statusItem?.label ?? details.status}
+                    {statusItem?.label ?? details.status ?? "NA"}
                   </Badge>
                 );
               })()}
@@ -625,7 +625,7 @@ export const InterviewDetailsDialog = ({
                             }
                             className="mt-1"
                           >
-                            {statusItem?.label ?? details.status}
+                            {statusItem?.label ?? details.status ?? "NA"}
                           </Badge>
                         );
                       })()}
