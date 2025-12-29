@@ -42,6 +42,7 @@ interface ConferenceRoomFormProps {
   existingEvents?: ConferenceRoomEvent[];
   initialStartTime?: string;
   initialEndTime?: string;
+  onDateChange?: (date: Date) => void;
 }
 
 const steps = [{ id: 1, name: "Meeting Details", icon: CalendarClock }];
@@ -53,6 +54,7 @@ const step1Fields: (keyof ConferenceRoomFormValues)[] = [
   "startTime",
   "endTime",
   "recurringType",
+  "startDate",
   "endDate",
   "recurringType",
   "endDate",
@@ -81,6 +83,7 @@ export const ConferenceRoomForm = ({
   existingEvents = [],
   initialStartTime,
   initialEndTime,
+  onDateChange,
 }: ConferenceRoomFormProps) => {
   const currentStep = 1;
   const isEditMode = !!initialData;
@@ -99,6 +102,7 @@ export const ConferenceRoomForm = ({
       endTime: "11:00",
       recurringType: "none",
       notes: "",
+      startDate: selectedDate,
       endDate: undefined,
       daysOfWeek: {
         mon: false,
@@ -138,6 +142,9 @@ export const ConferenceRoomForm = ({
         projectId: initialData.projectId?.toString() || "",
         startTime: toHM(initialData.startTime),
         endTime: toHM(initialData.endTime),
+        startDate: initialData.startDate
+          ? new Date(initialData.startDate)
+          : selectedDate,
         recurringType: initialData.recurringType || "none",
         notes: initialData.notes || "",
         meetingType: initialData.meetingType || "internal",
@@ -169,6 +176,7 @@ export const ConferenceRoomForm = ({
     } else if (!initialData && initialStartTime && initialEndTime) {
       form.reset({
         ...form.getValues(),
+        startDate: selectedDate,
         startTime: initialStartTime,
         endTime: initialEndTime,
       });
@@ -177,6 +185,15 @@ export const ConferenceRoomForm = ({
   }, [initialData, currentStep, initialStartTime, initialEndTime]);
 
   const { trigger, formState } = form;
+
+  const watchedStartDate = form.watch("startDate");
+
+  useEffect(() => {
+    if (watchedStartDate && onDateChange) {
+      onDateChange(watchedStartDate);
+    }
+  }, [watchedStartDate, onDateChange]);
+
   const startTime = form.watch("startTime");
   const recurringType = form.watch("recurringType");
 
@@ -405,60 +422,6 @@ export const ConferenceRoomForm = ({
                       </FormItem>
                     )}
                   />
-                  <CustomDropDownSearchable
-                    form={form}
-                    name="projectId"
-                    label="Project"
-                    options={projectsList?.data?.map((project: any) => {
-                      return { value: project.id, label: project.name };
-                    })}
-                    placeholder="Select project"
-                    isLoading={projectsListLoading}
-                    sortOptions={false}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="startTime"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Start Time</FormLabel>
-                        <FormControl>
-                          <TimePicker
-                            value={field.value}
-                            onChange={field.onChange}
-                            placeholder="Select start time"
-                            className={cn(
-                              form.formState.errors.startTime &&
-                                "border-destructive"
-                            )}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="endTime"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>End Time</FormLabel>
-                        <FormControl>
-                          <TimePicker
-                            minTime={startTime}
-                            value={field.value}
-                            onChange={field.onChange}
-                            placeholder="Select end time"
-                            className={cn(
-                              form.formState.errors.endTime &&
-                                "border-destructive"
-                            )}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
 
                   <CustomDropDownSearchable
                     form={form}
@@ -471,6 +434,18 @@ export const ConferenceRoomForm = ({
 
                   <CustomDropDownSearchable
                     form={form}
+                    name="projectId"
+                    label="Project"
+                    options={projectsList?.data?.map((project: any) => {
+                      return { value: project.id, label: project.name };
+                    })}
+                    placeholder="Select project"
+                    isLoading={projectsListLoading}
+                    sortOptions={false}
+                  />
+
+                  <CustomDropDownSearchable
+                    form={form}
                     name="recurringType"
                     label="Recurring Type"
                     options={recurringTypes}
@@ -478,16 +453,15 @@ export const ConferenceRoomForm = ({
                     searchEnabled={false}
                   />
 
-                  {/* {recurringType && recurringType !== "daily" && (
-                    <CustomDropDownSearchable
-                      form={form}
-                      name="recurringType"
-                      label="Recurring Type"
-                      options={recurringTypes}
-                      placeholder="Select recurring type"
-                      searchEnabled={false}
-                    />
-                  )} */}
+                  {/* {recurringType && recurringType !== "none" && ( */}
+                  <CustomDatePicker
+                    control={form.control as any}
+                    name="startDate"
+                    label="Start Date"
+                    placeholder="Select start date"
+                    defaultMonth={selectedDate}
+                  />
+                  {/* )} */}
 
                   {recurringType && recurringType !== "none" && (
                     <CustomDatePicker
@@ -541,6 +515,61 @@ export const ConferenceRoomForm = ({
                       )}
                     />
                   )}
+
+                  <FormField
+                    control={form.control}
+                    name="startTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Start Time</FormLabel>
+                        <FormControl>
+                          <TimePicker
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="Select start time"
+                            className={cn(
+                              form.formState.errors.startTime &&
+                                "border-destructive"
+                            )}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="endTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>End Time</FormLabel>
+                        <FormControl>
+                          <TimePicker
+                            minTime={startTime}
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="Select end time"
+                            className={cn(
+                              form.formState.errors.endTime &&
+                                "border-destructive"
+                            )}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* {recurringType && recurringType !== "daily" && (
+                    <CustomDropDownSearchable
+                      form={form}
+                      name="recurringType"
+                      label="Recurring Type"
+                      options={recurringTypes}
+                      placeholder="Select recurring type"
+                      searchEnabled={false}
+                    />
+                  )} */}
 
                   {/* <FormField
                     control={form.control}
