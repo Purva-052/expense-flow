@@ -57,7 +57,7 @@ export function NewJoineeActionForm({
           interviewerComments: currentRow?.interviewerComments || "",
           technology: currentRow?.technology?.id,
           joiningDate: currentRow?.joiningDate || "",
-          noticePeriodInDays: currentRow?.noticePeriodInDays || 0,
+          noticePeriodInDays: currentRow?.noticePeriodInDays || "",
         }
       : {
           candidateName: "",
@@ -68,7 +68,7 @@ export function NewJoineeActionForm({
           notes: "",
           interviewerComments: "",
           joiningDate: selectedDate || "",
-          noticePeriodInDays: 0,
+          noticePeriodInDays: "",
         },
   });
 
@@ -102,58 +102,62 @@ export function NewJoineeActionForm({
                 label="Candidate Name"
                 placeholder="Enter Candidate Name"
               />
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+                <TextInputField
+                  control={form.control}
+                  name="email"
+                  label="Candidate Email"
+                  placeholder="Enter Candidate email"
+                />
+                <TextInputField
+                  control={form.control}
+                  name="phoneNumber"
+                  label="Candidate Phone Number"
+                  placeholder="Enter Phone Number"
+                />
+              </div>
 
-              <TextInputField
-                control={form.control}
-                name="email"
-                label="Candidate Email"
-                placeholder="Enter Candidate email"
-              />
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="experienceInYears"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Experience (Years)</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="5" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <TextInputField
-                control={form.control}
-                name="phoneNumber"
-                label="Candidate Phone Number"
-                placeholder="Enter Candidate Phone Number"
-              />
+                <TextInputField
+                  control={form.control}
+                  name="noticePeriodInDays"
+                  label="Notice Period"
+                  placeholder="e.g., 30 days"
+                />
+              </div>
 
-              <FormField
-                control={form.control}
-                name="experienceInYears"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Experience (Years)</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="5" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+                <CustomDropDownSearchable
+                  form={form}
+                  name="technology"
+                  label="Technology"
+                  options={technologyListData?.map((technology: any) => {
+                    return { value: technology.id, label: technology.name };
+                  })}
+                  placeholder="Select technology"
+                  isLoading={technologyListLoading}
+                />
 
-              <TextInputField
-                control={form.control}
-                name="noticePeriodInDays"
-                label="Notice Period (Days)"
-                placeholder="Enter Notice Period (Days)"
-              />
-
-              <CustomDropDownSearchable
-                form={form}
-                name="technology"
-                label="Technology"
-                options={technologyListData?.map((technology: any) => {
-                  return { value: technology.id, label: technology.name };
-                })}
-                placeholder="Select technology"
-                isLoading={technologyListLoading}
-              />
-
-              <CustomDatePicker
-                control={form.control}
-                name="joiningDate"
-                label="Joining Date"
-              />
+                <CustomDatePicker
+                  control={form.control}
+                  name="joiningDate"
+                  label="Joining Date"
+                />
+              </div>
 
               <TextInputField
                 control={form.control}

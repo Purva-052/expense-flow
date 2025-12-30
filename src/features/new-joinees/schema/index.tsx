@@ -50,7 +50,7 @@ export const newJoineeSchema = z.object({
     .optional(),
   notes: z.string().optional(),
   interviewerComments: z.string().optional(),
-  noticePeriodInDays: z.string().optional(),
+  noticePeriodInDays: z.coerce.number().optional(),
   joiningDate: z
     .any()
     .refine(

@@ -122,7 +122,9 @@ export const JoineeDetailsDialog = ({
           <div>
             <h3 className="text-sm font-medium">Notice Period</h3>
             <p className="text-sm text-gray-600">
-              {`${joinee.noticePeriodInDays} Days ` || "-"}
+              {joinee.noticePeriodInDays
+                ? `${joinee.noticePeriodInDays} Days`
+                : "-"}
             </p>
           </div>
           <div className="flex items-center gap-2">
