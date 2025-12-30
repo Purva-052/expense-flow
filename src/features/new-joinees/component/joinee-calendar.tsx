@@ -116,7 +116,8 @@ export const JoineeCalendar = ({
             >
               <div className="flex items-center gap-1 text-[11px] font-medium leading-tight truncate flex-1">
                 <span className="truncate font-medium">
-                  {event.title} - {event.extendedProps?.technology?.name}
+                  {event.title} -{" "}
+                  {event.extendedProps?.technology?.name ?? "NA"}
                 </span>
               </div>
             </div>
@@ -124,9 +125,11 @@ export const JoineeCalendar = ({
 
           <TooltipContent side="right" className="p-3 text-sm rounded-md">
             <div className="font-semibold">{event.title}</div>
+
             <div className="text-gray-600 mt-1 flex items-center gap-2">
               <span>Technology:</span>
-              {event.extendedProps?.technology && (
+
+              {event.extendedProps?.technology ? (
                 <>
                   <span
                     className="h-2 w-2 rounded-full inline-block"
@@ -134,10 +137,13 @@ export const JoineeCalendar = ({
                       backgroundColor: event.extendedProps.technology.color,
                     }}
                   />
-                  <span>{event.extendedProps.technology.name}</span>
+                  <span>{event.extendedProps.technology.name || "NA"}</span>
                 </>
+              ) : (
+                <span>NA</span>
               )}
             </div>
+
             <div className="text-gray-600">
               Experience: {event.extendedProps?.experienceInYears || "-"} Years
             </div>
