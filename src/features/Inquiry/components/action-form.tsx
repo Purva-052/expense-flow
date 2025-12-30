@@ -98,37 +98,52 @@ export function InquiryActionForm({
                 placeholder="Enter project name"
               />
 
-              {/* Client Name */}
-              <TextInputField
-                control={form.control}
-                name="clientName"
-                label="Client Name"
-                placeholder="Enter client name"
-              />
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+                {/* Client Name */}
+                <TextInputField
+                  control={form.control}
+                  name="clientName"
+                  label="Client Name"
+                  placeholder="Enter client name"
+                />
 
-              {/* Client Company Name. */}
-              <TextInputField
-                control={form.control}
-                name="clientCompanyName"
-                label="Client Company Name"
-                placeholder="Enter client company name"
-              />
+                {/* Client Company Name. */}
+                <TextInputField
+                  control={form.control}
+                  name="clientCompanyName"
+                  label="Client Company Name"
+                  placeholder="Enter client company name"
+                />
+              </div>
 
-              {/* Client Email */}
-              <TextInputField
-                control={form.control}
-                name="clientEmailId"
-                label="Client Email"
-                placeholder="Enter client email"
-              />
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+                {/* Client Email */}
+                <TextInputField
+                  control={form.control}
+                  name="clientEmailId"
+                  label="Client Email"
+                  placeholder="Enter client email"
+                />
 
-              {/* Client Contact No. */}
-              {/* <TextInputField
+                {/* Client Contact No. */}
+                {/* <TextInputField
                 control={form.control}
                 name="clientContactNo"
                 label="Client Contact No."
                 placeholder="Enter client contact no."
               /> */}
+                <CustomDropDownSearchable
+                  form={form}
+                  name="countryId"
+                  label="Country"
+                  placeholder="Select country"
+                  sortOptions={false}
+                  isLoading={loadingCountry}
+                  options={countryList?.data?.map((opt: any) => {
+                    return { value: opt.id, label: opt.name };
+                  })}
+                />
+              </div>
 
               <PhoneInputField
                 form={form}
@@ -143,37 +158,28 @@ export function InquiryActionForm({
                 label="Country"
                 placeholder="Enter country name"
               /> */}
-              <CustomDropDownSearchable
-                form={form}
-                name="countryId"
-                label="Country"
-                placeholder="Select country"
-                sortOptions={false}
-                isLoading={loadingCountry}
-                options={countryList?.data?.map((opt: any) => {
-                  return { value: opt.id, label: opt.name };
-                })}
-              />
 
               {/* Source of Inquiry */}
-              <TextInputField
-                control={form.control}
-                name="sourceOfInquiry"
-                label="Source of Inquiry"
-                placeholder="Enter source of inquiry"
-              />
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+                <TextInputField
+                  control={form.control}
+                  name="sourceOfInquiry"
+                  label="Source of Inquiry"
+                  placeholder="Enter source of inquiry"
+                />
 
-              {/* Type Dropdown */}
-              <CustomDropDownSearchable
-                form={form}
-                name="requirements"
-                label="Inquiry Type"
-                multiple
-                options={inquiryOptions}
-                placeholder="Select Inquiry Type"
-                searchEnabled={false}
-                isLoading={loadingType}
-              />
+                {/* Type Dropdown */}
+                <CustomDropDownSearchable
+                  form={form}
+                  name="requirements"
+                  label="Inquiry Type"
+                  multiple
+                  options={inquiryOptions}
+                  placeholder="Select Inquiry Type"
+                  searchEnabled={false}
+                  isLoading={loadingType}
+                />
+              </div>
 
               {!isEdit && (
                 <>

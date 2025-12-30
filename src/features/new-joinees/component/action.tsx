@@ -36,6 +36,7 @@ export function ActionFormModal({
       experienceInYears: values.experienceInYears,
       interviewerComments: values.interviewerComments,
       joiningDate: values.joiningDate,
+      noticePeriodInDays: values.noticePeriodInDays,
     };
 
     await createMutate(payload);
