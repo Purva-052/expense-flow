@@ -68,33 +68,33 @@ export const sidebarData: SidebarData = {
             roles.BDE,
           ],
         },
-        {
-          title: "Inquiries",
-          url: "/Inquiry",
-          icon: IconMessage2Question,
-          allowUserID1: allowUserID1,
-        },
+      ],
+    },
+    {
+      title: "Recruitment",
+      requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
+      items: [
         {
           title: "Interviews",
-          url: "/Interviews",
+          url: "/interviews",
           icon: IconLayersIntersect,
           requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER, roles.TEAM_LEAD],
         },
         {
           title: "To be Join",
-          url: "/New-joinees",
+          url: "/new-joinees",
           icon: IconUsers,
           requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
-        {
-          title: "Linode Server Dashboard",
-          url: "/Linode-server-dashboard",
-          icon: Cpu,
-          requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
-        },
+      ],
+    },
+    {
+      title: "Operations",
+      requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
+      items: [
         {
           title: "Conference Room Booking",
-          url: "/Conference-room-booking",
+          url: "/conference-room-booking",
           icon: CalendarCheck,
           requiredRoles: [
             roles.ADMIN,
@@ -103,12 +103,49 @@ export const sidebarData: SidebarData = {
             roles.BDE,
           ],
         },
+        {
+          title: "Transaction Logs",
+          url: "/transactions-logs",
+          icon: ScrollText,
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER, roles.TEAM_LEAD],
+        },
+      ],
+    },
+    {
+      title: "Infrastructure",
+      requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
+      items: [
+        {
+          title: "Servers",
+          url: "/server",
+          icon: IconReservedLine,
+          requiredRoles: ["admin", "project_manager"],
+        },
+        {
+          title: "Server Monitoring",
+          url: "/linode-server-dashboard",
+          icon: Cpu,
+          requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
+        },
       ],
     },
     {
       title: "Masters",
       requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
+      isCollapsible: true,
       items: [
+        {
+          title: "Clients",
+          url: "/clients",
+          icon: IconBrandDatabricks,
+          requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
+        },
+        {
+          title: "Users",
+          url: "/users",
+          icon: IconUsers,
+          requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
+        },
         {
           title: "Technologies",
           url: "/technology",
@@ -123,39 +160,21 @@ export const sidebarData: SidebarData = {
         },
         {
           title: "Project Types",
-          url: "/Project-type",
+          url: "/project-type",
           icon: IconAlignBoxBottomCenter,
           requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
         {
+          title: "Inquiries",
+          url: "/inquiry",
+          icon: IconMessage2Question,
+          allowUserID1: allowUserID1,
+        },
+        {
           title: "Inquiry Types",
-          url: "/Inquiry-type",
+          url: "/inquiry-type",
           icon: IconPencilSearch,
           requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
-        },
-        {
-          title: "Transaction Logs",
-          url: "/transactions-logs",
-          icon: ScrollText,
-          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER, roles.TEAM_LEAD],
-        },
-        {
-          title: "Clients",
-          url: "/clients",
-          icon: IconBrandDatabricks,
-          requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
-        },
-        {
-          title: "Servers",
-          url: "/Server",
-          icon: IconReservedLine,
-          requiredRoles: ["admin", "project_manager"],
-        },
-        {
-          title: "Users",
-          url: "/users",
-          icon: IconUsers,
-          requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
       ],
     },

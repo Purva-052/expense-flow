@@ -20,6 +20,7 @@ import {
 // Local Imports
 import { InterviewDetailsDialog } from "./components/interview-details-dialog";
 import { InterviewForm } from "./components/interview-form";
+import { HistoryInterviewModal } from "./components/history-modal";
 
 import { useGetTechnologyDropdownList } from "../technology/services";
 import { useGetUsersList } from "../users/services";
@@ -211,8 +212,8 @@ const InterviewsPage = () => {
           interViewer: interview.interviewer.name,
           start: startDate.toISOString(),
           end: endDate.toISOString(),
-          backgroundColor: interview.technology?.colour || "#10B981",
-          borderColor: interview.technology?.colour || "#10B981",
+          backgroundColor: interview.technology?.color || "#10B981",
+          borderColor: interview.technology?.color || "#10B981",
           extendedProps: interview,
         };
       })
@@ -295,7 +296,7 @@ const InterviewsPage = () => {
         noticePeriodInDays: noticePeriodInDays,
         interviewType: data.interviewType,
         interviewRound: data.interviewRound,
-        interviewerComments: data.interviewerComment || "",
+        // interviewerComments: data.interviewerComment || "",
         status: data.interviewStatus,
         interviewerId: Number(data.interviewerName),
         interviewStart: interviewStart.toISOString(),
@@ -496,7 +497,10 @@ const InterviewsPage = () => {
             <DialogHeader>
               <DialogTitle>
                 Edit Interview Details for{" "}
-                {format(new Date(eventToEdit.extendedProps.interviewStart), "PPP")}
+                {format(
+                  new Date(eventToEdit.extendedProps.interviewStart),
+                  "PPP"
+                )}
               </DialogTitle>
               <DialogDescription>
                 Update the interview details below.
@@ -567,6 +571,8 @@ const InterviewsPage = () => {
           isLoading={isDeletingInterview}
         />
       )}
+
+      <HistoryInterviewModal />
     </Main>
   );
 };

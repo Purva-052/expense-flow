@@ -17,6 +17,7 @@ export interface FilterConfig {
   isLoading?: any;
   disable?: any;
   className?: any;
+  multiple?: boolean;
 }
 
 interface DataTableToolbarProps {
@@ -68,6 +69,7 @@ export function DataTableToolbarCompact({
                 value={filter.value}
                 placeholder={filter.placeholder ?? "Select..."}
                 onChange={(val: any) => filter.onChange?.(val ?? undefined)}
+                multiple={filter.multiple}
                 className="w-[200px]"
                 disabled={filter.disable}
               />

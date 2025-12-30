@@ -32,6 +32,8 @@ export interface JoineeEvent {
     notes?: string;
     interviewerComments?: string;
     status: string;
+    location?: string;
+    noticePeriodInDays?: number;
   };
 }
 
@@ -113,6 +115,18 @@ export const JoineeDetailsDialog = ({
             <h3 className="text-sm font-medium">Phone</h3>
             <p className="text-sm text-gray-600">{joinee.phoneNumber || "-"}</p>
           </div>
+          {/* <div>
+            <h3 className="text-sm font-medium">Location</h3>
+            <p className="text-sm text-gray-600">{joinee.location || "-"}</p>
+          </div> */}
+          <div>
+            <h3 className="text-sm font-medium">Notice Period</h3>
+            <p className="text-sm text-gray-600">
+              {joinee.noticePeriodInDays
+                ? `${joinee.noticePeriodInDays} Days`
+                : "-"}
+            </p>
+          </div>
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-medium">Technology</h3>
             {joinee.technology ? (
@@ -148,7 +162,7 @@ export const JoineeDetailsDialog = ({
                 joinee.status === "active" ? "text-green-600" : "text-red-600"
               } capitalize`}
             >
-              {joinee.status}
+              {joinee.status || "-"}
             </p>
           </div>
         </div>

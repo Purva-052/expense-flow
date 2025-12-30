@@ -151,7 +151,7 @@ export const columns: ColumnDef<LinodeInstance>[] = [
           size="sm"
           onClick={() =>
             navigate({
-              to: "/Linode-server-dashboard/detail/$id",
+              to: "/linode-server-dashboard/detail/$id",
               params: { id: row.original.id.toString() },
             })
           }

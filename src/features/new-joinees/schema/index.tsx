@@ -6,10 +6,14 @@ export const newJoineeSchema = z.object({
     .min(2, { message: "Candidate name must be at least 2 characters long." })
     .max(50, { message: "Candidate name cannot exceed 50 characters." })
     .trim(),
-  technology: z
-    .number({ invalid_type_error: "Technology is required." })
-    .min(1, { message: "Please select a technology." })
-    .optional(),
+  technology: z.any().refine(
+    (val) => {
+      return val != null && val !== "" && String(val).trim().length > 0;
+    },
+    {
+      message: "Technology is required",
+    }
+  ),
   email: z
     .string()
     .email({ message: "Invalid email address." })
@@ -46,6 +50,7 @@ export const newJoineeSchema = z.object({
     .optional(),
   notes: z.string().optional(),
   interviewerComments: z.string().optional(),
+  noticePeriodInDays: z.coerce.number().optional(),
   joiningDate: z
     .any()
     .refine(

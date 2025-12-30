@@ -98,7 +98,7 @@ export default function LinodeInstanceDetail({
   };
 
   const handleBack = () => {
-    navigate({ to: "/Linode-server-dashboard" });
+    navigate({ to: "/linode-server-dashboard" });
   };
 
   // Generate month options

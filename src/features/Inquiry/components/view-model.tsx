@@ -75,21 +75,27 @@ export function ViewInquiryModal() {
           <div className="flex justify-between">
             <span className="font-medium text-gray-700">Client Company:</span>
             <span className="text-gray-900">
-              {currentRow?.clientCompanyName ?? "-"}
+              {currentRow?.clientCompanyName?.trim()
+                ? currentRow.clientCompanyName
+                : "-"}
             </span>
           </div>
           <Separator />
           <div className="flex justify-between">
             <span className="font-medium text-gray-700">Client Email:</span>
             <span className="text-gray-900">
-              {currentRow?.clientEmailId ?? "-"}
+              {currentRow?.clientEmailId?.trim()
+                ? currentRow?.clientEmailId
+                : "-"}
             </span>
           </div>
           <Separator />
           <div className="flex justify-between">
             <span className="font-medium text-gray-700">Client Contact:</span>
             <span className="text-gray-900">
-              {currentRow?.clientContactNo ?? "-"}
+              {currentRow?.clientContactNo?.trim()
+                ? currentRow?.clientContactNo
+                : "-"}
             </span>
           </div>
           <Separator />
@@ -106,7 +112,9 @@ export function ViewInquiryModal() {
               Source Of Inquiry:
             </span>
             <span className="text-gray-900">
-              {currentRow?.sourceOfInquiry ?? "-"}
+              {currentRow?.clientCompanyName?.trim()
+                ? currentRow?.sourceOfInquiry
+                : "-"}
             </span>
           </div>
           <Separator />

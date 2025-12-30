@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -31,6 +31,8 @@ import {
   preventNegativeInput,
   preventNegativePaste,
 } from "@/utils/commonFunctions";
+import { FileUpload } from "@/components/shared/custome-file-upload";
+import { useUploadTransactionFile } from "../services";
 // import { useTimezoneSelect, allTimezones } from "react-timezone-select";
 // import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 // import { useGetCountryDropdownList } from "../services";
@@ -74,6 +76,8 @@ export function TransactionLogsActionForm({
           subscriptionEndDate: currentRow?.subscriptionEndDate
             ? new Date(currentRow.subscriptionEndDate)
             : undefined,
+          referenceFileS3Key: currentRow?.referenceFileLink ?? "",
+          file: null,
         }
       : {
           reason: "",
@@ -84,10 +88,22 @@ export function TransactionLogsActionForm({
           transactionType: "",
           subscriptionCycle: "",
           subscriptionEndDate: undefined,
+          referenceFileS3Key: "",
+          file: null,
         },
   });
+  const [uploadedFileKey, setUploadedFileKey] = useState<string>("");
+  const [hasExistingFile, setHasExistingFile] = useState(false);
+  const { mutateAsync: uploadFile } = useUploadTransactionFile();
 
   const transactionType = form.watch("transactionType");
+
+  useEffect(() => {
+    if (currentRow && open) {
+      setUploadedFileKey(currentRow.referenceFileLink || "");
+      setHasExistingFile(!!currentRow.referenceFileLink);
+    }
+  }, [currentRow, open]);
 
   useEffect(() => {
     if (transactionType === "subscription") {
@@ -97,9 +113,40 @@ export function TransactionLogsActionForm({
     }
   }, [transactionType, form]);
 
-  const onSubmit: SubmitHandler<TTransactionFormSchema> = (values) => {
+  const handleFileRemove = () => {
+    setUploadedFileKey("");
+    setHasExistingFile(false);
+
+    form.setValue("file", null, { shouldValidate: true });
+    form.setValue("referenceFileS3Key", "", { shouldValidate: true });
+
+    form.clearErrors("file");
+    form.clearErrors("referenceFileS3Key");
+  };
+
+  const onSubmit: SubmitHandler<TTransactionFormSchema> = async (values) => {
+    let finalFileKey = uploadedFileKey || values.referenceFileS3Key || "";
+
+    const fileToUpload = values.file;
+    if (fileToUpload instanceof File) {
+      const formData = new FormData();
+      formData.append("file", fileToUpload);
+      formData.append("folder", "transaction-documents");
+
+      try {
+        const response: any = await uploadFile(formData);
+        if (response?.key) {
+          finalFileKey = response.key;
+        }
+      } catch (error) {
+        console.error("Upload failed", error);
+        return;
+      }
+    }
+
     const payload: any = {
       ...values,
+      referenceFileS3Key: finalFileKey,
       transactionDate: new Date(values.transactionDate).toISOString(),
       subscriptionEndDate:
         values.transactionType === "subscription" && values.subscriptionEndDate
@@ -155,53 +202,79 @@ export function TransactionLogsActionForm({
                 isLoading={projectsListLoading}
                 sortOptions={false}
               />
-              <CustomDropDownSearchable
-                form={form}
-                name="transactionType"
-                label="Transaction Type"
-                options={TransactionTypeOptions}
-                placeholder="Select Transaction Type"
-                searchEnabled={false}
-              />
-              {transactionType === "subscription" && (
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                 <CustomDropDownSearchable
                   form={form}
-                  name="subscriptionCycle"
-                  label="Subscription Cycle"
-                  options={SubscriptionTypeOptions}
-                  placeholder="Select cycle"
+                  name="transactionType"
+                  label="Transaction Type"
+                  options={TransactionTypeOptions}
+                  placeholder="Select Transaction Type"
                   searchEnabled={false}
                 />
-              )}
-              {transactionType === "subscription" && (
+
+                {transactionType === "subscription" && (
+                  <CustomDropDownSearchable
+                    form={form}
+                    name="subscriptionCycle"
+                    label="Subscription Cycle"
+                    options={SubscriptionTypeOptions}
+                    placeholder="Select cycle"
+                    searchEnabled={false}
+                  />
+                )}
+
+                {transactionType === "subscription" && (
+                  <CustomDatePicker
+                    control={form.control}
+                    name="subscriptionEndDate"
+                    label="Subscription End Date"
+                    placeholder="Select end date"
+                  />
+                )}
+
+                <TextInputField
+                  control={form.control}
+                  name="amount"
+                  type="number"
+                  label="Transaction Amount"
+                  placeholder="Enter amount"
+                  min={0}
+                  onKeyDown={preventNegativeInput}
+                  onPaste={preventNegativePaste}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+                <TextInputField
+                  control={form.control}
+                  name="cardLast4"
+                  label="Card Last 4 Digits"
+                  placeholder="Enter card last 4 digits"
+                />
                 <CustomDatePicker
                   control={form.control}
-                  name="subscriptionEndDate"
-                  label="Subscription End Date"
-                  placeholder="Select Subscription End Date"
+                  name="transactionDate"
+                  label="Transaction Date"
                 />
-              )}
-              <TextInputField
-                control={form.control}
-                name="amount"
-                type="number"
-                label="Transaction Amount"
-                placeholder="Enter amount"
-                min={0}
-                onKeyDown={preventNegativeInput}
-                onPaste={preventNegativePaste}
+              </div>
+
+              <FileUpload
+                name="file"
+                label="Transaction Receipt"
+                onFileSelect={undefined}
+                onFileRemove={handleFileRemove}
+                existingFileUrl={
+                  hasExistingFile && currentRow?.referenceFileLink
+                    ? currentRow.referenceFileLink
+                    : undefined
+                }
+                existingFileName={
+                  hasExistingFile && currentRow?.referenceFileLink
+                    ? `Transaction Reference File`
+                    : undefined
+                }
               />
-              <TextInputField
-                control={form.control}
-                name="cardLast4"
-                label="Card Last 4 Digits"
-                placeholder="Enter card last 4 digits"
-              />
-              <CustomDatePicker
-                control={form.control}
-                name="transactionDate"
-                label="Transaction Date"
-              />
+
               <FormField
                 control={form.control}
                 name="reason"

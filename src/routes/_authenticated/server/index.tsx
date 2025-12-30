@@ -1,7 +1,7 @@
 import ServerPage from '@/features/server'
 import { createFileRoute } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/_authenticated/Server/')({
+export const Route = createFileRoute('/_authenticated/server/')({
   component: RouteComponent,
 })
 

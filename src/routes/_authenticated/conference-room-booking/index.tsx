@@ -5,7 +5,7 @@ import { requireRole } from "@/utils/requireRole";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute(
-  "/_authenticated/Conference-room-booking/"
+  "/_authenticated/conference-room-booking/"
 )({
   component: RouteComponent,
   beforeLoad: () =>
