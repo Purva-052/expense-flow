@@ -334,18 +334,28 @@ export const InterviewForm = ({
         }
       }
 
-      // Send status log if in edit mode
+      // Send status log if in edit mode and status or notes changed
       if (isEditMode && initialData?.id) {
-        try {
-          await createStatusLog({
-            interviewId: initialData.id,
-            status: data.interviewStatus,
-            notes: data.notes || "",
-            effectiveDate: new Date().toISOString(),
-          });
-        } catch (error) {
-          console.error("Failed to create status log", error);
-          // Continue with submission even if status log fails
+        const prevStatus = initialData.status ?? "";
+        const prevNotes = (initialData.notes ?? "").toString();
+        const newStatus = (data.interviewStatus ?? "").toString();
+        const newNotes = (data.notes ?? "").toString();
+
+        const statusChanged = prevStatus !== newStatus;
+        const notesChanged = prevNotes.trim() !== newNotes.trim();
+
+        if (statusChanged || notesChanged) {
+          try {
+            await createStatusLog({
+              interviewId: initialData.id,
+              status: data.interviewStatus,
+              notes: data.notes || "",
+              effectiveDate: new Date().toISOString(),
+            });
+          } catch (error) {
+            console.error("Failed to create status log", error);
+            // Continue with submission even if status log fails
+          }
         }
       }
 

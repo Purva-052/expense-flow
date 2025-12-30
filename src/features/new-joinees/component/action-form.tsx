@@ -57,6 +57,7 @@ export function NewJoineeActionForm({
           interviewerComments: currentRow?.interviewerComments || "",
           technology: currentRow?.technology?.id,
           joiningDate: currentRow?.joiningDate || "",
+          noticePeriodInDays: currentRow?.noticePeriodInDays || 0,
         }
       : {
           candidateName: "",
@@ -67,6 +68,7 @@ export function NewJoineeActionForm({
           notes: "",
           interviewerComments: "",
           joiningDate: selectedDate || "",
+          noticePeriodInDays: 0,
         },
   });
 
@@ -127,6 +129,13 @@ export function NewJoineeActionForm({
                     <FormMessage />
                   </FormItem>
                 )}
+              />
+
+              <TextInputField
+                control={form.control}
+                name="noticePeriodInDays"
+                label="Notice Period (Days)"
+                placeholder="Enter Notice Period (Days)"
               />
 
               <CustomDropDownSearchable

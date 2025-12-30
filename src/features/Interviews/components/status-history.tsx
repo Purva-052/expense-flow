@@ -82,7 +82,7 @@ const InterviewStatusHistoryComponent = ({
           <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex flex-col">
               <span className="font-medium text-foreground">Interviewer:</span>{" "}
-              <span>{Details?.interviewer?.fullName ?? "-"}</span>
+              <span>{Details?.interviewer?.name ?? "-"}</span>
             </div>
           </div>
           <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">

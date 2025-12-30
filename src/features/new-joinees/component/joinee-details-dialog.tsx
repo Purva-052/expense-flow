@@ -115,10 +115,10 @@ export const JoineeDetailsDialog = ({
             <h3 className="text-sm font-medium">Phone</h3>
             <p className="text-sm text-gray-600">{joinee.phoneNumber || "-"}</p>
           </div>
-          <div>
+          {/* <div>
             <h3 className="text-sm font-medium">Location</h3>
             <p className="text-sm text-gray-600">{joinee.location || "-"}</p>
-          </div>
+          </div> */}
           <div>
             <h3 className="text-sm font-medium">Notice Period</h3>
             <p className="text-sm text-gray-600">
