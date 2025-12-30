@@ -53,7 +53,7 @@ export function ClientActionForm({
       ? {
           name: currentRow?.name ?? "",
           company: currentRow?.company ?? "",
-          countryId: currentRow?.countryId ?? "",
+          countryId: currentRow?.country?.id ?? "",
           timezone: currentRow?.timezone ?? "",
         }
       : {

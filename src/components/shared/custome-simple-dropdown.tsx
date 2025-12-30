@@ -15,7 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 
 interface SimpleDropDownProps {
   options: { label: string; value: string }[];
-  value?: string;
+  value?: string | string[];
   placeholder?: string;
   className?: string;
   disabled?: boolean;
@@ -26,6 +26,7 @@ interface SimpleDropDownProps {
   loadingText?: string;
   onChange?: (value: any) => void;
   allowClear?: boolean;
+  multiple?: boolean;
 }
 
 const SimpleDropDownSearchable = ({
@@ -41,6 +42,7 @@ const SimpleDropDownSearchable = ({
   loadingText = "Loading...",
   onChange,
   allowClear = true,
+  multiple = false,
 }: SimpleDropDownProps) => {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [popoverWidth, setPopoverWidth] = useState<string | number>("auto");
@@ -98,11 +100,21 @@ const SimpleDropDownSearchable = ({
               disabled={disabled || isLoading}
             >
               <span className="block truncate">
-                {value
-                  ? options?.find(
-                      (item) => String(item.value) === String(value)
-                    )?.label
-                  : placeholder || "Select an option"}
+                {Array.isArray(value)
+                  ? value.length > 0
+                    ? (() => {
+                        const first = options?.find(
+                          (item) => String(item.value) === String(value[0])
+                        )?.label;
+                        const more = value.length - 1;
+                        return more > 0 ? `${first} +${more} more` : first;
+                      })()
+                    : placeholder || "Select an option"
+                  : value
+                    ? options?.find(
+                        (item) => String(item.value) === String(value)
+                      )?.label
+                    : placeholder || "Select an option"}
               </span>
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
@@ -135,26 +147,47 @@ const SimpleDropDownSearchable = ({
                         <CommandEmpty>No option found.</CommandEmpty>
                       )}
                       <CommandGroup>
-                        {filteredOptions?.map((item) => (
-                          <CommandItem
-                            value={item.label}
-                            key={item.value}
-                            onSelect={() => {
-                              onChange?.(item.value);
-                              setOpen(false);
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                String(item.value) === String(value)
-                                  ? "opacity-100"
-                                  : "opacity-0"
-                              )}
-                            />
-                            {item.label}
-                          </CommandItem>
-                        ))}
+                        {filteredOptions?.map((item) => {
+                          const isSelected = Array.isArray(value)
+                            ? value.some(
+                                (v) => String(v) === String(item.value)
+                              )
+                            : String(item.value) === String(value);
+
+                          return (
+                            <CommandItem
+                              value={item.label}
+                              key={item.value}
+                              onSelect={() => {
+                                if (multiple) {
+                                  const current = Array.isArray(value)
+                                    ? [...value]
+                                    : [];
+                                  const exists = current.some(
+                                    (v) => String(v) === String(item.value)
+                                  );
+                                  const newVal = exists
+                                    ? current.filter(
+                                        (v) => String(v) !== String(item.value)
+                                      )
+                                    : [...current, item.value];
+                                  onChange?.(newVal.length ? newVal : null);
+                                } else {
+                                  onChange?.(item.value);
+                                  setOpen(false);
+                                }
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  isSelected ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {item.label}
+                            </CommandItem>
+                          );
+                        })}
                         {allowCreate && !!searchValue && !exactMatchExists && (
                           <CommandItem
                             value={`__create__:${searchValue}`}
@@ -175,7 +208,7 @@ const SimpleDropDownSearchable = ({
           </PopoverContent>
         </Popover>
 
-        {allowClear && value && (
+        {allowClear && (Array.isArray(value) ? value.length > 0 : !!value) && (
           <X
             className="absolute top-1/2 right-8 h-4 w-4 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-red-500"
             onClick={() => onChange?.(null)}
