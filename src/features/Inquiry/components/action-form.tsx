@@ -41,7 +41,7 @@ export function InquiryActionForm({
     defaultValues: {
       projectName: currentRow?.projectName ?? "",
       clientName: currentRow?.clientName ?? "",
-      countryId: currentRow?.country.id ?? "",
+      countryId: currentRow?.country?.id ?? "",
       requirements: currentRow?.modules?.map((item: any) => item?.id) ?? [],
       status: currentRow?.status ?? "",
       notes: currentRow?.notes ?? "",
@@ -160,26 +160,26 @@ export function InquiryActionForm({
               /> */}
 
               {/* Source of Inquiry */}
-              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-                <TextInputField
-                  control={form.control}
-                  name="sourceOfInquiry"
-                  label="Source of Inquiry"
-                  placeholder="Enter source of inquiry"
-                />
+              {/* <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2"> */}
+              <TextInputField
+                control={form.control}
+                name="sourceOfInquiry"
+                label="Source of Inquiry"
+                placeholder="Enter source of inquiry"
+              />
 
-                {/* Type Dropdown */}
-                <CustomDropDownSearchable
-                  form={form}
-                  name="requirements"
-                  label="Inquiry Type"
-                  multiple
-                  options={inquiryOptions}
-                  placeholder="Select Inquiry Type"
-                  searchEnabled={false}
-                  isLoading={loadingType}
-                />
-              </div>
+              {/* Type Dropdown */}
+              {/* </div> */}
+              <CustomDropDownSearchable
+                form={form}
+                name="requirements"
+                label="Inquiry Type"
+                multiple
+                options={inquiryOptions}
+                placeholder="Select Inquiry Type"
+                searchEnabled={false}
+                isLoading={loadingType}
+              />
 
               {!isEdit && (
                 <>
