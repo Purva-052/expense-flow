@@ -27,7 +27,7 @@ import { ResourceCard } from "./resource-card";
 
 const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
   const isProjectHandler = activeTab === "Project Coordinator";
-  const [selectedTech, setSelectedTech] = useState<string | null>(null);
+  const [selectedTech, setSelectedTech] = useState<Array<string | number>>([]);
 
   // Separate search states for resources and projects
   const [resourceSearch, setResourceSearch] = useState<string | undefined>();
@@ -95,8 +95,13 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
     : (usersList?.data ?? []);
 
   const handleTechnologyChange = (value: any) => {
-    setSelectedTech(value ?? null);
-    setListParams({ ...listParams, technologyId: value ?? null });
+    const val = value ?? null;
+    setSelectedTech(val && Array.isArray(val) ? val : val ? [val] : []);
+    setListParams({
+      ...listParams,
+      technologyId:
+        val && Array.isArray(val) && val.length ? val : val ? [val] : null,
+    });
   };
 
   const onsuccessAssignDeveloper = () => {
@@ -139,6 +144,7 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
       value: selectedTech,
       onChange: handleTechnologyChange,
       isLoading: techLoading,
+      multiple: true,
     },
   ];
 
@@ -213,7 +219,7 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          {!isProjectHandler && !selectedTech ? (
+          {!isProjectHandler && selectedTech.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-center border border-dashed rounded-lg mt-4">
               <div className="mb-3 p-3 rounded-full bg-muted">
                 <Users className="h-10 w-10 text-muted-foreground/70" />
