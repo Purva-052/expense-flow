@@ -9,6 +9,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useAuthStore } from "@/stores/use-auth-store";
 import useFetchData from "@/hooks/use-fetch-data";
+import { buildQueryString } from "@/utils/storage";
 import { useProjectServerStore } from "../stores/useProjectServerStore";
 import { useProjectDocumentStore } from "../stores/useProjectDocumentStore";
 
@@ -42,12 +43,12 @@ const fetchProjects = async ({ pageParam = 1, queryKey }: any) => {
   const baseURL = import.meta.env.VITE_API_BASE_URL;
   const token =
     useAuthStore.getState().user?.token ?? useAuthStore.getState().token;
-  const response = await axios.get(baseURL + `${GET_API_URL}`, {
-    params: {
-      ...params,
-      page: pageParam,
-      limit: 10,
-    },
+  const queryStr = buildQueryString({
+    ...params,
+    page: pageParam,
+    limit: 10,
+  });
+  const response = await axios.get(baseURL + `${GET_API_URL}${queryStr}`, {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,

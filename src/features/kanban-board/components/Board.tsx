@@ -2,7 +2,7 @@
 /* eslint-disable no-console */
 // src/pages/board.tsx
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { CustomMultiSelect } from "@/components/shared/custom-multiselect";
+
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import { FilterConfig } from "@/components/table/table-toolbar";
 import { Badge } from "@/components/ui/badge";
@@ -56,6 +56,7 @@ import { cn } from "@/lib/utils";
 import { capitalizeFirstLetter } from "@/utils/commonFunctions";
 import { roles } from "@/utils/constant";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CustomMultiSelect } from "@/components/shared/custom-multiselect";
 
 type GroupedDevelopers = {
   technologyName: string;
@@ -360,8 +361,8 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
       value: listParams.technologyId, // 👈 pre-selects if set
       onChange: handleTechnologyChange,
       isLoading: technologyListLoading,
+      multiple: true,
     },
-
     {
       type: "select",
       key: "handlerId",
