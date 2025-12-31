@@ -25,7 +25,7 @@ const UsersPage = () => {
     search: "",
     role: undefined,
     technologyId: null,
-    status: undefined,
+    status: "active",
   });
 
   const apiParams = {
