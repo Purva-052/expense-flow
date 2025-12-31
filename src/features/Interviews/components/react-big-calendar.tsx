@@ -22,7 +22,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useAuthStore } from "@/stores/use-auth-store";
-import { roles } from "@/utils/constant";
+import { INTERVIEW_STATUS_LABEL, roles } from "@/utils/constant";
 
 const localizer = momentLocalizer(moment);
 
@@ -103,6 +103,7 @@ export const ReactBigCalendar = ({
 
   // Custom Event Component
   const CustomEvent = ({ event }: { event: any }) => {
+    // console.log("event: ", event);
     const isHovered = hoveredEvent === event.id;
 
     return (
@@ -145,6 +146,18 @@ export const ReactBigCalendar = ({
               Time: {format(event.start, "hh:mm a")} –{" "}
               {format(event.end, "hh:mm a")}
             </div>
+            <div>
+              <span className="text-gray-600">Status:</span>{" "}
+              {event.extendedProps?.status &&
+              INTERVIEW_STATUS_LABEL[event.extendedProps.status] ? (
+                <span className="text-gray-600">
+                  {INTERVIEW_STATUS_LABEL[event.extendedProps.status]}
+                </span>
+              ) : (
+                <span className="text-gray-600">NA</span>
+              )}
+            </div>
+
             <div className="text-gray-500 text-xs mt-1">
               {format(event.start, "MMMM dd, yyyy")}
             </div>
