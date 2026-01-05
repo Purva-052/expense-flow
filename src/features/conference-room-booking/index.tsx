@@ -39,6 +39,7 @@ import { FilterConfig } from "@/components/table/table-toolbar";
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import { useGetProjectSDropdownList } from "../Project-type/services";
 import { Button } from "@/components/ui/button";
+import { getDateRange } from "@/utils/commonFunctions";
 
 // --- MAIN PAGE COMPONENT ---
 const ConferenceRoomBookingPage = () => {
@@ -99,27 +100,8 @@ const ConferenceRoomBookingPage = () => {
   };
 
   // Calculate date range based on current view for API
-  const getDateRange = () => {
-    const start = new Date(currentCalendarDate);
-    const end = new Date(currentCalendarDate);
 
-    if (calendarView === "month") {
-      start.setDate(1);
-      const lastDay = new Date(start.getFullYear(), start.getMonth() + 1, 0);
-      end.setDate(lastDay.getDate());
-    } else if (calendarView === "week") {
-      const dayOfWeek = start.getDay();
-      start.setDate(start.getDate() - dayOfWeek);
-      end.setDate(start.getDate() + 6);
-    } else {
-      // day view
-      end.setDate(start.getDate());
-    }
-
-    return { start, end };
-  };
-
-  const dateRange = getDateRange();
+  const dateRange = getDateRange(calendarView, currentCalendarDate);
 
   const { data: conferenceRoomsData }: any = useGetConferenceRoomBooking({
     timezone: timeZone,

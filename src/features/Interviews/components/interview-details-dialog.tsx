@@ -484,7 +484,7 @@ export const InterviewDetailsDialog = ({
                       <MessageSquare className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                       <div className="flex-1">
                         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                          Notes
+                          Interviewer Comment
                         </p>
                         <p className="text-sm text-muted-foreground leading-relaxed">
                           {details.notes}

@@ -48,6 +48,7 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
     pagination: false,
     technologyId: listParams.technologyId,
     search: isProjectHandler ? projectHandlerSearch : resourceSearch,
+    status: "active",
   };
 
   const {
