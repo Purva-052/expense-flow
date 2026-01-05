@@ -15,7 +15,14 @@ export const conferenceRoomBookingFormSchema = z
       .refine((val) => val !== null && val !== "", {
         message: "Meeting type is required",
       }),
-    recurringType: z.string().min(1, "Recurring type is required"),
+    recurringType: z.any().refine(
+      (val) => {
+        return val != null && val !== "" && String(val).trim().length > 0;
+      },
+      {
+        message: "Recurring type is required",
+      }
+    ),
     notes: z.string().optional(),
     // Optional endDate for recurring bookings (startDate comes from calendar selection)
     startDate: z.date(),

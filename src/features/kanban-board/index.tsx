@@ -11,6 +11,7 @@ import InquiryTab from "./components/inquiryTab";
 
 const ProjectBoard = () => {
   const [activeTab, setActiveTab] = useState("board");
+  const [projectCount, setProjectCount] = useState<number | null>(null);
   const user = useAuthStore((state) => state.user);
   const userRole = user?.user?.role;
   const userId = user?.user?.id;
@@ -23,7 +24,7 @@ const ProjectBoard = () => {
       ) : (
         <Main className="h-screen overflow-auto  flex flex-col">
           {userRole === roles.DEVELOPER ? (
-            <Board activeTab={activeTab} />
+            <Board activeTab={activeTab} onTotalCountChange={setProjectCount} />
           ) : (
             // 🧭 Others see tabbed layout
             <Tabs
@@ -33,7 +34,12 @@ const ProjectBoard = () => {
             >
               {/* Tab Headers */}
               <TabsList className="flex flex-wrap w-[680px]  mb-2">
-                <TabsTrigger value="board">Projects</TabsTrigger>
+                <TabsTrigger value="board">
+                  Projects{" "}
+                  {projectCount !== null && (
+                    <span className="ml-1">({projectCount})</span>
+                  )}
+                </TabsTrigger>
                 <TabsTrigger value="resources">Resources</TabsTrigger>
                 <TabsTrigger value="Project Coordinator">
                   Project Coordinator
@@ -57,6 +63,7 @@ const ProjectBoard = () => {
                   technologies={technologies}
                   techLoading={techLoading}
                   activeTab={activeTab}
+                  onTotalCountChange={setProjectCount}
                 />
               </TabsContent>
 
@@ -78,7 +85,10 @@ const ProjectBoard = () => {
               </TabsContent>
 
               <TabsContent value="Archive Projects">
-                <Board activeTab={activeTab} />
+                <Board
+                  activeTab={activeTab}
+                  onTotalCountChange={setProjectCount}
+                />
               </TabsContent>
               {userId === 1 && (
                 <TabsContent value="inquiry">

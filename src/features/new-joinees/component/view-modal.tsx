@@ -35,7 +35,9 @@ export function ViewNewJoineeModal() {
           </div>
           <div>
             <h3 className="text-sm font-medium">Phone</h3>
-            <p className="text-sm text-gray-600">{currentRow.phoneNumber || "-"}</p>
+            <p className="text-sm text-gray-600">
+              {currentRow.phoneNumber || "-"}
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-medium">Technology</h3>

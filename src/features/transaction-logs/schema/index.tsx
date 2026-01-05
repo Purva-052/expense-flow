@@ -33,7 +33,27 @@ export const transactionLogSchema = z
     }),
     referenceKey: z.string().optional(),
     referenceFileS3Key: z.string().optional(),
-    file: z.any().optional().nullable(),
+    file: z
+      .any()
+      .optional()
+      .nullable()
+      .refine((file) => {
+        if (!file) return true; // Allow empty/null
+        if (!(file instanceof File)) return true; // Allow if not a File object
+
+        const validExtensions = [".pdf", ".doc", ".docx", ".jpg", ".jpeg"];
+        const fileName = file.name.toLowerCase();
+        const hasValidExtension = validExtensions.some((ext) =>
+          fileName.endsWith(ext)
+        );
+
+        if (!hasValidExtension) {
+          return false;
+        }
+
+        const maxSize = 25 * 1024 * 1024; // 25MB
+        return file.size <= maxSize;
+      }, "Receipt must be a PDF, DOC, DOCX, JPG, or JPEG file and not exceed 25MB"),
     subscriptionEndDate: z.date().optional().nullable(),
   })
   .superRefine((data, ctx) => {

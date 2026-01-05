@@ -52,6 +52,7 @@ const ProjectsPage = () => {
   const { data: projecthandler, isPending: projecthandlerLoading }: any =
     useGetUserDropdownList({
       role: [roles.TEAM_LEAD, roles.PROJECT_MANAGER],
+      status: "active",
     });
   const { data: PriorityList, isPending: PriorityListLoading }: any =
     useGetProjectPriorityDropdownList();

@@ -23,6 +23,7 @@ import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useDeleteInterview } from "../Interviews/services";
 import { Button } from "@/components/ui/button";
+import { getDateRange } from "@/utils/commonFunctions";
 
 const NewJoineesPage = () => {
   const { open, setOpen, setCurrentRow } = useNewJoineeStore();
@@ -64,27 +65,28 @@ const NewJoineesPage = () => {
   };
 
   // Calculate date range based on current view for API
-  const getDateRange = () => {
-    const start = new Date(currentCalendarDate);
-    const end = new Date(currentCalendarDate);
+  // const getDateRange = () => {
+  //   const baseDate = new Date(currentCalendarDate);
 
-    if (calendarView === "month") {
-      start.setDate(1);
-      const lastDay = new Date(start.getFullYear(), start.getMonth() + 1, 0);
-      end.setDate(lastDay.getDate());
-    } else if (calendarView === "week") {
-      const dayOfWeek = start.getDay();
-      start.setDate(start.getDate() - dayOfWeek);
-      end.setDate(start.getDate() + 6);
-    } else {
-      // day view
-      end.setDate(start.getDate());
-    }
+  //   if (calendarView === "month") {
+  //     const monthStart = startOfMonth(baseDate);
+  //     const monthEnd = endOfMonth(baseDate);
+  //     const start = startOfWeek(monthStart);
+  //     const end = endOfWeek(monthEnd);
+  //     return { start, end };
+  //   } else if (calendarView === "week") {
+  //     const start = startOfWeek(baseDate);
+  //     const end = endOfWeek(baseDate);
+  //     return { start, end };
+  //   } else {
+  //     // day view
+  //     const start = new Date(baseDate);
+  //     const end = new Date(baseDate);
+  //     return { start, end };
+  //   }
+  // };
 
-    return { start, end };
-  };
-
-  const dateRange = getDateRange();
+  const dateRange = getDateRange(calendarView, currentCalendarDate);
 
   const apiParams = {
     page: listParams.currentPage,
@@ -161,6 +163,7 @@ const NewJoineesPage = () => {
       value: listParams.technologyId,
       onChange: handleTechnologyChange,
       isLoading: technologyListLoading,
+      multiple: true,
     },
   ];
 
