@@ -83,7 +83,7 @@ export function ServerActionForm({
                         const filtered = e.target.value.replace(/[^0-9.]/g, ""); // only digits and dots
                         field.onChange(filtered);
                       }}
-                      placeholder="Enter IP address"
+                      placeholder="192.168.1.XX"
                     />
                     {fieldState?.error?.message && (
                       <p className="text-sm text-red-500">

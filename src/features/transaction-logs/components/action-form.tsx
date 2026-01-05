@@ -261,6 +261,7 @@ export function TransactionLogsActionForm({
               <FileUpload
                 name="file"
                 label="Transaction Receipt"
+                fileLabel="PDF,DOC,DOCX,JPG,JPEG (MAX 25MB)"
                 onFileSelect={undefined}
                 onFileRemove={handleFileRemove}
                 existingFileUrl={
@@ -273,6 +274,14 @@ export function TransactionLogsActionForm({
                     ? `Transaction Reference File`
                     : undefined
                 }
+                acceptedFormats={{
+                  "application/pdf": [".pdf"],
+                  "application/msword": [".doc"],
+                  "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+                    [".docx"],
+                  "image/jpeg": [".jpg", ".jpeg"],
+                  "image/jpg": [".jpg"],
+                }}
               />
 
               <FormField

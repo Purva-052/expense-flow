@@ -3,7 +3,7 @@ import * as z from "zod";
 export const interviewFormSchema = z
   .object({
     // Candidate Details
-    candidateName: z.string().min(1, "Name is required"),
+    candidateName: z.string().trim().min(1, "Name is required"),
     technology: z.any().refine(
       (val) => {
         return val != null && val !== "" && String(val).trim().length > 0;
@@ -41,11 +41,30 @@ export const interviewFormSchema = z
         { message: "Invalid phone number length." }
       ),
     location: z.string().optional(),
-    notes: z.string().optional(),
+    notes: z.string().trim().optional(),
     experience: z.coerce
       .number()
       .min(0, "Experience must be a positive number"),
-    resume: z.any().optional(), // Making resume optional as it can be complex to require
+    resume: z
+      .any()
+      .optional()
+      .refine((file) => {
+        if (!file) return true; // Allow empty/null
+        if (!(file instanceof File)) return true; // Allow if not a File object
+
+        const validExtensions = [".pdf", ".doc", ".docx"];
+        const fileName = file.name.toLowerCase();
+        const hasValidExtension = validExtensions.some((ext) =>
+          fileName.endsWith(ext)
+        );
+
+        if (!hasValidExtension) {
+          return false;
+        }
+
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        return file.size <= maxSize;
+      }, "Resume must be a PDF, DOC, or DOCX file and not exceed 5MB"),
     resumeS3Key: z.string().optional(),
     currentCtc: z.coerce.number().min(0, "CTC must be a positive number"),
     expectedCtc: z.coerce.number().min(0, "CTC must be a positive number"),
@@ -57,16 +76,37 @@ export const interviewFormSchema = z
         return val != null && val !== "" && String(val).trim().length > 0;
       },
       {
-        message: "Interview Name is required",
+        message: "Interviewer Name is required",
       }
     ),
     startTime: z.string().min(1, "Start time is required"),
     endTime: z.string().min(1, "End time is required"),
-    interviewType: z.string().min(1, "Interview type is required"),
+    interviewType: z.any().refine(
+      (val) => {
+        return val != null && val !== "" && String(val).trim().length > 0;
+      },
+      {
+        message: "Interview type is required",
+      }
+    ),
     interviewUrl: z.string().optional(),
-    interviewRound: z.string().min(1, "Interview round is required"),
-    interviewerComment: z.string().optional(),
-    interviewStatus: z.string().min(1, "Status is required"),
+    interviewRound: z.any().refine(
+      (val) => {
+        return val != null && val !== "" && String(val).trim().length > 0;
+      },
+      {
+        message: "Interview Round is required",
+      }
+    ),
+    interviewerComment: z.string().trim().optional(),
+    interviewStatus: z.any().refine(
+      (val) => {
+        return val != null && val !== "" && String(val).trim().length > 0;
+      },
+      {
+        message: "Interviewer Status is required",
+      }
+    ),
     joiningDate: z
       .union([z.date(), z.string()])
       .optional()

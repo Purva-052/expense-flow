@@ -71,6 +71,7 @@ const TransactionPage = () => {
   const { data: usersList, isPending: usersListLoading }: any =
     useGetUserDropdownList({
       role: [roles.TEAM_LEAD, roles.ADMIN, roles.PROJECT_MANAGER],
+      status: "active",
     });
 
   const handleSearch = (search: string | undefined) => {

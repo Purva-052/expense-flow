@@ -18,10 +18,12 @@ import { cn } from "@/lib/utils";
 interface FileUploadProps {
   name: string;
   label: string;
+  fileLabel?: string;
   onFileSelect?: (file: File) => Promise<void>;
   onFileRemove?: () => void; // Callback when file is removed
   existingFileUrl?: string; // URL or S3 key of existing file
   existingFileName?: string; // Optional display name for existing file
+  acceptedFormats?: Record<string, string[]>; // Custom accepted file formats
 }
 
 const formatBytes = (bytes: number) => {
@@ -35,10 +37,12 @@ const formatBytes = (bytes: number) => {
 export const FileUpload = ({
   name,
   label,
+  fileLabel,
   onFileSelect,
   onFileRemove,
   existingFileUrl,
   existingFileName,
+  acceptedFormats,
 }: FileUploadProps) => {
   const form = useFormContext();
   const file = form.watch(name);
@@ -52,6 +56,17 @@ export const FileUpload = ({
   const fieldError =
     formState.errors[name] ||
     (name === "resume" ? formState.errors.resumeS3Key : undefined);
+
+  // Default accept formats - for PDFs, DOCs, DOCXs
+  const defaultFormats = {
+    "application/pdf": [".pdf"],
+    "application/msword": [".doc"],
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [
+      ".docx",
+    ],
+  };
+
+  const accept = acceptedFormats || defaultFormats;
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
@@ -87,12 +102,7 @@ export const FileUpload = ({
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: {
-      "application/pdf": [".pdf"],
-      "application/msword": [".doc"],
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-        [".docx"],
-    },
+    accept,
     multiple: false,
     disabled: isUploading,
   });
@@ -185,6 +195,12 @@ export const FileUpload = ({
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
+                {/* Zod Validation Error Message */}
+                {fieldError && (
+                  <p className="text-sm text-red-500 font-medium">
+                    {String(fieldError?.message)}
+                  </p>
+                )}
                 {/* Custom Upload Error (Network fail etc) */}
                 {uploadError && (
                   <p className="text-sm text-red-500">{uploadError}</p>
@@ -237,6 +253,12 @@ export const FileUpload = ({
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
+                {/* Zod Validation Error Message */}
+                {fieldError && (
+                  <p className="text-sm text-red-500 font-medium">
+                    {String(fieldError?.message)}
+                  </p>
+                )}
               </div>
             ) : (
               // --- Dropzone view (no file) ---
@@ -281,7 +303,7 @@ export const FileUpload = ({
                       fieldError ? "text-red-400" : "text-gray-400"
                     )}
                   >
-                    PDF, DOC, DOCX (Max 5MB)
+                    {fileLabel}
                   </p>
                 </div>
                 {/* Zod Validation Error Message */}

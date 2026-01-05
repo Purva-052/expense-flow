@@ -5,32 +5,39 @@ export enum ProjectPriority {
   HIGH = "high",
 }
 
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type Developer = {
- developer:any
- endDate: any 
- id: any
-}
+  developer: any;
+  endDate: any;
+  id: any;
+};
+
+export type Client = {
+  id: any;
+  name: string;
+  company: string;
+};
 
 export type Project = {
-  id: string
-  name: string
-  expectedCompletionDate: string
-  assignedDeveloperIds: string[]
-  currentStatus:any
+  id: string;
+  name: string;
+  expectedCompletionDate: string;
+  assignedDeveloperIds: string[];
+  currentStatus: any;
   priority: ProjectPriority; // Use the enum here
-  percentageComplete?: number // New field for completion percentage
-  projectHandler:any
-}
+  percentageComplete?: number; // New field for completion percentage
+  projectHandler: any;
+  client: Client;
+  isPinned?: boolean;
+};
 
 export type ScheduleItem = {
-  developerId: string
-  projectId: string
-  removeAt: string // ISO date
-}
+  developerId: string;
+  projectId: string;
+  removeAt: string; // ISO date
+};
 
 export type BoardData = {
-  projects: Project[]
-  developers: Developer[]
-}
+  projects: Project[];
+  developers: Developer[];
+};

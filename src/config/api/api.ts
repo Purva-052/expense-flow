@@ -34,6 +34,8 @@ const API = {
     status_change: "project-status-logs",
     history: "/project-status-logs/project",
     server_project: "/project-servers",
+    pin_project: "/pin",
+    remove_pin_project: "/pin",
   },
   project_types: {
     list: "/project-types",

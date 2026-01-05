@@ -159,12 +159,12 @@ export function NewJoineeActionForm({
                 />
               </div>
 
-              <TextInputField
+              {/* <TextInputField
                 control={form.control}
                 name="notes"
                 label="Notes"
                 placeholder="Enter notes (optional)"
-              />
+              /> */}
 
               <TextInputField
                 control={form.control}

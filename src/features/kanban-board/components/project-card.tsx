@@ -19,6 +19,8 @@ import {
   ArrowUp,
   CalendarDays,
   Info,
+  Pin,
+  Users,
   UserSquare,
 } from "lucide-react";
 import type React from "react";
@@ -28,6 +30,7 @@ import { useProjectStatusChange } from "../services";
 import ProjectDetailsDialog from "./ProjectDetailsDialog";
 import { ReasonDialog } from "./status-reason-dialog";
 import { roles } from "@/utils/constant";
+import { usePinProject, useUnpinProject } from "../../projects/services";
 
 // --- Priority styles remain the same ---
 const priorityStyles: Record<
@@ -87,6 +90,9 @@ export function ProjectCard({
     onStatusChanged?.();
   });
 
+  const { mutateAsync: pinProject } = usePinProject(project.id);
+  const { mutateAsync: unpinProject } = useUnpinProject(project.id);
+
   const form = useForm({
     defaultValues: { status: project.currentStatus },
   });
@@ -138,6 +144,15 @@ export function ProjectCard({
     setReasonDialogOpen(isOpen);
   };
 
+  const handlePinToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (project.isPinned) {
+      await unpinProject();
+    } else {
+      await pinProject();
+    }
+  };
+
   const priority =
     priorityStyles[project.priority] ?? priorityStyles[ProjectPriority.LOW];
   const isActive = project.currentStatus === "active";
@@ -155,6 +170,8 @@ export function ProjectCard({
   const currentStatusLabel =
     statusOptions.find((o) => o.value === project.currentStatus)?.label ||
     project.currentStatus;
+
+  const clientName = project.client?.name ?? "N/A";
 
   return (
     <>
@@ -195,6 +212,24 @@ export function ProjectCard({
                     <span className="text-sm font-semibold text-muted-foreground shrink-0">
                       ({completion}%)
                     </span>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Pin
+                            className={cn(
+                              "h-4 w-4 ml-2 cursor-pointer transition-colors duration-200",
+                              project.isPinned
+                                ? "text-primary fill-primary"
+                                : "text-muted-foreground hover:text-primary"
+                            )}
+                            onClick={handlePinToggle}
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="text-sm">
+                          {project.isPinned ? "Unpin Project" : "Pin Project"}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 </div>
 
@@ -223,6 +258,13 @@ export function ProjectCard({
                     <span className="truncate">
                       {project.projectHandler.fullName}
                     </span>
+                  </div>
+                )}
+                {project.client?.name && (
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <Users className="h-4 w-4 shrink-0" />
+                    <span className="text-muted-foreground">Client:</span>
+                    <span className="truncate">{clientName}</span>
                   </div>
                 )}
                 {canUpdateStatus && (
