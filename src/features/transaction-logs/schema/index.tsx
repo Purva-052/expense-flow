@@ -11,10 +11,7 @@ export const transactionLogSchema = z
       (val) => (val === null || val === "" ? undefined : val),
       z.string({ required_error: "Transaction Type is required" })
     ),
-    currency: z.preprocess(
-      (val) => (val === "" || val === null ? undefined : val),
-      z.string({ required_error: "Currency is required" })
-    ),
+    currency: z.string(),
     subscriptionCycle: z.preprocess(
       (val) => (val === "" || val === null ? undefined : val),
       z.string().optional()
@@ -26,7 +23,8 @@ export const transactionLogSchema = z
       },
       z
         .number({
-          invalid_type_error: "Amount is required",
+          required_error: "Amount is required",
+          invalid_type_error: "Invalid amount",
         })
         .positive("Amount must be greater than 0")
         .refine((val) => Number.isFinite(val), {

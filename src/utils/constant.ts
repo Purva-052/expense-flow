@@ -1,10 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Roles } from "@/types";
-import {
-  BadgeDollarSign,
-  BadgeEuro,
-  BadgeIndianRupee,
-} from "lucide-react";
+import { BadgeDollarSign, BadgeEuro, BadgeIndianRupee } from "lucide-react";
 
 export const UNIT_TYPES = [
   {
@@ -155,15 +151,18 @@ export const CurrencyType = [
     label: "USD",
     value: "usd",
     icon: BadgeDollarSign,
+    color: "text-green-600",
   },
   {
     label: "INR",
     value: "inr",
     icon: BadgeIndianRupee,
+    color: "text-orange-600",
   },
   {
     label: "EUR",
     value: "eur",
     icon: BadgeEuro,
+    color: "text-blue-600",
   },
 ];
