@@ -186,13 +186,13 @@ export const useDeleteProjectDocument = (id: string) => {
 export const usePinProject = (id: string) => {
   return usePostData<any, void>({
     url: `${API.projects.list}/${id}${API.projects.pin_project}`,
-    refetchQueries: [GET_API_URL],
+    refetchQueries: ["projects"],
   });
 };
 
 export const useUnpinProject = (id: string) => {
   return useDeleteData({
     url: `${API.projects.list}/${id}${API.projects.remove_pin_project}`,
-    refetchQueries: [GET_API_URL],
+    refetchQueries: ["projects"],
   });
 };
