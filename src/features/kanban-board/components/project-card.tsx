@@ -272,7 +272,7 @@ export function ProjectCard({
                             form={form}
                             className="text-muted-foreground"
                             name="status"
-                            label="Project Status"
+                            label=" "
                             options={statusOptions}
                             placeholder="Select Status"
                             searchEnabled={false}
