@@ -515,47 +515,76 @@ export const InterviewForm = ({
                   <FormField
                     control={form.control}
                     name="candidateName"
-                    render={({ field }) => (
+                    render={({ field, fieldState }) => (
                       <FormItem>
-                        <FormLabel>
+                        <FormLabel
+                          className={cn(
+                            "flex items-center gap-1",
+                            fieldState.error && "text-red-500"
+                          )}
+                        >
                           Name
-                          <RequiredIndicator
-                            error={!!formState.errors.candidateName}
-                          />
+                          <span className="text-red-500">*</span>
                         </FormLabel>
+
                         <FormControl>
                           <Input placeholder="John Doe" {...field} />
                         </FormControl>
+
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  <div>
-                    <FormLabel>
-                      Technology
-                      <RequiredIndicator
-                        error={!!formState.errors.technology}
-                      />
-                    </FormLabel>
-                    <CustomDropDownSearchable
-                      form={form}
-                      name="technology"
-                      label=""
-                      options={technologyList?.data?.map((technology: any) => {
-                        return { value: technology.id, label: technology.name };
-                      })}
-                      placeholder="Select technology"
-                      isLoading={technologyListLoading}
-                    />
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="technology"
+                    render={({ field, fieldState }) => (
+                      <FormItem>
+                        <FormLabel
+                          className={cn(
+                            "flex items-center gap-1",
+                            fieldState.error && "text-red-500"
+                          )}
+                        >
+                          Technology
+                          <span className="text-red-500">*</span>
+                        </FormLabel>
+
+                        <FormControl>
+                          <CustomDropDownSearchable
+                            form={form}
+                            label=""
+                            name={field.name}
+                            options={technologyList?.data?.map(
+                              (technology: any) => {
+                                return {
+                                  value: technology.id,
+                                  label: technology.name,
+                                };
+                              }
+                            )}
+                            placeholder="Select technology"
+                            isLoading={technologyListLoading}
+                          />
+                        </FormControl>
+
+                        {/* <FormMessage /> */}
+                      </FormItem>
+                    )}
+                  />
                   <FormField
                     control={form.control}
                     name="email"
-                    render={({ field }) => (
+                    render={({ field, fieldState }) => (
                       <FormItem>
-                        <FormLabel>
+                        <FormLabel
+                          className={cn(
+                            "flex items-center gap-1",
+                            fieldState.error && "text-red-500"
+                          )}
+                        >
                           Email
-                          <RequiredIndicator error={!!formState.errors.email} />
+                          <span className="text-red-500">*</span>
                         </FormLabel>
                         <FormControl>
                           <Input placeholder="candidate@email.com" {...field} />
@@ -652,9 +681,14 @@ export const InterviewForm = ({
                   />
                   <div className="md:col-span-2">
                     <div className="mb-2">
-                      <FormLabel>
+                      <FormLabel
+                        className={cn(
+                          "flex items-center gap-1",
+                          formState.errors.resume && "text-red-500"
+                        )}
+                      >
                         Resume (CV)
-                        <RequiredIndicator error={!!formState.errors.resume} />
+                        <span className="text-red-500">*</span>
                       </FormLabel>
                     </div>
                     <FileUpload
@@ -711,38 +745,64 @@ export const InterviewForm = ({
                 </h3>
                 <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                   <div>
-                    <FormLabel>
-                      Interviewer Name
-                      <RequiredIndicator
-                        error={!!formState.errors.interviewerName}
-                      />
-                    </FormLabel>
-                    <CustomDropDownSearchable
-                      form={form}
+                    <FormField
+                      control={form.control}
                       name="interviewerName"
-                      label=""
-                      options={usersList?.data?.map((user: any) => {
-                        return { value: user.id, label: user.fullName };
-                      })}
-                      placeholder="Select interviewer"
-                      isLoading={usersListLoading}
+                      render={({ fieldState }) => (
+                        <FormItem>
+                          <FormLabel
+                            className={cn(
+                              "flex items-center gap-1",
+                              fieldState.error && "text-red-500"
+                            )}
+                          >
+                            Interviewer Name
+                            <span className="text-red-500">*</span>
+                          </FormLabel>
+
+                          <CustomDropDownSearchable
+                            form={form}
+                            name="interviewerName"
+                            label=""
+                            options={usersList?.data?.map((user: any) => ({
+                              value: user.id,
+                              label: user.fullName,
+                            }))}
+                            placeholder="Select interviewer"
+                            isLoading={usersListLoading}
+                          />
+
+                          {/* <FormMessage /> */}
+                        </FormItem>
+                      )}
                     />
                   </div>
                   <div>
-                    <FormLabel>
-                      Interview Round
-                      <RequiredIndicator
-                        error={!!formState.errors.interviewRound}
-                      />
-                    </FormLabel>
-                    <CustomDropDownSearchable
-                      form={form}
+                    <FormField
+                      control={form.control}
                       name="interviewRound"
-                      label=""
-                      options={interviewRounds}
-                      placeholder="Select round"
-                      searchEnabled={false}
-                      sortOptions={false}
+                      render={({ fieldState }) => (
+                        <FormItem>
+                          <FormLabel
+                            className={cn(
+                              "flex items-center gap-1",
+                              fieldState.error && "text-red-500"
+                            )}
+                          >
+                            Interview Round
+                            <span className="text-red-500">*</span>
+                          </FormLabel>
+                          <CustomDropDownSearchable
+                            form={form}
+                            name="interviewRound"
+                            label=""
+                            options={interviewRounds}
+                            placeholder="Select round"
+                            searchEnabled={false}
+                            sortOptions={false}
+                          />
+                        </FormItem>
+                      )}
                     />
                   </div>
                   <FormField
@@ -763,19 +823,30 @@ export const InterviewForm = ({
                     )}
                   />
                   <div>
-                    <FormLabel>
-                      Interview Type
-                      <RequiredIndicator
-                        error={!!formState.errors.interviewType}
-                      />
-                    </FormLabel>
-                    <CustomDropDownSearchable
-                      form={form}
+                    <FormField
+                      control={form.control}
                       name="interviewType"
-                      label=""
-                      options={interviewTypes}
-                      placeholder="Select type"
-                      searchEnabled={false}
+                      render={({ fieldState }) => (
+                        <FormItem>
+                          <FormLabel
+                            className={cn(
+                              "flex items-center gap-1",
+                              fieldState.error && "text-red-500"
+                            )}
+                          >
+                            Interview Type
+                            <span className="text-red-500">*</span>
+                          </FormLabel>
+                          <CustomDropDownSearchable
+                            form={form}
+                            name="interviewType"
+                            label=""
+                            options={interviewTypes}
+                            placeholder="Select type"
+                            searchEnabled={false}
+                          />
+                        </FormItem>
+                      )}
                     />
                   </div>
                   {interviewType === "video_call" && (
@@ -804,20 +875,31 @@ export const InterviewForm = ({
                     </>
                   )}
                   <div>
-                    <FormLabel>
-                      Interview Status
-                      <RequiredIndicator
-                        error={!!formState.errors.interviewStatus}
-                      />
-                    </FormLabel>
-                    <CustomDropDownSearchable
-                      form={form}
+                    <FormField
+                      control={form.control}
                       name="interviewStatus"
-                      label=""
-                      options={filteredStatuses}
-                      placeholder="Select status"
-                      searchEnabled={false}
-                      sortOptions={false}
+                      render={({ fieldState }) => (
+                        <FormItem>
+                          <FormLabel
+                            className={cn(
+                              "flex items-center gap-1",
+                              fieldState.error && "text-red-500"
+                            )}
+                          >
+                            Interview Status
+                            <span className="text-red-500">*</span>
+                          </FormLabel>
+                          <CustomDropDownSearchable
+                            form={form}
+                            name="interviewStatus"
+                            label=""
+                            options={filteredStatuses}
+                            placeholder="Select status"
+                            searchEnabled={false}
+                            sortOptions={false}
+                          />
+                        </FormItem>
+                      )}
                     />
                   </div>
 

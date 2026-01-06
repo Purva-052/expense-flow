@@ -20,6 +20,7 @@ import {
   CalendarDays,
   Info,
   Pin,
+  // PinOff,
   Users,
   UserSquare,
 } from "lucide-react";
@@ -215,15 +216,17 @@ export function ProjectCard({
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Pin
-                            className={cn(
-                              "h-4 w-4 ml-2 cursor-pointer transition-colors duration-200",
-                              project.isPinned
-                                ? "text-primary fill-primary"
-                                : "text-muted-foreground hover:text-primary"
-                            )}
-                            onClick={handlePinToggle}
-                          />
+                          {project.isPinned ? (
+                            <Pin
+                              className="h-4 w-4 ml-2 cursor-pointer text-primary fill-primary transition-colors duration-200 hover:text-primary/80"
+                              onClick={handlePinToggle}
+                            />
+                          ) : (
+                            <Pin
+                              className="h-4 w-4 ml-2 cursor-pointer text-muted-foreground transition-colors duration-200 hover:text-primary"
+                              onClick={handlePinToggle}
+                            />
+                          )}
                         </TooltipTrigger>
                         <TooltipContent side="top" className="text-sm">
                           {project.isPinned ? "Unpin Project" : "Pin Project"}
