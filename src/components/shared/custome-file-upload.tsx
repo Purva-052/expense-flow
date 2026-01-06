@@ -3,7 +3,7 @@
 import { useFormContext } from "react-hook-form";
 import { UploadCloud, File as FileIcon, X, Loader2 } from "lucide-react";
 import { useCallback, useState } from "react";
-import { useDropzone } from "react-dropzone";
+import { useDropzone, FileRejection } from "react-dropzone";
 
 import {
   FormControl,
@@ -100,8 +100,63 @@ export const FileUpload = ({
     [form, name, onFileSelect]
   );
 
+  const onDropRejected = useCallback(
+    (rejectedFiles: FileRejection[]) => {
+      if (rejectedFiles && rejectedFiles.length > 0) {
+        const firstRejection = rejectedFiles[0];
+        const err = firstRejection.errors && firstRejection.errors[0];
+
+        // Build a short, friendly message
+        const getAllowedExts = (acceptObj: Record<string, string[]>) => {
+          try {
+            const all = Object.values(acceptObj).flat();
+            const uniq = Array.from(
+              new Set(all.map((e) => e.replace(/^\./, "").toUpperCase()))
+            );
+            return uniq;
+          } catch (e) {
+            return [] as string[];
+          }
+        };
+
+        const code = err?.code;
+        let message = err?.message || "File not supported";
+
+        if (code === "file-too-large") {
+          message = "File is too large";
+        } else if (code === "file-invalid-type") {
+          const allowed = getAllowedExts(accept);
+          if (allowed.length > 0) {
+            message = `Only ${allowed.join(", ")} files allowed`;
+          } else {
+            message = "File format not supported";
+          }
+        } else if (err?.message) {
+          // Fallback to the underlying message but keep it short
+          message = err.message;
+        }
+
+        setUploadError(message);
+
+        // Set form-level error so the UI shows validation message
+        form.setError(name, {
+          type: "manual",
+          message,
+        });
+        if (name === "resume") {
+          form.setError("resumeS3Key", {
+            type: "manual",
+            message,
+          });
+        }
+      }
+    },
+    [form, name, accept]
+  );
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
+    onDropRejected,
     accept,
     multiple: false,
     disabled: isUploading,

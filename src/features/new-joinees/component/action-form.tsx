@@ -21,7 +21,7 @@ import CustomDropDownSearchable from "@/components/shared/custome-searchable-dro
 import { Input } from "@/components/ui/input";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 import CustomButton from "@/components/shared/custom-button";
-
+import { cn } from "@/lib/utils";
 interface Props {
   currentRow?: any;
   open: boolean;
@@ -96,19 +96,55 @@ export function NewJoineeActionForm({
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-4 p-0.5"
             >
-              <TextInputField
+              <FormField
                 control={form.control}
                 name="candidateName"
-                label="Candidate Name"
-                placeholder="Enter Candidate Name"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <FormLabel
+                      className={cn(
+                        "flex items-center gap-1",
+                        fieldState.error && "text-red-500"
+                      )}
+                    >
+                      Candidate Name
+                      <span className="text-red-500">*</span>
+                    </FormLabel>
+
+                    <FormControl>
+                      <Input placeholder="Enter Candidate Name" {...field} />
+                    </FormControl>
+
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
+
               <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-                <TextInputField
+                <FormField
                   control={form.control}
                   name="email"
-                  label="Candidate Email"
-                  placeholder="Enter Candidate email"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <FormLabel
+                        className={cn(
+                          "flex items-center gap-1",
+                          fieldState.error && "text-red-500"
+                        )}
+                      >
+                        Candidate Email
+                        <span className="text-red-500">*</span>
+                      </FormLabel>
+
+                      <FormControl>
+                        <Input placeholder="Enter Candidate email" {...field} />
+                      </FormControl>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
+
                 <TextInputField
                   control={form.control}
                   name="phoneNumber"
@@ -141,15 +177,38 @@ export function NewJoineeActionForm({
               </div>
 
               <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-                <CustomDropDownSearchable
-                  form={form}
+                <FormField
+                  control={form.control}
                   name="technology"
-                  label="Technology"
-                  options={technologyListData?.map((technology: any) => {
-                    return { value: technology.id, label: technology.name };
-                  })}
-                  placeholder="Select technology"
-                  isLoading={technologyListLoading}
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <FormLabel
+                        className={cn(
+                          "flex items-center gap-1",
+                          fieldState.error && "text-red-500"
+                        )}
+                      >
+                        Technology
+                        <span className="text-red-500">*</span>
+                      </FormLabel>
+
+                      <FormControl>
+                        <CustomDropDownSearchable
+                          form={form}
+                          label=""
+                          name={field.name}
+                          options={technologyListData?.map((technology) => ({
+                            value: technology.id,
+                            label: technology.name,
+                          }))}
+                          placeholder="Select technology"
+                          isLoading={technologyListLoading}
+                        />
+                      </FormControl>
+
+                      {/* <FormMessage /> */}
+                    </FormItem>
+                  )}
                 />
 
                 <CustomDatePicker
