@@ -168,25 +168,45 @@ const CustomDropDownSearchable = ({
                       {valueArray.length > 0 ? (
                         <span className="flex flex-wrap gap-1 items-center">
                           {(() => {
-                            const labels = valueArray.map(
-                              (val: any) =>
-                                options?.find(
-                                  (opt: any) =>
-                                    String(opt.value) === String(val)
-                                )?.label ?? val
-                            );
+                            const entries = valueArray.map((val: any) => {
+                              const opt = options?.find(
+                                (o: any) => String(o.value) === String(val)
+                              );
+                              return {
+                                label: opt?.label ?? val,
+                                icon: opt?.icon,
+                              };
+                            });
 
-                            const shownLabels = labels.slice(0, 3);
-                            const remainingCount = labels.length - 3;
+                            const shown = entries.slice(0, 3);
+                            const remainingCount = entries.length - 3;
 
                             return (
                               <>
-                                {shownLabels.map((label: any, i: any) => (
-                                  <span key={i}>
-                                    {label}
-                                    {i < shownLabels.length - 1 && ","}
-                                  </span>
-                                ))}
+                                {shown.map((entry: any, i: any) => {
+                                  const renderIcon = (icon: any) => {
+                                    if (!icon) return null;
+                                    if (typeof icon === "string")
+                                      return (
+                                        <span className="text-sm">{icon}</span>
+                                      );
+                                    const IconComp: any = icon;
+                                    return <IconComp className="h-4 w-4" />;
+                                  };
+
+                                  return (
+                                    <span
+                                      key={i}
+                                      className="inline-flex items-center gap-2"
+                                    >
+                                      {renderIcon(entry.icon)}
+                                      <span>
+                                        {entry.label}
+                                        {i < shown.length - 1 && ","}
+                                      </span>
+                                    </span>
+                                  );
+                                })}
                                 {remainingCount > 0 && (
                                   <span className="text-muted-foreground ml-1">
                                     +{remainingCount} more
@@ -268,7 +288,20 @@ const CustomDropDownSearchable = ({
                                         : "opacity-0"
                                     )}
                                   />
-                                  {item.label}
+                                  <span className="inline-flex items-center gap-2">
+                                    {(() => {
+                                      if (!item.icon) return null;
+                                      if (typeof item.icon === "string")
+                                        return (
+                                          <span className="text-lg">
+                                            {item.icon}
+                                          </span>
+                                        );
+                                      const IconComp: any = item.icon;
+                                      return <IconComp className="h-4 w-4" />;
+                                    })()}
+                                    <span>{item.label}</span>
+                                  </span>
                                 </CommandItem>
                               ))}
                               {allowCreate &&

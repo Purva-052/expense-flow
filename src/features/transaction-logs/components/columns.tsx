@@ -24,6 +24,14 @@ export const columns: ColumnDef<any>[] = [
     },
   },
   {
+    accessorKey: "currency",
+    header: "Currency",
+    cell: ({ row }) => {
+      const currency = row.original.currency;
+      return <span className="text-sm uppercase">{currency ? currency : "-"}</span>;
+    },
+  },
+  {
     accessorKey: "amount",
     header: "Amount",
     cell: ({ row }) => {

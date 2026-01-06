@@ -30,6 +30,7 @@ import { Form, FormProvider, useForm } from "react-hook-form";
 import { useProjectStatusChange } from "../services";
 import ProjectDetailsDialog from "./ProjectDetailsDialog";
 import { ReasonDialog } from "./status-reason-dialog";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { roles } from "@/utils/constant";
 import { usePinProject, useUnpinProject } from "../../projects/services";
 
@@ -80,6 +81,8 @@ export function ProjectCard({
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [isReasonDialogOpen, setReasonDialogOpen] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
+  const [isPinConfirmOpen, setIsPinConfirmOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { user } = useAuthStore();
   const userRole = user?.user?.role;
@@ -145,12 +148,22 @@ export function ProjectCard({
     setReasonDialogOpen(isOpen);
   };
 
-  const handlePinToggle = async (e: React.MouseEvent) => {
+  const handlePinToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (project.isPinned) {
-      await unpinProject();
-    } else {
-      await pinProject();
+    setIsPinConfirmOpen(true);
+  };
+
+  const handleConfirmPin = async () => {
+    try {
+      setIsSubmitting(true);
+      if (project.isPinned) {
+        await unpinProject();
+      } else {
+        await pinProject();
+      }
+      setIsPinConfirmOpen(false);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -213,26 +226,6 @@ export function ProjectCard({
                     <span className="text-sm font-semibold text-muted-foreground shrink-0">
                       ({completion}%)
                     </span>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          {project.isPinned ? (
-                            <Pin
-                              className="h-4 w-4 ml-2 cursor-pointer text-primary fill-primary transition-colors duration-200 hover:text-primary/80"
-                              onClick={handlePinToggle}
-                            />
-                          ) : (
-                            <Pin
-                              className="h-4 w-4 ml-2 cursor-pointer text-muted-foreground transition-colors duration-200 hover:text-primary"
-                              onClick={handlePinToggle}
-                            />
-                          )}
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="text-sm">
-                          {project.isPinned ? "Unpin Project" : "Pin Project"}
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
                   </div>
                 </div>
 
@@ -321,10 +314,33 @@ export function ProjectCard({
             {children && (
               <div
                 className={cn(
-                  "p-4 h-full transition-colors duration-300",
+                  "p-4 h-full transition-colors duration-300 relative",
                   isOver ? "bg-primary/10" : "bg-transparent"
                 )}
               >
+                {/* Pin Icon - Top Right Corner */}
+                <div className="absolute top-4 right-4">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        {project.isPinned ? (
+                          <Pin
+                            className="h-5 w-5 cursor-pointer text-primary fill-primary transition-colors duration-200 hover:text-primary/80"
+                            onClick={handlePinToggle}
+                          />
+                        ) : (
+                          <Pin
+                            className="h-5 w-5 cursor-pointer text-muted-foreground transition-colors duration-200 hover:text-primary"
+                            onClick={handlePinToggle}
+                          />
+                        )}
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-sm">
+                        {project.isPinned ? "Unpin Project" : "Pin Project"}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 {children}
               </div>
             )}
@@ -344,6 +360,22 @@ export function ProjectCard({
         isOpen={isReasonDialogOpen}
         onOpenChange={handleReasonDialogChange} // <-- USE THE NEW HANDLER
         onSubmit={handleStatusChangeWithReason}
+      />
+
+      {/* --- Pin/Unpin Confirm Dialog --- */}
+      <ConfirmDialog
+        open={isPinConfirmOpen}
+        onOpenChange={setIsPinConfirmOpen}
+        title={project.isPinned ? "Unpin Project" : "Pin Project"}
+        desc={
+          project.isPinned
+            ? `Are you sure you want to unpin ${project.name || "this"} project?`
+            : `Are you sure you want to pin ${project.name || "this"} project?`
+        }
+        confirmText={project.isPinned ? "Unpin" : "Pin"}
+        destructive={false}
+        handleConfirm={handleConfirmPin}
+        isLoading={isSubmitting}
       />
     </>
   );

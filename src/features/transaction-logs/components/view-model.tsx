@@ -8,7 +8,6 @@ import { useTransactionStore } from "../stores";
 
 export function ViewTransactionModal() {
   const { open, setOpen, currentRow } = useTransactionStore();
-
   const formatDate = (dateString: string) => {
     if (!dateString) return "-";
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -39,6 +38,13 @@ export function ViewTransactionModal() {
             <h3 className="text-sm font-medium">Project</h3>
             <p className="text-sm text-gray-600">
               {currentRow?.project?.name || "-"}
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-medium">Currency</h3>
+            <p className="text-sm text-gray-600 uppercase">
+              {currentRow?.currency || "-"}
             </p>
           </div>
 

@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Roles } from "@/types";
+import {
+  BadgeDollarSign,
+  BadgeEuro,
+  BadgeIndianRupee,
+} from "lucide-react";
 
 export const UNIT_TYPES = [
   {
@@ -143,4 +148,22 @@ export const SubscriptionTypeOptions = [
 export const MeetingType = [
   { label: "Client", value: "client" },
   { label: "Internal", value: "internal" },
+];
+
+export const CurrencyType = [
+  {
+    label: "USD",
+    value: "usd",
+    icon: BadgeDollarSign,
+  },
+  {
+    label: "INR",
+    value: "inr",
+    icon: BadgeIndianRupee,
+  },
+  {
+    label: "EUR",
+    value: "eur",
+    icon: BadgeEuro,
+  },
 ];

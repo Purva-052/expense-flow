@@ -22,6 +22,7 @@ import { TextInputField } from "@/components/shared/custom-input-field";
 import { transactionLogSchema, TTransactionFormSchema } from "../schema";
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import {
+  CurrencyType,
   SubscriptionTypeOptions,
   TransactionTypeOptions,
 } from "@/utils/constant";
@@ -191,28 +192,61 @@ export function TransactionLogsActionForm({
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-4 p-0.5"
             >
+              {/* 1️⃣ Project */}
               <CustomDropDownSearchable
                 form={form}
                 name="projectId"
                 label="Project"
-                options={projectsList?.data?.map((project: any) => {
-                  return { value: project.id, label: project.name };
-                })}
+                options={projectsList?.data?.map((project: any) => ({
+                  value: project.id,
+                  label: project.name,
+                }))}
                 placeholder="Select project"
                 isLoading={projectsListLoading}
                 sortOptions={false}
               />
+
+              {/* 2️⃣ Transaction Details */}
               <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                 <CustomDropDownSearchable
                   form={form}
                   name="transactionType"
                   label="Transaction Type"
                   options={TransactionTypeOptions}
-                  placeholder="Select Transaction Type"
+                  placeholder="Select transaction type"
                   searchEnabled={false}
                 />
 
-                {transactionType === "subscription" && (
+                <TextInputField
+                  control={form.control}
+                  name="amount"
+                  type="text"
+                  label="Amount"
+                  placeholder="Enter amount"
+                  min={0}
+                  onKeyDown={preventNegativeInput}
+                  onPaste={preventNegativePaste}
+                />
+
+                <CustomDropDownSearchable
+                  form={form}
+                  name="currency"
+                  label="Currency"
+                  options={CurrencyType}
+                  placeholder="Select currency"
+                  searchEnabled={false}
+                />
+
+                <CustomDatePicker
+                  control={form.control}
+                  name="transactionDate"
+                  label="Transaction Date"
+                />
+              </div>
+
+              {/* 3️⃣ Subscription Details (Conditional) */}
+              {transactionType === "subscription" && (
+                <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                   <CustomDropDownSearchable
                     form={form}
                     name="subscriptionCycle"
@@ -221,47 +255,31 @@ export function TransactionLogsActionForm({
                     placeholder="Select cycle"
                     searchEnabled={false}
                   />
-                )}
 
-                {transactionType === "subscription" && (
                   <CustomDatePicker
                     control={form.control}
                     name="subscriptionEndDate"
                     label="Subscription End Date"
                     placeholder="Select end date"
                   />
-                )}
+                </div>
+              )}
 
-                <TextInputField
-                  control={form.control}
-                  name="amount"
-                  type="number"
-                  label="Transaction Amount"
-                  placeholder="Enter amount"
-                  min={0}
-                  onKeyDown={preventNegativeInput}
-                  onPaste={preventNegativePaste}
-                />
-              </div>
-
+              {/* 4️⃣ Payment Info */}
               <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                 <TextInputField
                   control={form.control}
                   name="cardLast4"
                   label="Card Last 4 Digits"
-                  placeholder="Enter card last 4 digits"
-                />
-                <CustomDatePicker
-                  control={form.control}
-                  name="transactionDate"
-                  label="Transaction Date"
+                  placeholder="XXXX"
                 />
               </div>
 
+              {/* 5️⃣ Receipt Upload */}
               <FileUpload
                 name="file"
                 label="Transaction Receipt"
-                fileLabel="PDF,DOC,DOCX,JPG,JPEG (MAX 25MB)"
+                fileLabel="PDF, DOC, DOCX, JPG, JPEG (MAX 25MB)"
                 onFileSelect={undefined}
                 onFileRemove={handleFileRemove}
                 existingFileUrl={
@@ -271,7 +289,7 @@ export function TransactionLogsActionForm({
                 }
                 existingFileName={
                   hasExistingFile && currentRow?.referenceFileLink
-                    ? `Transaction Reference File`
+                    ? "Transaction Reference File"
                     : undefined
                 }
                 acceptedFormats={{
@@ -284,12 +302,13 @@ export function TransactionLogsActionForm({
                 }}
               />
 
+              {/* 6️⃣ Reason */}
               <FormField
                 control={form.control}
                 name="reason"
                 render={({ field }) => (
-                  <FormItem className="md:col-span-2">
-                    <FormLabel>Reason</FormLabel>
+                  <FormItem>
+                    <FormLabel>Reason / Notes</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="Any additional notes about the transaction..."
