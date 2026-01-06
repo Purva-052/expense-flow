@@ -18,7 +18,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import CustomButton from "@/components/shared/custom-button";
-import { TextInputField } from "@/components/shared/custom-input-field";
 import { transactionLogSchema, TTransactionFormSchema } from "../schema";
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import {
@@ -42,6 +41,7 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { BadgeDollarSign } from "lucide-react";
+import { cn } from "@/lib/utils";
 // import { useTimezoneSelect, allTimezones } from "react-timezone-select";
 // import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 // import { useGetCountryDropdownList } from "../services";
@@ -218,23 +218,51 @@ export function TransactionLogsActionForm({
 
               {/* 2️⃣ Transaction Details */}
               <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-                <CustomDropDownSearchable
-                  form={form}
+                <FormField
+                  control={form.control}
                   name="transactionType"
-                  label="Transaction Type"
-                  options={TransactionTypeOptions}
-                  placeholder="Select transaction type"
-                  searchEnabled={false}
+                  render={({ fieldState }) => (
+                    <FormItem>
+                      <FormLabel
+                        className={cn(
+                          "flex items-center gap-1",
+                          fieldState.error && "text-red-500"
+                        )}
+                      >
+                        Transaction Type
+                        <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <CustomDropDownSearchable
+                          form={form}
+                          name="transactionType"
+                          label=""
+                          options={TransactionTypeOptions}
+                          placeholder="Select transaction type"
+                          searchEnabled={false}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
                 />
-
                 <FormField
                   control={form.control}
                   name="amount"
-                  render={({ field }) => (
+                  render={({ field, fieldState }) => (
                     <FormItem>
-                      <FormLabel>Amount</FormLabel>
+                      <FormLabel
+                        className={cn(
+                          "flex items-center gap-1",
+                          fieldState.error && "text-red-500"
+                        )}
+                      >
+                        Amount
+                        <span className="text-red-500">*</span>
+                      </FormLabel>
+
                       <FormControl>
                         <div className="flex items-center w-full h-fit">
+                          {/* Currency dropdown – same as before */}
                           <FormField
                             control={form.control}
                             name="currency"
@@ -249,9 +277,8 @@ export function TransactionLogsActionForm({
                                 <Select
                                   onValueChange={currencyField.onChange}
                                   value={currencyField.value}
-                                  defaultValue={currencyField.value}
                                 >
-                                  <SelectTrigger className="h-10 w-[95px] rounded-r-none border-r-0 bg-muted/50 ">
+                                  <SelectTrigger className="h-10 w-[95px] rounded-r-none border-r-0 bg-muted/50">
                                     <div className="flex items-center gap-2">
                                       <IconComponent
                                         className={`h-4 w-4 ${selectedCurrency?.color}`}
@@ -285,8 +312,10 @@ export function TransactionLogsActionForm({
                             {...field}
                             type="text"
                             placeholder="0.00"
-                            className="flex-1 rounded-l-none -ml-px"
-                            min={0}
+                            className={cn(
+                              "flex-1 rounded-l-none -ml-px",
+                              fieldState.error && "border-red-500"
+                            )}
                             onKeyDown={preventNegativeInput}
                             onPaste={preventNegativePaste}
                           />
@@ -297,17 +326,55 @@ export function TransactionLogsActionForm({
                   )}
                 />
 
-                <CustomDatePicker
+                <FormField
                   control={form.control}
                   name="transactionDate"
-                  label="Transaction Date"
+                  render={({ fieldState }) => (
+                    <FormItem>
+                      <FormLabel
+                        className={cn(
+                          "flex items-center gap-1",
+                          fieldState.error && "text-red-500"
+                        )}
+                      >
+                        Transaction Date
+                        <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <CustomDatePicker
+                        control={form.control}
+                        name="transactionDate"
+                        label=""
+                      />
+                    </FormItem>
+                  )}
                 />
-
-                <TextInputField
+                <FormField
                   control={form.control}
                   name="cardLast4"
-                  label="Card Last 4 Digits"
-                  placeholder="XXXX"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <FormLabel
+                        className={cn(
+                          "flex items-center gap-1",
+                          fieldState.error && "text-red-500"
+                        )}
+                      >
+                        Card Last 4 Digits
+                        <span className="text-red-500">*</span>
+                      </FormLabel>
+
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="XXXX"
+                          maxLength={4}
+                          className={cn(fieldState.error && "border-red-500")}
+                        />
+                      </FormControl>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               </div>
 
@@ -365,15 +432,26 @@ export function TransactionLogsActionForm({
               <FormField
                 control={form.control}
                 name="reason"
-                render={({ field }) => (
+                render={({ field, fieldState }) => (
                   <FormItem>
-                    <FormLabel>Reason / Notes</FormLabel>
+                    <FormLabel
+                      className={cn(
+                        "flex items-center gap-1",
+                        fieldState.error && "text-red-500"
+                      )}
+                    >
+                      Reason
+                      <span className="text-red-500">*</span>
+                    </FormLabel>
+
                     <FormControl>
                       <Textarea
-                        placeholder="Any additional notes about the transaction..."
                         {...field}
+                        placeholder="Any additional notes about the transaction..."
+                        className={cn(fieldState.error && "border-red-500")}
                       />
                     </FormControl>
+
                     <FormMessage />
                   </FormItem>
                 )}
