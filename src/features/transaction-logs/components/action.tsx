@@ -32,6 +32,7 @@ export function ActionFormModal() {
       reason: values.reason,
       projectId: values.projectId,
       amount: values.amount,
+      currency: values.currency,
       cardLast4: values.cardLast4,
       transactionDate: values.transactionDate,
       transactionType: values.transactionType,
@@ -46,6 +47,7 @@ export function ActionFormModal() {
     const payload = {
       reason: values.reason,
       projectId: values.projectId,
+      currency: values.currency,
       amount: values.amount,
       cardLast4: values.cardLast4,
       transactionDate: values.transactionDate,
