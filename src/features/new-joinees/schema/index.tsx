@@ -3,9 +3,9 @@ import { z } from "zod";
 export const newJoineeSchema = z.object({
   candidateName: z
     .string()
+    .trim()
     .min(2, { message: "Candidate name must be at least 2 characters long." })
-    .max(50, { message: "Candidate name cannot exceed 50 characters." })
-    .trim(),
+    .max(50, { message: "Candidate name cannot exceed 50 characters." }),
   technology: z.any().refine(
     (val) => {
       return val != null && val !== "" && String(val).trim().length > 0;
