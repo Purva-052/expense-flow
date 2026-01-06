@@ -34,6 +34,14 @@ import {
 } from "@/utils/commonFunctions";
 import { FileUpload } from "@/components/shared/custome-file-upload";
 import { useUploadTransactionFile } from "../services";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
+import { BadgeDollarSign } from "lucide-react";
 // import { useTimezoneSelect, allTimezones } from "react-timezone-select";
 // import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 // import { useGetCountryDropdownList } from "../services";
@@ -67,6 +75,7 @@ export function TransactionLogsActionForm({
       ? {
           reason: currentRow?.reason ?? "",
           projectId: currentRow?.projectId ? String(currentRow.projectId) : "",
+          currency: currentRow?.currency ?? "usd",
           amount: currentRow?.amount ?? "",
           cardLast4: currentRow?.cardLast4 ?? "",
           transactionDate: currentRow?.transactionDate
@@ -83,6 +92,7 @@ export function TransactionLogsActionForm({
       : {
           reason: "",
           projectId: "",
+          currency: "usd",
           amount: "",
           cardLast4: "",
           transactionDate: undefined,
@@ -217,30 +227,87 @@ export function TransactionLogsActionForm({
                   searchEnabled={false}
                 />
 
-                <TextInputField
+                <FormField
                   control={form.control}
                   name="amount"
-                  type="text"
-                  label="Amount"
-                  placeholder="Enter amount"
-                  min={0}
-                  onKeyDown={preventNegativeInput}
-                  onPaste={preventNegativePaste}
-                />
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Amount</FormLabel>
+                      <FormControl>
+                        <div className="flex items-center w-full h-fit">
+                          <FormField
+                            control={form.control}
+                            name="currency"
+                            render={({ field: currencyField }) => {
+                              const selectedCurrency = CurrencyType.find(
+                                (c) => c.value === currencyField.value
+                              );
+                              const IconComponent =
+                                selectedCurrency?.icon || BadgeDollarSign;
 
-                <CustomDropDownSearchable
-                  form={form}
-                  name="currency"
-                  label="Currency"
-                  options={CurrencyType}
-                  placeholder="Select currency"
-                  searchEnabled={false}
+                              return (
+                                <Select
+                                  onValueChange={currencyField.onChange}
+                                  value={currencyField.value}
+                                  defaultValue={currencyField.value}
+                                >
+                                  <SelectTrigger className="h-10 w-[95px] rounded-r-none border-r-0 bg-muted/50 ">
+                                    <div className="flex items-center gap-2">
+                                      <IconComponent
+                                        className={`h-4 w-4 ${selectedCurrency?.color}`}
+                                      />
+                                      <span className="font-medium">
+                                        {selectedCurrency?.label}
+                                      </span>
+                                    </div>
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {CurrencyType.map((item) => (
+                                      <SelectItem
+                                        key={item.value}
+                                        value={item.value}
+                                      >
+                                        <div className="flex items-center gap-2">
+                                          <item.icon
+                                            className={`h-4 w-4 ${item.color}`}
+                                          />
+                                          <span>{item.label}</span>
+                                        </div>
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              );
+                            }}
+                          />
+
+                          <Input
+                            {...field}
+                            type="text"
+                            placeholder="0.00"
+                            className="flex-1 rounded-l-none -ml-px"
+                            min={0}
+                            onKeyDown={preventNegativeInput}
+                            onPaste={preventNegativePaste}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
 
                 <CustomDatePicker
                   control={form.control}
                   name="transactionDate"
                   label="Transaction Date"
+                />
+
+                <TextInputField
+                  control={form.control}
+                  name="cardLast4"
+                  label="Card Last 4 Digits"
+                  placeholder="XXXX"
                 />
               </div>
 
@@ -266,14 +333,6 @@ export function TransactionLogsActionForm({
               )}
 
               {/* 4️⃣ Payment Info */}
-              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-                <TextInputField
-                  control={form.control}
-                  name="cardLast4"
-                  label="Card Last 4 Digits"
-                  placeholder="XXXX"
-                />
-              </div>
 
               {/* 5️⃣ Receipt Upload */}
               <FileUpload
