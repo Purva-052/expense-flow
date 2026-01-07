@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Roles } from "@/types";
+import { DollarSign, Euro, IndianRupee } from "lucide-react";
 
 export const UNIT_TYPES = [
   {
@@ -143,4 +144,25 @@ export const SubscriptionTypeOptions = [
 export const MeetingType = [
   { label: "Client", value: "client" },
   { label: "Internal", value: "internal" },
+];
+
+export const CurrencyType = [
+  {
+    label: "USD",
+    value: "usd",
+    icon: DollarSign,
+    color: "text-green-600",
+  },
+  {
+    label: "INR",
+    value: "inr",
+    icon: IndianRupee,
+    color: "text-orange-600",
+  },
+  {
+    label: "EUR",
+    value: "eur",
+    icon: Euro,
+    color: "text-blue-600",
+  },
 ];

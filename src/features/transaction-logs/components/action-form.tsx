@@ -18,10 +18,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import CustomButton from "@/components/shared/custom-button";
-import { TextInputField } from "@/components/shared/custom-input-field";
 import { transactionLogSchema, TTransactionFormSchema } from "../schema";
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import {
+  CurrencyType,
   SubscriptionTypeOptions,
   TransactionTypeOptions,
 } from "@/utils/constant";
@@ -33,6 +33,15 @@ import {
 } from "@/utils/commonFunctions";
 import { FileUpload } from "@/components/shared/custome-file-upload";
 import { useUploadTransactionFile } from "../services";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
+import { BadgeDollarSign } from "lucide-react";
+import { cn } from "@/lib/utils";
 // import { useTimezoneSelect, allTimezones } from "react-timezone-select";
 // import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 // import { useGetCountryDropdownList } from "../services";
@@ -66,6 +75,7 @@ export function TransactionLogsActionForm({
       ? {
           reason: currentRow?.reason ?? "",
           projectId: currentRow?.projectId ? String(currentRow.projectId) : "",
+          currency: currentRow?.currency ?? "usd",
           amount: currentRow?.amount ?? "",
           cardLast4: currentRow?.cardLast4 ?? "",
           transactionDate: currentRow?.transactionDate
@@ -82,6 +92,7 @@ export function TransactionLogsActionForm({
       : {
           reason: "",
           projectId: "",
+          currency: "usd",
           amount: "",
           cardLast4: "",
           transactionDate: undefined,
@@ -191,28 +202,185 @@ export function TransactionLogsActionForm({
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-4 p-0.5"
             >
+              {/* 1️⃣ Project */}
               <CustomDropDownSearchable
                 form={form}
                 name="projectId"
                 label="Project"
-                options={projectsList?.data?.map((project: any) => {
-                  return { value: project.id, label: project.name };
-                })}
+                options={projectsList?.data?.map((project: any) => ({
+                  value: project.id,
+                  label: project.name,
+                }))}
                 placeholder="Select project"
                 isLoading={projectsListLoading}
                 sortOptions={false}
               />
+
+              {/* 2️⃣ Transaction Details */}
               <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-                <CustomDropDownSearchable
-                  form={form}
+                <FormField
+                  control={form.control}
                   name="transactionType"
-                  label="Transaction Type"
-                  options={TransactionTypeOptions}
-                  placeholder="Select Transaction Type"
-                  searchEnabled={false}
+                  render={({ fieldState }) => (
+                    <FormItem>
+                      <FormLabel
+                        className={cn(
+                          "flex items-center gap-1",
+                          fieldState.error && "text-red-500"
+                        )}
+                      >
+                        Transaction Type
+                        <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <CustomDropDownSearchable
+                          form={form}
+                          name="transactionType"
+                          label=""
+                          options={TransactionTypeOptions}
+                          placeholder="Select transaction type"
+                          searchEnabled={false}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="amount"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <FormLabel
+                        className={cn(
+                          "flex items-center gap-1",
+                          fieldState.error && "text-red-500"
+                        )}
+                      >
+                        Amount
+                        <span className="text-red-500">*</span>
+                      </FormLabel>
+
+                      <FormControl>
+                        <div className="flex items-center w-full h-fit">
+                          {/* Currency dropdown – same as before */}
+                          <FormField
+                            control={form.control}
+                            name="currency"
+                            render={({ field: currencyField }) => {
+                              const selectedCurrency = CurrencyType.find(
+                                (c) => c.value === currencyField.value
+                              );
+                              const IconComponent =
+                                selectedCurrency?.icon || BadgeDollarSign;
+
+                              return (
+                                <Select
+                                  onValueChange={currencyField.onChange}
+                                  value={currencyField.value}
+                                >
+                                  <SelectTrigger className="h-10 w-[95px] rounded-r-none border-r-0 bg-muted/50">
+                                    <div className="flex items-center gap-2">
+                                      <IconComponent
+                                        className={`h-4 w-4 ${selectedCurrency?.color}`}
+                                      />
+                                      <span className="font-medium">
+                                        {selectedCurrency?.label}
+                                      </span>
+                                    </div>
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {CurrencyType.map((item) => (
+                                      <SelectItem
+                                        key={item.value}
+                                        value={item.value}
+                                      >
+                                        <div className="flex items-center gap-2">
+                                          <item.icon
+                                            className={`h-4 w-4 ${item.color}`}
+                                          />
+                                          <span>{item.label}</span>
+                                        </div>
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              );
+                            }}
+                          />
+
+                          <Input
+                            {...field}
+                            type="text"
+                            placeholder="0.00"
+                            className={cn(
+                              "flex-1 rounded-l-none -ml-px",
+                              fieldState.error && "border-red-500"
+                            )}
+                            onKeyDown={preventNegativeInput}
+                            onPaste={preventNegativePaste}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
 
-                {transactionType === "subscription" && (
+                <FormField
+                  control={form.control}
+                  name="transactionDate"
+                  render={({ fieldState }) => (
+                    <FormItem>
+                      <FormLabel
+                        className={cn(
+                          "flex items-center gap-1",
+                          fieldState.error && "text-red-500"
+                        )}
+                      >
+                        Transaction Date
+                        <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <CustomDatePicker
+                        control={form.control}
+                        name="transactionDate"
+                        label=""
+                      />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="cardLast4"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <FormLabel
+                        className={cn(
+                          "flex items-center gap-1",
+                          fieldState.error && "text-red-500"
+                        )}
+                      >
+                        Card Last 4 Digits
+                        <span className="text-red-500">*</span>
+                      </FormLabel>
+
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="XXXX"
+                          maxLength={4}
+                          className={cn(fieldState.error && "border-red-500")}
+                        />
+                      </FormControl>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* 3️⃣ Subscription Details (Conditional) */}
+              {transactionType === "subscription" && (
+                <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                   <CustomDropDownSearchable
                     form={form}
                     name="subscriptionCycle"
@@ -221,46 +389,23 @@ export function TransactionLogsActionForm({
                     placeholder="Select cycle"
                     searchEnabled={false}
                   />
-                )}
 
-                {transactionType === "subscription" && (
                   <CustomDatePicker
                     control={form.control}
                     name="subscriptionEndDate"
                     label="Subscription End Date"
                     placeholder="Select end date"
                   />
-                )}
+                </div>
+              )}
 
-                <TextInputField
-                  control={form.control}
-                  name="amount"
-                  type="number"
-                  label="Transaction Amount"
-                  placeholder="Enter amount"
-                  min={0}
-                  onKeyDown={preventNegativeInput}
-                  onPaste={preventNegativePaste}
-                />
-              </div>
+              {/* 4️⃣ Payment Info */}
 
-              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-                <TextInputField
-                  control={form.control}
-                  name="cardLast4"
-                  label="Card Last 4 Digits"
-                  placeholder="Enter card last 4 digits"
-                />
-                <CustomDatePicker
-                  control={form.control}
-                  name="transactionDate"
-                  label="Transaction Date"
-                />
-              </div>
-
+              {/* 5️⃣ Receipt Upload */}
               <FileUpload
                 name="file"
                 label="Transaction Receipt"
+                fileLabel="PDF, DOC, DOCX, JPG, JPEG (MAX 25MB)"
                 onFileSelect={undefined}
                 onFileRemove={handleFileRemove}
                 existingFileUrl={
@@ -270,23 +415,43 @@ export function TransactionLogsActionForm({
                 }
                 existingFileName={
                   hasExistingFile && currentRow?.referenceFileLink
-                    ? `Transaction Reference File`
+                    ? "Transaction Reference File"
                     : undefined
                 }
+                acceptedFormats={{
+                  "application/pdf": [".pdf"],
+                  "application/msword": [".doc"],
+                  "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+                    [".docx"],
+                  "image/jpeg": [".jpg", ".jpeg"],
+                  "image/jpg": [".jpg"],
+                }}
               />
 
+              {/* 6️⃣ Reason */}
               <FormField
                 control={form.control}
                 name="reason"
-                render={({ field }) => (
-                  <FormItem className="md:col-span-2">
-                    <FormLabel>Reason</FormLabel>
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <FormLabel
+                      className={cn(
+                        "flex items-center gap-1",
+                        fieldState.error && "text-red-500"
+                      )}
+                    >
+                      Reason
+                      <span className="text-red-500">*</span>
+                    </FormLabel>
+
                     <FormControl>
                       <Textarea
-                        placeholder="Any additional notes about the transaction..."
                         {...field}
+                        placeholder="Any additional notes about the transaction..."
+                        className={cn(fieldState.error && "border-red-500")}
                       />
                     </FormControl>
+
                     <FormMessage />
                   </FormItem>
                 )}

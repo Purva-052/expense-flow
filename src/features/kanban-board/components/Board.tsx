@@ -64,7 +64,12 @@ type GroupedDevelopers = {
   technologyColor?: string;
 }[];
 
-const Board = ({ technologies, techLoading, activeTab }: any) => {
+const Board = ({
+  technologies,
+  techLoading,
+  activeTab,
+  onTotalCountChange,
+}: any) => {
   const isInactiveTab = activeTab === "Archive Projects" ? true : false;
 
   const { user } = useAuthStore();
@@ -168,6 +173,17 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
     hasNextPage,
     isFetchingNextPage,
   }: any = useGetProjectsData(listParams);
+
+  // Extract total count from pagination metadata and notify parent when it changes
+  const totalCount =
+    projectPages?.pages?.[0]?.metadata?.totalCount ??
+    projectPages?.pages?.[projectPages.pages.length - 1]?.metadata
+      ?.totalCount ??
+    0;
+
+  useEffect(() => {
+    if (onTotalCountChange) onTotalCountChange(totalCount);
+  }, [totalCount, onTotalCountChange]);
 
   const projectList = useMemo(
     () => projectPages?.pages?.flatMap((page: any) => page.data) ?? [],
@@ -274,6 +290,7 @@ const Board = ({ technologies, techLoading, activeTab }: any) => {
   const { data: projecthandler, isPending: projecthandlerLoading }: any =
     useGetUserDropdownList({
       role: [roles.TEAM_LEAD, roles.PROJECT_MANAGER],
+      status: "active",
     });
 
   const { data: PriorityList, isPending: PriorityListLoading }: any =

@@ -19,6 +19,9 @@ import {
   ArrowUp,
   CalendarDays,
   Info,
+  Pin,
+  // PinOff,
+  Users,
   UserSquare,
 } from "lucide-react";
 import type React from "react";
@@ -27,7 +30,9 @@ import { Form, FormProvider, useForm } from "react-hook-form";
 import { useProjectStatusChange } from "../services";
 import ProjectDetailsDialog from "./ProjectDetailsDialog";
 import { ReasonDialog } from "./status-reason-dialog";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { roles } from "@/utils/constant";
+import { usePinProject, useUnpinProject } from "../../projects/services";
 
 // --- Priority styles remain the same ---
 const priorityStyles: Record<
@@ -76,6 +81,8 @@ export function ProjectCard({
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [isReasonDialogOpen, setReasonDialogOpen] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
+  const [isPinConfirmOpen, setIsPinConfirmOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { user } = useAuthStore();
   const userRole = user?.user?.role;
@@ -86,6 +93,9 @@ export function ProjectCard({
   const { mutateAsync: ProjectStatusChange } = useProjectStatusChange(() => {
     onStatusChanged?.();
   });
+
+  const { mutateAsync: pinProject } = usePinProject(project.id);
+  const { mutateAsync: unpinProject } = useUnpinProject(project.id);
 
   const form = useForm({
     defaultValues: { status: project.currentStatus },
@@ -138,6 +148,25 @@ export function ProjectCard({
     setReasonDialogOpen(isOpen);
   };
 
+  const handlePinToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsPinConfirmOpen(true);
+  };
+
+  const handleConfirmPin = async () => {
+    try {
+      setIsSubmitting(true);
+      if (project.isPinned) {
+        await unpinProject();
+      } else {
+        await pinProject();
+      }
+      setIsPinConfirmOpen(false);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const priority =
     priorityStyles[project.priority] ?? priorityStyles[ProjectPriority.LOW];
   const isActive = project.currentStatus === "active";
@@ -155,6 +184,8 @@ export function ProjectCard({
   const currentStatusLabel =
     statusOptions.find((o) => o.value === project.currentStatus)?.label ||
     project.currentStatus;
+
+  const clientName = project.client?.name ?? "N/A";
 
   return (
     <>
@@ -225,6 +256,13 @@ export function ProjectCard({
                     </span>
                   </div>
                 )}
+                {project.client?.name && (
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <Users className="h-4 w-4 shrink-0" />
+                    <span className="text-muted-foreground">Client:</span>
+                    <span className="truncate">{clientName}</span>
+                  </div>
+                )}
                 {canUpdateStatus && (
                   <div className="mt-1">
                     {canEditStatus ? (
@@ -234,7 +272,7 @@ export function ProjectCard({
                             form={form}
                             className="text-muted-foreground"
                             name="status"
-                            label="Project Status"
+                            label=" "
                             options={statusOptions}
                             placeholder="Select Status"
                             searchEnabled={false}
@@ -276,10 +314,33 @@ export function ProjectCard({
             {children && (
               <div
                 className={cn(
-                  "p-4 h-full transition-colors duration-300",
+                  "p-4 h-full transition-colors duration-300 relative",
                   isOver ? "bg-primary/10" : "bg-transparent"
                 )}
               >
+                {/* Pin Icon - Top Right Corner */}
+                <div className="absolute top-4 right-4">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        {project.isPinned ? (
+                          <Pin
+                            className="h-5 w-5 cursor-pointer text-primary fill-primary transition-colors duration-200 hover:text-primary/80"
+                            onClick={handlePinToggle}
+                          />
+                        ) : (
+                          <Pin
+                            className="h-5 w-5 cursor-pointer text-muted-foreground transition-colors duration-200 hover:text-primary"
+                            onClick={handlePinToggle}
+                          />
+                        )}
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-sm">
+                        {project.isPinned ? "Unpin Project" : "Pin Project"}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 {children}
               </div>
             )}
@@ -299,6 +360,22 @@ export function ProjectCard({
         isOpen={isReasonDialogOpen}
         onOpenChange={handleReasonDialogChange} // <-- USE THE NEW HANDLER
         onSubmit={handleStatusChangeWithReason}
+      />
+
+      {/* --- Pin/Unpin Confirm Dialog --- */}
+      <ConfirmDialog
+        open={isPinConfirmOpen}
+        onOpenChange={setIsPinConfirmOpen}
+        title={project.isPinned ? "Unpin Project" : "Pin Project"}
+        desc={
+          project.isPinned
+            ? `Are you sure you want to unpin ${project.name || "this"} project?`
+            : `Are you sure you want to pin ${project.name || "this"} project?`
+        }
+        confirmText={project.isPinned ? "Unpin" : "Pin"}
+        destructive={false}
+        handleConfirm={handleConfirmPin}
+        isLoading={isSubmitting}
       />
     </>
   );

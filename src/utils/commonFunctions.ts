@@ -1,3 +1,4 @@
+import { endOfMonth, endOfWeek, startOfMonth, startOfWeek } from "date-fns";
 import { roleLabels } from "./constant";
 
 export const getFormattedDate = (date: Date) => {
@@ -39,5 +40,29 @@ export const preventNegativePaste = (
   const pasted = e.clipboardData.getData("text");
   if (pasted.includes("-")) {
     e.preventDefault();
+  }
+};
+
+export const getDateRange = (
+  calendarView: string,
+  currentCalendarDate: any
+) => {
+  const baseDate = new Date(currentCalendarDate);
+
+  if (calendarView === "month") {
+    const monthStart = startOfMonth(baseDate);
+    const monthEnd = endOfMonth(baseDate);
+    const start = startOfWeek(monthStart);
+    const end = endOfWeek(monthEnd);
+    return { start, end };
+  } else if (calendarView === "week") {
+    const start = startOfWeek(baseDate);
+    const end = endOfWeek(baseDate);
+    return { start, end };
+  } else {
+    // day view
+    const start = new Date(baseDate);
+    const end = new Date(baseDate);
+    return { start, end };
   }
 };

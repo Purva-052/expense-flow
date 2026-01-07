@@ -36,6 +36,11 @@ import { roles } from "@/utils/constant";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 
+// Required field indicator component
+const RequiredIndicator = ({ error }: { error?: boolean }) => (
+  <span className={cn("ml-1", error ? "text-red-500" : "text-red-500")}>*</span>
+);
+
 interface InterviewFormProps {
   selectedDate: Date;
   onSubmit: (data: InterviewFormValues) => void;
@@ -91,6 +96,7 @@ export const InterviewForm = ({
   const [currentStep, setCurrentStep] = useState(1);
   const [uploadedResumeKey, setUploadedResumeKey] = useState<string>("");
   const [hasExistingFile, setHasExistingFile] = useState(false);
+  const [isSubmittingForm, setIsSubmittingForm] = useState(false);
   const user = useAuthStore((state) => state.user);
   const isEditMode = !!initialData;
   const userRole = user?.user?.role;
@@ -148,7 +154,7 @@ export const InterviewForm = ({
 
   const form = useForm<InterviewFormValues>({
     resolver: zodResolver(activeSchema),
-    mode: "onSubmit",
+    mode: "onBlur",
     reValidateMode: "onChange",
     defaultValues: {
       candidateName: "",
@@ -212,7 +218,36 @@ export const InterviewForm = ({
   const startTime = form.watch("startTime");
   const { mutateAsync: uploadResume } = useCreateInterviewResumeLink();
   const { mutateAsync: createStatusLog } = useCreateInterviewStatusLog();
+  const isEdit = !!initialData;
 
+  const initialValues = form.formState.defaultValues;
+  const currentValues = form.watch();
+
+  // Function to check if there are actual meaningful changes (ignoring whitespace)
+  const hasActualChanges = (): boolean => {
+    if (!isEdit || !initialValues || !currentValues) return false;
+
+    return Object.keys(currentValues).some((key) => {
+      const initialVal = initialValues[key as keyof InterviewFormValues];
+      const currentVal = currentValues[key as keyof InterviewFormValues];
+
+      // Handle string fields - trim whitespace before comparison
+      if (typeof initialVal === "string" && typeof currentVal === "string") {
+        return initialVal.trim() !== currentVal.trim();
+      }
+
+      // Handle file fields - compare by reference or existence
+      if (key === "resume") {
+        return (initialVal instanceof File || initialVal !== null) !==
+          (currentVal instanceof File || currentVal !== null)
+          ? true
+          : false;
+      }
+
+      // For other types (numbers, dates, etc.), direct comparison
+      return initialVal !== currentVal;
+    });
+  };
   // Automatically set endTime to startTime + 30 minutes
   useEffect(() => {
     if (startTime) {
@@ -237,6 +272,13 @@ export const InterviewForm = ({
       form.trigger("interviewUrl");
     }
   }, [interviewType, currentStep, form]);
+
+  // Reset submission state on unmount
+  useEffect(() => {
+    return () => {
+      setIsSubmittingForm(false);
+    };
+  }, []);
 
   const handleResumeRemove = () => {
     // Clear all resume-related state
@@ -310,64 +352,78 @@ export const InterviewForm = ({
       return;
     }
 
+    // Prevent multiple concurrent submissions
+    if (isSubmittingForm) {
+      return;
+    }
+
     const isValid = await trigger(step2Fields, { shouldFocus: true });
 
     if (isValid) {
-      let finalResumeKey = uploadedResumeKey || data.resumeS3Key || "";
+      // Set submitting state to prevent duplicate submissions
+      setIsSubmittingForm(true);
 
-      // Handle file upload if new file is selected
-      const resumeFile = data.resume;
-      if (resumeFile instanceof File) {
-        const formData = new FormData();
-        formData.append("file", resumeFile);
-        formData.append("folder", "interview-resumes");
+      try {
+        let finalResumeKey = uploadedResumeKey || data.resumeS3Key || "";
 
-        try {
-          const response: any = await uploadResume(formData);
-          if (response?.key) {
-            finalResumeKey = response.key;
-          }
-        } catch (error) {
-          console.error("Upload failed", error);
-          // Optional: handle upload error (e.g. show toast, stay on page)
-          return;
-        }
-      }
+        // Handle file upload if new file is selected
+        const resumeFile = data.resume;
+        if (resumeFile instanceof File) {
+          const formData = new FormData();
+          formData.append("file", resumeFile);
+          formData.append("folder", "interview-resumes");
 
-      // Send status log if in edit mode and status or notes changed
-      if (isEditMode && initialData?.id) {
-        const prevStatus = initialData.status ?? "";
-        const prevNotes = (initialData.notes ?? "").toString();
-        const newStatus = (data.interviewStatus ?? "").toString();
-        const newNotes = (data.notes ?? "").toString();
-
-        const statusChanged = prevStatus !== newStatus;
-        const notesChanged = prevNotes.trim() !== newNotes.trim();
-
-        if (statusChanged || notesChanged) {
           try {
-            await createStatusLog({
-              interviewId: initialData.id,
-              status: data.interviewStatus,
-              notes: data.notes || "",
-              effectiveDate: new Date().toISOString(),
-            });
+            const response: any = await uploadResume(formData);
+            if (response?.key) {
+              finalResumeKey = response.key;
+            }
           } catch (error) {
-            console.error("Failed to create status log", error);
-            // Continue with submission even if status log fails
+            console.error("Upload failed", error);
+            setIsSubmittingForm(false);
+            // Optional: handle upload error (e.g. show toast, stay on page)
+            return;
           }
         }
-      }
 
-      const submissionData = {
-        ...data,
-        resumeS3Key: finalResumeKey,
-        joiningDate:
-          data.joiningDate instanceof Date
-            ? data.joiningDate.toISOString()
-            : data.joiningDate,
-      };
-      onSubmit(submissionData);
+        // Send status log if in edit mode and status or notes changed
+        if (isEditMode && initialData?.id) {
+          const prevStatus = initialData.status ?? "";
+          const prevNotes = (initialData.notes ?? "").toString();
+          const newStatus = (data.interviewStatus ?? "").toString();
+          const newNotes = (data.notes ?? "").toString();
+
+          const statusChanged = prevStatus !== newStatus;
+          const notesChanged = prevNotes.trim() !== newNotes.trim();
+
+          if (statusChanged || notesChanged) {
+            try {
+              await createStatusLog({
+                interviewId: initialData.id,
+                status: data.interviewStatus,
+                notes: data.notes || "",
+                effectiveDate: new Date().toISOString(),
+              });
+            } catch (error) {
+              console.error("Failed to create status log", error);
+              // Continue with submission even if status log fails
+            }
+          }
+        }
+
+        const submissionData = {
+          ...data,
+          resumeS3Key: finalResumeKey,
+          joiningDate:
+            data.joiningDate instanceof Date
+              ? data.joiningDate.toISOString()
+              : data.joiningDate,
+        };
+        onSubmit(submissionData);
+      } catch (error) {
+        console.error("Form submission error", error);
+        setIsSubmittingForm(false);
+      }
     } else {
       // Scroll to first error in step 2
       const step2Errors = step2Fields.filter(
@@ -459,32 +515,77 @@ export const InterviewForm = ({
                   <FormField
                     control={form.control}
                     name="candidateName"
-                    render={({ field }) => (
+                    render={({ field, fieldState }) => (
                       <FormItem>
-                        <FormLabel>Name</FormLabel>
+                        <FormLabel
+                          className={cn(
+                            "flex items-center gap-1",
+                            fieldState.error && "text-red-500"
+                          )}
+                        >
+                          Name
+                          <span className="text-red-500">*</span>
+                        </FormLabel>
+
                         <FormControl>
                           <Input placeholder="John Doe" {...field} />
                         </FormControl>
+
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  <CustomDropDownSearchable
-                    form={form}
+                  <FormField
+                    control={form.control}
                     name="technology"
-                    label="Technology"
-                    options={technologyList?.data?.map((technology: any) => {
-                      return { value: technology.id, label: technology.name };
-                    })}
-                    placeholder="Select technology"
-                    isLoading={technologyListLoading}
+                    render={({ field, fieldState }) => (
+                      <FormItem>
+                        <FormLabel
+                          className={cn(
+                            "flex items-center gap-1",
+                            fieldState.error && "text-red-500"
+                          )}
+                        >
+                          Technology
+                          <span className="text-red-500">*</span>
+                        </FormLabel>
+
+                        <FormControl>
+                          <CustomDropDownSearchable
+                            form={form}
+                            label=""
+                            name={field.name}
+                            options={technologyList?.data?.map(
+                              (technology: any) => {
+                                return {
+                                  value: technology.id,
+                                  label: technology.name,
+                                };
+                              }
+                            )}
+                            placeholder="Select technology"
+                            isLoading={technologyListLoading}
+                          />
+                        </FormControl>
+
+                        {/* <FormMessage /> */}
+                      </FormItem>
+                    )}
                   />
                   <FormField
                     control={form.control}
                     name="email"
-                    render={({ field }) => (
+                    render={({ field, fieldState }) => (
                       <FormItem>
-                        <FormLabel>Email</FormLabel>
+                        <FormLabel
+                          className={cn(
+                            "flex items-center gap-1",
+                            fieldState.error && "text-red-500"
+                          )}
+                        >
+                          Email
+                          <span className="text-red-500">*</span>
+                        </FormLabel>
                         <FormControl>
                           <Input placeholder="candidate@email.com" {...field} />
                         </FormControl>
@@ -579,9 +680,21 @@ export const InterviewForm = ({
                     )}
                   />
                   <div className="md:col-span-2">
+                    <div className="mb-2">
+                      <FormLabel
+                        className={cn(
+                          "flex items-center gap-1",
+                          formState.errors.resume && "text-red-500"
+                        )}
+                      >
+                        Resume (CV)
+                        <span className="text-red-500">*</span>
+                      </FormLabel>
+                    </div>
                     <FileUpload
                       name="resume"
-                      label="Resume (CV)"
+                      label=""
+                      fileLabel="PDF,DOC,DOCX (Max 5MB)"
                       onFileSelect={undefined}
                       onFileRemove={handleResumeRemove}
                       existingFileUrl={
@@ -594,6 +707,12 @@ export const InterviewForm = ({
                           ? `${initialData.candidateName || "Candidate"} Resume`
                           : undefined
                       }
+                      acceptedFormats={{
+                        "application/pdf": [".pdf"],
+                        "application/msword": [".doc"],
+                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+                          [".docx"],
+                      }}
                     />
                   </div>
                   {/* <FormField
@@ -625,25 +744,67 @@ export const InterviewForm = ({
                   Interviewer Details
                 </h3>
                 <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-                  <CustomDropDownSearchable
-                    form={form}
-                    name="interviewerName"
-                    label="Interviewer Name"
-                    options={usersList?.data?.map((user: any) => {
-                      return { value: user.id, label: user.fullName };
-                    })}
-                    placeholder="Select interviewer"
-                    isLoading={usersListLoading}
-                  />
-                  <CustomDropDownSearchable
-                    form={form}
-                    name="interviewRound"
-                    label="Interview Round"
-                    options={interviewRounds}
-                    placeholder="Select round"
-                    searchEnabled={false}
-                    sortOptions={false}
-                  />
+                  <div>
+                    <FormField
+                      control={form.control}
+                      name="interviewerName"
+                      render={({ fieldState }) => (
+                        <FormItem>
+                          <FormLabel
+                            className={cn(
+                              "flex items-center gap-1",
+                              fieldState.error && "text-red-500"
+                            )}
+                          >
+                            Interviewer Name
+                            <span className="text-red-500">*</span>
+                          </FormLabel>
+
+                          <CustomDropDownSearchable
+                            form={form}
+                            name="interviewerName"
+                            label=""
+                            options={usersList?.data?.map((user: any) => ({
+                              value: user.id,
+                              label: user.fullName,
+                            }))}
+                            placeholder="Select interviewer"
+                            isLoading={usersListLoading}
+                          />
+
+                          {/* <FormMessage /> */}
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div>
+                    <FormField
+                      control={form.control}
+                      name="interviewRound"
+                      render={({ fieldState }) => (
+                        <FormItem>
+                          <FormLabel
+                            className={cn(
+                              "flex items-center gap-1",
+                              fieldState.error && "text-red-500"
+                            )}
+                          >
+                            Interview Round
+                            <span className="text-red-500">*</span>
+                          </FormLabel>
+                          <CustomDropDownSearchable
+                            form={form}
+                            name="interviewRound"
+                            label=""
+                            options={interviewRounds}
+                            placeholder="Select round"
+                            searchEnabled={false}
+                            sortOptions={false}
+                          />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   <FormField
                     control={form.control}
                     name="startTime"
@@ -661,41 +822,86 @@ export const InterviewForm = ({
                       </FormItem>
                     )}
                   />
-                  <CustomDropDownSearchable
-                    form={form}
-                    name="interviewType"
-                    label="Interview Type"
-                    options={interviewTypes}
-                    placeholder="Select type"
-                    searchEnabled={false}
-                  />
-                  {interviewType === "video_call" && (
+                  <div>
                     <FormField
                       control={form.control}
-                      name="interviewUrl"
-                      render={({ field }) => (
+                      name="interviewType"
+                      render={({ fieldState }) => (
                         <FormItem>
-                          <FormLabel>Interview URL</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="https://meet.google.com/..."
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
+                          <FormLabel
+                            className={cn(
+                              "flex items-center gap-1",
+                              fieldState.error && "text-red-500"
+                            )}
+                          >
+                            Interview Type
+                            <span className="text-red-500">*</span>
+                          </FormLabel>
+                          <CustomDropDownSearchable
+                            form={form}
+                            name="interviewType"
+                            label=""
+                            options={interviewTypes}
+                            placeholder="Select type"
+                            searchEnabled={false}
+                          />
                         </FormItem>
                       )}
                     />
+                  </div>
+                  {interviewType === "video_call" && (
+                    <>
+                      <FormField
+                        control={form.control}
+                        name="interviewUrl"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              Interview URL
+                              <RequiredIndicator
+                                error={!!formState.errors.interviewUrl}
+                              />
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="https://meet.google.com/..."
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </>
                   )}
-                  <CustomDropDownSearchable
-                    form={form}
-                    name="interviewStatus"
-                    label="Interview Status"
-                    options={filteredStatuses}
-                    placeholder="Select status"
-                    searchEnabled={false}
-                    sortOptions={false}
-                  />
+                  <div>
+                    <FormField
+                      control={form.control}
+                      name="interviewStatus"
+                      render={({ fieldState }) => (
+                        <FormItem>
+                          <FormLabel
+                            className={cn(
+                              "flex items-center gap-1",
+                              fieldState.error && "text-red-500"
+                            )}
+                          >
+                            Interview Status
+                            <span className="text-red-500">*</span>
+                          </FormLabel>
+                          <CustomDropDownSearchable
+                            form={form}
+                            name="interviewStatus"
+                            label=""
+                            options={filteredStatuses}
+                            placeholder="Select status"
+                            searchEnabled={false}
+                            sortOptions={false}
+                          />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
                   {isEditMode &&
                     userRole === roles.ADMIN &&
@@ -766,12 +972,17 @@ export const InterviewForm = ({
               <Button
                 type="submit"
                 className="flex-1 sm:flex-initial"
-                disabled={isSubmitting}
-                // onClick={() => console.log("clicked")}
+                disabled={
+                  isSubmitting ||
+                  isSubmittingForm ||
+                  (isEditMode && !hasActualChanges())
+                }
               >
                 {isEditMode
-                  ? "Update Interview"
-                  : isSubmitting
+                  ? isSubmitting || isSubmittingForm
+                    ? "Updating..."
+                    : "Update Interview"
+                  : isSubmitting || isSubmittingForm
                     ? "Scheduling..."
                     : "Schedule Interview"}
               </Button>
