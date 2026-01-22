@@ -118,7 +118,7 @@ export function ProjectCard({
                   View Details
                 </DropdownMenuItem>
                 <DropdownMenuItem>View Timeline</DropdownMenuItem>
-                <DropdownMenuItem>Change Status</DropdownMenuItem>
+                <DropdownMenuItem>Edite Project</DropdownMenuItem>
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
