@@ -6,11 +6,12 @@ import { useState } from "react";
 import InquiryPage from "../Inquiry";
 import { useGetTechnologyDropdownList } from "../technology/services";
 import Board from "./components/Board";
-import ResourceTab from "./components/resourceTab";
 import InquiryTab from "./components/inquiryTab";
+import ProjectPage from "./components/project-view/project-page";
+import ResourceTab from "./components/resourceTab";
 
 const ProjectBoard = () => {
-  const [activeTab, setActiveTab] = useState("board");
+  const [activeTab, setActiveTab] = useState("project_details");
   const [projectCount, setProjectCount] = useState<number | null>(null);
   const user = useAuthStore((state) => state.user);
   const userRole = user?.user?.role;
@@ -34,6 +35,10 @@ const ProjectBoard = () => {
             >
               {/* Tab Headers */}
               <TabsList className="flex flex-wrap w-[680px]  mb-2">
+                <TabsTrigger value="project_details">
+                  project details
+                </TabsTrigger>
+
                 <TabsTrigger value="board">
                   Projects{" "}
                   {projectCount !== null && (
@@ -58,6 +63,9 @@ const ProjectBoard = () => {
               </TabsList>
 
               {/* Board Tab */}
+              <TabsContent value="project_details">
+                <ProjectPage />
+              </TabsContent>
               <TabsContent value="board">
                 <Board
                   technologies={technologies}
