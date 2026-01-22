@@ -12,6 +12,7 @@ import {
   IconTool,
   IconUsers,
   IconUserScreen,
+  IconReportAnalytics,
 } from "@tabler/icons-react";
 import { CalendarCheck, Command, Cpu, ScrollText } from "lucide-react";
 import { type SidebarData } from "../types";
@@ -60,6 +61,18 @@ export const sidebarData: SidebarData = {
           title: "Dashboard",
           url: "/",
           icon: IconLayoutBoardFilled,
+          requiredRoles: [
+            roles.ADMIN,
+            roles.TEAM_LEAD,
+            roles.PROJECT_MANAGER,
+            roles.DEVELOPER,
+            roles.BDE,
+          ],
+        },
+        {
+          title: "Daily Report",
+          url: "/daily-report",
+          icon: IconReportAnalytics,
           requiredRoles: [
             roles.ADMIN,
             roles.TEAM_LEAD,
