@@ -28,8 +28,11 @@ import type React from "react";
 import { useState } from "react";
 import { Form, FormProvider, useForm } from "react-hook-form";
 import { useProjectStatusChange } from "../services";
-import ProjectDetailsDialog from "./ProjectDetailsDialog";
 import { ReasonDialog } from "./status-reason-dialog";
+import { useProjectsStore } from "../../projects/stores/useProjectsStore";
+import { Drawer } from "@/components/ui/drawer";
+import { ProjectDetails } from "./project-view/project-details";
+
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { roles } from "@/utils/constant";
 import { usePinProject, useUnpinProject } from "../../projects/services";
@@ -78,11 +81,17 @@ export function ProjectCard({
   onStatusChanged?: () => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: project.id });
-  const [isDialogOpen, setDialogOpen] = useState(false);
   const [isReasonDialogOpen, setReasonDialogOpen] = useState(false);
+  const [openDrawer, setOpenDrawer] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
   const [isPinConfirmOpen, setIsPinConfirmOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { setOpen, setCurrentRow } = useProjectsStore();
+
+  const handleViewTimeline = () => {
+    setCurrentRow(project);
+    setOpen("history");
+  };
 
   const { user } = useAuthStore();
   const userRole = user?.user?.role;
@@ -236,7 +245,7 @@ export function ProjectCard({
                       <TooltipTrigger asChild>
                         <Info
                           className="h-4 w-4 cursor-pointer text-muted-foreground"
-                          onClick={() => setDialogOpen(true)}
+                          onClick={handleViewTimeline}
                         />
                       </TooltipTrigger>
                       <TooltipContent side="top" className="text-sm">
@@ -348,12 +357,9 @@ export function ProjectCard({
         </CardContent>
       </Card>
 
-      {/* --- Render the Dialog Component --- */}
-      <ProjectDetailsDialog
-        project={project}
-        isOpen={isDialogOpen}
-        onOpenChange={setDialogOpen}
-      />
+      <Drawer open={openDrawer} onOpenChange={setOpenDrawer} direction="right">
+        <ProjectDetails projectId={project.id} />
+      </Drawer>
 
       {/* --- Render the new Reason Dialog Component --- */}
       <ReasonDialog

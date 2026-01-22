@@ -2,13 +2,12 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Download,
   File,
   FileSpreadsheet,
   Flag,
   Server,
   SquareCheckBig,
-  User,
+  Users,
 } from "lucide-react";
 import MilestoneList from "./milestone-list";
 import OverviewProject from "./overview-project";
@@ -16,86 +15,144 @@ import ProjectTaskList from "./project-task-list";
 import {
   DrawerContent,
   DrawerHeader,
-  DrawerTitle,
 } from "@/components/ui/drawer";
 import { Card } from "@/components/ui/card";
-import { IconFileTextFilled } from "@tabler/icons-react";
+import { IconUserStar } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
+import { ClientMeetingDialog } from "./client-meeting";
+import { useState } from "react";
+import { Plus } from "lucide-react";
+import ProjectServerComponent from "@/features/projects/components/project-server-component";
+import ProjectDocumentComponent from "@/features/projects/components/project-document-component";
 
-export const ProjectDetails = () => {
+export const ProjectDetails = ({ projectId }: { projectId?: string | number }) => {
+  const [open, setOpen] = useState(false);
+  const [meetingType, setMeetingType] = useState<"client" | "internal">(
+    "client"
+  );
+
+  const getMeetingDialogProps = () => {
+    if (meetingType === "internal") {
+      return {
+        title: "Internal Meeting Details",
+        description: "Internal Discussion Points & Notes",
+      };
+    }
+    return {
+      title: "Client Meeting Details",
+      description: "Description or Discussion Points",
+    };
+  };
+
   return (
-    <div>
-      <DrawerContent className="h-full w-full !max-w-[1024px] ml-auto">
-        <DrawerHeader>
-          <Tabs defaultValue="milestone" className="w-full">
-            <TabsList className="mb-4">
-              <TabsTrigger value="milestone">
-                <Flag /> Milestone
-              </TabsTrigger>
-              <TabsTrigger value="overview">
-                <FileSpreadsheet /> Overview
-              </TabsTrigger>
+    <DrawerContent className="h-full w-full !max-w-[1024px] ml-auto">
+      <DrawerHeader>
+        <Tabs defaultValue="milestone" className="w-full">
+          <TabsList className="mb-4">
+            <TabsTrigger value="milestone">
+              <Flag /> Milestone
+            </TabsTrigger>
+            <TabsTrigger value="overview">
+              <FileSpreadsheet /> Overview
+            </TabsTrigger>
+            <TabsTrigger value="analytics">
+              <SquareCheckBig /> Report
+            </TabsTrigger>
+            <TabsTrigger value="doc">
+              <File /> Project Documents
+            </TabsTrigger>
+            <TabsTrigger value="server">
+              <Server /> Project Server
+            </TabsTrigger>
+            <TabsTrigger value="client">
+              <IconUserStar /> Client Meeting
+            </TabsTrigger>
+            <TabsTrigger value="internal_meeting">
+              <Users /> Internal Meeting
+            </TabsTrigger>
+          </TabsList>
 
-              <TabsTrigger value="analytics">
-                {" "}
-                <SquareCheckBig /> Report
-              </TabsTrigger>
-              <TabsTrigger value="doc">
-                {" "}
-                <File /> Project Documents
-              </TabsTrigger>
-              <TabsTrigger value="server">
-                <Server /> Project Server
-              </TabsTrigger>
-              <TabsTrigger value="client">
-                <User /> Client Meeting
-              </TabsTrigger>
-            </TabsList>
-            <div className="overflow-y-auto h-[calc(100vh-64px)]">
-              <TabsContent value="milestone">
-                <MilestoneList />
-              </TabsContent>
-              <TabsContent value="overview">
-                <OverviewProject />
-              </TabsContent>
+          <div className="overflow-y-auto h-[calc(100vh-64px)]">
+            <TabsContent value="milestone">
+              <MilestoneList projectId={projectId} />
+            </TabsContent>
 
-              <TabsContent value="analytics">
-                <ProjectTaskList />
-              </TabsContent>
-              <TabsContent value="doc">
-                <Card>
-                  <div className="flex flex-col space-y-1.5 p-2 ">
-                    <div className="text-2xl font-semibold leading-none tracking-tight">
-                      Files
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      <div className="space-y-4 mt-3">
-                        <div className="flex items-center space-x-3 ">
-                          <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
-                            <IconFileTextFilled className="text-red-500" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium">
-                              Design System Components
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              1.2 MB • PDF
-                            </p>
-                          </div>
-                          <Button className="w-8 h-8">
-                            <Download className="w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
+            <TabsContent value="overview">
+              <OverviewProject projectId={projectId} />
+            </TabsContent>
+
+            <TabsContent value="analytics">
+              <ProjectTaskList projectId={projectId} />
+            </TabsContent>
+
+            <TabsContent value="doc">
+              <Card>
+                <ProjectDocumentComponent />
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="server">
+              <div className="border p-4 rounded-2xl">
+                <ProjectServerComponent />
+              </div>
+            </TabsContent>
+
+            {/* CLIENT MEETING */}
+            <TabsContent value="client">
+              <Card>
+                <div className="flex justify-between p-6">
+                  <div>
+                    <h2 className="text-2xl font-semibold">Client Meetings</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Track and manage all client meetings
+                    </p>
                   </div>
-                </Card>
-              </TabsContent>
-              <TabsContent value="server">server</TabsContent>
-            </div>
-          </Tabs>
-        </DrawerHeader>
-      </DrawerContent>
-    </div>
+                  <Button
+                    onClick={() => {
+                      setMeetingType("client");
+                      setOpen(true);
+                    }}
+                  >
+                    <Plus className="w-4 h-4" /> Add Meeting
+                  </Button>
+                </div>
+              </Card>
+            </TabsContent>
+
+            {/* INTERNAL MEETING */}
+            <TabsContent value="internal_meeting">
+              <Card>
+                <div className="flex justify-between p-6">
+                  <div>
+                    <h2 className="text-2xl font-semibold">
+                      Internal Meetings
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      Track and manage internal team meetings
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      setMeetingType("internal");
+                      setOpen(true);
+                    }}
+                  >
+                    <Plus className="w-4 h-4" /> Add Meeting
+                  </Button>
+                </div>
+              </Card>
+            </TabsContent>
+          </div>
+        </Tabs>
+      </DrawerHeader>
+
+      <ClientMeetingDialog
+        open={open}
+        onOpenChange={setOpen}
+        onSubmit={(data) => console.log(data)}
+        loading={false}
+        {...getMeetingDialogProps()}
+      />
+    </DrawerContent>
   );
 };

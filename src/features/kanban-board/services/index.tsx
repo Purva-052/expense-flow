@@ -1,4 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, useCallback } from "react";
+import { AxiosError } from "axios";
+import axios from "axios";
+import { toast } from "sonner";
 import API from "@/config/api/api";
 import useFetchData from "@/hooks/use-fetch-data";
 import usePatchData from "@/hooks/use-patch-data";
@@ -6,7 +10,6 @@ import usePostData from "@/hooks/use-post-data";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { buildQueryString } from "@/utils/storage";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import axios from "axios";
 
 const GET_API_URL = API.users.available_developers;
 const PROJECTS_API_URL = API.projects.list;
@@ -110,12 +113,15 @@ const fetchInquirysDashboard = async ({ pageParam = 1, queryKey }: any) => {
     page: pageParam,
     limit: 10,
   });
-  const response = await axios.get(baseURL + `${GET_Inquiry_API_URL}${queryStr}`, {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await axios.get(
+    baseURL + `${GET_Inquiry_API_URL}${queryStr}`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
 
   return response.data;
 };
@@ -132,4 +138,245 @@ export const useGetInquiryDashboardData = (params?: any) => {
         : undefined;
     },
   });
+};
+
+/* =======================
+   Milestone Hooks
+======================= */
+
+interface UseDownloadMilestoneSampleReturn {
+  isDownloading: boolean;
+  downloadSample: () => Promise<void>;
+}
+
+/**
+ * Custom hook to download milestone sample file
+ * Uses the milestone_sample endpoint
+ */
+export const useDownloadMilestoneSample =
+  (): UseDownloadMilestoneSampleReturn => {
+    const [isDownloading, setIsDownloading] = useState(false);
+
+    // Helper function to extract error messages
+    const extractErrorMessage = (error: unknown): string => {
+      if (error instanceof AxiosError) {
+        // Network error
+        if (error.code === "ERR_NETWORK") {
+          return "Network error. Please check your internet connection.";
+        }
+
+        // Authentication error
+        if (error.response?.status === 401) {
+          return "Authentication failed. Please log in again.";
+        }
+
+        // Server error (5xx)
+        if (error.response?.status && error.response.status >= 500) {
+          return "Server error. Please try again later.";
+        }
+
+        // Other errors with response message
+        if (error.response?.data?.message) {
+          return error.response.data.message;
+        }
+      }
+
+      return "Failed to download sample file. Please try again.";
+    };
+
+    // Download handler function
+    const downloadSample = useCallback(async () => {
+      setIsDownloading(true);
+
+      try {
+        const baseURL = import.meta.env.VITE_API_BASE_URL;
+        const token =
+          useAuthStore.getState().user?.token ?? useAuthStore.getState().token;
+
+        // Make API call with blob responseType using axios directly
+        const response = await axios.get(
+          baseURL + API.projects.milestone_sample,
+          {
+            responseType: "blob",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        // Create blob URL
+        const blob = new Blob([response.data], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+        const url = URL.createObjectURL(blob);
+
+        // Extract filename from Content-Disposition header or use default
+        const contentDisposition = response.headers["content-disposition"];
+        let filename = "milestone_sample.xlsx";
+
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(
+            /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+          );
+          if (filenameMatch && filenameMatch[1]) {
+            filename = filenameMatch[1].replace(/['"]/g, "");
+          }
+        }
+
+        // Create temporary link and trigger download
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+
+        // Cleanup
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        toast.success("Sample file downloaded successfully");
+      } catch (error) {
+        const errorMessage = extractErrorMessage(error);
+        toast.error(errorMessage);
+      } finally {
+        setIsDownloading(false);
+      }
+    }, []);
+
+    return {
+      isDownloading,
+      downloadSample,
+    };
+  };
+
+interface UploadResponse {
+  statusCode: number;
+  message: string;
+  data?: unknown;
+}
+
+interface UseUploadMilestoneFileReturn {
+  isUploading: boolean;
+  uploadFile: (file: File, projectId?: string | number) => Promise<void>;
+}
+
+/**
+ * Custom hook to upload/export milestone file
+ * Uses the project_milestones endpoint
+ */
+export const useUploadMilestoneFile = (): UseUploadMilestoneFileReturn => {
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Helper function to extract error messages
+  const extractErrorMessage = (error: unknown): string => {
+    if (error instanceof AxiosError) {
+      // Network error
+      if (error.code === "ERR_NETWORK") {
+        return "Network error. Please check your internet connection.";
+      }
+
+      // Authentication error
+      if (error.response?.status === 401) {
+        return "Authentication failed. Please log in again.";
+      }
+
+      // Validation error (4xx)
+      if (
+        error.response?.status &&
+        error.response.status >= 400 &&
+        error.response.status < 500
+      ) {
+        if (error.response?.data?.message) {
+          return error.response.data.message;
+        }
+        return "Invalid file or request. Please check and try again.";
+      }
+
+      // Server error (5xx)
+      if (error.response?.status && error.response.status >= 500) {
+        return "Server error. Please try again later.";
+      }
+
+      // Other errors with response message
+      if (error.response?.data?.message) {
+        return error.response.data.message;
+      }
+    }
+
+    return "Failed to upload file. Please try again.";
+  };
+
+  // Upload handler function
+  const uploadFile = useCallback(
+    async (file: File, projectId?: string | number) => {
+      // Validate file
+      if (!file) {
+        toast.error("Please select a file to upload.");
+        return;
+      }
+
+      // Validate file type
+      const allowedTypes = [
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/vnd.ms-excel",
+        "text/csv",
+      ];
+
+      if (!allowedTypes.includes(file.type)) {
+        toast.error("Please upload a valid Excel or CSV file.");
+        return;
+      }
+
+      setIsUploading(true);
+
+      try {
+        const baseURL = import.meta.env.VITE_API_BASE_URL;
+        const token =
+          useAuthStore.getState().user?.token ?? useAuthStore.getState().token;
+
+        // Create FormData for file upload
+        const formData = new FormData();
+        formData.append("file", file);
+
+        // Add projectId if provided
+        if (projectId) {
+          formData.append("projectId", projectId.toString());
+        }
+
+        // Make API call using axios directly
+        const response = await axios.post<UploadResponse>(
+          baseURL + API.projects.project_milestones,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        if (
+          response?.data?.statusCode === 200 ||
+          response?.data?.statusCode === 201
+        ) {
+          toast.success(
+            response?.data?.message || "File uploaded successfully"
+          );
+        } else {
+          toast.error(response?.data?.message || "Failed to upload file");
+        }
+      } catch (error) {
+        const errorMessage = extractErrorMessage(error);
+        toast.error(errorMessage);
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    []
+  );
+
+  return {
+    isUploading,
+    uploadFile,
+  };
 };

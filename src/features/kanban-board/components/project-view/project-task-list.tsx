@@ -1,15 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { ColumnDef, PaginationState } from "@tanstack/react-table";
 import { GlobalTable } from "@/components/table/global-table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 
 /* =======================
@@ -95,7 +88,7 @@ const reportColumns: ColumnDef<ProjectReport>[] = [
 /* =======================
    Component
 ======================= */
-const ProjectReportTable = () => {
+const ProjectReportTable = ({ projectId }: { projectId?: string | number }) => {
   const [listParams, setListParams] = useState({
     currentPage: 1,
     pageSize: 10,

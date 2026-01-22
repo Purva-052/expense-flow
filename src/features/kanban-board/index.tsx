@@ -9,6 +9,7 @@ import Board from "./components/Board";
 import InquiryTab from "./components/inquiryTab";
 import ProjectPage from "./components/project-view/project-page";
 import ResourceTab from "./components/resourceTab";
+import { HistoryProjectModal } from "../projects/components/history-modal";
 
 const ProjectBoard = () => {
   const [activeTab, setActiveTab] = useState("project_details");
@@ -36,7 +37,7 @@ const ProjectBoard = () => {
               {/* Tab Headers */}
               <TabsList className="flex flex-wrap w-[680px]  mb-2">
                 <TabsTrigger value="project_details">
-                  project details
+                  Project Details
                 </TabsTrigger>
 
                 <TabsTrigger value="board">
@@ -112,6 +113,7 @@ const ProjectBoard = () => {
           )}
         </Main>
       )}
+      <HistoryProjectModal />
     </>
   );
 };

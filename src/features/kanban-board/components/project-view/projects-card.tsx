@@ -21,36 +21,11 @@ import {
 import { useState } from "react";
 import { CommonModal } from "@/components/common-modal";
 import { ProjectDetails } from "./project-details";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
+import { Drawer } from "@/components/ui/drawer";
+import { useProjectsStore } from "../../../projects/stores/useProjectsStore";
 
-interface ProjectCardProps {
-  id: string;
-  title: string;
 
-  status: "Planning" | "In Progress" | "Completed" | "On Hold";
-  statusColor: "blue" | "yellow" | "green" | "gray";
-  borderColor: "yellow" | "blue" | "green" | "purple" | "orange";
-  deadline: string;
-  progress: number;
-  teamMembers: Array<{
-    name: string;
-    avatar: string;
-  }>;
-  tasks: number;
-  activities: number;
-  client: string;
-  ProjectCoordinator: string;
-  startDate: string;
-  priority: "High" | "Medium" | "Low";
-  priorityColor: "red" | "yellow" | "green";
-}
-
-const borderColorMap = {
+const borderColorMap: any = {
   yellow: "border-l-yellow-400",
   blue: "border-l-blue-500",
   green: "border-l-green-500",
@@ -58,14 +33,14 @@ const borderColorMap = {
   orange: "border-l-orange-500",
 };
 
-const statusColorMap = {
+const statusColorMap: any = {
   blue: "bg-blue-100 text-blue-700",
   yellow: "bg-yellow-100 text-yellow-700",
   green: "bg-green-100 text-green-700",
   gray: "bg-gray-100 text-gray-700",
 };
 
-const priorityColorMap = {
+const priorityColorMap: any = {
   red: "bg-red-100 text-red-700",
   yellow: "bg-yellow-100 text-yellow-700",
   green: "bg-green-100 text-green-700",
@@ -85,8 +60,15 @@ export function ProjectCard({
   startDate,
   priority,
   priorityColor,
-}: ProjectCardProps) {
-  const [openDrawer, setOpenDrawer] = useState(true);
+  project, // Assuming project object might be passed or available
+}: any) {
+  const [openDrawer, setOpenDrawer] = useState(false);
+  const { setOpen, setCurrentRow } = useProjectsStore();
+
+  const handleViewTimeline = () => {
+    setCurrentRow(project || { id, name: title, ...project });
+    setOpen("history");
+  };
 
   return (
     <div
@@ -117,8 +99,10 @@ export function ProjectCard({
                 <DropdownMenuItem onClick={() => setOpenDrawer(true)}>
                   View Details
                 </DropdownMenuItem>
-                <DropdownMenuItem>View Timeline</DropdownMenuItem>
-                <DropdownMenuItem>Edite Project</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleViewTimeline}>
+                  View Timeline
+                </DropdownMenuItem>
+                <DropdownMenuItem>Edit Project</DropdownMenuItem>
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -144,7 +128,7 @@ export function ProjectCard({
 
       {/* Team and Activities */}
       <div className="flex -space-x-2">
-        {teamMembers.map((member, idx) => (
+        {teamMembers?.map((member: any, idx: number) => (
           <TooltipProvider key={idx}>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -153,7 +137,7 @@ export function ProjectCard({
                     src={member.avatar || "/placeholder.svg"}
                     alt={member.name}
                   />
-                  <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
+                  <AvatarFallback>{member.name?.charAt(0)}</AvatarFallback>
                 </Avatar>
               </TooltipTrigger>
               <TooltipContent>
