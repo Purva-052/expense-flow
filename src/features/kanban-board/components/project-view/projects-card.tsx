@@ -86,7 +86,8 @@ export function ProjectCard({
   priority,
   priorityColor,
 }: ProjectCardProps) {
-  const [open, setOpen] = useState(true);
+  const [openDrawer, setOpenDrawer] = useState(true);
+
   return (
     <div
       className={`bg-white border-l-4 rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow border-l-orange-500`}
@@ -113,7 +114,7 @@ export function ProjectCard({
             </DropdownMenuTrigger>
             <DropdownMenuContent side="bottom" align="end">
               <DropdownMenuGroup>
-                <DropdownMenuItem onClick={() => setOpen(true)}>
+                <DropdownMenuItem onClick={() => setOpenDrawer(true)}>
                   View Details
                 </DropdownMenuItem>
                 <DropdownMenuItem>View Timeline</DropdownMenuItem>
@@ -207,28 +208,9 @@ export function ProjectCard({
           </p>
         </div>
       </div>
-      {/* <CommonModal
-        open={open}
-        onOpenChange={setOpen}
-        className="w-full !max-w-[1024px] overflow-auto max-h-[70vh]"
-      >
-        <div className="space-y-4">
-    
-        </div>
-      </CommonModal> */}
 
-      <Drawer open={open} onOpenChange={setOpen} direction="right">
-        <DrawerContent className="h-full w-full !max-w-[1024px] ml-auto">
-          <DrawerHeader className="border-b">
-            <DrawerTitle className="text-lg font-semibold">
-              Project Details
-            </DrawerTitle>
-          </DrawerHeader>
-
-          <div className="p-6 overflow-y-auto h-[calc(100vh-64px)]">
-            <ProjectDetails />
-          </div>
-        </DrawerContent>
+      <Drawer open={openDrawer} onOpenChange={setOpenDrawer} direction="right">
+        <ProjectDetails />
       </Drawer>
     </div>
   );

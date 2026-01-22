@@ -40,6 +40,26 @@ const OverviewProject = () => {
             design system. The project involves multiple phases including
             research, design, development, testing, and deployment.
           </p>
+          <p className="text-sm mt-2">
+            This is a comprehensive project aimed at ui component library for
+            design system. The project involves multiple phases including
+            research, design, development, testing, and deployment.
+          </p>
+          <p className="text-sm mt-2">
+            This is a comprehensive project aimed at ui component library for
+            design system. The project involves multiple phases including
+            research, design, development, testing, and deployment.
+          </p>
+          <p className="text-sm mt-2">
+            This is a comprehensive project aimed at ui component library for
+            design system. The project involves multiple phases including
+            research, design, development, testing, and deployment.
+          </p>
+          <p className="text-sm mt-2">
+            This is a comprehensive project aimed at ui component library for
+            design system. The project involves multiple phases including
+            research, design, development, testing, and deployment.
+          </p>
         </div>
       </Card>
       <Card>

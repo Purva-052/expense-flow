@@ -5,7 +5,23 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ColumnDef, PaginationState } from "@tanstack/react-table";
 import { GlobalTable } from "@/components/table/global-table";
-import { Target } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
+import { format } from "date-fns";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import HoursLogs from "./hours-logs";
+import { CommonModal } from "@/components/common-modal";
 
 /* =======================
    Types
@@ -15,9 +31,8 @@ export interface ProjectReport {
   reportDate: string;
   employeeName: string;
   taskName: string;
-  estimatedTime: number; // hours
+  estimatedTime: number;
   description: string;
-
   actualHours: number;
 }
 
@@ -55,9 +70,11 @@ const reportData: ProjectReport[] = [
 ];
 
 /* =======================
-   Table Columns
+   Columns Factory
 ======================= */
-const reportColumns: ColumnDef<ProjectReport>[] = [
+const getReportColumns = (
+  onViewLog: (row: ProjectReport) => void
+): ColumnDef<ProjectReport>[] => [
   {
     accessorKey: "taskName",
     header: "Functionality Name",
@@ -65,7 +82,6 @@ const reportColumns: ColumnDef<ProjectReport>[] = [
       <span className="font-medium">{row.original.taskName}</span>
     ),
   },
-
   {
     accessorKey: "estimatedTime",
     header: "Estimated Time (hrs)",
@@ -75,7 +91,7 @@ const reportColumns: ColumnDef<ProjectReport>[] = [
   },
   {
     accessorKey: "actualHours",
-    header: "Actual Hours Time (hrs)",
+    header: "Actual Hours (hrs)",
     cell: ({ row }) => (
       <span className="font-semibold text-green-600">
         {row.original.actualHours}
@@ -85,16 +101,79 @@ const reportColumns: ColumnDef<ProjectReport>[] = [
   {
     id: "action",
     header: "Action",
-    cell: ({ row }) => (
-      <Button
-        size="sm"
-        onClick={() => {
-          console.log("Add clicked:", row.original);
-        }}
-      >
-        Hours Log
-      </Button>
-    ),
+    cell: ({ row }) => {
+      const [open, setOpen] = useState(false);
+      const [date, setDate] = useState<Date | undefined>();
+      const [hours, setHours] = useState("");
+
+      const handleSave = () => {
+        console.log("Row:", row.original);
+        console.log("Date:", date);
+        console.log("Hours:", hours);
+        setOpen(false);
+      };
+
+      return (
+        <div className="flex gap-2">
+          {/* Add Hours Log */}
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button size="sm">Add Hours Log</Button>
+            </PopoverTrigger>
+
+            <PopoverContent className="w-80 space-y-4">
+              {/* Date */}
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium">Date</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="justify-start text-left font-normal"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {date ? format(date, "PPP") : "Pick a date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={setDate}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Hours */}
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium">Actual Hours</label>
+                <Input
+                  type="number"
+                  placeholder="Enter hours"
+                  value={hours}
+                  onChange={(e) => setHours(e.target.value)}
+                />
+              </div>
+
+              <Button className="w-full" onClick={handleSave}>
+                Save Log
+              </Button>
+            </PopoverContent>
+          </Popover>
+
+          {/* View Log */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onViewLog(row.original)}
+          >
+            View Log
+          </Button>
+        </div>
+      );
+    },
   },
 ];
 
@@ -102,6 +181,9 @@ const reportColumns: ColumnDef<ProjectReport>[] = [
    Component
 ======================= */
 const MilestoneList = () => {
+  const [openLogsModal, setOpenLogsModal] = useState(false);
+  const [selectedRow, setSelectedRow] = useState<ProjectReport | null>(null);
+
   const [listParams, setListParams] = useState({
     currentPage: 1,
     pageSize: 10,
@@ -114,61 +196,76 @@ const MilestoneList = () => {
     });
   };
 
+  const handleViewLog = (row: ProjectReport) => {
+    setSelectedRow(row);
+    setOpenLogsModal(true);
+  };
+
   return (
-    <Tabs defaultValue="milestone1" className="w-full border-t-2 p-2">
-      <TabsList className="mb-2">
-        <TabsTrigger value="milestone1">Milestone 1</TabsTrigger>
-        <TabsTrigger value="milestone2">Milestone 2</TabsTrigger>
-        <TabsTrigger value="milestone3">Milestone 3</TabsTrigger>
-      </TabsList>
+    <>
+      <Tabs defaultValue="milestone1" className="w-full border-t-2 p-2">
+        <TabsList className="mb-2">
+          <TabsTrigger value="milestone1">Milestone 1</TabsTrigger>
+          <TabsTrigger value="milestone2">Milestone 2</TabsTrigger>
+          <TabsTrigger value="milestone3">Milestone 3</TabsTrigger>
+        </TabsList>
 
-      <TabsContent value="milestone1">
-        <div className="mb-2 grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div className="rounded-xl border p-3 px-3">
-            <div className="relative flex items-start justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground mb-1">
-                  Total Estimated Hours
-                </p>
-                <p className="text-3xl font-bold text-primary">17</p>
-              </div>
+        <TabsContent value="milestone1">
+          {/* Summary */}
+          <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="rounded-xl border p-3">
+              <p className="text-sm text-muted-foreground">
+                Total Estimated Hours
+              </p>
+              <p className="text-3xl font-bold">17</p>
+            </div>
+            <div className="rounded-xl border p-3">
+              <p className="text-sm text-muted-foreground">
+                Total Actual Hours
+              </p>
+              <p className="text-3xl font-bold">50</p>
             </div>
           </div>
-          <div className="rounded-xl border p-3 px-3">
-            <div className="relative flex items-start justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground mb-1">
-                  Total Actual Hours
-                </p>
-                <p className="text-3xl font-bold text-primary">50</p>
-              </div>
-            </div>
+
+          {/* Table */}
+          <GlobalTable<ProjectReport>
+            data={reportData}
+            columns={getReportColumns(handleViewLog)}
+            totalCount={reportData.length}
+            currentPage={listParams.currentPage}
+            pageSize={listParams.pageSize}
+            onPaginationChange={handlePaginationChange}
+            isPaginationEnabled
+            loading={false}
+          />
+        </TabsContent>
+
+        <TabsContent value="milestone2">
+          <div className="p-4 border rounded-md text-muted-foreground">
+            Milestone 2 tasks will appear here
           </div>
-        </div>
-        <GlobalTable<ProjectReport>
-          data={reportData}
-          columns={reportColumns}
-          totalCount={reportData.length}
-          currentPage={listParams.currentPage}
-          pageSize={listParams.pageSize}
-          onPaginationChange={handlePaginationChange}
-          isPaginationEnabled
-          loading={false}
-        />
-      </TabsContent>
+        </TabsContent>
 
-      <TabsContent value="milestone2">
-        <div className="p-4 border rounded-md text-muted-foreground">
-          Milestone 2 tasks will appear here
-        </div>
-      </TabsContent>
+        <TabsContent value="milestone3">
+          <div className="p-4 border rounded-md text-muted-foreground">
+            Milestone 3 tasks will appear here
+          </div>
+        </TabsContent>
+      </Tabs>
 
-      <TabsContent value="milestone3">
-        <div className="p-4 border rounded-md text-muted-foreground">
-          Milestone 3 tasks will appear here
-        </div>
-      </TabsContent>
-    </Tabs>
+      {/* View Log Modal */}
+
+      <CommonModal
+        open={openLogsModal}
+        onOpenChange={setOpenLogsModal}
+        className="w-full  overflow-auto max-h-[70vh]"
+      >
+        <DialogHeader>
+          <DialogTitle>Hours Log</DialogTitle>
+        </DialogHeader>
+        <HoursLogs />
+      </CommonModal>
+    </>
   );
 };
 
