@@ -338,22 +338,19 @@ export const useUploadMilestoneFile = (): UseUploadMilestoneFileReturn => {
         const formData = new FormData();
         formData.append("file", file);
 
-        // Add projectId if provided
+        // Build URL with projectId query parameter if provided
+        let uploadUrl = baseURL + API.projects.project_milestones;
         if (projectId) {
-          formData.append("projectId", projectId.toString());
+          uploadUrl += `?projectId=${projectId}`;
         }
 
         // Make API call using axios directly
-        const response = await axios.post<UploadResponse>(
-          baseURL + API.projects.project_milestones,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
+        const response = await axios.post<UploadResponse>(uploadUrl, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
 
         if (
           response?.data?.statusCode === 200 ||

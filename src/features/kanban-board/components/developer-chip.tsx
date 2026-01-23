@@ -44,6 +44,8 @@ const getYearsOfExperience = (
   return `${formattedYears} Year`;
 };
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 export function DeveloperChip({
   developer,
   containerId,
@@ -57,7 +59,7 @@ export function DeveloperChip({
   onClick?: () => void;
   disabled?: boolean;
   endDate?: string | null;
-  variant?: "default" | "compact";
+  variant?: "default" | "compact" | "avatar";
 }) {
   const sortableId = `${containerId}-${developer.id}`;
 
@@ -79,6 +81,56 @@ export function DeveloperChip({
   const experience = getYearsOfExperience(developer?.careerStartDate);
 
   const activeProjects: string[] = developer?.activeProjects || [];
+
+  if (variant === "avatar") {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div
+              ref={setNodeRef}
+              {...attributes}
+              {...listeners}
+              onClick={onClick}
+              className={cn(
+                "relative transition-all duration-200",
+                onClick && "cursor-pointer",
+                !disabled && "cursor-grab",
+                isDragging && "opacity-50 scale-110 z-50"
+              )}
+            >
+              <Avatar className="h-10 w-10 border-2 border-white shadow-sm hover:scale-110 transition-transform">
+                <AvatarImage
+                  src={developer.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${developer.fullName}`}
+                  alt={developer.fullName}
+                />
+                <AvatarFallback>{developer.fullName?.charAt(0)}</AvatarFallback>
+              </Avatar>
+              {developer.isCurrentProject && (
+                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-white" />
+              )}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <div className="space-y-1">
+              <p className="font-semibold text-sm">{developer.fullName}</p>
+              <p className="text-xs text-muted-foreground">{developer?.technology?.name}</p>
+              {activeProjects.length > 0 && (
+                <div className="pt-1 border-t mt-1">
+                  <p className="text-[10px] uppercase font-bold text-gray-400">Assigned To:</p>
+                  <ul className="text-[10px] text-muted-foreground">
+                    {activeProjects.map((p: any) => (
+                      <li key={p.id}>{p.name}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
 
   return (
     // 👇 2. Wrap the component with TooltipProvider for context
@@ -172,3 +224,4 @@ export function DeveloperChip({
     </TooltipProvider>
   );
 }
+

@@ -6,12 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ColumnDef, PaginationState } from "@tanstack/react-table";
 import { GlobalTable } from "@/components/table/global-table";
-import {
-  CalendarIcon,
-  Download,
-  FileDown,
-  Loader2,
-} from "lucide-react";
+import { CalendarIcon, Download, FileDown, Loader2 } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -190,7 +185,7 @@ const getReportColumns = (
 ======================= */
 const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
   const [openLogsModal, setOpenLogsModal] = useState(false);
-  const [selectedRow, setSelectedRow] = useState<ProjectReport | null>(null);
+  const [_, setSelectedRow] = useState<ProjectReport | null>(null);
   const [previewData, setPreviewData] = useState<ExcelPreviewData | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -325,33 +320,33 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
           id="milestone-file-input"
         />
 
-        {reportData.length === 0 && (
-          <Button
-            onClick={() =>
-              document.getElementById("milestone-file-input")?.click()
-            }
-            disabled={isUploading || isParsingFile}
-            variant="outline"
-            size="default"
-          >
-            {isUploading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Uploading...
-              </>
-            ) : isParsingFile ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Parsing...
-              </>
-            ) : (
-              <>
-                <FileDown className="mr-2 h-4 w-4" size={24} />
-                Import Excel
-              </>
-            )}
-          </Button>
-        )}
+        {/* {reportData.length === 0 && ( */}
+        <Button
+          onClick={() =>
+            document.getElementById("milestone-file-input")?.click()
+          }
+          disabled={isUploading || isParsingFile}
+          variant="outline"
+          size="default"
+        >
+          {isUploading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Uploading...
+            </>
+          ) : isParsingFile ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Parsing...
+            </>
+          ) : (
+            <>
+              <FileDown className="mr-2 h-4 w-4" size={24} />
+              Import Excel
+            </>
+          )}
+        </Button>
+        {/* )} */}
       </div>
 
       <Tabs defaultValue="milestone1" className="w-full border-t-2 p-2">

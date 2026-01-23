@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
@@ -112,9 +112,10 @@ export function ClientMeetingDialog({
                   <FormControl>
                     <div className="rounded-md border border-input bg-background">
                       <CKEditor
+                        //@ts-ignore
                         editor={ClassicEditor}
                         data={field.value}
-                        onChange={(event, editor) => {
+                        onChange={(_, editor) => {
                           const data = editor.getData();
                           field.onChange(data);
                         }}

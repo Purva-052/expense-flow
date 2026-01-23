@@ -38,6 +38,9 @@ const ProjectBoard = () => {
               <TabsList className="flex flex-wrap w-[680px]  mb-2">
                 <TabsTrigger value="project_details">
                   Project Details
+                  {projectCount !== null && (
+                    <span className="ml-1">({projectCount})</span>
+                  )}
                 </TabsTrigger>
 
                 <TabsTrigger value="board">
@@ -65,7 +68,7 @@ const ProjectBoard = () => {
 
               {/* Board Tab */}
               <TabsContent value="project_details">
-                <ProjectPage />
+                <ProjectPage onTotalCountChange={setProjectCount} />
               </TabsContent>
               <TabsContent value="board">
                 <Board

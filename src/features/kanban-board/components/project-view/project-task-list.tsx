@@ -88,7 +88,7 @@ const reportColumns: ColumnDef<ProjectReport>[] = [
 /* =======================
    Component
 ======================= */
-const ProjectReportTable = ({ projectId }: { projectId?: string | number }) => {
+const ProjectReportTable = ({}: { projectId?: string | number }) => {
   const [listParams, setListParams] = useState({
     currentPage: 1,
     pageSize: 10,
