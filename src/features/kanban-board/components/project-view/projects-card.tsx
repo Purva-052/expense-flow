@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreVertical, Calendar, Pin, UserSquare, Users } from "lucide-react";
+import { Calendar, Pin, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,13 +15,13 @@ import { Drawer } from "@/components/ui/drawer";
 import { useProjectsStore } from "../../../projects/stores/useProjectsStore";
 import { useDroppable } from "@dnd-kit/core";
 import { cn } from "@/lib/utils";
-import { FormProvider, useForm } from "react-hook-form";
+// import { FormProvider, useForm } from "react-hook-form";
 import { useProjectStatusChange } from "../../services";
-import { ReasonDialog } from "../status-reason-dialog";
+// import { ReasonDialog } from "../status-reason-dialog";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { roles } from "@/utils/constant";
 import { usePinProject, useUnpinProject } from "../../../projects/services";
-import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
+// import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import {
   Tooltip,
   TooltipContent,
@@ -29,6 +29,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { ChangeStatusDialog } from "@/components/shared/custom-status-change";
 
 const priorityColorMap: any = {
   high: "bg-red-100 text-red-700",
@@ -42,13 +43,31 @@ const priorityBorderMap: any = {
   low: "border-l-teal-500",
 };
 
+const getStatusBadgeClasses = (status?: string) => {
+  const s = (status || "").toLowerCase();
+  switch (s) {
+    case "active-discovery":
+      return "bg-blue-100 text-blue-700";
+    case "running":
+      return "bg-green-100 text-green-700";
+    case "slow":
+      return "bg-amber-100 text-amber-700";
+    case "stop":
+      return "bg-red-100 text-red-700";
+    case "completed":
+      return "bg-emerald-100 text-emerald-700";
+    default:
+      return "bg-gray-100 text-gray-700";
+  }
+};
+
 export function ProjectCard({ project, children, onStatusChanged }: any) {
   const [openDrawer, setOpenDrawer] = useState(false);
   const { setOpen, setCurrentRow } = useProjectsStore();
   const { setNodeRef, isOver } = useDroppable({ id: project?.id });
+  const [isStatusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [isStatusUpdating, setIsStatusUpdating] = useState(false);
 
-  const [isReasonDialogOpen, setReasonDialogOpen] = useState(false);
-  const [pendingStatus, setPendingStatus] = useState<string | null>(null);
   const [isPinConfirmOpen, setIsPinConfirmOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -65,52 +84,20 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
   const { mutateAsync: pinProject } = usePinProject(project?.id);
   const { mutateAsync: unpinProject } = useUnpinProject(project?.id);
 
-  const form = useForm({
-    defaultValues: { status: project?.currentStatus },
-  });
-
-  const statusOptions = [
-    { value: "active-discovery", label: "Active Discovery" },
-    { value: "running", label: "Running" },
-    { value: "slow", label: "Slow" },
-    { value: "stop", label: "Stop" },
-    { value: "completed", label: "Completed" },
-  ];
-
-  const handleStatusChange = async (value: string) => {
-    if (value === "slow") {
-      setPendingStatus(value);
-      setReasonDialogOpen(true);
-    } else {
+  const handleStatusUpdate = async (newStatus: string, note: string) => {
+    try {
+      setIsStatusUpdating(true);
       await ProjectStatusChange({
         projectId: project.id,
-        status: value,
+        status: newStatus,
+        reason: note,
         effectiveDate: new Date().toISOString(),
       });
-      form.setValue("status", value);
+    } catch (error) {
+      console.error("Failed to update status:", error);
+    } finally {
+      setIsStatusUpdating(false);
     }
-  };
-
-  const handleStatusChangeWithReason = async (reason: string) => {
-    if (pendingStatus) {
-      await ProjectStatusChange({
-        projectId: project.id,
-        status: pendingStatus,
-        reason: reason,
-        effectiveDate: new Date().toISOString(),
-      });
-      form.setValue("status", pendingStatus);
-      setPendingStatus(null);
-      setReasonDialogOpen(false);
-    }
-  };
-
-  const handleReasonDialogChange = (isOpen: boolean) => {
-    if (!isOpen && pendingStatus) {
-      form.setValue("status", project.currentStatus);
-      setPendingStatus(null);
-    }
-    setReasonDialogOpen(isOpen);
   };
 
   const handlePinToggle = (e: React.MouseEvent) => {
@@ -176,66 +163,55 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
           isOver && "ring-2 ring-primary bg-primary/5"
         )}
       >
-        {/* Pin Icon - Top Right Corner */}
-        <div className="absolute top-7 right-10">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                {project?.isPinned ? (
-                  <Pin
-                    className="h-5 w-5 cursor-pointer text-primary fill-primary transition-colors duration-200 hover:text-primary/80"
-                    onClick={handlePinToggle}
-                  />
-                ) : (
-                  <Pin
-                    className="h-5 w-5 cursor-pointer text-muted-foreground transition-colors duration-200 hover:text-primary"
-                    onClick={handlePinToggle}
-                  />
-                )}
-              </TooltipTrigger>
-              <TooltipContent side="top" className="text-sm">
-                {project?.isPinned ? "Unpin Project" : "Pin Project"}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-
-        {/* Info Icon for Timeline */}
-        {/* <div className="absolute top-4 right-16">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Info
-                  className="h-5 w-5 cursor-pointer text-muted-foreground transition-colors duration-200 hover:text-primary"
-                  onClick={handleViewTimeline}
-                />
-              </TooltipTrigger>
-              <TooltipContent side="top" className="text-sm">
-                Project History
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div> */}
-
         {/* Header */}
-        <div className="flex items-start justify-between mb-4 pr-12">
+        <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex flex-col gap-1 mb-1">
               <h3 className="text-lg font-semibold text-gray-900 leading-tight pr-4">
                 {title}
               </h3>
-              <span className="text-sm font-semibold text-muted-foreground">
-                ({progress}%)
-              </span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
+            {/* Pin Icon */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  {project?.isPinned ? (
+                    <Pin
+                      className="h-5 w-5 cursor-pointer text-primary fill-primary transition-colors duration-200 hover:text-primary/80"
+                      onClick={handlePinToggle}
+                    />
+                  ) : (
+                    <Pin
+                      className="h-5 w-5 cursor-pointer text-muted-foreground transition-colors duration-200 hover:text-primary"
+                      onClick={handlePinToggle}
+                    />
+                  )}
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-sm">
+                  {project?.isPinned ? "Unpin Project" : "Pin Project"}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <div className="flex flex-col gap-2">
+              <div className="mt-1">
+                <div
+                  className={cn(
+                    "inline-flex px-3 py-1 rounded-full text-xs font-medium capitalize",
+                    getStatusBadgeClasses(currentStatus),
+                    canEditStatus && "cursor-pointer hover:bg-gray-200"
+                  )}
+                  onClick={() => canEditStatus && setStatusDialogOpen(true)}
+                >
+                  {currentStatus.replace(/-/g, " ")}
+                </div>
+              </div>
+            </div>
+
+            {/* Dropdown Menu */}
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
               <DropdownMenuContent side="bottom" align="end">
                 <DropdownMenuGroup>
                   <DropdownMenuItem onClick={() => setOpenDrawer(true)}>
@@ -244,7 +220,12 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
                   <DropdownMenuItem onClick={handleViewTimeline}>
                     View Timeline
                   </DropdownMenuItem>
-                  {/* <DropdownMenuItem>Edit Project</DropdownMenuItem> */}
+                  {/* UPDATE: This now opens the new Dialog */}
+                  {canEditStatus && (
+                    <DropdownMenuItem onClick={() => setStatusDialogOpen(true)}>
+                      Change Status
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -252,54 +233,45 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
         </div>
 
         {/* Coordinator and Client Info */}
-        <div className="flex flex-col gap-2 mb-4">
-          {project?.projectHandler?.fullName && (
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-              <UserSquare className="h-4 w-4 shrink-0" />
-              <span className="truncate">{coordinatorName}</span>
-            </div>
-          )}
-          {project?.client?.name && (
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-              <Users className="h-4 w-4 shrink-0" />
-              <span className="truncate">Client: {clientName}</span>
-            </div>
-          )}
-
-          {/* Status Dropdown */}
-          <div className="mt-1">
-            {canEditStatus ? (
-              <FormProvider {...form}>
-                <form>
-                  <CustomDropDownSearchable
-                    form={form}
-                    className="text-muted-foreground max-w-[200px]"
-                    name="status"
-                    label=" "
-                    options={statusOptions}
-                    placeholder="Select Status"
-                    searchEnabled={false}
-                    onChangeValue={handleStatusChange}
-                    showClearButton={false}
-                  />
-                </form>
-              </FormProvider>
-            ) : (
-              <div className="inline-flex px-3 py-1 rounded-full text-xs font-medium capitalize bg-gray-100 text-gray-700">
-                {currentStatus.replace("-", " ")}
-              </div>
-            )}
-          </div>
-        </div>
 
         {/* Deadline and Progress */}
-        <div className="flex items-center justify-between mb-3 pt-2 border-t border-gray-100">
+        <div className="flex items-center justify-between mb-3 mt-2">
           <div className="flex items-center gap-2 text-gray-600">
             <Calendar className="h-4 w-4" />
             <span className="text-xs text-muted-foreground">
               Deadline: {deadline}
             </span>
           </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="p-1 rounded-full hover:bg-gray-200"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="bottom" align="end">
+              <DropdownMenuGroup>
+                <DropdownMenuItem onClick={() => setOpenDrawer(true)}>
+                  View Details
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleViewTimeline}>
+                  View Timeline
+                </DropdownMenuItem>
+                {/* UPDATE: This now opens the new Dialog */}
+                {canEditStatus && (
+                  <DropdownMenuItem onClick={() => setStatusDialogOpen(true)}>
+                    Change Status
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-xs text-muted-foreground mb-1">Progress</span>
           <span className="text-xs font-bold text-gray-900">{progress}%</span>
         </div>
 
@@ -315,25 +287,36 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
         <div className="mb-4 min-h-[40px]">{children}</div>
 
         {/* Details Grid */}
-        <div className="grid grid-cols-3 gap-4 border-t border-gray-100 pt-4 mt-3">
-          {/* <div>
+        <div className="grid grid-cols-2 gap-x-8 gap-y-4 border-t border-gray-100 pt-4 mt-3">
+          {/* Client */}
+          <div>
             <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">
               Client
             </p>
-            <p className="text-sm font-semibold text-gray-800 truncate">
+            <p className="text-xs font-semibold text-gray-800 truncate">
               {clientName}
             </p>
-          </div> */}
+          </div>
 
+          {/* Coordinator */}
+          <div>
+            <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">
+              Project Coordinator
+            </p>
+            <p className="text-xs font-semibold text-gray-800">
+              {coordinatorName}
+            </p>
+          </div>
+
+          {/* Start Date */}
           <div>
             <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">
               Start Date
             </p>
-            <p className="text-sm font-semibold text-gray-800 truncate">
-              {startDate}
-            </p>
+            <p className="text-xs font-semibold text-gray-800">{startDate}</p>
           </div>
 
+          {/* Priority */}
           <div>
             <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">
               Priority
@@ -348,15 +331,6 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
               {priority}
             </span>
           </div>
-
-          {/* <div>
-            <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">
-              Project Coordinator
-            </p>
-            <p className="text-sm font-semibold text-gray-800 truncate">
-              {coordinatorName}
-            </p>
-          </div> */}
         </div>
       </div>
 
@@ -364,10 +338,13 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
         <ProjectDetails projectId={project?.id} />
       </Drawer>
 
-      <ReasonDialog
-        isOpen={isReasonDialogOpen}
-        onOpenChange={handleReasonDialogChange}
-        onSubmit={handleStatusChangeWithReason}
+      {/* NEW STATUS DIALOG */}
+      <ChangeStatusDialog
+        open={isStatusDialogOpen}
+        onOpenChange={setStatusDialogOpen}
+        currentStatus={project?.currentStatus}
+        onSubmit={handleStatusUpdate}
+        isLoading={isStatusUpdating}
       />
 
       <ConfirmDialog
