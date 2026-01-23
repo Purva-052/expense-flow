@@ -1,15 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { ColumnDef, PaginationState } from "@tanstack/react-table";
 import { GlobalTable } from "@/components/table/global-table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 
 /* =======================

@@ -1,11 +1,8 @@
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { IconFileTextFilled } from "@tabler/icons-react";
 import {
   Briefcase,
   Calendar,
   Clock,
-  Download,
   Flag,
   TrendingUp,
   User,

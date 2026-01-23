@@ -93,6 +93,8 @@ const API = {
     client: "/clients/dropdown",
     country: "/country/dropdown",
     project_list: "/projects/dropdown/list",
+    milestones: "/project-milestones",
+    tasks: "/tasks/dropdown",
   },
   linode_api: {
     list: "/linode/instances",
@@ -113,6 +115,11 @@ const API = {
     create: "/transaction-logs",
     update: "/transaction-logs",
     delete: "/transaction-logs",
+  },
+  daily_report: {
+    list: "/daily-reports",
+    update: "/daily-reports",
+    delete: "/daily-reports",
   },
 };
 
