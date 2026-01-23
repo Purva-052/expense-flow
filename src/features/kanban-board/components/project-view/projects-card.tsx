@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreVertical, Calendar, CheckSquare, BarChart3 } from "lucide-react";
+import { MoreVertical, Calendar } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,19 +14,11 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
-import { CommonModal } from "@/components/common-modal";
 import { ProjectDetails } from "./project-details";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
+import { Drawer } from "@/components/ui/drawer";
 
 interface ProjectCardProps {
   id: string;
@@ -50,14 +42,6 @@ interface ProjectCardProps {
   priorityColor: "red" | "yellow" | "green";
 }
 
-const borderColorMap = {
-  yellow: "border-l-yellow-400",
-  blue: "border-l-blue-500",
-  green: "border-l-green-500",
-  purple: "border-l-purple-500",
-  orange: "border-l-orange-500",
-};
-
 const statusColorMap = {
   blue: "bg-blue-100 text-blue-700",
   yellow: "bg-yellow-100 text-yellow-700",
@@ -72,7 +56,6 @@ const priorityColorMap = {
 };
 
 export function ProjectCard({
-  id,
   title,
   status,
   statusColor,

@@ -32,6 +32,7 @@ import { Route as AuthenticatedLinodeServerDashboardIndexRouteImport } from './r
 import { Route as AuthenticatedInterviewsIndexRouteImport } from './routes/_authenticated/interviews/index'
 import { Route as AuthenticatedInquiryIndexRouteImport } from './routes/_authenticated/inquiry/index'
 import { Route as AuthenticatedInquiryTypeIndexRouteImport } from './routes/_authenticated/inquiry-type/index'
+import { Route as AuthenticatedDailyReportIndexRouteImport } from './routes/_authenticated/daily-report/index'
 import { Route as AuthenticatedConferenceRoomBookingIndexRouteImport } from './routes/_authenticated/conference-room-booking/index'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
 import { Route as AuthenticatedProjectsDetailIdRouteImport } from './routes/_authenticated/projects/detail.$id'
@@ -162,6 +163,12 @@ const AuthenticatedInquiryTypeIndexRoute =
     path: '/inquiry-type/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDailyReportIndexRoute =
+  AuthenticatedDailyReportIndexRouteImport.update({
+    id: '/daily-report/',
+    path: '/daily-report/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedConferenceRoomBookingIndexRoute =
   AuthenticatedConferenceRoomBookingIndexRouteImport.update({
     id: '/conference-room-booking/',
@@ -200,6 +207,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
   '/conference-room-booking': typeof AuthenticatedConferenceRoomBookingIndexRoute
+  '/daily-report': typeof AuthenticatedDailyReportIndexRoute
   '/inquiry-type': typeof AuthenticatedInquiryTypeIndexRoute
   '/inquiry': typeof AuthenticatedInquiryIndexRoute
   '/interviews': typeof AuthenticatedInterviewsIndexRoute
@@ -228,6 +236,7 @@ export interface FileRoutesByTo {
   '/': typeof AuthenticatedIndexRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
   '/conference-room-booking': typeof AuthenticatedConferenceRoomBookingIndexRoute
+  '/daily-report': typeof AuthenticatedDailyReportIndexRoute
   '/inquiry-type': typeof AuthenticatedInquiryTypeIndexRoute
   '/inquiry': typeof AuthenticatedInquiryIndexRoute
   '/interviews': typeof AuthenticatedInterviewsIndexRoute
@@ -258,6 +267,7 @@ export interface FileRoutesById {
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
   '/_authenticated/conference-room-booking/': typeof AuthenticatedConferenceRoomBookingIndexRoute
+  '/_authenticated/daily-report/': typeof AuthenticatedDailyReportIndexRoute
   '/_authenticated/inquiry-type/': typeof AuthenticatedInquiryTypeIndexRoute
   '/_authenticated/inquiry/': typeof AuthenticatedInquiryIndexRoute
   '/_authenticated/interviews/': typeof AuthenticatedInterviewsIndexRoute
@@ -288,6 +298,7 @@ export interface FileRouteTypes {
     | '/'
     | '/clients'
     | '/conference-room-booking'
+    | '/daily-report'
     | '/inquiry-type'
     | '/inquiry'
     | '/interviews'
@@ -316,6 +327,7 @@ export interface FileRouteTypes {
     | '/'
     | '/clients'
     | '/conference-room-booking'
+    | '/daily-report'
     | '/inquiry-type'
     | '/inquiry'
     | '/interviews'
@@ -345,6 +357,7 @@ export interface FileRouteTypes {
     | '/_authenticated/'
     | '/_authenticated/clients/'
     | '/_authenticated/conference-room-booking/'
+    | '/_authenticated/daily-report/'
     | '/_authenticated/inquiry-type/'
     | '/_authenticated/inquiry/'
     | '/_authenticated/interviews/'
@@ -537,6 +550,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInquiryTypeIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/daily-report/': {
+      id: '/_authenticated/daily-report/'
+      path: '/daily-report'
+      fullPath: '/daily-report'
+      preLoaderRoute: typeof AuthenticatedDailyReportIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/conference-room-booking/': {
       id: '/_authenticated/conference-room-booking/'
       path: '/conference-room-booking'
@@ -572,6 +592,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedClientsIndexRoute: typeof AuthenticatedClientsIndexRoute
   AuthenticatedConferenceRoomBookingIndexRoute: typeof AuthenticatedConferenceRoomBookingIndexRoute
+  AuthenticatedDailyReportIndexRoute: typeof AuthenticatedDailyReportIndexRoute
   AuthenticatedInquiryTypeIndexRoute: typeof AuthenticatedInquiryTypeIndexRoute
   AuthenticatedInquiryIndexRoute: typeof AuthenticatedInquiryIndexRoute
   AuthenticatedInterviewsIndexRoute: typeof AuthenticatedInterviewsIndexRoute
@@ -593,6 +614,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedClientsIndexRoute: AuthenticatedClientsIndexRoute,
   AuthenticatedConferenceRoomBookingIndexRoute:
     AuthenticatedConferenceRoomBookingIndexRoute,
+  AuthenticatedDailyReportIndexRoute: AuthenticatedDailyReportIndexRoute,
   AuthenticatedInquiryTypeIndexRoute: AuthenticatedInquiryTypeIndexRoute,
   AuthenticatedInquiryIndexRoute: AuthenticatedInquiryIndexRoute,
   AuthenticatedInterviewsIndexRoute: AuthenticatedInterviewsIndexRoute,

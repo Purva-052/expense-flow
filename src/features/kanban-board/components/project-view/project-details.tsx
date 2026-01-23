@@ -13,11 +13,7 @@ import {
 import MilestoneList from "./milestone-list";
 import OverviewProject from "./overview-project";
 import ProjectTaskList from "./project-task-list";
-import {
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
+import { DrawerContent, DrawerHeader } from "@/components/ui/drawer";
 import { Card } from "@/components/ui/card";
 import { IconFileTextFilled } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
