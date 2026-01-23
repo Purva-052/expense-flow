@@ -2,96 +2,244 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Download,
   File,
   FileSpreadsheet,
   Flag,
   Server,
   SquareCheckBig,
-  User,
+  Users,
+  Plus,
+  Pin,
 } from "lucide-react";
 import MilestoneList from "./milestone-list";
 import OverviewProject from "./overview-project";
 import ProjectTaskList from "./project-task-list";
 import { DrawerContent, DrawerHeader } from "@/components/ui/drawer";
 import { Card } from "@/components/ui/card";
-import { IconFileTextFilled } from "@tabler/icons-react";
+import { IconUserStar } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
+import { ClientMeetingDialog } from "./client-meeting";
+import { useState } from "react";
+import ProjectServerComponent from "@/features/projects/components/project-server-component";
+import ProjectDocumentComponent from "@/features/projects/components/project-document-component";
+import {
+  useGetProjectsDetailData,
+  usePinProject,
+  useUnpinProject,
+} from "@/features/projects/services";
+import { useQueryClient } from "@tanstack/react-query";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
-export const ProjectDetails = () => {
+export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
+  const [open, setOpen] = useState(false);
+  const [meetingType, setMeetingType] = useState<"client" | "internal">(
+    "client"
+  );
+  const [isPinConfirmOpen, setIsPinConfirmOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { data: projectDetailsResponse } = useGetProjectsDetailData(
+    projectId?.toString()
+  );
+  const project = (projectDetailsResponse as any)?.data;
+
+  const { mutateAsync: pinProject } = usePinProject(projectId?.toString());
+  const { mutateAsync: unpinProject } = useUnpinProject(projectId?.toString());
+
+  const handlePinToggle = () => {
+    setIsPinConfirmOpen(true);
+  };
+
+  const handleConfirmPin = async () => {
+    try {
+      setIsSubmitting(true);
+      if (project?.isPinned) {
+        await unpinProject();
+      } else {
+        await pinProject();
+      }
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      setIsPinConfirmOpen(false);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const getMeetingDialogProps = () => {
+    if (meetingType === "internal") {
+      return {
+        title: "Internal Meeting Details",
+        description: "Internal Discussion Points & Notes",
+      };
+    }
+    return {
+      title: "Client Meeting Details",
+      description: "Description or Discussion Points",
+    };
+  };
+
   return (
-    <div>
-      <DrawerContent className="h-full w-full !max-w-[1024px] ml-auto">
-        <DrawerHeader>
-          <Tabs defaultValue="milestone" className="w-full">
-            <TabsList className="mb-4">
-              <TabsTrigger value="milestone">
-                <Flag /> Milestone
-              </TabsTrigger>
-              <TabsTrigger value="overview">
-                <FileSpreadsheet /> Overview
-              </TabsTrigger>
+    <DrawerContent className="h-full w-full !max-w-[1024px] ml-auto">
+      <DrawerHeader>
+        <div className="flex items-center justify-between mb-4 px-1">
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-bold truncate max-w-[600px]">
+              {project?.name || "Project Details"}
+            </h2>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  {project?.isPinned ? (
+                    <Pin
+                      className="h-5 w-5 cursor-pointer text-[#E80339] fill-[#E80339] transition-colors duration-200"
+                      onClick={handlePinToggle}
+                    />
+                  ) : (
+                    <Pin
+                      className="h-5 w-5 cursor-pointer text-muted-foreground transition-colors duration-200 hover:text-[#E80339]"
+                      onClick={handlePinToggle}
+                    />
+                  )}
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  {project?.isPinned ? "Unpin Project" : "Pin Project"}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        </div>
 
-              <TabsTrigger value="analytics">
-                {" "}
-                <SquareCheckBig /> Report
-              </TabsTrigger>
-              <TabsTrigger value="doc">
-                {" "}
-                <File /> Project Documents
-              </TabsTrigger>
-              <TabsTrigger value="server">
-                <Server /> Project Server
-              </TabsTrigger>
-              <TabsTrigger value="client">
-                <User /> Client Meeting
-              </TabsTrigger>
-            </TabsList>
-            <div className="overflow-y-auto h-[calc(100vh-64px)]">
-              <TabsContent value="milestone">
-                <MilestoneList />
-              </TabsContent>
-              <TabsContent value="overview">
-                <OverviewProject />
-              </TabsContent>
+        <Tabs defaultValue="milestone" className="w-full">
+          <TabsList className="mb-4 flex flex-wrap h-auto gap-2">
+            <TabsTrigger value="milestone" className="flex items-center gap-2">
+              <Flag className="w-4 h-4" /> Milestone
+            </TabsTrigger>
+            <TabsTrigger value="overview" className="flex items-center gap-2">
+              <FileSpreadsheet className="w-4 h-4" /> Overview
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center gap-2">
+              <SquareCheckBig className="w-4 h-4" /> Report
+            </TabsTrigger>
+            <TabsTrigger value="doc" className="flex items-center gap-2">
+              <File className="w-4 h-4" /> Documents
+            </TabsTrigger>
+            <TabsTrigger value="server" className="flex items-center gap-2">
+              <Server className="w-4 h-4" /> Server
+            </TabsTrigger>
+            <TabsTrigger value="client" className="flex items-center gap-2">
+              <IconUserStar className="w-4 h-4" /> Client Meeting
+            </TabsTrigger>
+            <TabsTrigger
+              value="internal_meeting"
+              className="flex items-center gap-2"
+            >
+              <Users className="w-4 h-4" /> Internal Meeting
+            </TabsTrigger>
+          </TabsList>
 
-              <TabsContent value="analytics">
-                <ProjectTaskList />
-              </TabsContent>
-              <TabsContent value="doc">
-                <Card>
-                  <div className="flex flex-col space-y-1.5 p-2 ">
-                    <div className="text-2xl font-semibold leading-none tracking-tight">
-                      Files
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      <div className="space-y-4 mt-3">
-                        <div className="flex items-center space-x-3 ">
-                          <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
-                            <IconFileTextFilled className="text-red-500" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium">
-                              Design System Components
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              1.2 MB • PDF
-                            </p>
-                          </div>
-                          <Button className="w-8 h-8">
-                            <Download className="w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
+          <div className="overflow-y-auto h-[calc(100vh-140px)] pr-2">
+            <TabsContent value="milestone">
+              <MilestoneList projectId={projectId} />
+            </TabsContent>
+
+            <TabsContent value="overview">
+              <OverviewProject projectId={projectId} />
+            </TabsContent>
+
+            <TabsContent value="analytics">
+              <ProjectTaskList projectId={projectId} />
+            </TabsContent>
+
+            <TabsContent value="doc">
+              <Card className="p-4">
+                <ProjectDocumentComponent />
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="server">
+              <div className="border p-4 rounded-2xl bg-white shadow-sm">
+                <ProjectServerComponent />
+              </div>
+            </TabsContent>
+
+            {/* CLIENT MEETING */}
+            <TabsContent value="client">
+              <Card>
+                <div className="flex justify-between p-6">
+                  <div>
+                    <h2 className="text-2xl font-semibold">Client Meetings</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Track and manage all client meetings
+                    </p>
                   </div>
-                </Card>
-              </TabsContent>
-              <TabsContent value="server">server</TabsContent>
-            </div>
-          </Tabs>
-        </DrawerHeader>
-      </DrawerContent>
-    </div>
+                  <Button
+                    onClick={() => {
+                      setMeetingType("client");
+                      setOpen(true);
+                    }}
+                  >
+                    <Plus className="w-4 h-4 mr-2" /> Add Meeting
+                  </Button>
+                </div>
+              </Card>
+            </TabsContent>
+
+            {/* INTERNAL MEETING */}
+            <TabsContent value="internal_meeting">
+              <Card>
+                <div className="flex justify-between p-6">
+                  <div>
+                    <h2 className="text-2xl font-semibold">
+                      Internal Meetings
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      Track and manage internal team meetings
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      setMeetingType("internal");
+                      setOpen(true);
+                    }}
+                  >
+                    <Plus className="w-4 h-4 mr-2" /> Add Meeting
+                  </Button>
+                </div>
+              </Card>
+            </TabsContent>
+          </div>
+        </Tabs>
+      </DrawerHeader>
+
+      <ClientMeetingDialog
+        open={open}
+        onOpenChange={setOpen}
+        onSubmit={(data) => console.log(data)}
+        loading={false}
+        {...getMeetingDialogProps()}
+      />
+
+      <ConfirmDialog
+        open={isPinConfirmOpen}
+        onOpenChange={setIsPinConfirmOpen}
+        title={project?.isPinned ? "Unpin Project" : "Pin Project"}
+        desc={
+          project?.isPinned
+            ? `Are you sure you want to unpin ${project?.name || "this"} project?`
+            : `Are you sure you want to pin ${project?.name || "this"} project?`
+        }
+        confirmText={project?.isPinned ? "Unpin" : "Pin"}
+        destructive={false}
+        handleConfirm={handleConfirmPin}
+        isLoading={isSubmitting}
+      />
+    </DrawerContent>
   );
 };

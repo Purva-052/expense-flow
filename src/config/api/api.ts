@@ -36,6 +36,8 @@ const API = {
     server_project: "/project-servers",
     pin_project: "/pin",
     remove_pin_project: "/pin",
+    project_milestones: "/Project-milestones/upload",
+    milestone_sample: "/Project-milestones/download-sample",
   },
   project_types: {
     list: "/project-types",

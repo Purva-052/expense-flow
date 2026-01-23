@@ -9,6 +9,7 @@ import Board from "./components/Board";
 import InquiryTab from "./components/inquiryTab";
 import ProjectPage from "./components/project-view/project-page";
 import ResourceTab from "./components/resourceTab";
+import { HistoryProjectModal } from "../projects/components/history-modal";
 
 const ProjectBoard = () => {
   const [activeTab, setActiveTab] = useState("project_details");
@@ -36,7 +37,10 @@ const ProjectBoard = () => {
               {/* Tab Headers */}
               <TabsList className="flex flex-wrap w-[680px]  mb-2">
                 <TabsTrigger value="project_details">
-                  project details
+                  Project Details
+                  {projectCount !== null && (
+                    <span className="ml-1">({projectCount})</span>
+                  )}
                 </TabsTrigger>
 
                 <TabsTrigger value="board">
@@ -64,7 +68,7 @@ const ProjectBoard = () => {
 
               {/* Board Tab */}
               <TabsContent value="project_details">
-                <ProjectPage />
+                <ProjectPage onTotalCountChange={setProjectCount} />
               </TabsContent>
               <TabsContent value="board">
                 <Board
@@ -112,6 +116,7 @@ const ProjectBoard = () => {
           )}
         </Main>
       )}
+      <HistoryProjectModal />
     </>
   );
 };
