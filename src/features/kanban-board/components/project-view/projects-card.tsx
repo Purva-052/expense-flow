@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreVertical, Calendar, CheckSquare, BarChart3 } from "lucide-react";
+import { MoreVertical, Calendar } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,12 +14,9 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
-import { CommonModal } from "@/components/common-modal";
 import { ProjectDetails } from "./project-details";
 import { Drawer } from "@/components/ui/drawer";
 import { useProjectsStore } from "../../../projects/stores/useProjectsStore";
@@ -47,7 +44,6 @@ const priorityColorMap: any = {
 };
 
 export function ProjectCard({
-  id,
   title,
   status,
   statusColor,

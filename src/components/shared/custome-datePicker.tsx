@@ -43,7 +43,7 @@ export function CustomDatePicker({
 }: Readonly<CustomDatePickerProps>) {
   const [open, setOpen] = useState(false);
   const [month, setMonth] = useState(defaultMonth || new Date());
-  
+
   // Update month when defaultMonth changes
   useEffect(() => {
     if (defaultMonth) {
@@ -133,7 +133,7 @@ export function CustomDatePicker({
               </div>
 
               {/* ✅ Fixed-height container for calendar */}
-              <div className="h-[340px] overflow-hidden">
+              <div className="h-[230px] overflow-hidden">
                 <Calendar
                   mode="single"
                   month={month}

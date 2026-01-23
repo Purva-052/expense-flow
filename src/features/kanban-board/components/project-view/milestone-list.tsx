@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ColumnDef, PaginationState } from "@tanstack/react-table";
@@ -19,6 +20,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
+import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import HoursLogs from "./hours-logs";
 import { CommonModal } from "@/components/common-modal";
@@ -208,8 +210,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
     });
   };
 
-  const handleViewLog = (row: ProjectReport) => {
-    setSelectedRow(row);
+  const handleViewLog = () => {
     setOpenLogsModal(true);
   };
 
