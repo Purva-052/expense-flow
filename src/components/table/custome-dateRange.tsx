@@ -13,9 +13,11 @@ import { format, isSameDay } from "date-fns";
 export default function DateRangeFilter({
   placeholder,
   onChange,
+  disabled,
 }: {
   placeholder?: string;
   onChange?: (val: { from: Date; to?: Date } | undefined) => void;
+  disabled?: any;
 }) {
   const [date, setDate] = useState<{ from: Date; to?: Date } | undefined>();
   const [open, setOpen] = useState(false);
@@ -113,6 +115,7 @@ export default function DateRangeFilter({
           captionLayout="dropdown"
           fromYear={2015}
           toYear={2050}
+          disabled={disabled}
         />
       </PopoverContent>
     </Popover>

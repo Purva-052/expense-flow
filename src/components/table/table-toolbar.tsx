@@ -82,6 +82,7 @@ export function DataTableToolbarCompact({
                 key={filter.key}
                 placeholder={filter.placeholder ?? "Pick a date range"}
                 onChange={filter.onChange}
+                disabled={filter.disable}
               />
             );
           }
