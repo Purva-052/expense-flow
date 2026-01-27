@@ -195,6 +195,7 @@ const AuthenticatedLinodeServerDashboardDetailIdRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof AuthenticatedIndexRoute
   '/forgot-password': typeof authForgotPasswordRoute
   '/otp': typeof authOtpRoute
   '/sign-in': typeof authSignInRoute
@@ -204,22 +205,21 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/unauthorized': typeof errorsUnauthorizedRoute
-  '/': typeof AuthenticatedIndexRoute
-  '/clients': typeof AuthenticatedClientsIndexRoute
-  '/conference-room-booking': typeof AuthenticatedConferenceRoomBookingIndexRoute
-  '/daily-report': typeof AuthenticatedDailyReportIndexRoute
-  '/inquiry-type': typeof AuthenticatedInquiryTypeIndexRoute
-  '/inquiry': typeof AuthenticatedInquiryIndexRoute
-  '/interviews': typeof AuthenticatedInterviewsIndexRoute
-  '/linode-server-dashboard': typeof AuthenticatedLinodeServerDashboardIndexRoute
-  '/new-joinees': typeof AuthenticatedNewJoineesIndexRoute
-  '/profile': typeof AuthenticatedProfileIndexRoute
-  '/project-type': typeof AuthenticatedProjectTypeIndexRoute
-  '/projects': typeof AuthenticatedProjectsIndexRoute
-  '/server': typeof AuthenticatedServerIndexRoute
-  '/technology': typeof AuthenticatedTechnologyIndexRoute
-  '/transactions-logs': typeof AuthenticatedTransactionsLogsIndexRoute
-  '/users': typeof AuthenticatedUsersIndexRoute
+  '/clients/': typeof AuthenticatedClientsIndexRoute
+  '/conference-room-booking/': typeof AuthenticatedConferenceRoomBookingIndexRoute
+  '/daily-report/': typeof AuthenticatedDailyReportIndexRoute
+  '/inquiry-type/': typeof AuthenticatedInquiryTypeIndexRoute
+  '/inquiry/': typeof AuthenticatedInquiryIndexRoute
+  '/interviews/': typeof AuthenticatedInterviewsIndexRoute
+  '/linode-server-dashboard/': typeof AuthenticatedLinodeServerDashboardIndexRoute
+  '/new-joinees/': typeof AuthenticatedNewJoineesIndexRoute
+  '/profile/': typeof AuthenticatedProfileIndexRoute
+  '/project-type/': typeof AuthenticatedProjectTypeIndexRoute
+  '/projects/': typeof AuthenticatedProjectsIndexRoute
+  '/server/': typeof AuthenticatedServerIndexRoute
+  '/technology/': typeof AuthenticatedTechnologyIndexRoute
+  '/transactions-logs/': typeof AuthenticatedTransactionsLogsIndexRoute
+  '/users/': typeof AuthenticatedUsersIndexRoute
   '/linode-server-dashboard/detail/$id': typeof AuthenticatedLinodeServerDashboardDetailIdRoute
   '/projects/detail/$id': typeof AuthenticatedProjectsDetailIdRoute
 }
@@ -286,6 +286,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/forgot-password'
     | '/otp'
     | '/sign-in'
@@ -295,22 +296,21 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/unauthorized'
-    | '/'
-    | '/clients'
-    | '/conference-room-booking'
-    | '/daily-report'
-    | '/inquiry-type'
-    | '/inquiry'
-    | '/interviews'
-    | '/linode-server-dashboard'
-    | '/new-joinees'
-    | '/profile'
-    | '/project-type'
-    | '/projects'
-    | '/server'
-    | '/technology'
-    | '/transactions-logs'
-    | '/users'
+    | '/clients/'
+    | '/conference-room-booking/'
+    | '/daily-report/'
+    | '/inquiry-type/'
+    | '/inquiry/'
+    | '/interviews/'
+    | '/linode-server-dashboard/'
+    | '/new-joinees/'
+    | '/profile/'
+    | '/project-type/'
+    | '/projects/'
+    | '/server/'
+    | '/technology/'
+    | '/transactions-logs/'
+    | '/users/'
     | '/linode-server-dashboard/detail/$id'
     | '/projects/detail/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -392,7 +392,7 @@ declare module '@tanstack/react-router' {
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -469,105 +469,105 @@ declare module '@tanstack/react-router' {
     '/_authenticated/users/': {
       id: '/_authenticated/users/'
       path: '/users'
-      fullPath: '/users'
+      fullPath: '/users/'
       preLoaderRoute: typeof AuthenticatedUsersIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/transactions-logs/': {
       id: '/_authenticated/transactions-logs/'
       path: '/transactions-logs'
-      fullPath: '/transactions-logs'
+      fullPath: '/transactions-logs/'
       preLoaderRoute: typeof AuthenticatedTransactionsLogsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/technology/': {
       id: '/_authenticated/technology/'
       path: '/technology'
-      fullPath: '/technology'
+      fullPath: '/technology/'
       preLoaderRoute: typeof AuthenticatedTechnologyIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/server/': {
       id: '/_authenticated/server/'
       path: '/server'
-      fullPath: '/server'
+      fullPath: '/server/'
       preLoaderRoute: typeof AuthenticatedServerIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/projects/': {
       id: '/_authenticated/projects/'
       path: '/projects'
-      fullPath: '/projects'
+      fullPath: '/projects/'
       preLoaderRoute: typeof AuthenticatedProjectsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/project-type/': {
       id: '/_authenticated/project-type/'
       path: '/project-type'
-      fullPath: '/project-type'
+      fullPath: '/project-type/'
       preLoaderRoute: typeof AuthenticatedProjectTypeIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/profile/': {
       id: '/_authenticated/profile/'
       path: '/profile'
-      fullPath: '/profile'
+      fullPath: '/profile/'
       preLoaderRoute: typeof AuthenticatedProfileIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/new-joinees/': {
       id: '/_authenticated/new-joinees/'
       path: '/new-joinees'
-      fullPath: '/new-joinees'
+      fullPath: '/new-joinees/'
       preLoaderRoute: typeof AuthenticatedNewJoineesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/linode-server-dashboard/': {
       id: '/_authenticated/linode-server-dashboard/'
       path: '/linode-server-dashboard'
-      fullPath: '/linode-server-dashboard'
+      fullPath: '/linode-server-dashboard/'
       preLoaderRoute: typeof AuthenticatedLinodeServerDashboardIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/interviews/': {
       id: '/_authenticated/interviews/'
       path: '/interviews'
-      fullPath: '/interviews'
+      fullPath: '/interviews/'
       preLoaderRoute: typeof AuthenticatedInterviewsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/inquiry/': {
       id: '/_authenticated/inquiry/'
       path: '/inquiry'
-      fullPath: '/inquiry'
+      fullPath: '/inquiry/'
       preLoaderRoute: typeof AuthenticatedInquiryIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/inquiry-type/': {
       id: '/_authenticated/inquiry-type/'
       path: '/inquiry-type'
-      fullPath: '/inquiry-type'
+      fullPath: '/inquiry-type/'
       preLoaderRoute: typeof AuthenticatedInquiryTypeIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/daily-report/': {
       id: '/_authenticated/daily-report/'
       path: '/daily-report'
-      fullPath: '/daily-report'
+      fullPath: '/daily-report/'
       preLoaderRoute: typeof AuthenticatedDailyReportIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/conference-room-booking/': {
       id: '/_authenticated/conference-room-booking/'
       path: '/conference-room-booking'
-      fullPath: '/conference-room-booking'
+      fullPath: '/conference-room-booking/'
       preLoaderRoute: typeof AuthenticatedConferenceRoomBookingIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/clients/': {
       id: '/_authenticated/clients/'
       path: '/clients'
-      fullPath: '/clients'
+      fullPath: '/clients/'
       preLoaderRoute: typeof AuthenticatedClientsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
