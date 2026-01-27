@@ -53,6 +53,7 @@ import {
 import { DeveloperChip } from "../developer-chip";
 import { DeveloperDialog } from "../developer-dialog";
 import { ProjectCard } from "./projects-card";
+import { StickyNotesDialog } from "@/features/sticky-notes/components/sticky-notes-dialog";
 import { Input } from "@/components/ui/input";
 import useDebounce from "@/hooks/use-debaunce";
 import { useGetProjectTypesDropdownList } from "@/features/Project-type/services";
@@ -487,27 +488,29 @@ const ProjectPage = ({ onTotalCountChange }: any) => {
                         strategy={rectSortingStrategy}
                       >
                         <div className="flex -space-x-2 mb-2 items-center">
-                          {p?.developerAllocations?.slice(0, 5).map((allocation: any) => {
-                            const isMyChip =
-                              allocation.developer.id === currentUserId;
-                            const canClick = !isDeveloperView || isMyChip;
-                            return (
-                              <DeveloperChip
-                                key={`project-${p.id}-${allocation.developer.id}`}
-                                developer={allocation.developer}
-                                containerId={p.id}
-                                endDate={allocation.endDate}
-                                variant="avatar"
-                                onClick={
-                                  canClick
-                                    ? () =>
-                                        handleDeveloperClick(allocation, p.id)
-                                    : undefined
-                                }
-                                disabled={isDeveloperView}
-                              />
-                            );
-                          })}
+                          {p?.developerAllocations
+                            ?.slice(0, 5)
+                            .map((allocation: any) => {
+                              const isMyChip =
+                                allocation.developer.id === currentUserId;
+                              const canClick = !isDeveloperView || isMyChip;
+                              return (
+                                <DeveloperChip
+                                  key={`project-${p.id}-${allocation.developer.id}`}
+                                  developer={allocation.developer}
+                                  containerId={p.id}
+                                  endDate={allocation.endDate}
+                                  variant="avatar"
+                                  onClick={
+                                    canClick
+                                      ? () =>
+                                          handleDeveloperClick(allocation, p.id)
+                                      : undefined
+                                  }
+                                  disabled={isDeveloperView}
+                                />
+                              );
+                            })}
                           {p?.developerAllocations?.length > 5 && (
                             <TooltipProvider>
                               <Tooltip>
@@ -518,12 +521,19 @@ const ProjectPage = ({ onTotalCountChange }: any) => {
                                 </TooltipTrigger>
                                 <TooltipContent>
                                   <div className="space-y-1">
-                                    <p className="font-semibold text-xs border-b pb-1 mb-1">Additional Team Members:</p>
-                                    {p.developerAllocations.slice(5).map((allocation: any) => (
-                                      <p key={allocation.developer.id} className="text-[10px]">
-                                        {allocation.developer.fullName}
-                                      </p>
-                                    ))}
+                                    <p className="font-semibold text-xs border-b pb-1 mb-1">
+                                      Additional Team Members:
+                                    </p>
+                                    {p.developerAllocations
+                                      .slice(5)
+                                      .map((allocation: any) => (
+                                        <p
+                                          key={allocation.developer.id}
+                                          className="text-[10px]"
+                                        >
+                                          {allocation.developer.fullName}
+                                        </p>
+                                      ))}
                                   </div>
                                 </TooltipContent>
                               </Tooltip>
@@ -741,9 +751,9 @@ const ProjectPage = ({ onTotalCountChange }: any) => {
         }}
         refetchAvailableDevelopers={AllDevelopersRefetch}
       />
+      <StickyNotesDialog />
     </div>
   );
 };
 
 export default ProjectPage;
-

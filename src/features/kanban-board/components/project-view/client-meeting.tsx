@@ -1,6 +1,21 @@
 import { useState } from "react";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import {
+  ClassicEditor,
+  Bold,
+  Essentials,
+  Italic,
+  Paragraph,
+  Undo,
+  Heading,
+  Link,
+  List,
+  TodoList,
+  BlockQuote,
+  CodeBlock,
+} from "ckeditor5";
+
+import "ckeditor5/ckeditor5.css";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -124,6 +139,19 @@ export function ClientMeetingDialog({
                         }}
                         disabled={loading || !editorReady}
                         config={{
+                          plugins: [
+                            Essentials,
+                            Paragraph,
+                            Heading,
+                            Bold,
+                            Italic,
+                            Link,
+                            List,
+                            TodoList,
+                            Undo,
+                            BlockQuote,
+                            CodeBlock,
+                          ],
                           toolbar: [
                             "heading",
                             "|",
@@ -162,6 +190,7 @@ export function ClientMeetingDialog({
                               },
                             ],
                           },
+                          licenseKey: "GPL",
                         }}
                       />
                     </div>
