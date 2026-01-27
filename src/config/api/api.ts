@@ -31,6 +31,7 @@ const API = {
     create: "/projects",
     delete: "/projects",
     assign_developers: "/developer-allocations",
+    sticky_notes: "/sticky-notes",
     status_change: "project-status-logs",
     history: "/project-status-logs/project",
     server_project: "/project-servers",

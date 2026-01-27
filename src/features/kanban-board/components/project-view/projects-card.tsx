@@ -124,6 +124,11 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
     setOpen("history");
   };
 
+  const handleAddStickyNote = () => {
+    setCurrentRow(project);
+    setOpen("sticky-note");
+  };
+
   const title = project?.name || "N/A";
   const currentStatus = project?.currentStatus || "N/A";
   const deadline = project?.expectedCompletionDate
@@ -217,10 +222,12 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
                   <DropdownMenuItem onClick={() => setOpenDrawer(true)}>
                     View Details
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleAddStickyNote}>
+                    View Sticky Notes
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleViewTimeline}>
                     View Timeline
                   </DropdownMenuItem>
-                  {/* UPDATE: This now opens the new Dialog */}
                   {canEditStatus && (
                     <DropdownMenuItem onClick={() => setStatusDialogOpen(true)}>
                       Change Status
