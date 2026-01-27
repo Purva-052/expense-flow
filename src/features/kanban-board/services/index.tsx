@@ -18,6 +18,7 @@ const GET_BECOMEING_AVAILABLE_DEVELOPER_API_URL =
   API.users.becoming_available_developer;
 const GET_PROJECT_HANDLER_API_URL = API.users.project_handler;
 const GET_Inquiry_API_URL = API.inquiry.dashboard;
+const GET_MILESTONE_LIST_API_URL = API.projects.project_milestone_list;
 
 export const useGetAvailableDeveloperList = (params?: any) => {
   return useFetchData({ url: GET_API_URL, params });
@@ -401,4 +402,28 @@ export const useUploadMilestoneFile = (): UseUploadMilestoneFileReturn => {
     isUploading,
     uploadFile,
   };
+};
+
+/**
+ * Custom hook to create a milestone manually
+ * Uses the add_milestones endpoint
+ */
+export const useCreateManualMilestone = (onSuccess?: () => void) => {
+  return usePostData({
+    url: API.projects.add_milestones,
+    refetchQueries: [API.dropdown_api.milestones],
+    onSuccess: () => {
+      if (onSuccess) onSuccess();
+    },
+  });
+};
+
+export const useAddMileStones = () => {
+  return usePostData({
+    url: API.projects.add_milestones,
+    refetchQueries: [GET_MILESTONE_LIST_API_URL],
+    // onSuccess: () => {
+    //   setOpen(null);
+    // },
+  });
 };

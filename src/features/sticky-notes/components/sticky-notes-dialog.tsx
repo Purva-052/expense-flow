@@ -34,13 +34,13 @@ import {
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-const COLORS = [
-  { name: "yellow", bg: "bg-yellow-100", border: "border-yellow-200" },
-  { name: "blue", bg: "bg-blue-100", border: "border-blue-200" },
-  { name: "green", bg: "bg-green-100", border: "border-green-200" },
-  { name: "pink", bg: "bg-pink-100", border: "border-pink-200" },
-  { name: "purple", bg: "bg-purple-100", border: "border-purple-200" },
-];
+// const COLORS = [
+//   { name: "yellow", bg: "bg-yellow-100", border: "border-yellow-200" },
+//   { name: "blue", bg: "bg-blue-100", border: "border-blue-200" },
+//   { name: "green", bg: "bg-green-100", border: "border-green-200" },
+//   { name: "pink", bg: "bg-pink-100", border: "border-pink-200" },
+//   { name: "purple", bg: "bg-purple-100", border: "border-purple-200" },
+// ];
 
 export const StickyNotesDialog = () => {
   const { open, setOpen, currentRow } = useProjectsStore();
