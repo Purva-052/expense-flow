@@ -335,7 +335,7 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
       </div>
 
       <Drawer open={openDrawer} onOpenChange={setOpenDrawer} direction="right">
-        <ProjectDetails projectId={project?.id} />
+        {openDrawer && <ProjectDetails projectId={project?.id} />}
       </Drawer>
 
       {/* NEW STATUS DIALOG */}
