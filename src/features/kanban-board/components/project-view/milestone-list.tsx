@@ -22,7 +22,7 @@ import {
   useUploadMilestoneFile,
 } from "@/features/kanban-board/services";
 import { ExcelImportPreview, ExcelPreviewData } from "./excel-import-preview";
-import * as XLSX from "xlsx";
+import * as ExcelJS from "exceljs";
 
 /* =======================
    Types
@@ -231,19 +231,41 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
     setSelectedFile(file);
 
     try {
-      // Read file
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
         try {
-          const data = e.target?.result;
-          const workbook = XLSX.read(data, { type: "binary" });
-          const sheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[sheetName];
+          const arrayBuffer = e.target?.result as ArrayBuffer;
+          const workbook = new ExcelJS.Workbook();
 
-          // Convert to JSON to get headers and rows
-          const jsonData = XLSX.utils.sheet_to_json(worksheet, {
-            header: 1,
-          }) as (string | number | boolean | null)[][];
+          if (file.name.endsWith(".csv")) {
+            // For CSV in browser, we can use the web stream from Response
+            await workbook.csv.read(new Response(arrayBuffer).body! as any);
+          } else {
+            await workbook.xlsx.load(arrayBuffer);
+          }
+
+          const worksheet = workbook.worksheets[0];
+          if (!worksheet) {
+            throw new Error("No worksheet found");
+          }
+
+          const jsonData: (string | number | boolean | null)[][] = [];
+
+          worksheet.eachRow({ includeEmpty: true }, (row: ExcelJS.Row) => {
+            // row.values is 1-indexed, first element is null/undefined
+            const values = Array.isArray(row.values) ? row.values.slice(1) : [];
+            // Clean up values (exceljs can return objects for rich text or formulas)
+            const cleanValues = values.map((v: ExcelJS.CellValue) => {
+              if (v && typeof v === "object" && "richText" in (v as object)) {
+                return (v as any).richText.map((t: any) => t.text).join("");
+              }
+              if (v && typeof v === "object" && "result" in (v as object)) {
+                return (v as any).result;
+              }
+              return v as string | number | boolean | null;
+            });
+            jsonData.push(cleanValues);
+          });
 
           if (jsonData.length > 0) {
             const headers = jsonData[0].map((h) => String(h || ""));
@@ -265,7 +287,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
         }
       };
 
-      reader.readAsBinaryString(file);
+      reader.readAsArrayBuffer(file);
     } catch (error) {
       console.error("Error reading file:", error);
       alert("Error reading file.");
