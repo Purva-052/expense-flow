@@ -123,6 +123,7 @@ const API = {
     delete: "/transaction-logs",
   },
   daily_report: {
+    create: "/daily-reports",
     list: "/daily-reports",
     update: "/daily-reports",
     delete: "/daily-reports",

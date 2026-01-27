@@ -154,10 +154,12 @@ export const useGetProjectMilestonesList = (
 
 export const useGetMilestoneTasks = (
   milestoneId: any,
+  params?: any,
   enabled: boolean = true
 ) => {
   return useFetchData<any>({
     url: `${API.projects.milestone_list}/${milestoneId}`,
+    params,
     enabled: !!milestoneId && enabled,
   });
 };
