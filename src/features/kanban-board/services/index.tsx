@@ -140,6 +140,27 @@ export const useGetInquiryDashboardData = (params?: any) => {
   });
 };
 
+export const useGetProjectMilestonesList = (
+  projectId: any,
+  enabled: boolean = true
+) => {
+  return useFetchData<any>({
+    url: API.dropdown_api.milestones,
+    params: { projectId },
+    enabled: !!projectId && enabled,
+  });
+};
+
+export const useGetMilestoneTasks = (
+  milestoneId: any,
+  enabled: boolean = true
+) => {
+  return useFetchData<any>({
+    url: `${API.projects.milestone_list}/${milestoneId}`,
+    enabled: !!milestoneId && enabled,
+  });
+};
+
 /* =======================
    Milestone Hooks
 ======================= */
@@ -257,7 +278,10 @@ interface UploadResponse {
 
 interface UseUploadMilestoneFileReturn {
   isUploading: boolean;
-  uploadFile: (file: File, projectId?: string | number) => Promise<void>;
+  uploadFile: (
+    file: File,
+    projectId?: string | number
+  ) => Promise<UploadResponse | undefined>;
 }
 
 /**
@@ -359,6 +383,7 @@ export const useUploadMilestoneFile = (): UseUploadMilestoneFileReturn => {
           toast.success(
             response?.data?.message || "File uploaded successfully"
           );
+          return response.data;
         } else {
           toast.error(response?.data?.message || "Failed to upload file");
         }

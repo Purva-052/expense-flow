@@ -85,6 +85,10 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
     };
   };
 
+  const handleMeetingSubmit = (data: any) => {
+    console.log(data);
+  };
+
   return (
     <DrawerContent className="h-full w-full !max-w-[1024px] ml-auto">
       <DrawerHeader>
@@ -144,7 +148,7 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
             </TabsTrigger>
           </TabsList>
 
-          <div className="overflow-y-auto h-[calc(100vh-140px)] pr-2">
+          <div className="overflow-y-auto h-[calc(100vh-131px)] pr-2">
             <TabsContent value="milestone">
               <MilestoneList projectId={projectId} />
             </TabsContent>
@@ -221,7 +225,7 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
       <ClientMeetingDialog
         open={open}
         onOpenChange={setOpen}
-        onSubmit={(data) => console.log(data)}
+        onSubmit={(data) => handleMeetingSubmit(data)}
         loading={false}
         {...getMeetingDialogProps()}
       />

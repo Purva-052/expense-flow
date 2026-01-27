@@ -24,8 +24,6 @@ import { useQueryClient } from "@tanstack/react-query";
 
 export default function DailyReportPage() {
   const { user } = useAuthStore();
-  console.log("🚀 ~ DailyReportPage ~ user:", user);
-  console.log("🚀 ~ DailyReportPage ~ user.role:", user?.user?.role);
   const [listParams, setListParams] = useState({
     pageSize: 10,
     currentPage: 1,
