@@ -9,7 +9,7 @@ import {
   SquareCheckBig,
   Users,
   Plus,
-  Pin,
+  // Pin,
 } from "lucide-react";
 import MilestoneList from "./milestone-list";
 import OverviewProject from "./overview-project";
@@ -33,7 +33,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
-  TooltipTrigger,
+  // TooltipTrigger,
 } from "@/components/ui/tooltip";
 
 export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
@@ -53,9 +53,9 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
   const { mutateAsync: pinProject } = usePinProject(projectId?.toString());
   const { mutateAsync: unpinProject } = useUnpinProject(projectId?.toString());
 
-  const handlePinToggle = () => {
-    setIsPinConfirmOpen(true);
-  };
+  // const handlePinToggle = () => {
+  //   setIsPinConfirmOpen(true);
+  // };
 
   const handleConfirmPin = async () => {
     try {
