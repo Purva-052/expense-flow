@@ -344,6 +344,12 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
             </>
           )}
         </Button>
+
+        <div className="justify-end">
+          <Button onClick={handleViewLog} variant="outline" size="default">
+            View Hours Log
+          </Button>
+        </div>
         {/* )} */}
       </div>
 
