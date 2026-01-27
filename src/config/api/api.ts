@@ -42,6 +42,7 @@ const API = {
     milestone_sample: "/project-milestones/download-sample",
     add_milestones: "/project-milestones",
     project_milestone_list: "/project-milestones",
+    delete_milestone: "/project-milestones",
   },
   project_types: {
     list: "/project-types",

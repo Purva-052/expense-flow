@@ -9,7 +9,9 @@ import usePatchData from "@/hooks/use-patch-data";
 import usePostData from "@/hooks/use-post-data";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { buildQueryString } from "@/utils/storage";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import instance from "@/config/instance/instance";
+import { useBoardStore } from "../store/useBoardStore";
 
 const GET_API_URL = API.users.available_developers;
 const PROJECTS_API_URL = API.projects.list;
@@ -427,5 +429,24 @@ export const useAddMileStones = () => {
     // onSuccess: () => {
     //   setOpen(null);
     // },
+  });
+};
+
+export const useDeleteMilestone = () => {
+  const { setOpen } = useBoardStore();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, taskId }: { id: string | number; taskId?: string | number }) => {
+      let url = `${API.projects.delete_milestone}/${id}`;
+      if (taskId) {
+        url += `?taskId=${taskId}`;
+      }
+      const response = await instance.delete({ url });
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [GET_MILESTONE_LIST_API_URL] });
+      setOpen(null);
+    },
   });
 };

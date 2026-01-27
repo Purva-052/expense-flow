@@ -14,6 +14,7 @@ import {
   useUploadMilestoneFile,
   useGetProjectMilestonesList,
   useGetMilestoneTasks,
+  useDeleteMilestone,
 } from "@/features/kanban-board/services";
 import { ExcelImportPreview, ExcelPreviewData } from "./excel-import-preview";
 import { AddManualMilestone } from "./add-manual-milestone";
@@ -21,6 +22,8 @@ import { DailyReportDialog } from "@/features/daily-report/components/daily-repo
 import * as ExcelJS from "exceljs";
 import { useQueryClient } from "@tanstack/react-query";
 import API from "@/config/api/api";
+import { Trash2 } from "lucide-react";
+import { DeleteModal } from "@/components/model/delete-model";
 
 /* =======================
    Types
@@ -50,10 +53,12 @@ const TaskActions = ({
   task,
   onAddLog,
   onViewLog,
+  onDeleteTask,
 }: {
   task: MilestoneTask;
   onAddLog: (task: MilestoneTask) => void;
   onViewLog: (task: MilestoneTask) => void;
+  onDeleteTask: (task: MilestoneTask) => void;
 }) => {
   return (
     <div className="flex gap-2">
@@ -66,13 +71,24 @@ const TaskActions = ({
       <Button variant="outline" size="sm" onClick={() => onViewLog(task)}>
         View Log
       </Button>
+
+      {/* Delete Task */}
+      <Button
+        variant="ghost"
+        size="sm"
+        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+        onClick={() => onDeleteTask(task)}
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button>
     </div>
   );
 };
 
 const getReportColumns = (
   onAddLog: (row: MilestoneTask) => void,
-  onViewLog: (row: MilestoneTask) => void
+  onViewLog: (row: MilestoneTask) => void,
+  onDeleteTask: (row: MilestoneTask) => void
 ): ColumnDef<MilestoneTask>[] => [
   {
     accessorKey: "taskName",
@@ -105,6 +121,7 @@ const getReportColumns = (
         task={row.original}
         onAddLog={onAddLog}
         onViewLog={onViewLog}
+        onDeleteTask={onDeleteTask}
       />
     ),
   },
@@ -132,6 +149,9 @@ const ActiveMilestoneContent = ({
   const [selectedTaskForLog, setSelectedTaskForLog] =
     useState<MilestoneTask | null>(null);
 
+  const [itemToDelete, setItemToDelete] = useState<MilestoneTask | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
   const { data: taskDataResponse, isLoading } = useGetMilestoneTasks(
     milestoneId,
     {
@@ -139,6 +159,30 @@ const ActiveMilestoneContent = ({
       limit: pagination.pageSize,
     }
   );
+
+  const { mutate: deleteMilestone, isPending: isDeleting } = useDeleteMilestone();
+
+  const handleDeleteTask = (task: MilestoneTask) => {
+    setItemToDelete(task);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteTask = () => {
+    if (!itemToDelete) return;
+
+    deleteMilestone(
+      { id: milestoneId, taskId: itemToDelete.id },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: [`${API.projects.milestone_list}/${milestoneId}`],
+          });
+          setShowDeleteModal(false);
+          setItemToDelete(null);
+        },
+      }
+    );
+  };
 
   const milestone = taskDataResponse?.data || taskDataResponse;
 
@@ -191,16 +235,20 @@ const ActiveMilestoneContent = ({
       {/* Table */}
       <GlobalTable<MilestoneTask>
         data={tasks}
-        columns={getReportColumns((task) => {
-          setSelectedTaskForLog(task);
-          setAddLogOpen(true);
-        }, onViewTaskLog)}
+        columns={getReportColumns(
+          (task) => {
+            setSelectedTaskForLog(task);
+            setAddLogOpen(true);
+          },
+          onViewTaskLog,
+          handleDeleteTask
+        )}
         totalCount={metadata?.total || tasks.length}
         currentPage={metadata?.page || pagination.pageIndex + 1}
         pageSize={metadata?.limit || pagination.pageSize}
         onPaginationChange={setPagination}
         isPaginationEnabled={true}
-        loading={isLoading}
+        loading={isLoading || isDeleting}
       />
 
       <DailyReportDialog
@@ -216,6 +264,14 @@ const ActiveMilestoneContent = ({
             queryKey: [`${API.projects.milestone_list}/${milestoneId}`],
           });
         }}
+      />
+
+      <DeleteModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmDeleteTask}
+        itemName={itemToDelete?.taskName}
+        loading={isDeleting}
       />
     </div>
   );
@@ -234,6 +290,10 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isParsingFile, setIsParsingFile] = useState(false);
+
+  const [milestoneToDelete, setMilestoneToDelete] = useState<any | null>(null);
+  const [showMilestoneDeleteModal, setShowMilestoneDeleteModal] =
+    useState(false);
 
   const { isDownloading, downloadSample } = useDownloadMilestoneSample();
   const { isUploading, uploadFile } = useUploadMilestoneFile();
@@ -276,6 +336,33 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
       }
     }
   }, [milestones, activeTab]);
+
+  const { mutate: deleteMilestone, isPending: isDeletingMilestone } = useDeleteMilestone();
+
+  const handleDeleteMilestone = (milestone: any) => {
+    setMilestoneToDelete(milestone);
+    setShowMilestoneDeleteModal(true);
+  };
+
+  const confirmDeleteMilestone = () => {
+    if (!milestoneToDelete) return;
+
+    deleteMilestone(
+      { id: milestoneToDelete.id },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: [API.dropdown_api.milestones, { projectId }],
+          });
+          if (activeTab === String(milestoneToDelete.id)) {
+            setActiveTab("");
+          }
+          setShowMilestoneDeleteModal(false);
+          setMilestoneToDelete(null);
+        },
+      }
+    );
+  };
 
   // const handleViewLog = () => {
   //   setOpenLogsModal(true);
@@ -443,8 +530,22 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
         >
           <TabsList className="mb-2">
             {milestones.map((m) => (
-              <TabsTrigger key={m.id} value={String(m.id)}>
+              <TabsTrigger
+                key={m.id}
+                value={String(m.id)}
+                className="group relative pr-8"
+              >
                 {m.name || m.milestoneName}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteMilestone(m);
+                  }}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 rounded-md p-1 opacity-0 group-hover:opacity-100 hover:bg-destructive/10 text-destructive transition-all"
+                  title="Delete Milestone"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
               </TabsTrigger>
             ))}
           </TabsList>
@@ -500,6 +601,14 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
           projectId={projectId}
         />
       )}
+
+      <DeleteModal
+        isOpen={showMilestoneDeleteModal}
+        onClose={() => setShowMilestoneDeleteModal(false)}
+        onConfirm={confirmDeleteMilestone}
+        itemName={milestoneToDelete?.name || milestoneToDelete?.milestoneName}
+        loading={isDeletingMilestone}
+      />
     </>
   );
 };
