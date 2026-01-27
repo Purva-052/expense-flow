@@ -20,6 +20,5 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
       "@tabler/icons-react": "@tabler/icons-react/dist/esm/icons/index.mjs",
     },
-    dedupe: ["ckeditor5", "@ckeditor/ckeditor5-react"],
   },
 });
