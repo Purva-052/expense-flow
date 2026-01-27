@@ -40,6 +40,8 @@ const API = {
     project_milestones: "/project-milestones/upload",
     milestone_list: "/project-milestones",
     milestone_sample: "/project-milestones/download-sample",
+    add_milestones: "/project-milestones",
+    project_milestone_list: "/project-milestones",
   },
   project_types: {
     list: "/project-types",

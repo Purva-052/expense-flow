@@ -435,7 +435,7 @@ const ProjectPage = ({ onTotalCountChange }: any) => {
     <div className="flex flex-col gap-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <GlobalFilterSection filters={filters ?? []} />
-        <div className="flex flex-wrap items-center gap-3 mb-4">
+        {/* <div className="flex flex-wrap items-center gap-3 mb-4">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-orange-500"></span>
             <span className="text-sm font-medium">High</span>
@@ -448,7 +448,7 @@ const ProjectPage = ({ onTotalCountChange }: any) => {
             <span className="w-2 h-2 rounded-full bg-teal-500"></span>
             <span className="text-sm font-medium">Low</span>
           </div>
-        </div>
+        </div> */}
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_320px] h-[75dvh]">

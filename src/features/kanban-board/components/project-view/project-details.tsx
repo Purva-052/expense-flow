@@ -99,7 +99,7 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
             </h2>
             <TooltipProvider>
               <Tooltip>
-                <TooltipTrigger asChild>
+                {/* <TooltipTrigger asChild>
                   {project?.isPinned ? (
                     <Pin
                       className="h-5 w-5 cursor-pointer text-[#E80339] fill-[#E80339] transition-colors duration-200"
@@ -111,7 +111,7 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
                       onClick={handlePinToggle}
                     />
                   )}
-                </TooltipTrigger>
+                </TooltipTrigger> */}
                 <TooltipContent side="right">
                   {project?.isPinned ? "Unpin Project" : "Pin Project"}
                 </TooltipContent>
@@ -122,11 +122,11 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
 
         <Tabs defaultValue="milestone" className="w-full">
           <TabsList className="mb-4 flex flex-wrap h-auto gap-2">
-            <TabsTrigger value="milestone" className="flex items-center gap-2">
-              <Flag className="w-4 h-4" /> Milestone
-            </TabsTrigger>
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <FileSpreadsheet className="w-4 h-4" /> Overview
+            </TabsTrigger>
+            <TabsTrigger value="milestone" className="flex items-center gap-2">
+              <Flag className="w-4 h-4" /> Milestone
             </TabsTrigger>
             <TabsTrigger value="analytics" className="flex items-center gap-2">
               <SquareCheckBig className="w-4 h-4" /> Report

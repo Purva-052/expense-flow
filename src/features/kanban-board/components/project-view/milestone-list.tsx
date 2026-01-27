@@ -24,6 +24,7 @@ import {
   useGetMilestoneTasks,
 } from "@/features/kanban-board/services";
 import { ExcelImportPreview, ExcelPreviewData } from "./excel-import-preview";
+import { AddManualMilestone } from "./add-manual-milestone";
 import * as ExcelJS from "exceljs";
 import { useQueryClient } from "@tanstack/react-query";
 import API from "@/config/api/api";
@@ -247,6 +248,7 @@ const ActiveMilestoneContent = ({
 const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
   const queryClient = useQueryClient();
   const [openLogsModal, setOpenLogsModal] = useState(false);
+  const [openAddMilestone, setOpenAddMilestone] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("");
 
   const [previewData, setPreviewData] = useState<ExcelPreviewData | null>(null);
@@ -296,9 +298,9 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
     }
   }, [milestones, activeTab]);
 
-  const handleViewLog = () => {
-    setOpenLogsModal(true);
-  };
+  // const handleViewLog = () => {
+  //   setOpenLogsModal(true);
+  // };
 
   const handleViewTaskLog = (task: MilestoneTask) => {
     console.log("Viewing log for Task ID:", task.id);
@@ -426,7 +428,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
                   document.getElementById("milestone-file-input")?.click()
                 }
                 disabled={isUploading || isParsingFile}
-                variant="outline"
+                variant="default"
                 size="default"
               >
                 <FileDown className="mr-2 h-4 w-4" size={24} />
@@ -436,8 +438,16 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
           )}
         </div>
 
-        <Button onClick={handleViewLog} variant="outline" size="default">
+        {/* <Button onClick={handleViewLog} variant="outline" size="default">
           View Hours Log
+        </Button> */}
+
+        <Button
+          onClick={() => setOpenAddMilestone(true)}
+          variant="default"
+          size="default"
+        >
+          Add Milestone
         </Button>
       </div>
 
@@ -501,6 +511,15 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
         isLoading={isParsingFile}
         onConfirm={handlePreviewConfirm}
       />
+
+      {/* Manual Milestone Addition Dialog */}
+      {projectId && (
+        <AddManualMilestone
+          open={openAddMilestone}
+          onOpenChange={setOpenAddMilestone}
+          projectId={projectId}
+        />
+      )}
     </>
   );
 };
