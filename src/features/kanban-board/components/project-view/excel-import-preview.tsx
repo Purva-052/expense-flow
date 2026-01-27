@@ -16,7 +16,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Loader2 } from "lucide-react";
 
 export interface ExcelPreviewData {
@@ -78,12 +77,15 @@ export const ExcelImportPreview: React.FC<ExcelImportPreviewProps> = ({
           </div>
         ) : data ? (
           <>
-            <ScrollArea className="flex-1 border rounded-md">
+            <div className="flex-1 min-h-[300px] overflow-auto border rounded-md relative">
               <Table className="min-w-max w-full">
-                <TableHeader className="sticky top-0 bg-muted z-10">
+                <TableHeader className="sticky top-0 bg-white shadow-sm z-20">
                   <TableRow>
                     {data.headers.map((header, index) => (
-                      <TableHead key={index} className="whitespace-nowrap px-4">
+                      <TableHead
+                        key={index}
+                        className="whitespace-nowrap px-4 font-bold text-slate-900 border-b"
+                      >
                         {header}
                       </TableHead>
                     ))}
@@ -91,11 +93,11 @@ export const ExcelImportPreview: React.FC<ExcelImportPreviewProps> = ({
                 </TableHeader>
                 <TableBody>
                   {paginatedRows.map((row, rowIndex) => (
-                    <TableRow key={rowIndex}>
+                    <TableRow key={rowIndex} className="hover:bg-slate-50">
                       {row.map((cell, cellIndex) => (
                         <TableCell
                           key={cellIndex}
-                          className="whitespace-nowrap px-4"
+                          className="whitespace-nowrap px-4 border-b"
                         >
                           {cell === null || cell === undefined
                             ? "-"
@@ -106,8 +108,7 @@ export const ExcelImportPreview: React.FC<ExcelImportPreviewProps> = ({
                   ))}
                 </TableBody>
               </Table>
-              <ScrollBar orientation="horizontal" />
-            </ScrollArea>
+            </div>
 
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4 py-2 border-t text-sm">
               <div className="flex items-center gap-2">

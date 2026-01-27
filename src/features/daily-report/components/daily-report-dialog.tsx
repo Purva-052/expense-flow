@@ -1,3 +1,5 @@
+"use client";
+
 import API from "@/config/api/api";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -22,14 +24,16 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { DailyReport } from "../schema";
 import { ProjectSelect } from "./project-select";
-import { useUpdateDailyReport } from "../services";
 import {
+  useUpdateDailyReport,
   useGetProjectMilestonesList,
   useGetTasksDropdownList,
   useGetDailyReportById,
+  useCreateDailyReport,
 } from "../services";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import { useAuthStore } from "@/stores/use-auth-store";
 import SimpleDropDownSearchable from "@/components/shared/custome-simple-dropdown";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 import {
@@ -63,34 +67,67 @@ const formSchema = z.object({
   remark: z.string().optional(),
 });
 
-interface EditDailyReportDialogProps {
+interface DailyReportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  report: DailyReport | null;
+  report?: DailyReport | null; // For Edit mode
+  initialData?: {
+    // For Add mode with pre-filled fields
+    projectId?: string | number;
+    milestoneId?: string | number;
+    taskId?: string | number;
+  };
+  onSuccess?: () => void;
 }
 
-export function EditDailyReportDialog({
+const parseTimeSpent = (time: string) => {
+  let h = "0";
+  let m = "0";
+  if (!time) return { h, m };
+
+  // Match 1h10m
+  const hmMatch = time.match(/(\d+)h(\d+)m/);
+  if (hmMatch) {
+    h = String(Number(hmMatch[1]));
+    m = String(Number(hmMatch[2]));
+  } else {
+    // Fallback to dot format 1.10
+    const parts = time.split(".");
+    if (parts.length > 0) h = String(Number(parts[0]));
+    if (parts.length > 1) m = String(Number(parts[1]));
+  }
+  return { h, m };
+};
+
+export function DailyReportDialog({
   open,
   onOpenChange,
   report,
-}: EditDailyReportDialogProps) {
+  initialData,
+  onSuccess,
+}: DailyReportDialogProps) {
   const queryClient = useQueryClient();
+  const { user } = useAuthStore();
+  const isEdit = !!report;
 
   const { data: reportData, isPending: isReportLoading }: any =
-    useGetDailyReportById(String(report?.id || ""));
+    useGetDailyReportById(isEdit ? String(report?.id || "") : "");
 
   const fetchedReport = reportData?.data;
 
   const { mutate: updateReport, isPending: isUpdating } = useUpdateDailyReport(
     String(report?.id),
     () => {
-      //   toast.success("Daily report updated successfully");
-      queryClient.invalidateQueries({ queryKey: ["daily-reports"] });
-      if (report?.id) {
-        queryClient.invalidateQueries({
-          queryKey: [`${API.daily_report.list}/${report.id}`],
-        });
-      }
+      queryClient.invalidateQueries({ queryKey: [API.daily_report.list] });
+      if (onSuccess) onSuccess();
+      onOpenChange(false);
+    }
+  );
+
+  const { mutate: createReport, isPending: isCreating } = useCreateDailyReport(
+    () => {
+      queryClient.invalidateQueries({ queryKey: [API.daily_report.list] });
+      if (onSuccess) onSuccess();
       onOpenChange(false);
     }
   );
@@ -99,7 +136,7 @@ export function EditDailyReportDialog({
     resolver: zodResolver(formSchema),
     defaultValues: {
       reportingDate: new Date(),
-      employeeName: "",
+      employeeName: String(user?.user?.id || ""),
       projectId: "",
       milestoneId: "",
       taskId: "",
@@ -111,32 +148,39 @@ export function EditDailyReportDialog({
   });
 
   useEffect(() => {
-    if (fetchedReport && open) {
-      let h = "0";
-      let m = "0";
-      if (fetchedReport.timeSpent) {
-        const parts = String(fetchedReport.timeSpent).split(".");
-        if (parts.length > 0) h = String(Number(parts[0]));
-        if (parts.length > 1) m = String(Number(parts[1]));
+    if (open) {
+      if (isEdit && fetchedReport) {
+        const { h, m } = parseTimeSpent(fetchedReport.timeSpent);
+        form.reset({
+          reportingDate: new Date(fetchedReport.reportingDate),
+          employeeName: String(fetchedReport.employee?.id || ""),
+          projectId: String(fetchedReport.project?.id || ""),
+          milestoneId: String(fetchedReport.milestone?.id || ""),
+          taskId: String(fetchedReport.task?.id || ""),
+          taskDescription: fetchedReport.taskDescription || "",
+          hours: h,
+          minutes: m,
+          remark: fetchedReport.remark || "",
+        });
+      } else if (!isEdit) {
+        form.reset({
+          reportingDate: new Date(),
+          employeeName: String(user?.user?.id || ""),
+          projectId: initialData?.projectId
+            ? String(initialData.projectId)
+            : "",
+          milestoneId: initialData?.milestoneId
+            ? String(initialData.milestoneId)
+            : "",
+          taskId: initialData?.taskId ? String(initialData.taskId) : "",
+          taskDescription: "",
+          hours: "0",
+          minutes: "0",
+          remark: "",
+        });
       }
-
-      const resetValues = {
-        reportingDate: new Date(fetchedReport.reportingDate),
-        employeeName: fetchedReport.employee?.id
-          ? String(fetchedReport.employee.id)
-          : "",
-        projectId: String(fetchedReport.project?.id || ""),
-        milestoneId: String(fetchedReport.milestone?.id || ""),
-        taskId: String(fetchedReport.task?.id || ""),
-        taskDescription: fetchedReport.taskDescription || "",
-        hours: h,
-        minutes: m,
-        remark: fetchedReport.remark || "",
-      };
-
-      form.reset(resetValues);
     }
-  }, [fetchedReport, open, form]);
+  }, [open, isEdit, fetchedReport, initialData, user, form]);
 
   const watchProjectId = form.watch("projectId");
   const watchMilestoneId = form.watch("milestoneId");
@@ -159,17 +203,17 @@ export function EditDailyReportDialog({
     );
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    if (!report) return;
-
     const yyyy = values.reportingDate.getFullYear();
     const mm = String(values.reportingDate.getMonth() + 1).padStart(2, "0");
     const dd = String(values.reportingDate.getDate()).padStart(2, "0");
     const dateString = `${yyyy}-${mm}-${dd}`;
 
-    const timeSpent = `${values.hours}.${values.minutes}`;
+    const timeSpent = `${values.hours}h${values.minutes}m`;
 
     const payload = {
-      employeeId: Number(values.employeeName) || 0,
+      employeeId: isEdit
+        ? Number(values.employeeName) || 0
+        : Number(user?.user?.id) || 0,
       reportingDate: dateString,
       projectId: Number(values.projectId) || 0,
       projectMilestoneId: Number(values.milestoneId) || 0,
@@ -179,18 +223,27 @@ export function EditDailyReportDialog({
       remark: values.remark,
     };
 
-    updateReport(payload);
+    if (isEdit) {
+      updateReport(payload);
+    } else {
+      createReport(payload);
+    }
   };
+
+  const isLoading = isEdit && isReportLoading;
+  const isSubmitting = isUpdating || isCreating;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] p-0 flex flex-col">
         <DialogHeader className="px-6 py-4 border-b">
-          <DialogTitle>Edit Daily Report</DialogTitle>
+          <DialogTitle>
+            {isEdit ? "Edit Daily Report" : "Add Daily Report"}
+          </DialogTitle>
         </DialogHeader>
 
-        {isReportLoading ? (
-          <div className="flex flex-1 items-center justify-center">
+        {isLoading ? (
+          <div className="flex flex-1 items-center justify-center p-12">
             <Loader2 className="h-8 w-8 animate-spin" />
           </div>
         ) : (
@@ -201,7 +254,6 @@ export function EditDailyReportDialog({
             >
               <ScrollArea className="flex-1 p-6">
                 <div className="grid grid-cols-2 gap-4">
-                  {/* Reporting Date & Employee Name */}
                   <div className="col-span-1">
                     <CustomDatePicker
                       control={form.control}
@@ -220,7 +272,11 @@ export function EditDailyReportDialog({
                           <FormLabel>Employee Name</FormLabel>
                           <FormControl>
                             <Input
-                              value={fetchedReport?.employee?.fullName || ""}
+                              value={
+                                isEdit
+                                  ? fetchedReport?.employee?.fullName || ""
+                                  : user?.user?.fullName || ""
+                              }
                               disabled
                               className="bg-gray-100"
                             />
@@ -231,7 +287,6 @@ export function EditDailyReportDialog({
                     />
                   </div>
 
-                  {/* Project (Full Width) */}
                   <div className="col-span-2">
                     <FormField
                       control={form.control}
@@ -245,6 +300,7 @@ export function EditDailyReportDialog({
                             <ProjectSelect
                               value={field.value ?? undefined}
                               onChange={field.onChange}
+                              disabled={!!initialData?.projectId || isEdit}
                             />
                           </FormControl>
                           <FormMessage />
@@ -253,7 +309,6 @@ export function EditDailyReportDialog({
                     />
                   </div>
 
-                  {/* Milestone & Task */}
                   <div className="col-span-1">
                     <FormField
                       control={form.control}
@@ -275,6 +330,7 @@ export function EditDailyReportDialog({
                               onChange={field.onChange}
                               placeholder="Select milestone"
                               isLoading={milestonesLoading}
+                              disabled={!!initialData?.milestoneId || isEdit}
                             />
                           </FormControl>
                           <FormMessage />
@@ -304,6 +360,7 @@ export function EditDailyReportDialog({
                               onChange={field.onChange}
                               placeholder="Select task"
                               isLoading={tasksLoading}
+                              disabled={!!initialData?.taskId || isEdit}
                             />
                           </FormControl>
                           <FormMessage />
@@ -312,7 +369,6 @@ export function EditDailyReportDialog({
                     />
                   </div>
 
-                  {/* Description (Full Width) */}
                   <div className="col-span-2">
                     <FormField
                       control={form.control}
@@ -331,7 +387,6 @@ export function EditDailyReportDialog({
                     />
                   </div>
 
-                  {/* Hours and Minutes */}
                   <div className="col-span-2 flex gap-2">
                     <div className="w-[85px]">
                       <FormField
@@ -343,7 +398,6 @@ export function EditDailyReportDialog({
                               Hours <span className="text-red-500">*</span>
                             </FormLabel>
                             <Select
-                              key={`h-${field.value}`}
                               onValueChange={field.onChange}
                               value={field.value}
                             >
@@ -376,7 +430,6 @@ export function EditDailyReportDialog({
                               Minutes <span className="text-red-500">*</span>
                             </FormLabel>
                             <Select
-                              key={`m-${field.value}`}
                               onValueChange={field.onChange}
                               value={field.value}
                             >
@@ -402,7 +455,6 @@ export function EditDailyReportDialog({
                     </div>
                   </div>
 
-                  {/* Remarks (Full Width) */}
                   <div className="col-span-2">
                     <FormField
                       control={form.control}
@@ -429,11 +481,11 @@ export function EditDailyReportDialog({
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isUpdating}>
-                  {isUpdating && (
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  Save Changes
+                  {isEdit ? "Save Changes" : "Save Report"}
                 </Button>
               </div>
             </form>
@@ -443,3 +495,7 @@ export function EditDailyReportDialog({
     </Dialog>
   );
 }
+
+// Export for backward compatibility if needed, but they are now both the same component
+export const AddDailyReportDialog = DailyReportDialog;
+export const EditDailyReportDialog = DailyReportDialog;

@@ -163,13 +163,13 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
 
             <TabsContent value="doc">
               <Card className="p-4">
-                <ProjectDocumentComponent />
+                <ProjectDocumentComponent projectId={projectId} />
               </Card>
             </TabsContent>
 
             <TabsContent value="server">
               <div className="border p-4 rounded-2xl bg-white shadow-sm">
-                <ProjectServerComponent />
+                <ProjectServerComponent projectId={projectId} />
               </div>
             </TabsContent>
 

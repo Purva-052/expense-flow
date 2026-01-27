@@ -5,15 +5,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { GlobalTable } from "@/components/table/global-table";
-import { CalendarIcon, Download, FileDown, Loader2 } from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { Input } from "@/components/ui/input";
-import { format } from "date-fns";
+import { Download, FileDown, Loader2 } from "lucide-react";
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import HoursLogs from "./hours-logs";
 import { CommonModal } from "@/components/common-modal";
@@ -25,6 +17,7 @@ import {
 } from "@/features/kanban-board/services";
 import { ExcelImportPreview, ExcelPreviewData } from "./excel-import-preview";
 import { AddManualMilestone } from "./add-manual-milestone";
+import { DailyReportDialog } from "@/features/daily-report/components/daily-report-dialog";
 import * as ExcelJS from "exceljs";
 import { useQueryClient } from "@tanstack/react-query";
 import API from "@/config/api/api";
@@ -55,73 +48,19 @@ export interface Milestone {
    ======================= */
 const TaskActions = ({
   task,
+  onAddLog,
   onViewLog,
 }: {
   task: MilestoneTask;
+  onAddLog: (task: MilestoneTask) => void;
   onViewLog: (task: MilestoneTask) => void;
 }) => {
-  const [open, setOpen] = useState(false);
-  const [date, setDate] = useState<Date | undefined>();
-  const [hours, setHours] = useState("");
-
-  const handleSave = () => {
-    console.log("Task ID:", task.id);
-    console.log("Date:", date);
-    console.log("Hours:", hours);
-    setOpen(false);
-  };
-
   return (
     <div className="flex gap-2">
       {/* Add Hours Log */}
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button variant="default" size="sm">
-            Add Hours Log
-          </Button>
-        </PopoverTrigger>
-
-        <PopoverContent className="w-80 space-y-4">
-          {/* Date */}
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium">Date</label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="justify-start text-left font-normal"
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, "PPP") : "Pick a date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 z-50">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          {/* Hours */}
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium">Actual Hours</label>
-            <Input
-              type="number"
-              placeholder="Enter hours"
-              value={hours}
-              onChange={(e) => setHours(e.target.value)}
-            />
-          </div>
-
-          <Button className="w-full" onClick={handleSave}>
-            Save Log
-          </Button>
-        </PopoverContent>
-      </Popover>
+      <Button variant="default" size="sm" onClick={() => onAddLog(task)}>
+        Add Hours Log
+      </Button>
 
       {/* View Log */}
       <Button variant="outline" size="sm" onClick={() => onViewLog(task)}>
@@ -132,6 +71,7 @@ const TaskActions = ({
 };
 
 const getReportColumns = (
+  onAddLog: (row: MilestoneTask) => void,
   onViewLog: (row: MilestoneTask) => void
 ): ColumnDef<MilestoneTask>[] => [
   {
@@ -161,7 +101,11 @@ const getReportColumns = (
     id: "action",
     header: "Action",
     cell: ({ row }) => (
-      <TaskActions task={row.original} onViewLog={onViewLog} />
+      <TaskActions
+        task={row.original}
+        onAddLog={onAddLog}
+        onViewLog={onViewLog}
+      />
     ),
   },
 ];
@@ -170,19 +114,36 @@ const getReportColumns = (
    Sub-components
    ======================= */
 const ActiveMilestoneContent = ({
+  projectId,
   milestoneId,
   onViewTaskLog,
 }: {
+  projectId: string | number;
   milestoneId: number;
   onViewTaskLog: (task: MilestoneTask) => void;
 }) => {
-  const { data: taskDataResponse, isLoading } =
-    useGetMilestoneTasks(milestoneId);
+  const queryClient = useQueryClient();
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 10,
+  });
 
-  // The API returns the whole milestone object in .data or directly
+  const [addLogOpen, setAddLogOpen] = useState(false);
+  const [selectedTaskForLog, setSelectedTaskForLog] =
+    useState<MilestoneTask | null>(null);
+
+  const { data: taskDataResponse, isLoading } = useGetMilestoneTasks(
+    milestoneId,
+    {
+      page: pagination.pageIndex + 1,
+      limit: pagination.pageSize,
+    }
+  );
+
   const milestone = taskDataResponse?.data || taskDataResponse;
 
-  // Tasks could be in milestone.tasks or milestone.data.tasks or milestone itself if it is the tasks array
+  const metadata = taskDataResponse?.metadata;
+
   const tasks = useMemo<MilestoneTask[]>(() => {
     if (Array.isArray(milestone?.tasks)) return milestone.tasks;
     if (Array.isArray(milestone?.data?.tasks)) return milestone.data.tasks;
@@ -230,13 +191,31 @@ const ActiveMilestoneContent = ({
       {/* Table */}
       <GlobalTable<MilestoneTask>
         data={tasks}
-        columns={getReportColumns(onViewTaskLog)}
-        totalCount={tasks.length}
-        currentPage={1}
-        pageSize={100}
-        onPaginationChange={() => {}}
-        isPaginationEnabled={false}
-        loading={false}
+        columns={getReportColumns((task) => {
+          setSelectedTaskForLog(task);
+          setAddLogOpen(true);
+        }, onViewTaskLog)}
+        totalCount={metadata?.total || tasks.length}
+        currentPage={metadata?.page || pagination.pageIndex + 1}
+        pageSize={metadata?.limit || pagination.pageSize}
+        onPaginationChange={setPagination}
+        isPaginationEnabled={true}
+        loading={isLoading}
+      />
+
+      <DailyReportDialog
+        open={addLogOpen}
+        onOpenChange={setAddLogOpen}
+        initialData={{
+          projectId: projectId,
+          milestoneId: milestoneId,
+          taskId: selectedTaskForLog?.id,
+        }}
+        onSuccess={() => {
+          queryClient.invalidateQueries({
+            queryKey: [`${API.projects.milestone_list}/${milestoneId}`],
+          });
+        }}
       />
     </div>
   );
@@ -473,6 +452,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
           {milestones.map((m) => (
             <TabsContent key={m.id} value={String(m.id)}>
               <ActiveMilestoneContent
+                projectId={projectId!}
                 milestoneId={m.id}
                 onViewTaskLog={handleViewTaskLog}
               />
