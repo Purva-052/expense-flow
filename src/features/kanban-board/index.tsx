@@ -73,18 +73,18 @@ const ProjectBoard = () => {
                 <div className="flex items-center justify-between mb-2">
                   <TabsList className="flex flex-wrap">
                     <TabsTrigger value="project_details">
-                      Project Details
+                      Projects
                       {projectCount !== null && (
                         <span className="ml-1">({projectCount})</span>
                       )}
                     </TabsTrigger>
 
-                    <TabsTrigger value="board">
+                    {/* <TabsTrigger value="board">
                       Projects{" "}
                       {projectCount !== null && (
                         <span className="ml-1">({projectCount})</span>
                       )}
-                    </TabsTrigger>
+                    </TabsTrigger> */}
                     <TabsTrigger value="resources">Resources</TabsTrigger>
                     <TabsTrigger value="Project Coordinator">
                       Project Coordinator
@@ -102,24 +102,26 @@ const ProjectBoard = () => {
                     )}
                   </TabsList>
 
-                  <TablePageHeader
-                    // title="Projects"
-                    buttonText="Add Project"
-                    onButtonClick={handleAdd}
-                  >
-                    {open && (
-                      <ActionFormModal
-                        clientsList={clientsList}
-                        clientListLoading={clientListLoading}
-                        projectTypes={ProjectType?.data}
-                        projectTypesLoading={LoadingProjectType}
-                        projecthandler={projecthandler}
-                        projecthandlerLoading={projecthandlerLoading}
-                        technologyList={technologyList}
-                        technologyListLoading={technologyListLoading}
-                      />
-                    )}
-                  </TablePageHeader>
+                  {activeTab === "project_details" && (
+                    <TablePageHeader
+                      // title="Projects"
+                      buttonText="Add Project"
+                      onButtonClick={handleAdd}
+                    >
+                      {open && (
+                        <ActionFormModal
+                          clientsList={clientsList}
+                          clientListLoading={clientListLoading}
+                          projectTypes={ProjectType?.data}
+                          projectTypesLoading={LoadingProjectType}
+                          projecthandler={projecthandler}
+                          projecthandlerLoading={projecthandlerLoading}
+                          technologyList={technologyList}
+                          technologyListLoading={technologyListLoading}
+                        />
+                      )}
+                    </TablePageHeader>
+                  )}
                 </div>
 
                 {/* Board Tab */}

@@ -24,7 +24,7 @@ import {
 import { useGetProjectsHistoryData } from "@/features/projects/services";
 import { capitalizeFirstLetter } from "@/utils/commonFunctions";
 import { format } from "date-fns";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useGetProjectHistoryData } from "../services";
 import { ProjectDetailsColumn } from "./ProjectDetailsColumn";
 
@@ -32,12 +32,14 @@ interface ProjectDetailsDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   project: any;
+  defaultTab?: "developers" | "history";
 }
 
 const ProjectDetailsDialog = ({
   isOpen,
   project,
   onOpenChange,
+  defaultTab = "developers",
 }: ProjectDetailsDialogProps) => {
   const [listParams, setListParams] = useState({
     pageSize: 10,
@@ -57,6 +59,14 @@ const ProjectDetailsDialog = ({
 
   const { data: projectHistory, isFetching: projectHistoryLoading }: any =
     useGetProjectsHistoryData(isOpen ? project?.id : undefined);
+
+  const [activeTab, setActiveTab] = useState<string>(defaultTab);
+
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab(defaultTab);
+    }
+  }, [isOpen, defaultTab]);
 
   const timelineData =
     projectHistory?.data?.map((item: any) => ({
@@ -107,7 +117,12 @@ const ProjectDetailsDialog = ({
         </DialogHeader>
 
         {/* --- Tab Navigation --- */}
-        <Tabs defaultValue="developers" className="w-full flex-1 flex flex-col">
+        <Tabs
+          key={`${project?.id}-${isOpen}`}
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="w-full flex-1 flex flex-col"
+        >
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="developers">Assigned Developers</TabsTrigger>
             <TabsTrigger value="history">Project History</TabsTrigger>
