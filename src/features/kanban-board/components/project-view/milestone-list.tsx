@@ -7,10 +7,11 @@ import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { GlobalTable } from "@/components/table/global-table";
 import {
+  CalendarIcon,
   Download,
   FileDown,
   Loader2,
-  MoreHorizontal,
+  // MoreHorizontal,
   Pencil,
 } from "lucide-react";
 import {
@@ -29,22 +30,35 @@ import {
 } from "@/features/kanban-board/services";
 import { ExcelImportPreview, ExcelPreviewData } from "./excel-import-preview";
 import { AddManualMilestone } from "./add-manual-milestone";
-import { DailyReportDialog } from "@/features/daily-report/components/daily-report-dialog";
 import * as ExcelJS from "exceljs";
 import { useQueryClient } from "@tanstack/react-query";
 import API from "@/config/api/api";
 import { Trash2 } from "lucide-react";
 import { DeleteModal } from "@/components/model/delete-model";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuTrigger,
+// } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { useCreateDailyReport } from "@/features/daily-report/services";
 
 export interface MilestoneTask {
   id?: number;
@@ -62,57 +76,55 @@ export interface Milestone {
 
 const TaskActions = ({
   task,
-  onAddLog,
   onViewLog,
   onDeleteTask,
+  projectId,
+  milestoneId,
+  onAddLogSuccess,
 }: {
   task: MilestoneTask;
-  onAddLog: (task: MilestoneTask) => void;
   onViewLog: (task: MilestoneTask) => void;
   onDeleteTask: (task: MilestoneTask) => void;
+  projectId: string | number;
+  milestoneId: number;
+  onAddLogSuccess: () => void;
 }) => {
   const { user } = useAuthStore();
   const Role = user?.user?.role;
   const isDeveloperView = Role === roles.DEVELOPER;
+  const [addLogOpen, setAddLogOpen] = useState(false);
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0">
-          <span className="sr-only">Actions</span>
-          <MoreHorizontal className="h-4 w-4" />
+    <div className="flex items-center gap-2">
+      <AddHoursLogDialog
+        open={addLogOpen}
+        onOpenChange={setAddLogOpen}
+        projectId={projectId}
+        milestoneId={milestoneId}
+        taskId={task.id || ""}
+        taskName={task.taskName}
+        onSuccess={onAddLogSuccess}
+      />
+
+      <Button variant="outline" size="sm" onClick={() => onViewLog(task)}>
+        View Log
+      </Button>
+
+      {!isDeveloperView && (
+        <Button variant="outline" size="sm" onClick={() => onDeleteTask(task)}>
+          Delete task
         </Button>
-      </DropdownMenuTrigger>
-
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-
-        <DropdownMenuItem onClick={() => onAddLog(task)}>
-          Add Hours Log
-        </DropdownMenuItem>
-
-        <DropdownMenuItem onClick={() => onViewLog(task)}>
-          View Log
-        </DropdownMenuItem>
-
-        {!isDeveloperView && (
-          <DropdownMenuItem
-            className="text-red-600 focus:bg-red-50 focus:text-red-600"
-            onClick={() => onDeleteTask(task)}
-          >
-            Delete Task
-          </DropdownMenuItem>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      )}
+    </div>
   );
 };
 
 const getReportColumns = (
-  onAddLog: (row: MilestoneTask) => void,
   onViewLog: (row: MilestoneTask) => void,
-  onDeleteTask: (row: MilestoneTask) => void
+  onDeleteTask: (row: MilestoneTask) => void,
+  projectId: string | number,
+  milestoneId: number,
+  onAddLogSuccess: () => void
 ): ColumnDef<MilestoneTask>[] => [
   {
     accessorKey: "taskName",
@@ -125,7 +137,7 @@ const getReportColumns = (
     accessorKey: "estimatedTime",
     header: "Estimated Time (hrs)",
     cell: ({ row }) => (
-      <span className="font-semibold">{row.original.estimatedTime}</span>
+      <span className="font-semibold">{row.original.estimatedTime || "0"}</span>
     ),
   },
   {
@@ -133,7 +145,7 @@ const getReportColumns = (
     header: "Actual Hours (hrs)",
     cell: ({ row }) => (
       <span className="font-semibold text-green-600">
-        {row.original.actualTime}
+        {row.original.actualTime || "0"}
       </span>
     ),
   },
@@ -143,13 +155,177 @@ const getReportColumns = (
     cell: ({ row }) => (
       <TaskActions
         task={row.original}
-        onAddLog={onAddLog}
         onViewLog={onViewLog}
         onDeleteTask={onDeleteTask}
+        projectId={projectId}
+        milestoneId={milestoneId}
+        onAddLogSuccess={onAddLogSuccess}
       />
     ),
   },
 ];
+
+interface AddHoursLogDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  projectId: string | number;
+  milestoneId: string | number;
+  taskId: string | number;
+  taskName: string;
+  onSuccess?: () => void;
+}
+
+const AddHoursLogDialog = ({
+  open,
+  onOpenChange,
+  projectId,
+  milestoneId,
+  taskId,
+  // taskName,
+  onSuccess,
+}: AddHoursLogDialogProps) => {
+  const { user } = useAuthStore();
+  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [hours, setHours] = useState("0");
+  const [minutes, setMinutes] = useState("0");
+  const [description, setDescription] = useState("");
+
+  const { mutate: createReport, isPending } = useCreateDailyReport(() => {
+    onSuccess?.();
+    onOpenChange(false);
+    // Reset form
+    setDate(new Date());
+    setHours("0");
+    setMinutes("0");
+    setDescription("");
+  });
+
+  const handleSave = () => {
+    if (!date || !description || (hours === "0" && minutes === "0")) {
+      return;
+    }
+
+    const payload = {
+      reportingDate: format(date, "yyyy-MM-dd"),
+      employeeId: Number(user?.user?.id),
+      projectId: Number(projectId),
+      projectMilestoneId: Number(milestoneId),
+      taskId: Number(taskId),
+      taskDescription: description,
+      timeSpent: `${hours}h${minutes}m`,
+    };
+
+    createReport(payload);
+  };
+
+  return (
+    <Popover open={open} onOpenChange={onOpenChange}>
+      <PopoverTrigger asChild>
+        <Button
+          size="sm"
+          className="bg-[#e11d48] hover:bg-[#be123c] text-white"
+        >
+          Add Hours Log
+        </Button>
+      </PopoverTrigger>
+
+      <PopoverContent className="w-80 space-y-4" align="end">
+        {/* <div className="space-y-2 pb-2 border-b">
+          <h4 className="font-medium leading-none">Add Hours Log</h4>
+          <p className="text-xs text-muted-foreground line-clamp-1">
+            {taskName}
+          </p>
+        </div> */}
+
+        <div className="grid gap-4">
+          {/* Date */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium">Date</label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="justify-start text-left font-normal h-9"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date ? format(date, "PPP") : "Pick a date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={setDate}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Actual Hours (from screenshot) */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium">Actual Hours</label>
+            <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+              <Select value={hours} onValueChange={setHours}>
+                <SelectTrigger className="h-9 w-full">
+                  <SelectValue placeholder="Hrs" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 13 }).map((_, i) => (
+                    <SelectItem key={i} value={String(i)}>
+                      {String(i).padStart(2, "0")} hrs
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={minutes} onValueChange={setMinutes}>
+                <SelectTrigger className="h-9 w-full">
+                  <SelectValue placeholder="Min" />
+                </SelectTrigger>
+                <SelectContent>
+                  {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((m) => (
+                    <SelectItem key={m} value={String(m)}>
+                      {String(m).padStart(2, "0")} min
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium">Work Description</label>
+            <Textarea
+              placeholder="What did you work on?"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="min-h-[80px] text-sm"
+            />
+          </div>
+
+          <Button
+            className="w-full bg-[#e11d48] hover:bg-[#be123c] text-white"
+            onClick={handleSave}
+            disabled={
+              isPending || !description || (hours === "0" && minutes === "0")
+            }
+          >
+            {isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save Log"
+            )}
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};
 
 const ActiveMilestoneContent = ({
   projectId,
@@ -172,10 +348,6 @@ const ActiveMilestoneContent = ({
     pageIndex: 0,
     pageSize: 10,
   });
-
-  const [addLogOpen, setAddLogOpen] = useState(false);
-  const [selectedTaskForLog, setSelectedTaskForLog] =
-    useState<MilestoneTask | null>(null);
 
   const [itemToDelete, setItemToDelete] = useState<MilestoneTask | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -294,12 +466,15 @@ const ActiveMilestoneContent = ({
       <GlobalTable<MilestoneTask>
         data={tasks}
         columns={getReportColumns(
-          (task) => {
-            setSelectedTaskForLog(task);
-            setAddLogOpen(true);
-          },
           onViewTaskLog,
-          handleDeleteTask
+          handleDeleteTask,
+          projectId,
+          milestoneId,
+          () => {
+            queryClient.invalidateQueries({
+              queryKey: [`${API.projects.milestone_list}/${milestoneId}`],
+            });
+          }
         )}
         totalCount={metadata?.total || tasks.length}
         currentPage={metadata?.page || pagination.pageIndex + 1}
@@ -307,21 +482,6 @@ const ActiveMilestoneContent = ({
         onPaginationChange={setPagination}
         isPaginationEnabled={true}
         loading={isLoading || isDeleting}
-      />
-
-      <DailyReportDialog
-        open={addLogOpen}
-        onOpenChange={setAddLogOpen}
-        initialData={{
-          projectId: projectId,
-          milestoneId: milestoneId,
-          taskId: selectedTaskForLog?.id,
-        }}
-        onSuccess={() => {
-          queryClient.invalidateQueries({
-            queryKey: [`${API.projects.milestone_list}/${milestoneId}`],
-          });
-        }}
       />
 
       <DeleteModal
