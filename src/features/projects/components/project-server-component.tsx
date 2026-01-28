@@ -20,8 +20,8 @@ const ProjectServerComponent = ({ projectId, projectName }: any) => {
   };
   return (
     <>
-      <Card className="">
-        <CardHeader>
+      <Card className="gap-3">
+        <CardHeader className="px-0 gap-0">
           <div className="flex items-center justify-between">
             <CardTitle className="text-2xl">
               Server Details{" "}
@@ -35,7 +35,7 @@ const ProjectServerComponent = ({ projectId, projectName }: any) => {
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-0 gap-0">
           <div className="flex items-center flex-wrap gap-6 max-h-[60dvh] overflow-y-auto w-full">
             {projectServerListFetched ? (
               <div className="flex flex-col justify-center items-center py-16 gap-3 w-full">
