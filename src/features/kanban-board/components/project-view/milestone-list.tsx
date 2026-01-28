@@ -6,8 +6,12 @@ import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { GlobalTable } from "@/components/table/global-table";
 import { Download, FileDown, Loader2 } from "lucide-react";
-import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import HoursLogs from "./hours-logs";
+import {
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import HoursLogs from "@/features/daily-report/components/hours-logs";
 import { CommonModal } from "@/components/common-modal";
 import {
   useDownloadMilestoneSample,
@@ -160,7 +164,8 @@ const ActiveMilestoneContent = ({
     }
   );
 
-  const { mutate: deleteMilestone, isPending: isDeleting } = useDeleteMilestone();
+  const { mutate: deleteMilestone, isPending: isDeleting } =
+    useDeleteMilestone();
 
   const handleDeleteTask = (task: MilestoneTask) => {
     setItemToDelete(task);
@@ -285,6 +290,9 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
   const [openLogsModal, setOpenLogsModal] = useState(false);
   const [openAddMilestone, setOpenAddMilestone] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("");
+  const [selectedTaskForLogs, setSelectedTaskForLogs] =
+    useState<MilestoneTask | null>(null);
+  const [totalTaskHours, setTotalTaskHours] = useState<number>(0);
 
   const [previewData, setPreviewData] = useState<ExcelPreviewData | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -337,7 +345,8 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
     }
   }, [milestones, activeTab]);
 
-  const { mutate: deleteMilestone, isPending: isDeletingMilestone } = useDeleteMilestone();
+  const { mutate: deleteMilestone, isPending: isDeletingMilestone } =
+    useDeleteMilestone();
 
   const handleDeleteMilestone = (milestone: any) => {
     setMilestoneToDelete(milestone);
@@ -364,12 +373,8 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
     );
   };
 
-  // const handleViewLog = () => {
-  //   setOpenLogsModal(true);
-  // };
-
   const handleViewTaskLog = (task: MilestoneTask) => {
-    console.log("Viewing log for Task ID:", task.id);
+    setSelectedTaskForLogs(task);
     setOpenLogsModal(true);
   };
 
@@ -536,16 +541,16 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
                 className="group relative pr-8"
               >
                 {m.name || m.milestoneName}
-                <button
+                <span
                   onClick={(e) => {
                     e.stopPropagation();
                     handleDeleteMilestone(m);
                   }}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 rounded-md p-1 opacity-0 group-hover:opacity-100 hover:bg-destructive/10 text-destructive transition-all"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 rounded-md p-1 opacity-0 group-hover:opacity-100 hover:bg-destructive/10 text-destructive transition-all cursor-pointer"
                   title="Delete Milestone"
                 >
                   <Trash2 className="h-3 w-3" />
-                </button>
+                </span>
               </TabsTrigger>
             ))}
           </TabsList>
@@ -576,12 +581,32 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
       <CommonModal
         open={openLogsModal}
         onOpenChange={setOpenLogsModal}
-        className="w-full  overflow-auto max-h-[70vh]"
+        className="sm:max-w-4xl overflow-hidden max-h-[90vh]"
       >
-        <DialogHeader>
-          <DialogTitle>Hours Log</DialogTitle>
+        <DialogHeader className="flex flex-row items-center justify-between pr-12">
+          <div className="space-y-0.5">
+            <DialogTitle>
+              Hours Log - {selectedTaskForLogs?.taskName}
+            </DialogTitle>
+            <DialogDescription className="sr-only">
+              List of hours logged for the task {selectedTaskForLogs?.taskName}
+            </DialogDescription>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 shrink-0">
+            <span className="text-[10px] font-bold text-primary uppercase tracking-wider">
+              Total:
+            </span>
+            <span className="text-sm font-bold text-primary">
+              {totalTaskHours.toFixed(2)} hrs
+            </span>
+          </div>
         </DialogHeader>
-        <HoursLogs />
+        <HoursLogs
+          projectId={projectId}
+          milestoneId={activeTab}
+          taskId={selectedTaskForLogs?.id}
+          onTotalHoursChange={setTotalTaskHours}
+        />
       </CommonModal>
 
       <ExcelImportPreview

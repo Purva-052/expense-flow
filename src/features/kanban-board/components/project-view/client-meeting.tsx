@@ -21,6 +21,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -93,6 +94,9 @@ export function ClientMeetingDialog({
       <DialogContent className="max-h-screen max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
+          <DialogDescription className="sr-only">
+            Form for meeting details: {title}
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>

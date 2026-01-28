@@ -1,4 +1,5 @@
 import { ColumnDef } from "@tanstack/react-table";
+import { format } from "date-fns";
 import { DailyReport } from "../schema";
 import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,8 @@ export const columns = (
   {
     accessorKey: "reportingDate",
     header: "Report Date",
+    cell: ({ row }) =>
+      format(new Date(row.original.reportingDate), "dd/MM/yyyy"),
   },
   {
     accessorKey: "employee.fullName",

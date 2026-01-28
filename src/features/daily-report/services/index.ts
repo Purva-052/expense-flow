@@ -66,3 +66,11 @@ export const useGetDailyReportById = (id: string) => {
     enabled: !!id,
   });
 };
+
+export const useGetTaskLogs = (taskId: string | number, params?: any) => {
+  return useFetchData({
+    url: `${API.daily_report.list}/tasks/${taskId}/logs`,
+    params,
+    enabled: !!taskId,
+  });
+};
