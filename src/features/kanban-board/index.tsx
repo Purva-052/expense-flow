@@ -26,7 +26,15 @@ const ProjectBoard = () => {
       ) : (
         <Main className="h-screen overflow-auto  flex flex-col">
           {userRole === roles.DEVELOPER ? (
-            <Board activeTab={activeTab} onTotalCountChange={setProjectCount} />
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="w-full"
+            >
+              <TabsContent value="project_details">
+                <ProjectPage onTotalCountChange={setProjectCount} />
+              </TabsContent>
+            </Tabs>
           ) : (
             // 🧭 Others see tabbed layout
             <Tabs

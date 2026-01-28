@@ -451,7 +451,9 @@ const ProjectPage = ({ onTotalCountChange }: any) => {
         </div> */}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_320px] h-[75dvh]">
+      <div
+        className={`${isDeveloperView ? "grid grid-cols-1 gap-4" : "grid grid-cols-1 gap-4 md:grid-cols-[1fr_320px] h-[75dvh]"}`}
+      >
         <DndContext
           sensors={sensors}
           onDragStart={onDragStart}
@@ -460,7 +462,7 @@ const ProjectPage = ({ onTotalCountChange }: any) => {
         >
           <div
             ref={scrollContainerRef}
-            className="space-y-4 !h-full overflow-y-auto p-2 [scrollbar-gutter:stable] rounded-md border"
+            className={`space-y-4 !h-full overflow-y-auto p-2 [scrollbar-gutter:stable] rounded-md border`}
           >
             {projectListLoading || LoadingProjectType ? (
               <div className="flex flex-col justify-center items-center py-10 gap-3">

@@ -21,7 +21,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, Loader2 } from "lucide-react";
-import { useCreateManualMilestone } from "../../services";
+import { useCreateManualMilestone, useUpdateMileStone } from "../../services";
+import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import API from "@/config/api/api";
 import {
   Select,
   SelectContent,
@@ -31,6 +34,7 @@ import {
 } from "@/components/ui/select";
 
 const taskSchema = z.object({
+  taskId: z.number().optional(),
   taskName: z.string().min(1, "Task name is required"),
   estimatedTime: z.string().min(1, "Estimated time is required"),
 });
@@ -48,19 +52,28 @@ interface AddManualMilestoneProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   projectId: string | number;
+  initialData?: any;
+  onSuccess?: () => void;
 }
 
 export function AddManualMilestone({
   open,
   onOpenChange,
   projectId,
+  initialData,
+  onSuccess,
 }: AddManualMilestoneProps) {
-  const { mutate: createMilestone, isPending } = useCreateManualMilestone(
-    () => {
+  console.log("initialData: ", initialData);
+  const queryClient = useQueryClient();
+  const { mutate: createMilestone, isPending: isCreating } =
+    useCreateManualMilestone(() => {
       onOpenChange(false);
       form.reset();
-    }
-  );
+      if (onSuccess) onSuccess();
+    });
+
+  const { mutate: updateMilestone, isPending: isUpdating } =
+    useUpdateMileStone();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -72,24 +85,90 @@ export function AddManualMilestone({
     },
   });
 
+  useEffect(() => {
+    if (open) {
+      if (initialData) {
+        form.reset({
+          name: initialData.name || initialData.milestoneName || "",
+          estimatedTime: initialData.estimatedTime || "",
+          status: initialData.status || "pending",
+          tasks: initialData.tasks?.map((t: any) => ({
+            taskId: t.id,
+            taskName: t.taskName,
+            estimatedTime: t.estimatedTime,
+          })) || [{ taskName: "", estimatedTime: "" }],
+        });
+      } else {
+        form.reset({
+          name: "",
+          estimatedTime: "",
+          status: "pending",
+          tasks: [{ taskName: "", estimatedTime: "" }],
+        });
+      }
+    }
+  }, [open, initialData, form]);
+
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "tasks",
   });
 
   const onSubmit = (values: FormValues) => {
-    const payload = {
-      ...values,
-      projectId: Number(projectId),
-    };
-    createMilestone(payload);
+    if (initialData) {
+      // Check if tasks were actually modified
+      const initialTasksFromData =
+        initialData.tasks?.map((t: any) => ({
+          taskId: t.id,
+          taskName: t.taskName,
+          estimatedTime: t.estimatedTime,
+        })) || [];
+
+      // Simple comparison of tasks
+      const areTasksUnchanged =
+        JSON.stringify(values.tasks) === JSON.stringify(initialTasksFromData);
+
+      const payload: any = {
+        name: values.name,
+        estimatedTime: values.estimatedTime,
+        status: values.status,
+        projectId: Number(projectId),
+      };
+
+      // Only include tasks if they have changed
+      if (!areTasksUnchanged) {
+        payload.tasks = values.tasks;
+      }
+
+      updateMilestone(
+        { id: initialData.id, data: payload },
+        {
+          onSuccess: () => {
+            queryClient.invalidateQueries({
+              queryKey: [API.dropdown_api.milestones, { projectId }],
+            });
+            onOpenChange(false);
+            form.reset();
+            if (onSuccess) onSuccess();
+          },
+        }
+      );
+    } else {
+      const payload = {
+        ...values,
+        projectId: Number(projectId),
+      };
+      createMilestone(payload);
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[550px] max-h-[95vh] flex flex-col p-0 overflow-hidden">
         <DialogHeader className="px-6 py-4">
-          <DialogTitle>Add Milestone</DialogTitle>
+          <DialogTitle>
+            {initialData ? "Edit Milestone" : "Add Milestone"}
+          </DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -144,7 +223,7 @@ export function AddManualMilestone({
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="pending">Pending</SelectItem>
-                          <SelectItem value="in-progress">
+                          <SelectItem value="in_progress">
                             In Progress
                           </SelectItem>
                           <SelectItem value="completed">Completed</SelectItem>
@@ -202,18 +281,20 @@ export function AddManualMilestone({
                         )}
                       />
                     </div>
-                    <div className="col-span-1 pt-1">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => remove(index)}
-                        disabled={fields.length === 1}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    {!initialData && (
+                      <div className="col-span-1 pt-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => remove(index)}
+                          disabled={fields.length === 1}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -227,9 +308,11 @@ export function AddManualMilestone({
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isPending}>
-                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Add Milestone
+              <Button type="submit" disabled={isCreating || isUpdating}>
+                {(isCreating || isUpdating) && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {initialData ? "Update Milestone" : "Add Milestone"}
               </Button>
             </DialogFooter>
           </form>

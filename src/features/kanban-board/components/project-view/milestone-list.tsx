@@ -6,7 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { GlobalTable } from "@/components/table/global-table";
-import { Download, FileDown, Loader2 } from "lucide-react";
+import {
+  Download,
+  FileDown,
+  Loader2,
+  MoreHorizontal,
+  Pencil,
+} from "lucide-react";
 import {
   DialogDescription,
   DialogHeader,
@@ -29,10 +35,17 @@ import { useQueryClient } from "@tanstack/react-query";
 import API from "@/config/api/api";
 import { Trash2 } from "lucide-react";
 import { DeleteModal } from "@/components/model/delete-model";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useAuthStore } from "@/stores/use-auth-store";
+import { roles } from "@/utils/constant";
 
-/* =======================
-   Types
-======================= */
 export interface MilestoneTask {
   id?: number;
   taskName: string;
@@ -47,13 +60,6 @@ export interface Milestone {
   tasks: MilestoneTask[];
 }
 
-/* =======================
-   Mock Data
-======================= */
-
-/* =======================
-   Columns Factory
-   ======================= */
 const TaskActions = ({
   task,
   onAddLog,
@@ -65,28 +71,41 @@ const TaskActions = ({
   onViewLog: (task: MilestoneTask) => void;
   onDeleteTask: (task: MilestoneTask) => void;
 }) => {
+  const { user } = useAuthStore();
+  const Role = user?.user?.role;
+  const isDeveloperView = Role === roles.DEVELOPER;
+
   return (
-    <div className="flex gap-2">
-      {/* Add Hours Log */}
-      <Button variant="default" size="sm" onClick={() => onAddLog(task)}>
-        Add Hours Log
-      </Button>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <span className="sr-only">Actions</span>
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
 
-      {/* View Log */}
-      <Button variant="outline" size="sm" onClick={() => onViewLog(task)}>
-        View Log
-      </Button>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+        <DropdownMenuSeparator />
 
-      {/* Delete Task */}
-      <Button
-        variant="ghost"
-        size="sm"
-        className="text-destructive hover:text-destructive hover:bg-destructive/10"
-        onClick={() => onDeleteTask(task)}
-      >
-        <Trash2 className="h-4 w-4" />
-      </Button>
-    </div>
+        <DropdownMenuItem onClick={() => onAddLog(task)}>
+          Add Hours Log
+        </DropdownMenuItem>
+
+        <DropdownMenuItem onClick={() => onViewLog(task)}>
+          View Log
+        </DropdownMenuItem>
+
+        {!isDeveloperView && (
+          <DropdownMenuItem
+            className="text-red-600 focus:bg-red-50 focus:text-red-600"
+            onClick={() => onDeleteTask(task)}
+          >
+            Delete Task
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 
@@ -132,19 +151,23 @@ const getReportColumns = (
   },
 ];
 
-/* =======================
-   Sub-components
-   ======================= */
 const ActiveMilestoneContent = ({
   projectId,
   milestoneId,
   onViewTaskLog,
+  onEditMilestone,
+  onDeleteMilestone,
 }: {
   projectId: string | number;
   milestoneId: number;
   onViewTaskLog: (task: MilestoneTask) => void;
+  onEditMilestone: () => void;
+  onDeleteMilestone: () => void;
 }) => {
   const queryClient = useQueryClient();
+  const { user } = useAuthStore();
+  const Role = user?.user?.role;
+  const isDeveloperView = Role === roles.DEVELOPER;
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
@@ -157,6 +180,7 @@ const ActiveMilestoneContent = ({
   const [itemToDelete, setItemToDelete] = useState<MilestoneTask | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+  // Assuming useGetMilestoneTasks is defined in your codebase
   const { data: taskDataResponse, isLoading } = useGetMilestoneTasks(
     milestoneId,
     {
@@ -191,7 +215,6 @@ const ActiveMilestoneContent = ({
   };
 
   const milestone = taskDataResponse?.data || taskDataResponse;
-
   const metadata = taskDataResponse?.metadata;
 
   const tasks = useMemo<MilestoneTask[]>(() => {
@@ -218,25 +241,54 @@ const ActiveMilestoneContent = ({
 
   return (
     <div>
-      {/* Summary */}
-      <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="rounded-xl border p-3">
-          <p className="text-sm text-muted-foreground">Total Estimated Hours</p>
-          <p className="text-3xl font-bold">
-            {actualMilestone?.estimatedTime || "0"}
-          </p>
+      {/* --- MODIFIED SECTION: Summary & Action Buttons --- */}
+      <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        {/* Left Side: Stats Cards */}
+        <div className="grid flex-1 grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="rounded-xl border p-3 bg-card text-card-foreground shadow-sm">
+            <p className="text-sm text-muted-foreground">
+              Total Estimated Hours
+            </p>
+            <p className="text-3xl font-bold">
+              {actualMilestone?.estimatedTime || "0"}
+            </p>
+          </div>
+          <div className="rounded-xl border p-3 bg-card text-card-foreground shadow-sm">
+            <p className="text-sm text-muted-foreground">Total Actual Hours</p>
+            <p className="text-3xl font-bold">
+              {tasks.reduce(
+                (acc: number, task: MilestoneTask) =>
+                  acc + (parseFloat(task.actualTime || "0") || 0),
+                0
+              )}
+            </p>
+          </div>
         </div>
-        <div className="rounded-xl border p-3">
-          <p className="text-sm text-muted-foreground">Total Actual Hours</p>
-          <p className="text-3xl font-bold">
-            {tasks.reduce(
-              (acc: number, task: MilestoneTask) =>
-                acc + (parseFloat(task.actualTime || "0") || 0),
-              0
-            )}
-          </p>
-        </div>
+
+        {/* Right Side: Vertical Action Buttons */}
+        {!isDeveloperView && (
+          <div className="flex shrink-0 flex-col gap-2 min-w-[160px]">
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              onClick={onEditMilestone}
+            >
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit Milestone
+            </Button>
+
+            <Button
+              variant="default"
+              className="w-full justify-start"
+              onClick={onDeleteMilestone}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete Milestone
+            </Button>
+          </div>
+        )}
       </div>
+      {/* ------------------------------------------------ */}
 
       {/* Table */}
       <GlobalTable<MilestoneTask>
@@ -283,10 +335,10 @@ const ActiveMilestoneContent = ({
   );
 };
 
-/* =======================
-   Component
-   ======================= */
 const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
+  const { user } = useAuthStore();
+  const Role = user?.user?.role;
+  const isDeveloperView = Role === roles.DEVELOPER;
   const queryClient = useQueryClient();
   const [openLogsModal, setOpenLogsModal] = useState(false);
   const [openAddMilestone, setOpenAddMilestone] = useState(false);
@@ -299,6 +351,8 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isParsingFile, setIsParsingFile] = useState(false);
+
+  const [milestoneToEdit, setMilestoneToEdit] = useState<any | null>(null);
 
   const [milestoneToDelete, setMilestoneToDelete] = useState<any | null>(null);
   const [showMilestoneDeleteModal, setShowMilestoneDeleteModal] =
@@ -352,6 +406,12 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
   const handleDeleteMilestone = (milestone: any) => {
     setMilestoneToDelete(milestone);
     setShowMilestoneDeleteModal(true);
+  };
+
+  // Handler for Editing Milestone
+  const handleEditMilestone = (milestone: any) => {
+    setMilestoneToEdit(milestone);
+    setOpenAddMilestone(true);
   };
 
   const confirmDeleteMilestone = () => {
@@ -468,9 +528,9 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
 
   return (
     <>
-      <div className="mb-4 flex items-center justify-end gap-2 overflow-x-auto pb-2">
+      <div className="mb-4 flex items-center gap-2 overflow-x-auto pb-2">
         <div className="flex items-center gap-2">
-          {milestones.length === 0 && (
+          {milestones.length === 0 && !isDeveloperView && (
             <>
               <Button
                 onClick={downloadSample}
@@ -514,13 +574,18 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
           View Hours Log
         </Button> */}
 
-        <Button
-          onClick={() => setOpenAddMilestone(true)}
-          variant="default"
-          size="default"
-        >
-          Add Milestone
-        </Button>
+        {!isDeveloperView && (
+          <Button
+            onClick={() => {
+              setMilestoneToEdit(null);
+              setOpenAddMilestone(true);
+            }}
+            variant="default"
+            size="default"
+          >
+            Add Milestone
+          </Button>
+        )}
       </div>
 
       {isFetchingMilestones ? (
@@ -536,10 +601,11 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
         >
           <TabsList className="mb-2">
             {milestones.map((m) => (
+              /* MODIFIED: Removed the delete button from TabsTrigger */
               <TabsTrigger
                 key={m.id}
                 value={String(m.id)}
-                className="group relative pr-8"
+                className="px-4 py-2"
               >
                 {m.name || m.milestoneName}
                 <Badge
@@ -568,6 +634,9 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
                 projectId={projectId!}
                 milestoneId={m.id}
                 onViewTaskLog={handleViewTaskLog}
+                /* MODIFIED: Passing action handlers down */
+                onEditMilestone={() => handleEditMilestone(m)}
+                onDeleteMilestone={() => handleDeleteMilestone(m)}
               />
             </TabsContent>
           ))}
@@ -629,8 +698,12 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
       {projectId && (
         <AddManualMilestone
           open={openAddMilestone}
-          onOpenChange={setOpenAddMilestone}
+          onOpenChange={(open) => {
+            setOpenAddMilestone(open);
+            if (!open) setMilestoneToEdit(null);
+          }}
           projectId={projectId}
+          initialData={milestoneToEdit}
         />
       )}
 
