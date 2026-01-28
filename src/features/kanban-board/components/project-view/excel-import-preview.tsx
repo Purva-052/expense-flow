@@ -16,7 +16,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2 } from "lucide-react";
 
 export interface ExcelPreviewData {
@@ -58,7 +57,8 @@ export const ExcelImportPreview: React.FC<ExcelImportPreviewProps> = ({
   const totalRows = data?.rows?.length || 0;
   const totalPages = Math.ceil(totalRows / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
-  const paginatedRows = data?.rows?.slice(startIndex, startIndex + pageSize) || [];
+  const paginatedRows =
+    data?.rows?.slice(startIndex, startIndex + pageSize) || [];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -77,12 +77,15 @@ export const ExcelImportPreview: React.FC<ExcelImportPreviewProps> = ({
           </div>
         ) : data ? (
           <>
-            <ScrollArea className="flex-1 border rounded-md">
-              <Table>
-                <TableHeader className="sticky top-0 bg-muted">
+            <div className="flex-1 min-h-[300px] overflow-auto border rounded-md relative">
+              <Table className="min-w-max w-full">
+                <TableHeader className="sticky top-0 bg-white shadow-sm z-20">
                   <TableRow>
                     {data.headers.map((header, index) => (
-                      <TableHead key={index} className="whitespace-nowrap">
+                      <TableHead
+                        key={index}
+                        className="whitespace-nowrap px-4 font-bold text-slate-900 border-b"
+                      >
                         {header}
                       </TableHead>
                     ))}
@@ -90,9 +93,12 @@ export const ExcelImportPreview: React.FC<ExcelImportPreviewProps> = ({
                 </TableHeader>
                 <TableBody>
                   {paginatedRows.map((row, rowIndex) => (
-                    <TableRow key={rowIndex}>
+                    <TableRow key={rowIndex} className="hover:bg-slate-50">
                       {row.map((cell, cellIndex) => (
-                        <TableCell key={cellIndex} className="whitespace-nowrap">
+                        <TableCell
+                          key={cellIndex}
+                          className="whitespace-nowrap px-4 border-b"
+                        >
                           {cell === null || cell === undefined
                             ? "-"
                             : String(cell)}
@@ -102,14 +108,16 @@ export const ExcelImportPreview: React.FC<ExcelImportPreviewProps> = ({
                   ))}
                 </TableBody>
               </Table>
-            </ScrollArea>
+            </div>
 
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4 py-2 border-t text-sm">
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground">
-                  Showing {startIndex + 1} to {Math.min(startIndex + pageSize, totalRows)} of {totalRows} rows
+                  Showing {startIndex + 1} to{" "}
+                  {Math.min(startIndex + pageSize, totalRows)} of {totalRows}{" "}
+                  rows
                 </span>
-                <select 
+                <select
                   className="bg-transparent border rounded p-1 text-xs"
                   value={pageSize}
                   onChange={(e) => {
@@ -127,7 +135,7 @@ export const ExcelImportPreview: React.FC<ExcelImportPreviewProps> = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
                 >
                   Previous
@@ -138,7 +146,9 @@ export const ExcelImportPreview: React.FC<ExcelImportPreviewProps> = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
                   disabled={currentPage >= totalPages}
                 >
                   Next

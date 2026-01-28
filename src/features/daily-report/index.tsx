@@ -16,7 +16,7 @@ import { useGetUserDropdownList } from "../users/services";
 import { roles } from "@/utils/constant";
 import { DailyReport } from "./schema";
 import { useAuthStore } from "@/stores/use-auth-store";
-import { EditDailyReportDialog } from "./components/edit-daily-report-dialog";
+import { DailyReportDialog } from "./components/daily-report-dialog";
 import { DeleteModal } from "@/components/model/delete-model";
 import { useDeleteDailyReport } from "./services";
 import { toast } from "sonner";
@@ -24,8 +24,6 @@ import { useQueryClient } from "@tanstack/react-query";
 
 export default function DailyReportPage() {
   const { user } = useAuthStore();
-  console.log("🚀 ~ DailyReportPage ~ user:", user);
-  console.log("🚀 ~ DailyReportPage ~ user.role:", user?.user?.role);
   const [listParams, setListParams] = useState({
     pageSize: 10,
     currentPage: 1,
@@ -278,7 +276,7 @@ export default function DailyReportPage() {
         loading={loading}
         isPaginationEnabled
       />
-      <EditDailyReportDialog
+      <DailyReportDialog
         open={editOpen}
         onOpenChange={setEditOpen}
         report={editReport}

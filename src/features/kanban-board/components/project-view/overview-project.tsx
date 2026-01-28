@@ -1,32 +1,80 @@
-// import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-// import { IconFileTextFilled } from "@tabler/icons-react";
 import {
   Briefcase,
   Calendar,
   Clock,
-  // Download,
   Flag,
   TrendingUp,
   User,
+  Loader2,
+  FileText,
+  Code,
+  Activity,
+  Users,
 } from "lucide-react";
+import { useGetProjectsDetailData } from "@/features/projects/services";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-const OverviewProject = ({}: { projectId?: any }) => {
+const priorityColorMap: any = {
+  high: "bg-red-100 text-red-800",
+  medium: "bg-yellow-100 text-yellow-800",
+  low: "bg-green-100 text-green-800",
+};
+
+const statusColorMap: any = {
+  "active-discovery": "bg-blue-100 text-blue-700",
+  running: "bg-green-100 text-green-700",
+  slow: "bg-amber-100 text-amber-700",
+  stop: "bg-red-100 text-red-700",
+  completed: "bg-emerald-100 text-emerald-700",
+};
+
+const OverviewProject = ({ projectId }: { projectId?: any }) => {
+  const { data: projectDetailsResponse, isLoading } = useGetProjectsDetailData(
+    projectId?.toString()
+  );
+
+  const project = (projectDetailsResponse as any)?.data;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!project) {
+    return (
+      <div className="text-center p-12 text-muted-foreground">
+        No project details found.
+      </div>
+    );
+  }
+
   return (
-    <div>
-      {" "}
-      <Card className="mb-3">
-        <div className="p-2">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 mb-4 border-b">
+    <div className="space-y-4 pb-12">
+      <Card>
+        <div className="p-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 mb-6 border-b">
             <div>
               <h2 className="text-2xl font-bold text-gray-900">
-                Project Details (Advertisement Scrapper )
+                Project Details ({project.name})
               </h2>
               <p className="text-sm text-gray-500 mt-1">
-                Client: Devstree Product
+                Client: {project.client?.name || "-"}
               </p>
             </div>
           </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8">
             <div className="flex flex-col">
               <div className="flex items-center text-sm font-medium text-gray-500 mb-1">
@@ -34,124 +82,232 @@ const OverviewProject = ({}: { projectId?: any }) => {
                 <h3 className="ml-2">Project Type</h3>
               </div>
               <div className="text-base text-gray-800 pl-6">
-                <p>Fixed</p>
+                <p>{project.projectType?.name || "-"}</p>
               </div>
             </div>
+
             <div className="flex flex-col">
               <div className="flex items-center text-sm font-medium text-gray-500 mb-1">
                 <User size={16} />
                 <h3 className="ml-2">Project Coordinator</h3>
               </div>
               <div className="text-base text-gray-800 pl-6">
-                <p>test TL</p>
+                <p>{project.projectHandler?.fullName || "-"}</p>
               </div>
             </div>
+
+            <div className="flex flex-col">
+              <div className="flex items-center text-sm font-medium text-gray-500 mb-1">
+                <Activity size={16} />
+                <h3 className="ml-2">Current Status</h3>
+              </div>
+              <div className="text-base text-gray-800 pl-6">
+                <span
+                  className={cn(
+                    "px-2 py-0.5 text-xs font-semibold rounded-full capitalize",
+                    statusColorMap[project.currentStatus?.toLowerCase()] ||
+                      "bg-gray-100 text-gray-700"
+                  )}
+                >
+                  {project.currentStatus?.replace(/-/g, " ") || "N/A"}
+                </span>
+              </div>
+            </div>
+
             <div className="flex flex-col">
               <div className="flex items-center text-sm font-medium text-gray-500 mb-1">
                 <Flag size={16} />
                 <h3 className="ml-2">Priority</h3>
               </div>
               <div className="text-base text-gray-800 pl-6">
-                <span className="px-2 py-0.5 text-xs font-semibold rounded-full capitalize bg-green-100 text-green-800">
-                  low
+                <span
+                  className={cn(
+                    "px-2 py-0.5 text-xs font-semibold rounded-full capitalize",
+                    priorityColorMap[project.priority?.toLowerCase()] ||
+                      "bg-gray-100 text-gray-800"
+                  )}
+                >
+                  {project.priority || "low"}
                 </span>
               </div>
             </div>
+
             <div className="flex flex-col">
               <div className="flex items-center text-sm font-medium text-gray-500 mb-1">
                 <Calendar size={16} />
                 <h3 className="ml-2">Start Date</h3>
               </div>
               <div className="text-base text-gray-800 pl-6">
-                <p>2025-07-31</p>
+                <p>
+                  {project.startDate
+                    ? format(new Date(project.startDate), "yyyy-MM-dd")
+                    : "-"}
+                </p>
               </div>
             </div>
+
             <div className="flex flex-col">
               <div className="flex items-center text-sm font-medium text-gray-500 mb-1">
                 <Clock size={16} />
                 <h3 className="ml-2">Expected Completion</h3>
               </div>
               <div className="text-base text-gray-800 pl-6">
-                <p>-</p>
+                <p>
+                  {project.expectedCompletionDate
+                    ? format(
+                        new Date(project.expectedCompletionDate),
+                        "yyyy-MM-dd"
+                      )
+                    : "-"}
+                </p>
               </div>
             </div>
+
+            <div className="flex flex-col">
+              <div className="flex items-center text-sm font-medium text-gray-500 mb-1">
+                <Clock size={16} />
+                <h3 className="ml-2">Total Hours</h3>
+              </div>
+              <div className="text-base text-gray-800 pl-6">
+                <p>{project.projectMilestoneTotalEstimateHours || "0.00"}</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col">
+              <div className="flex items-center text-sm font-medium text-gray-500 mb-1">
+                <Code size={16} />
+                <h3 className="ml-2">Technologies</h3>
+              </div>
+              <div className="text-base text-gray-800 pl-6">
+                <div className="flex flex-wrap gap-2">
+                  {project.technologies?.length > 0 ? (
+                    project.technologies.map((tech: any) => (
+                      <span
+                        key={tech.id}
+                        className="px-2.5 py-1 text-xs font-medium rounded-md text-white border"
+                        style={{
+                          backgroundColor: tech.color || "#94a3b8",
+                          borderColor: tech.color || "#94a3b8",
+                        }}
+                      >
+                        {tech.name}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-sm text-muted-foreground">
+                      No technologies listed.
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <div className="lg:col-span-3">
-              <h3 className="text-sm font-medium text-gray-500 mb-2 flex items-center">
-                <TrendingUp size={16} className="mr-2" />
-                Progress
-              </h3>
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-sm font-medium text-gray-500 flex items-center">
+                  <TrendingUp size={16} className="mr-2" />
+                  Progress
+                </h3>
+                <p className="text-sm font-semibold text-blue-600">
+                  {project.percentageComplete}%
+                </p>
+              </div>
               <div className="w-full bg-gray-200 rounded-full h-2.5">
                 <div
-                  className="bg-blue-600 h-2.5 rounded-full"
-                  style={{ width: `35%` }}
+                  className="bg-blue-600 h-2.5 rounded-full transition-all duration-500"
+                  style={{ width: `${project.percentageComplete}%` }}
                 ></div>
               </div>
-              <p className="text-right text-sm font-semibold text-blue-600 mt-1">
-                70%
-              </p>
             </div>
+
             <div className="md:col-span-2 lg:col-span-3">
               <div className="flex flex-col">
                 <div className="flex items-center text-sm font-medium text-gray-500 mb-1">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    className="lucide lucide-file-text"
-                  >
-                    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
-                    <path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
-                    <path d="M10 9H8"></path>
-                    <path d="M16 13H8"></path>
-                    <path d="M16 17H8"></path>
-                  </svg>
+                  <FileText size={16} />
                   <h3 className="ml-2">Description</h3>
                 </div>
                 <div className="text-base text-gray-800 pl-6">
                   <p className="whitespace-pre-wrap break-words text-gray-700">
-                    Easyprops Classified Ads Data Generation{" "}
+                    {project.description || "No description available."}
                   </p>
                 </div>
               </div>
             </div>
-            <div className="md:col-span-2 lg:col-span-3">
-              <div className="flex flex-col">
-                <div className="flex items-center text-sm font-medium text-gray-500 mb-1">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    className="lucide lucide-code"
-                  >
-                    <polyline points="16 18 22 12 16 6"></polyline>
-                    <polyline points="8 6 2 12 8 18"></polyline>
-                  </svg>
-                  <h3 className="ml-2">Technologies</h3>
-                </div>
-                <div className="text-base text-gray-800 pl-6">
-                  <div className="flex flex-wrap gap-2">
-                    <span className="px-2.5 py-1 text-xs font-medium rounded-md bg-gray-100 text-gray-800 border border-gray-200">
-                      Android
-                    </span>
-                    <span className="px-2.5 py-1 text-xs font-medium rounded-md bg-gray-100 text-gray-800 border border-gray-200">
-                      AI/ML
-                    </span>
+          </div>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="p-4">
+          <div className="flex items-center text-sm font-medium text-gray-500 mb-4 border-b pb-2">
+            <Users size={16} />
+            <h3 className="ml-2 text-lg font-bold text-gray-900">
+              Assigned Developers
+            </h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {project.developerAllocations?.length > 0 ? (
+              project.developerAllocations.map((allocation: any) => (
+                <div
+                  key={allocation.id}
+                  className="flex items-center gap-3 p-3 rounded-xl border bg-card hover:shadow-sm transition-shadow"
+                >
+                  <Avatar className="h-10 w-10 shrink-0">
+                    <AvatarImage src={allocation.developer?.avatar} />
+                    <AvatarFallback
+                      className="text-white font-bold"
+                      style={{
+                        backgroundColor:
+                          allocation.developer?.technology?.color || "#94a3b8",
+                      }}
+                    >
+                      {allocation.developer?.fullName?.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 truncate">
+                      {allocation.developer?.fullName}
+                    </p>
+                    <p className="text-sm text-gray-500 truncate">
+                      Exp: {allocation.developer?.experienceInYears} years
+                    </p>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="mt-1">
+                            <span
+                              className="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold uppercase truncate max-w-full"
+                              style={{
+                                backgroundColor:
+                                  (allocation.developer?.technology?.color ||
+                                    "#94a3b8") + "20",
+                                color:
+                                  allocation.developer?.technology?.color ||
+                                  "#94a3b8",
+                                border: `1px solid ${
+                                  allocation.developer?.technology?.color ||
+                                  "#94a3b8"
+                                }40`,
+                              }}
+                            >
+                              {allocation.developer?.technology?.name ||
+                                "Developer"}
+                            </span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {allocation.developer?.technology?.name}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 </div>
+              ))
+            ) : (
+              <div className="col-span-full py-8 text-center text-muted-foreground">
+                No developers assigned to this project.
               </div>
-            </div>
+            )}
           </div>
         </div>
       </Card>

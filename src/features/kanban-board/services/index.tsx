@@ -9,7 +9,13 @@ import usePatchData from "@/hooks/use-patch-data";
 import usePostData from "@/hooks/use-post-data";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { buildQueryString } from "@/utils/storage";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
+import instance from "@/config/instance/instance";
+import { useBoardStore } from "../store/useBoardStore";
 
 const GET_API_URL = API.users.available_developers;
 const PROJECTS_API_URL = API.projects.list;
@@ -18,6 +24,7 @@ const GET_BECOMEING_AVAILABLE_DEVELOPER_API_URL =
   API.users.becoming_available_developer;
 const GET_PROJECT_HANDLER_API_URL = API.users.project_handler;
 const GET_Inquiry_API_URL = API.inquiry.dashboard;
+const GET_MILESTONE_LIST_API_URL = API.projects.project_milestone_list;
 
 export const useGetAvailableDeveloperList = (params?: any) => {
   return useFetchData({ url: GET_API_URL, params });
@@ -140,6 +147,29 @@ export const useGetInquiryDashboardData = (params?: any) => {
   });
 };
 
+export const useGetProjectMilestonesList = (
+  projectId: any,
+  enabled: boolean = true
+) => {
+  return useFetchData<any>({
+    url: API.dropdown_api.milestones,
+    params: { projectId },
+    enabled: !!projectId && enabled,
+  });
+};
+
+export const useGetMilestoneTasks = (
+  milestoneId: any,
+  params?: any,
+  enabled: boolean = true
+) => {
+  return useFetchData<any>({
+    url: `${API.projects.milestone_list}/${milestoneId}`,
+    params,
+    enabled: !!milestoneId && enabled,
+  });
+};
+
 /* =======================
    Milestone Hooks
 ======================= */
@@ -257,7 +287,10 @@ interface UploadResponse {
 
 interface UseUploadMilestoneFileReturn {
   isUploading: boolean;
-  uploadFile: (file: File, projectId?: string | number) => Promise<void>;
+  uploadFile: (
+    file: File,
+    projectId?: string | number
+  ) => Promise<UploadResponse | undefined>;
 }
 
 /**
@@ -359,6 +392,7 @@ export const useUploadMilestoneFile = (): UseUploadMilestoneFileReturn => {
           toast.success(
             response?.data?.message || "File uploaded successfully"
           );
+          return response.data;
         } else {
           toast.error(response?.data?.message || "Failed to upload file");
         }
@@ -376,4 +410,95 @@ export const useUploadMilestoneFile = (): UseUploadMilestoneFileReturn => {
     isUploading,
     uploadFile,
   };
+};
+
+/**
+ * Custom hook to create a milestone manually
+ * Uses the add_milestones endpoint
+ */
+export const useCreateManualMilestone = (onSuccess?: () => void) => {
+  return usePostData({
+    url: API.projects.add_milestones,
+    refetchQueries: [
+      API.dropdown_api.milestones,
+      GET_MILESTONE_LIST_API_URL,
+      API.projects.milestone_list,
+    ],
+    onSuccess: () => {
+      if (onSuccess) onSuccess();
+    },
+  });
+};
+
+export const useAddMileStones = () => {
+  return usePostData({
+    url: API.projects.add_milestones,
+    refetchQueries: [
+      GET_MILESTONE_LIST_API_URL,
+      API.dropdown_api.milestones,
+      API.projects.milestone_list,
+    ],
+    // onSuccess: () => {
+    //   setOpen(null);
+    // },
+  });
+};
+
+export const useDeleteMilestone = () => {
+  const { setOpen } = useBoardStore();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      taskId,
+    }: {
+      id: string | number;
+      taskId?: string | number;
+    }) => {
+      let url = `${API.projects.delete_milestone}/${id}`;
+      if (taskId) {
+        url += `?taskId=${taskId}`;
+      }
+      const response = await instance.delete({ url });
+      return response;
+    },
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({
+        queryKey: [`${API.projects.milestone_list}/${id}`],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: [GET_MILESTONE_LIST_API_URL],
+        exact: false,
+      });
+      setOpen(null);
+    },
+  });
+};
+
+export const useUpdateMileStone = () => {
+  const { setOpen } = useBoardStore();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string | number; data: any }) => {
+      const url = `${API.projects.update_milestone}/${id}`;
+      const response = await instance.patch({ url, data });
+      return response;
+    },
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({
+        queryKey: [`${API.projects.milestone_list}/${id}`],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: [API.dropdown_api.milestones],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: [GET_MILESTONE_LIST_API_URL],
+        exact: false,
+      });
+      setOpen(null);
+    },
+  });
 };

@@ -306,3 +306,70 @@
     height: 0;
   }
 }
+/* CKEditor Todo List – correct styling */
+.ck-content .todo-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.ck-content {
+  pointer-events: auto !important;
+}
+
+.ck-content .todo-list__item {
+  position: relative;
+  padding-left: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+/* THIS is the checkbox */
+.ck-content .todo-list__label::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.25rem;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #999;
+  border-radius: 3px;
+  background: #fff;
+}
+
+/* Checked state */
+.ck-content .todo-list__item[data-checked="true"] .todo-list__label::before {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+/* Checkmark */
+.ck-content .todo-list__item[data-checked="true"] .todo-list__label::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 7px;
+  width: 6px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.sticky-note-content a {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+/* Make editor fully transparent */
+.ck-editor-custom,
+.ck-editor-custom .ck-editor__main,
+.ck-editor-custom .ck-content {
+  background: transparent !important;
+}
+
+/* Editable area */
+.ck-editor-custom .ck-editor__editable {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}

@@ -9,12 +9,17 @@ import {
   SquareCheckBig,
   Users,
   Plus,
-  Pin,
+  // Pin,
 } from "lucide-react";
 import MilestoneList from "./milestone-list";
 import OverviewProject from "./overview-project";
 import ProjectTaskList from "./project-task-list";
-import { DrawerContent, DrawerHeader } from "@/components/ui/drawer";
+import {
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Card } from "@/components/ui/card";
 import { IconUserStar } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
@@ -33,10 +38,16 @@ import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
-  TooltipTrigger,
+  // TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useAuthStore } from "@/stores/use-auth-store";
+import { roles } from "@/utils/constant";
 
 export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
+  const { user } = useAuthStore();
+  const Role = user?.user?.role;
+  const isDeveloperView = Role === roles.DEVELOPER;
+
   const [open, setOpen] = useState(false);
   const [meetingType, setMeetingType] = useState<"client" | "internal">(
     "client"
@@ -53,9 +64,9 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
   const { mutateAsync: pinProject } = usePinProject(projectId?.toString());
   const { mutateAsync: unpinProject } = useUnpinProject(projectId?.toString());
 
-  const handlePinToggle = () => {
-    setIsPinConfirmOpen(true);
-  };
+  // const handlePinToggle = () => {
+  //   setIsPinConfirmOpen(true);
+  // };
 
   const handleConfirmPin = async () => {
     try {
@@ -85,17 +96,24 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
     };
   };
 
+  const handleMeetingSubmit = (data: any) => {
+    console.log(data);
+  };
+
   return (
     <DrawerContent className="h-full w-full !max-w-[1024px] ml-auto">
       <DrawerHeader>
         <div className="flex items-center justify-between mb-4 px-1">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-bold truncate max-w-[600px]">
+            <DrawerTitle className="text-xl font-bold truncate max-w-[600px]">
               {project?.name || "Project Details"}
-            </h2>
+            </DrawerTitle>
+            <DrawerDescription className="sr-only">
+              Project details and management tabs
+            </DrawerDescription>
             <TooltipProvider>
               <Tooltip>
-                <TooltipTrigger asChild>
+                {/* <TooltipTrigger asChild>
                   {project?.isPinned ? (
                     <Pin
                       className="h-5 w-5 cursor-pointer text-[#E80339] fill-[#E80339] transition-colors duration-200"
@@ -107,7 +125,7 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
                       onClick={handlePinToggle}
                     />
                   )}
-                </TooltipTrigger>
+                </TooltipTrigger> */}
                 <TooltipContent side="right">
                   {project?.isPinned ? "Unpin Project" : "Pin Project"}
                 </TooltipContent>
@@ -116,112 +134,231 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
           </div>
         </div>
 
-        <Tabs defaultValue="milestone" className="w-full">
-          <TabsList className="mb-4 flex flex-wrap h-auto gap-2">
-            <TabsTrigger value="milestone" className="flex items-center gap-2">
-              <Flag className="w-4 h-4" /> Milestone
-            </TabsTrigger>
-            <TabsTrigger value="overview" className="flex items-center gap-2">
-              <FileSpreadsheet className="w-4 h-4" /> Overview
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-2">
-              <SquareCheckBig className="w-4 h-4" /> Report
-            </TabsTrigger>
-            <TabsTrigger value="doc" className="flex items-center gap-2">
-              <File className="w-4 h-4" /> Documents
-            </TabsTrigger>
-            <TabsTrigger value="server" className="flex items-center gap-2">
-              <Server className="w-4 h-4" /> Server
-            </TabsTrigger>
-            <TabsTrigger value="client" className="flex items-center gap-2">
-              <IconUserStar className="w-4 h-4" /> Client Meeting
-            </TabsTrigger>
-            <TabsTrigger
-              value="internal_meeting"
-              className="flex items-center gap-2"
-            >
-              <Users className="w-4 h-4" /> Internal Meeting
-            </TabsTrigger>
-          </TabsList>
+        {isDeveloperView ? (
+          <Tabs defaultValue="milestone" className="w-full">
+            <TabsList className="mb-4 flex flex-wrap h-auto gap-2">
+              {/* <TabsTrigger value="overview" className="flex items-center gap-2">
+                <FileSpreadsheet className="w-4 h-4" /> Overview
+              </TabsTrigger> */}
+              <TabsTrigger
+                value="milestone"
+                className="flex items-center gap-2"
+              >
+                <Flag className="w-4 h-4" /> Milestone
+              </TabsTrigger>
+              {/* <TabsTrigger
+                value="analytics"
+                className="flex items-center gap-2"
+              >
+                <SquareCheckBig className="w-4 h-4" /> Report
+              </TabsTrigger>
+              <TabsTrigger value="doc" className="flex items-center gap-2">
+                <File className="w-4 h-4" /> Documents
+              </TabsTrigger>
+              <TabsTrigger value="server" className="flex items-center gap-2">
+                <Server className="w-4 h-4" /> Server
+              </TabsTrigger>
+              <TabsTrigger value="client" className="flex items-center gap-2">
+                <IconUserStar className="w-4 h-4" /> Client Meeting
+              </TabsTrigger>
+              <TabsTrigger
+                value="internal_meeting"
+                className="flex items-center gap-2"
+              >
+                <Users className="w-4 h-4" /> Internal Meeting
+              </TabsTrigger> */}
+            </TabsList>
 
-          <div className="overflow-y-auto h-[calc(100vh-140px)] pr-2">
-            <TabsContent value="milestone">
-              <MilestoneList projectId={projectId} />
-            </TabsContent>
+            <div className="overflow-y-auto h-[calc(100vh-131px)] pr-2">
+              <TabsContent value="overview">
+                <OverviewProject projectId={projectId} />
+              </TabsContent>
 
-            <TabsContent value="overview">
-              <OverviewProject projectId={projectId} />
-            </TabsContent>
+              <TabsContent value="milestone">
+                <MilestoneList projectId={projectId} />
+              </TabsContent>
 
-            <TabsContent value="analytics">
-              <ProjectTaskList projectId={projectId} />
-            </TabsContent>
+              <TabsContent value="analytics">
+                <ProjectTaskList projectId={projectId} />
+              </TabsContent>
 
-            <TabsContent value="doc">
-              <Card className="p-4">
-                <ProjectDocumentComponent />
-              </Card>
-            </TabsContent>
+              <TabsContent value="doc">
+                <Card className="p-4">
+                  <ProjectDocumentComponent projectId={projectId} />
+                </Card>
+              </TabsContent>
 
-            <TabsContent value="server">
-              <div className="border p-4 rounded-2xl bg-white shadow-sm">
-                <ProjectServerComponent />
-              </div>
-            </TabsContent>
-
-            {/* CLIENT MEETING */}
-            <TabsContent value="client">
-              <Card>
-                <div className="flex justify-between p-6">
-                  <div>
-                    <h2 className="text-2xl font-semibold">Client Meetings</h2>
-                    <p className="text-sm text-muted-foreground">
-                      Track and manage all client meetings
-                    </p>
-                  </div>
-                  <Button
-                    onClick={() => {
-                      setMeetingType("client");
-                      setOpen(true);
-                    }}
-                  >
-                    <Plus className="w-4 h-4 mr-2" /> Add Meeting
-                  </Button>
+              <TabsContent value="server">
+                <div className="border p-4 rounded-2xl bg-white shadow-sm">
+                  <ProjectServerComponent projectId={projectId} />
                 </div>
-              </Card>
-            </TabsContent>
+              </TabsContent>
 
-            {/* INTERNAL MEETING */}
-            <TabsContent value="internal_meeting">
-              <Card>
-                <div className="flex justify-between p-6">
-                  <div>
-                    <h2 className="text-2xl font-semibold">
-                      Internal Meetings
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                      Track and manage internal team meetings
-                    </p>
+              {/* CLIENT MEETING */}
+              <TabsContent value="client">
+                <Card>
+                  <div className="flex justify-between p-6">
+                    <div>
+                      <h2 className="text-2xl font-semibold">
+                        Client Meetings
+                      </h2>
+                      <p className="text-sm text-muted-foreground">
+                        Track and manage all client meetings
+                      </p>
+                    </div>
+                    <Button
+                      onClick={() => {
+                        setMeetingType("client");
+                        setOpen(true);
+                      }}
+                    >
+                      <Plus className="w-4 h-4 mr-2" /> Add Meeting
+                    </Button>
                   </div>
-                  <Button
-                    onClick={() => {
-                      setMeetingType("internal");
-                      setOpen(true);
-                    }}
-                  >
-                    <Plus className="w-4 h-4 mr-2" /> Add Meeting
-                  </Button>
+                </Card>
+              </TabsContent>
+
+              {/* INTERNAL MEETING */}
+              <TabsContent value="internal_meeting">
+                <Card>
+                  <div className="flex justify-between p-6">
+                    <div>
+                      <h2 className="text-2xl font-semibold">
+                        Internal Meetings
+                      </h2>
+                      <p className="text-sm text-muted-foreground">
+                        Track and manage internal team meetings
+                      </p>
+                    </div>
+                    <Button
+                      onClick={() => {
+                        setMeetingType("internal");
+                        setOpen(true);
+                      }}
+                    >
+                      <Plus className="w-4 h-4 mr-2" /> Add Meeting
+                    </Button>
+                  </div>
+                </Card>
+              </TabsContent>
+            </div>
+          </Tabs>
+        ) : (
+          <Tabs defaultValue="overview" className="w-full">
+            <TabsList className="mb-4 flex flex-wrap h-auto gap-2">
+              <TabsTrigger value="overview" className="flex items-center gap-2">
+                <FileSpreadsheet className="w-4 h-4" /> Overview
+              </TabsTrigger>
+              <TabsTrigger
+                value="milestone"
+                className="flex items-center gap-2"
+              >
+                <Flag className="w-4 h-4" /> Milestone
+              </TabsTrigger>
+              <TabsTrigger
+                value="analytics"
+                className="flex items-center gap-2"
+              >
+                <SquareCheckBig className="w-4 h-4" /> Report
+              </TabsTrigger>
+              <TabsTrigger value="doc" className="flex items-center gap-2">
+                <File className="w-4 h-4" /> Documents
+              </TabsTrigger>
+              <TabsTrigger value="server" className="flex items-center gap-2">
+                <Server className="w-4 h-4" /> Server
+              </TabsTrigger>
+              <TabsTrigger value="client" className="flex items-center gap-2">
+                <IconUserStar className="w-4 h-4" /> Client Meeting
+              </TabsTrigger>
+              <TabsTrigger
+                value="internal_meeting"
+                className="flex items-center gap-2"
+              >
+                <Users className="w-4 h-4" /> Internal Meeting
+              </TabsTrigger>
+            </TabsList>
+
+            <div className="overflow-y-auto h-[calc(100vh-131px)] pr-2">
+              <TabsContent value="overview">
+                <OverviewProject projectId={projectId} />
+              </TabsContent>
+
+              <TabsContent value="milestone">
+                <MilestoneList projectId={projectId} />
+              </TabsContent>
+
+              <TabsContent value="analytics">
+                <ProjectTaskList projectId={projectId} />
+              </TabsContent>
+
+              <TabsContent value="doc">
+                <Card className="p-4">
+                  <ProjectDocumentComponent projectId={projectId} />
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="server">
+                <div className="border p-4 rounded-2xl bg-white shadow-sm">
+                  <ProjectServerComponent projectId={projectId} />
                 </div>
-              </Card>
-            </TabsContent>
-          </div>
-        </Tabs>
+              </TabsContent>
+
+              {/* CLIENT MEETING */}
+              <TabsContent value="client">
+                <Card>
+                  <div className="flex justify-between p-6">
+                    <div>
+                      <h2 className="text-2xl font-semibold">
+                        Client Meetings
+                      </h2>
+                      <p className="text-sm text-muted-foreground">
+                        Track and manage all client meetings
+                      </p>
+                    </div>
+                    <Button
+                      onClick={() => {
+                        setMeetingType("client");
+                        setOpen(true);
+                      }}
+                    >
+                      <Plus className="w-4 h-4 mr-2" /> Add Meeting
+                    </Button>
+                  </div>
+                </Card>
+              </TabsContent>
+
+              {/* INTERNAL MEETING */}
+              <TabsContent value="internal_meeting">
+                <Card>
+                  <div className="flex justify-between p-6">
+                    <div>
+                      <h2 className="text-2xl font-semibold">
+                        Internal Meetings
+                      </h2>
+                      <p className="text-sm text-muted-foreground">
+                        Track and manage internal team meetings
+                      </p>
+                    </div>
+                    <Button
+                      onClick={() => {
+                        setMeetingType("internal");
+                        setOpen(true);
+                      }}
+                    >
+                      <Plus className="w-4 h-4 mr-2" /> Add Meeting
+                    </Button>
+                  </div>
+                </Card>
+              </TabsContent>
+            </div>
+          </Tabs>
+        )}
       </DrawerHeader>
 
       <ClientMeetingDialog
         open={open}
         onOpenChange={setOpen}
-        onSubmit={(data) => console.log(data)}
+        onSubmit={(data) => handleMeetingSubmit(data)}
         loading={false}
         {...getMeetingDialogProps()}
       />

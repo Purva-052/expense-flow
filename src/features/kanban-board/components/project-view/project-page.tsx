@@ -53,6 +53,7 @@ import {
 import { DeveloperChip } from "../developer-chip";
 import { DeveloperDialog } from "../developer-dialog";
 import { ProjectCard } from "./projects-card";
+import { StickyNotesDialog } from "@/features/sticky-notes/components/sticky-notes-dialog";
 import { Input } from "@/components/ui/input";
 import useDebounce from "@/hooks/use-debaunce";
 import { useGetProjectTypesDropdownList } from "@/features/Project-type/services";
@@ -434,7 +435,7 @@ const ProjectPage = ({ onTotalCountChange }: any) => {
     <div className="flex flex-col gap-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <GlobalFilterSection filters={filters ?? []} />
-        <div className="flex flex-wrap items-center gap-3 mb-4">
+        {/* <div className="flex flex-wrap items-center gap-3 mb-4">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-orange-500"></span>
             <span className="text-sm font-medium">High</span>
@@ -447,10 +448,12 @@ const ProjectPage = ({ onTotalCountChange }: any) => {
             <span className="w-2 h-2 rounded-full bg-teal-500"></span>
             <span className="text-sm font-medium">Low</span>
           </div>
-        </div>
+        </div> */}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_320px] h-[75dvh]">
+      <div
+        className={`${isDeveloperView ? "grid grid-cols-1 gap-4" : "grid grid-cols-1 gap-4 md:grid-cols-[1fr_320px] h-[75dvh]"}`}
+      >
         <DndContext
           sensors={sensors}
           onDragStart={onDragStart}
@@ -459,7 +462,7 @@ const ProjectPage = ({ onTotalCountChange }: any) => {
         >
           <div
             ref={scrollContainerRef}
-            className="space-y-4 !h-full overflow-y-auto p-2 [scrollbar-gutter:stable] rounded-md border"
+            className={`space-y-4 !h-full overflow-y-auto p-2 [scrollbar-gutter:stable] rounded-md border`}
           >
             {projectListLoading || LoadingProjectType ? (
               <div className="flex flex-col justify-center items-center py-10 gap-3">
@@ -487,27 +490,29 @@ const ProjectPage = ({ onTotalCountChange }: any) => {
                         strategy={rectSortingStrategy}
                       >
                         <div className="flex -space-x-2 mb-2 items-center">
-                          {p?.developerAllocations?.slice(0, 5).map((allocation: any) => {
-                            const isMyChip =
-                              allocation.developer.id === currentUserId;
-                            const canClick = !isDeveloperView || isMyChip;
-                            return (
-                              <DeveloperChip
-                                key={`project-${p.id}-${allocation.developer.id}`}
-                                developer={allocation.developer}
-                                containerId={p.id}
-                                endDate={allocation.endDate}
-                                variant="avatar"
-                                onClick={
-                                  canClick
-                                    ? () =>
-                                        handleDeveloperClick(allocation, p.id)
-                                    : undefined
-                                }
-                                disabled={isDeveloperView}
-                              />
-                            );
-                          })}
+                          {p?.developerAllocations
+                            ?.slice(0, 5)
+                            .map((allocation: any) => {
+                              const isMyChip =
+                                allocation.developer.id === currentUserId;
+                              const canClick = !isDeveloperView || isMyChip;
+                              return (
+                                <DeveloperChip
+                                  key={`project-${p.id}-${allocation.developer.id}`}
+                                  developer={allocation.developer}
+                                  containerId={p.id}
+                                  endDate={allocation.endDate}
+                                  variant="avatar"
+                                  onClick={
+                                    canClick
+                                      ? () =>
+                                          handleDeveloperClick(allocation, p.id)
+                                      : undefined
+                                  }
+                                  disabled={isDeveloperView}
+                                />
+                              );
+                            })}
                           {p?.developerAllocations?.length > 5 && (
                             <TooltipProvider>
                               <Tooltip>
@@ -518,12 +523,19 @@ const ProjectPage = ({ onTotalCountChange }: any) => {
                                 </TooltipTrigger>
                                 <TooltipContent>
                                   <div className="space-y-1">
-                                    <p className="font-semibold text-xs border-b pb-1 mb-1">Additional Team Members:</p>
-                                    {p.developerAllocations.slice(5).map((allocation: any) => (
-                                      <p key={allocation.developer.id} className="text-[10px]">
-                                        {allocation.developer.fullName}
-                                      </p>
-                                    ))}
+                                    <p className="font-semibold text-xs border-b pb-1 mb-1">
+                                      Additional Team Members:
+                                    </p>
+                                    {p.developerAllocations
+                                      .slice(5)
+                                      .map((allocation: any) => (
+                                        <p
+                                          key={allocation.developer.id}
+                                          className="text-[10px]"
+                                        >
+                                          {allocation.developer.fullName}
+                                        </p>
+                                      ))}
                                   </div>
                                 </TooltipContent>
                               </Tooltip>
@@ -741,9 +753,9 @@ const ProjectPage = ({ onTotalCountChange }: any) => {
         }}
         refetchAvailableDevelopers={AllDevelopersRefetch}
       />
+      <StickyNotesDialog />
     </div>
   );
 };
 
 export default ProjectPage;
-
