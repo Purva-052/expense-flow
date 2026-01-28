@@ -120,12 +120,15 @@ export default function AddEditDocumentDialog({ ProjectId }: any) {
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(handleFormSubmit)}>
-          <div className="overflow-y-auto max-h-[60vh] space-y-6 py-2 mb-3">
+        <form
+          onSubmit={handleSubmit(handleFormSubmit)}
+          className="w-full overflow-hidden"
+        >
+          <div className="overflow-y-auto overflow-x-hidden max-h-[60vh] space-y-6 py-2 mb-3 w-full">
             {fields.map((field, index) => (
               <div
                 key={field.id}
-                className="border rounded-lg p-4 space-y-3 relative"
+                className="border rounded-lg p-4 space-y-3 relative w-full min-w-0"
               >
                 {/* Document Number Header */}
                 <div className="flex justify-between items-center mb-1">
@@ -145,13 +148,17 @@ export default function AddEditDocumentDialog({ ProjectId }: any) {
                 </div>
 
                 {/* Document Name */}
-                <div>
+                <div className="w-full min-w-0">
                   <label className="text-sm font-medium">Name</label>
                   <Controller
                     name={`documents.${index}.documentName`}
                     control={control}
                     render={({ field }) => (
-                      <Input placeholder="Enter document name..." {...field} />
+                      <Input
+                        placeholder="Enter document name..."
+                        {...field}
+                        className="w-full"
+                      />
                     )}
                   />
                   {errors.documents?.[index]?.documentName?.message && (
@@ -162,7 +169,7 @@ export default function AddEditDocumentDialog({ ProjectId }: any) {
                 </div>
 
                 {/* Notes */}
-                <div>
+                <div className="w-full min-w-0">
                   <label className="text-sm font-medium">Notes</label>
                   <Controller
                     name={`documents.${index}.notes`}
@@ -172,13 +179,14 @@ export default function AddEditDocumentDialog({ ProjectId }: any) {
                         placeholder="Enter notes..."
                         rows={3}
                         {...field}
+                        className="w-full"
                       />
                     )}
                   />
                 </div>
 
                 {/* Link */}
-                <div>
+                <div className="w-full min-w-0">
                   <label className="text-sm font-medium">Link</label>
                   <Controller
                     name={`documents.${index}.link`}
@@ -188,6 +196,7 @@ export default function AddEditDocumentDialog({ ProjectId }: any) {
                         type="url"
                         placeholder="https://example.com"
                         {...field}
+                        className="w-full"
                       />
                     )}
                   />
