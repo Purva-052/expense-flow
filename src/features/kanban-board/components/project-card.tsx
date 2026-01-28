@@ -29,13 +29,13 @@ import { useState } from "react";
 import { Form, FormProvider, useForm } from "react-hook-form";
 import { useProjectStatusChange } from "../services";
 import { ReasonDialog } from "./status-reason-dialog";
-import { useProjectsStore } from "../../projects/stores/useProjectsStore";
 import { Drawer } from "@/components/ui/drawer";
 import { ProjectDetails } from "./project-view/project-details";
 
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { roles } from "@/utils/constant";
 import { usePinProject, useUnpinProject } from "../../projects/services";
+import ProjectDetailsDialog from "./ProjectDetailsDialog";
 
 // --- Priority styles remain the same ---
 const priorityStyles: Record<
@@ -86,11 +86,14 @@ export function ProjectCard({
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
   const [isPinConfirmOpen, setIsPinConfirmOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { setOpen, setCurrentRow } = useProjectsStore();
+  // const { setOpen, setCurrentRow } = useProjectsStore();
+  const [isDialogOpen, setDialogOpen] = useState(false);
 
   const handleViewTimeline = () => {
-    setCurrentRow(project);
-    setOpen("history");
+    setActiveTab("history");
+    setDialogOpen(true);
+    // setCurrentRow(project);
+    // setOpen("history");
   };
 
   const { user } = useAuthStore();
@@ -181,6 +184,9 @@ export function ProjectCard({
   const isActive = project.currentStatus === "active";
   const completion = project.percentageComplete ?? 0;
   const canUpdateStatus = isProjectHandler || isAdmin;
+  const [activeTab, setActiveTab] = useState<"developers" | "history">(
+    "developers"
+  );
 
   const isHandlerAssigned = !!project?.projectHandler?.id;
   const isCurrentUserAssignedHandler =
@@ -361,6 +367,12 @@ export function ProjectCard({
         <ProjectDetails projectId={project.id} />
       </Drawer>
 
+      <ProjectDetailsDialog
+        project={project}
+        isOpen={isDialogOpen}
+        onOpenChange={setDialogOpen}
+        defaultTab={activeTab}
+      />
       {/* --- Render the new Reason Dialog Component --- */}
       <ReasonDialog
         isOpen={isReasonDialogOpen}

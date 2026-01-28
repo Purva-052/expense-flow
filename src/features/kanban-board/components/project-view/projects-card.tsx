@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { ChangeStatusDialog } from "@/components/shared/custom-status-change";
+import ProjectDetailsDialog from "../ProjectDetailsDialog";
 
 const priorityColorMap: any = {
   high: "bg-red-100 text-red-700",
@@ -81,9 +82,12 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
   const { mutateAsync: ProjectStatusChange } = useProjectStatusChange(() => {
     onStatusChanged?.();
   });
-
+  const [activeTab, setActiveTab] = useState<"developers" | "history">(
+    "developers"
+  );
   const { mutateAsync: pinProject } = usePinProject(project?.id);
   const { mutateAsync: unpinProject } = useUnpinProject(project?.id);
+  const [isDialogOpen, setDialogOpen] = useState(false);
 
   const handleStatusUpdate = async (newStatus: string, note: string) => {
     try {
@@ -121,8 +125,10 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
   };
 
   const handleViewTimeline = () => {
-    setCurrentRow(project);
-    setOpen("history");
+    setActiveTab("developers");
+    setDialogOpen(true);
+    // setCurrentRow(project);
+    // setOpen("history");
   };
 
   const handleAddStickyNote = () => {
@@ -363,6 +369,12 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
         {openDrawer && <ProjectDetails projectId={project?.id} />}
       </Drawer>
 
+      <ProjectDetailsDialog
+        project={project}
+        isOpen={isDialogOpen}
+        onOpenChange={setDialogOpen}
+        defaultTab={activeTab}
+      />
       {/* NEW STATUS DIALOG */}
       <ChangeStatusDialog
         open={isStatusDialogOpen}
@@ -370,6 +382,7 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
         currentStatus={project?.currentStatus}
         onSubmit={handleStatusUpdate}
         isLoading={isStatusUpdating}
+        projectName={project?.name}
       />
 
       <ConfirmDialog
