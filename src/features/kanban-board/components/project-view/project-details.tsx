@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import MilestoneList from "./milestone-list";
 import OverviewProject from "./overview-project";
-import ProjectTaskList from "./project-task-list";
+import ProjectReport from "./project-report";
 import {
   DrawerContent,
   DrawerDescription,
@@ -137,109 +137,17 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
         {isDeveloperView ? (
           <Tabs defaultValue="milestone" className="w-full">
             <TabsList className="mb-4 flex flex-wrap h-auto gap-2">
-              {/* <TabsTrigger value="overview" className="flex items-center gap-2">
-                <FileSpreadsheet className="w-4 h-4" /> Overview
-              </TabsTrigger> */}
               <TabsTrigger
                 value="milestone"
                 className="flex items-center gap-2"
               >
                 <Flag className="w-4 h-4" /> Milestone
               </TabsTrigger>
-              {/* <TabsTrigger
-                value="analytics"
-                className="flex items-center gap-2"
-              >
-                <SquareCheckBig className="w-4 h-4" /> Report
-              </TabsTrigger>
-              <TabsTrigger value="doc" className="flex items-center gap-2">
-                <File className="w-4 h-4" /> Documents
-              </TabsTrigger>
-              <TabsTrigger value="server" className="flex items-center gap-2">
-                <Server className="w-4 h-4" /> Server
-              </TabsTrigger>
-              <TabsTrigger value="client" className="flex items-center gap-2">
-                <IconUserStar className="w-4 h-4" /> Client Meeting
-              </TabsTrigger>
-              <TabsTrigger
-                value="internal_meeting"
-                className="flex items-center gap-2"
-              >
-                <Users className="w-4 h-4" /> Internal Meeting
-              </TabsTrigger> */}
             </TabsList>
 
             <div className="overflow-y-auto h-[calc(100vh-131px)] pr-2">
-              <TabsContent value="overview">
-                <OverviewProject projectId={projectId} />
-              </TabsContent>
-
               <TabsContent value="milestone">
                 <MilestoneList projectId={projectId} />
-              </TabsContent>
-
-              <TabsContent value="analytics">
-                <ProjectTaskList projectId={projectId} />
-              </TabsContent>
-
-              <TabsContent value="doc">
-                <Card className="p-4">
-                  <ProjectDocumentComponent projectId={projectId} />
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="server">
-                <div className="border p-4 rounded-2xl bg-white shadow-sm">
-                  <ProjectServerComponent projectId={projectId} />
-                </div>
-              </TabsContent>
-
-              {/* CLIENT MEETING */}
-              <TabsContent value="client">
-                <Card>
-                  <div className="flex justify-between p-6">
-                    <div>
-                      <h2 className="text-2xl font-semibold">
-                        Client Meetings
-                      </h2>
-                      <p className="text-sm text-muted-foreground">
-                        Track and manage all client meetings
-                      </p>
-                    </div>
-                    <Button
-                      onClick={() => {
-                        setMeetingType("client");
-                        setOpen(true);
-                      }}
-                    >
-                      <Plus className="w-4 h-4 mr-2" /> Add Meeting
-                    </Button>
-                  </div>
-                </Card>
-              </TabsContent>
-
-              {/* INTERNAL MEETING */}
-              <TabsContent value="internal_meeting">
-                <Card>
-                  <div className="flex justify-between p-6">
-                    <div>
-                      <h2 className="text-2xl font-semibold">
-                        Internal Meetings
-                      </h2>
-                      <p className="text-sm text-muted-foreground">
-                        Track and manage internal team meetings
-                      </p>
-                    </div>
-                    <Button
-                      onClick={() => {
-                        setMeetingType("internal");
-                        setOpen(true);
-                      }}
-                    >
-                      <Plus className="w-4 h-4 mr-2" /> Add Meeting
-                    </Button>
-                  </div>
-                </Card>
               </TabsContent>
             </div>
           </Tabs>
@@ -255,10 +163,7 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
               >
                 <Flag className="w-4 h-4" /> Milestone
               </TabsTrigger>
-              <TabsTrigger
-                value="analytics"
-                className="flex items-center gap-2"
-              >
+              <TabsTrigger value="report" className="flex items-center gap-2">
                 <SquareCheckBig className="w-4 h-4" /> Report
               </TabsTrigger>
               <TabsTrigger value="doc" className="flex items-center gap-2">
@@ -287,20 +192,19 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
                 <MilestoneList projectId={projectId} />
               </TabsContent>
 
-              <TabsContent value="analytics">
-                <ProjectTaskList projectId={projectId} />
+              <TabsContent value="report">
+                <ProjectReport projectId={projectId} />
               </TabsContent>
 
               <TabsContent value="doc">
-                <Card className="p-4">
-                  <ProjectDocumentComponent projectId={projectId} />
-                </Card>
+                <ProjectDocumentComponent
+                  projectId={projectId}
+                  projectName={project?.name}
+                />
               </TabsContent>
 
               <TabsContent value="server">
-                <div className="border p-4 rounded-2xl bg-white shadow-sm">
-                  <ProjectServerComponent projectId={projectId} />
-                </div>
+                <ProjectServerComponent projectId={projectId} />
               </TabsContent>
 
               {/* CLIENT MEETING */}
