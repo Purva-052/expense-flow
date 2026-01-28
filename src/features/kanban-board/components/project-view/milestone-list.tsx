@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { GlobalTable } from "@/components/table/global-table";
@@ -541,6 +542,12 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
                 className="group relative pr-8"
               >
                 {m.name || m.milestoneName}
+                <Badge
+                  variant="secondary"
+                  className="ml-2 bg-primary/10 text-primary hover:bg-primary/20 shrink-0"
+                >
+                  {m.taskCount || m.tasks?.length || 0}
+                </Badge>
                 <span
                   onClick={(e) => {
                     e.stopPropagation();

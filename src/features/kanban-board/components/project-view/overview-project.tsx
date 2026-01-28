@@ -268,6 +268,9 @@ const OverviewProject = ({ projectId }: { projectId?: any }) => {
                     <p className="text-sm font-semibold text-gray-900 truncate">
                       {allocation.developer?.fullName}
                     </p>
+                    <p className="text-sm text-gray-500 truncate">
+                      Exp: {allocation.developer?.experienceInYears} years
+                    </p>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
