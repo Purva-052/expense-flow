@@ -14,7 +14,12 @@ import {
 import MilestoneList from "./milestone-list";
 import OverviewProject from "./overview-project";
 import ProjectTaskList from "./project-task-list";
-import { DrawerContent, DrawerHeader } from "@/components/ui/drawer";
+import {
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Card } from "@/components/ui/card";
 import { IconUserStar } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
@@ -94,9 +99,12 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
       <DrawerHeader>
         <div className="flex items-center justify-between mb-4 px-1">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-bold truncate max-w-[600px]">
+            <DrawerTitle className="text-xl font-bold truncate max-w-[600px]">
               {project?.name || "Project Details"}
-            </h2>
+            </DrawerTitle>
+            <DrawerDescription className="sr-only">
+              Project details and management tabs
+            </DrawerDescription>
             <TooltipProvider>
               <Tooltip>
                 {/* <TooltipTrigger asChild>
@@ -120,7 +128,7 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
           </div>
         </div>
 
-        <Tabs defaultValue="milestone" className="w-full">
+        <Tabs defaultValue="overview" className="w-full">
           <TabsList className="mb-4 flex flex-wrap h-auto gap-2">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <FileSpreadsheet className="w-4 h-4" /> Overview
@@ -149,12 +157,12 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
           </TabsList>
 
           <div className="overflow-y-auto h-[calc(100vh-131px)] pr-2">
-            <TabsContent value="milestone">
-              <MilestoneList projectId={projectId} />
-            </TabsContent>
-
             <TabsContent value="overview">
               <OverviewProject projectId={projectId} />
+            </TabsContent>
+
+            <TabsContent value="milestone">
+              <MilestoneList projectId={projectId} />
             </TabsContent>
 
             <TabsContent value="analytics">

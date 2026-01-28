@@ -8,6 +8,7 @@ import * as z from "zod";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -240,6 +241,9 @@ export function DailyReportDialog({
           <DialogTitle>
             {isEdit ? "Edit Daily Report" : "Add Daily Report"}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Form to {isEdit ? "edit" : "add"} a daily work report
+          </DialogDescription>
         </DialogHeader>
 
         {isLoading ? (
