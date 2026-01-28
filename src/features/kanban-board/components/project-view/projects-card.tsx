@@ -76,6 +76,7 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
   const isProjectHandler =
     userRole === roles.PROJECT_MANAGER || userRole === roles.TEAM_LEAD;
   const isAdmin = userRole === roles.ADMIN;
+  const isDeveloperView = userRole === roles.DEVELOPER;
 
   const { mutateAsync: ProjectStatusChange } = useProjectStatusChange(() => {
     onStatusChanged?.();
@@ -259,22 +260,39 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent side="bottom" align="end">
-              <DropdownMenuGroup>
-                <DropdownMenuItem onClick={() => setOpenDrawer(true)}>
-                  View Details
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleViewTimeline}>
-                  View Timeline
-                </DropdownMenuItem>
-                {/* UPDATE: This now opens the new Dialog */}
-                {canEditStatus && (
-                  <DropdownMenuItem onClick={() => setStatusDialogOpen(true)}>
-                    Change Status
+            {isDeveloperView ? (
+              <DropdownMenuContent side="bottom" align="end">
+                <DropdownMenuGroup>
+                  <DropdownMenuItem onClick={() => setOpenDrawer(true)}>
+                    View Details
                   </DropdownMenuItem>
-                )}
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
+                  {/* <DropdownMenuItem onClick={handleViewTimeline}>
+                    View Timeline
+                  </DropdownMenuItem>
+                  {canEditStatus && (
+                    <DropdownMenuItem onClick={() => setStatusDialogOpen(true)}>
+                      Change Status
+                    </DropdownMenuItem>
+                  )} */}
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            ) : (
+              <DropdownMenuContent side="bottom" align="end">
+                <DropdownMenuGroup>
+                  <DropdownMenuItem onClick={() => setOpenDrawer(true)}>
+                    View Details
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleViewTimeline}>
+                    View Timeline
+                  </DropdownMenuItem>
+                  {canEditStatus && (
+                    <DropdownMenuItem onClick={() => setStatusDialogOpen(true)}>
+                      Change Status
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            )}
           </DropdownMenu>
         </div>
         <div className="flex justify-between">

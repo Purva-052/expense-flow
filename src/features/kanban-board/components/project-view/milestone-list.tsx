@@ -43,6 +43,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuthStore } from "@/stores/use-auth-store";
+import { roles } from "@/utils/constant";
 
 export interface MilestoneTask {
   id?: number;
@@ -69,6 +71,10 @@ const TaskActions = ({
   onViewLog: (task: MilestoneTask) => void;
   onDeleteTask: (task: MilestoneTask) => void;
 }) => {
+  const { user } = useAuthStore();
+  const Role = user?.user?.role;
+  const isDeveloperView = Role === roles.DEVELOPER;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -77,24 +83,27 @@ const TaskActions = ({
           <MoreHorizontal className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
+
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
+
         <DropdownMenuItem onClick={() => onAddLog(task)}>
           Add Hours Log
         </DropdownMenuItem>
-        {/* <DropdownMenuItem onClick={() => onAddLog(task)}>
-          Edit Task
-        </DropdownMenuItem> */}
+
         <DropdownMenuItem onClick={() => onViewLog(task)}>
           View Log
         </DropdownMenuItem>
-        <DropdownMenuItem
-          className="text-red-600 focus:bg-red-50 focus:text-red-600"
-          onClick={() => onDeleteTask(task)}
-        >
-          Delete Task
-        </DropdownMenuItem>
+
+        {!isDeveloperView && (
+          <DropdownMenuItem
+            className="text-red-600 focus:bg-red-50 focus:text-red-600"
+            onClick={() => onDeleteTask(task)}
+          >
+            Delete Task
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -156,6 +165,9 @@ const ActiveMilestoneContent = ({
   onDeleteMilestone: () => void;
 }) => {
   const queryClient = useQueryClient();
+  const { user } = useAuthStore();
+  const Role = user?.user?.role;
+  const isDeveloperView = Role === roles.DEVELOPER;
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
@@ -254,25 +266,27 @@ const ActiveMilestoneContent = ({
         </div>
 
         {/* Right Side: Vertical Action Buttons */}
-        <div className="flex shrink-0 flex-col gap-2 min-w-[160px]">
-          <Button
-            variant="outline"
-            className="w-full justify-start"
-            onClick={onEditMilestone}
-          >
-            <Pencil className="mr-2 h-4 w-4" />
-            Edit Milestone
-          </Button>
+        {!isDeveloperView && (
+          <div className="flex shrink-0 flex-col gap-2 min-w-[160px]">
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              onClick={onEditMilestone}
+            >
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit Milestone
+            </Button>
 
-          <Button
-            variant="default"
-            className="w-full justify-start"
-            onClick={onDeleteMilestone}
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete Milestone
-          </Button>
-        </div>
+            <Button
+              variant="default"
+              className="w-full justify-start"
+              onClick={onDeleteMilestone}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete Milestone
+            </Button>
+          </div>
+        )}
       </div>
       {/* ------------------------------------------------ */}
 
@@ -322,6 +336,9 @@ const ActiveMilestoneContent = ({
 };
 
 const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
+  const { user } = useAuthStore();
+  const Role = user?.user?.role;
+  const isDeveloperView = Role === roles.DEVELOPER;
   const queryClient = useQueryClient();
   const [openLogsModal, setOpenLogsModal] = useState(false);
   const [openAddMilestone, setOpenAddMilestone] = useState(false);
@@ -513,7 +530,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
     <>
       <div className="mb-4 flex items-center gap-2 overflow-x-auto pb-2">
         <div className="flex items-center gap-2">
-          {milestones.length === 0 && (
+          {milestones.length === 0 && !isDeveloperView && (
             <>
               <Button
                 onClick={downloadSample}
@@ -557,16 +574,18 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
           View Hours Log
         </Button> */}
 
-        <Button
-          onClick={() => {
-            setMilestoneToEdit(null);
-            setOpenAddMilestone(true);
-          }}
-          variant="default"
-          size="default"
-        >
-          Add Milestone
-        </Button>
+        {!isDeveloperView && (
+          <Button
+            onClick={() => {
+              setMilestoneToEdit(null);
+              setOpenAddMilestone(true);
+            }}
+            variant="default"
+            size="default"
+          >
+            Add Milestone
+          </Button>
+        )}
       </div>
 
       {isFetchingMilestones ? (
