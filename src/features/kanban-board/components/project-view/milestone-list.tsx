@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { GlobalTable } from "@/components/table/global-table";
@@ -588,6 +589,22 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
                 className="px-4 py-2"
               >
                 {m.name || m.milestoneName}
+                <Badge
+                  variant="secondary"
+                  className="ml-2 bg-primary/10 text-primary hover:bg-primary/20 shrink-0"
+                >
+                  {m.taskCount || m.tasks?.length || 0}
+                </Badge>
+                <span
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteMilestone(m);
+                  }}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 rounded-md p-1 opacity-0 group-hover:opacity-100 hover:bg-destructive/10 text-destructive transition-all cursor-pointer"
+                  title="Delete Milestone"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </span>
               </TabsTrigger>
             ))}
           </TabsList>

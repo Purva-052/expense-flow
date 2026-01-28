@@ -11,6 +11,7 @@ import SimpleDropDownSearchable from "@/components/shared/custome-simple-dropdow
 import DateRangeFilter from "@/components/table/custome-dateRange";
 import { Search } from "lucide-react";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { roles } from "@/utils/constant";
 
 interface HoursLogsProps {
   projectId?: string | number;
@@ -28,7 +29,7 @@ const HoursLogs = ({
   const user = useAuthStore((state) => state.user);
   const [searchTerm, setSearchTerm] = useState("");
   const [employeeId, setEmployeeId] = useState<string>(
-    String(user?.user_id || "")
+    String(user?.user?.id || "")
   );
   const [dateRange, setDateRange] = useState<
     { from: Date; to?: Date } | undefined
@@ -38,12 +39,21 @@ const HoursLogs = ({
     pageSize: 10,
   });
 
-  // Initialize employeeId when user becomes available
+  const userRole = String(
+    user?.user?.role?.name || user?.user?.role
+  ).toLowerCase();
+  const canSelectEmployee = [
+    roles.ADMIN,
+    roles.TEAM_LEAD,
+    roles.PROJECT_MANAGER,
+  ].includes(userRole);
+
+  // Initialize employeeId when user or taskId becomes available
   useEffect(() => {
-    if (user?.user_id && !employeeId) {
-      setEmployeeId(String(user.user_id));
+    if (user?.user?.id) {
+      setEmployeeId(String(user.user.id));
     }
-  }, [user?.user_id]);
+  }, [user?.user?.id, taskId]);
 
   // Params for fetching logs
   const params = {
@@ -51,10 +61,10 @@ const HoursLogs = ({
     projectMilestoneId: milestoneId,
     search: searchTerm,
     employeeId: employeeId && employeeId !== "all" ? employeeId : undefined,
-    startDate: dateRange?.from
+    fromDate: dateRange?.from
       ? format(dateRange.from, "yyyy-MM-dd")
       : undefined,
-    endDate: dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
+    toDate: dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
     page: pagination.pageIndex + 1,
     limit: pagination.pageSize,
   };
@@ -136,6 +146,7 @@ const HoursLogs = ({
             onChange={setEmployeeId}
             placeholder="Select Employee"
             isLoading={usersLoading}
+            disabled={!canSelectEmployee}
           />
         </div>
 
@@ -143,6 +154,7 @@ const HoursLogs = ({
           <DateRangeFilter
             placeholder="Filter by date range"
             onChange={setDateRange}
+            disabled={{ after: new Date() }}
           />
         </div>
       </div>
