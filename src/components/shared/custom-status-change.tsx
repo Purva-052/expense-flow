@@ -67,6 +67,7 @@ const STATUS_CONFIG: Record<string, StatusOption> = {
 interface ChangeStatusDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  projectName: string;
   currentStatus: string;
   onSubmit: (status: string, note: string) => Promise<void>;
   isLoading?: boolean;
@@ -75,6 +76,7 @@ interface ChangeStatusDialogProps {
 export function ChangeStatusDialog({
   open,
   onOpenChange,
+  projectName,
   currentStatus,
   onSubmit,
   isLoading = false,
@@ -99,7 +101,7 @@ export function ChangeStatusDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] gap-6">
         <DialogHeader>
-          <DialogTitle>Change Project Status</DialogTitle>
+          <DialogTitle>Change Project Status ({projectName})</DialogTitle>
           <DialogDescription>
             Update the current status of this project.
           </DialogDescription>

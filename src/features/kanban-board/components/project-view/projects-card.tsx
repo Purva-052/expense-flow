@@ -370,6 +370,7 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
         currentStatus={project?.currentStatus}
         onSubmit={handleStatusUpdate}
         isLoading={isStatusUpdating}
+        projectName={project?.name}
       />
 
       <ConfirmDialog
