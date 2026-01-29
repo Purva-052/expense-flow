@@ -33,7 +33,7 @@ import { AddManualMilestone } from "./add-manual-milestone";
 import * as ExcelJS from "exceljs";
 import { useQueryClient } from "@tanstack/react-query";
 import API from "@/config/api/api";
-import { Trash2 } from "lucide-react";
+// import { Trash2 } from "lucide-react";
 import { DeleteModal } from "@/components/model/delete-model";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
