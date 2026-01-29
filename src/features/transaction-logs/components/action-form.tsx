@@ -22,6 +22,7 @@ import { transactionLogSchema, TTransactionFormSchema } from "../schema";
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import {
   CurrencyType,
+  roles,
   SubscriptionTypeOptions,
   TransactionTypeOptions,
 } from "@/utils/constant";
@@ -42,6 +43,7 @@ import {
 } from "@/components/ui/select";
 import { BadgeDollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/stores/use-auth-store";
 // import { useTimezoneSelect, allTimezones } from "react-timezone-select";
 // import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 // import { useGetCountryDropdownList } from "../services";
@@ -103,6 +105,19 @@ export function TransactionLogsActionForm({
           file: null,
         },
   });
+
+  const user = useAuthStore((state) => state.user);
+  const userRole = user?.role || user?.user?.role;
+  const currentUserId = user?.user_id;
+
+  const isAdmin = userRole === roles.ADMIN;
+  const creatorId = currentRow?.user?.id || currentRow?.user?._id || currentRow?.userId;
+  const isCreator = String(creatorId) === String(currentUserId);
+  const isPMorTL =
+    userRole === roles.PROJECT_MANAGER || userRole === roles.TEAM_LEAD;
+
+  const canEdit = !isEdit || isAdmin || (isPMorTL && isCreator);
+
   const [uploadedFileKey, setUploadedFileKey] = useState<string>("");
   const [hasExistingFile, setHasExistingFile] = useState(false);
   const { mutateAsync: uploadFile } = useUploadTransactionFile();
@@ -214,6 +229,7 @@ export function TransactionLogsActionForm({
                 placeholder="Select project"
                 isLoading={projectsListLoading}
                 sortOptions={false}
+                disabled={!canEdit}
               />
 
               {/* 2️⃣ Transaction Details */}
@@ -240,6 +256,7 @@ export function TransactionLogsActionForm({
                           options={TransactionTypeOptions}
                           placeholder="Select transaction type"
                           searchEnabled={false}
+                          disabled={!canEdit}
                         />
                       </FormControl>
                     </FormItem>
@@ -277,6 +294,7 @@ export function TransactionLogsActionForm({
                                 <Select
                                   onValueChange={currencyField.onChange}
                                   value={currencyField.value}
+                                  disabled={!canEdit}
                                 >
                                   <SelectTrigger className="h-10 w-[95px] rounded-r-none border-r-0 bg-muted/50">
                                     <div className="flex items-center gap-2">
@@ -318,6 +336,7 @@ export function TransactionLogsActionForm({
                             )}
                             onKeyDown={preventNegativeInput}
                             onPaste={preventNegativePaste}
+                            disabled={!canEdit}
                           />
                         </div>
                       </FormControl>
@@ -344,6 +363,7 @@ export function TransactionLogsActionForm({
                         control={form.control}
                         name="transactionDate"
                         label=""
+                        disabled={!canEdit}
                       />
                     </FormItem>
                   )}
@@ -369,6 +389,7 @@ export function TransactionLogsActionForm({
                           placeholder="XXXX"
                           maxLength={4}
                           className={cn(fieldState.error && "border-red-500")}
+                          disabled={!canEdit}
                         />
                       </FormControl>
 
@@ -388,6 +409,7 @@ export function TransactionLogsActionForm({
                     options={SubscriptionTypeOptions}
                     placeholder="Select cycle"
                     searchEnabled={false}
+                    disabled={!canEdit}
                   />
 
                   <CustomDatePicker
@@ -395,6 +417,7 @@ export function TransactionLogsActionForm({
                     name="subscriptionEndDate"
                     label="Subscription End Date"
                     placeholder="Select end date"
+                    disabled={!canEdit}
                   />
                 </div>
               )}
@@ -426,6 +449,7 @@ export function TransactionLogsActionForm({
                   "image/jpeg": [".jpg", ".jpeg"],
                   "image/jpg": [".jpg"],
                 }}
+                disabled={!canEdit}
               />
 
               {/* 6️⃣ Reason */}
@@ -449,6 +473,7 @@ export function TransactionLogsActionForm({
                         {...field}
                         placeholder="Any additional notes about the transaction..."
                         className={cn(fieldState.error && "border-red-500")}
+                        disabled={!canEdit}
                       />
                     </FormControl>
 
@@ -461,7 +486,12 @@ export function TransactionLogsActionForm({
         </div>
 
         <DialogFooter>
-          <CustomButton type="submit" form="company-form" loading={loading}>
+          <CustomButton
+            type="submit"
+            form="company-form"
+            loading={loading}
+            disabled={!canEdit}
+          >
             Save Changes
           </CustomButton>
         </DialogFooter>
