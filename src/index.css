@@ -306,70 +306,119 @@
     height: 0;
   }
 }
-/* CKEditor Todo List – correct styling */
-.ck-content .todo-list {
-  list-style: none;
-  padding-left: 0;
+
+/* 1. Base List Styles (Standard Bullets and Numbers) */
+.ck-content ul:not(.todo-list),
+.sticky-note-content ul:not(.todo-list) {
+  display: block !important;
+  list-style-type: disc !important;
+  padding-left: 1.5rem !important;
+  margin-bottom: 0.75rem !important;
+  max-width: 100% !important;
 }
 
-.ck-content {
-  pointer-events: auto !important;
+.ck-content ol,
+.sticky-note-content ol {
+  display: block !important;
+  list-style-type: decimal !important;
+  padding-left: 1.5rem !important;
+  margin-bottom: 0.75rem !important;
+  max-width: 100% !important;
 }
 
-.ck-content .todo-list__item {
-  position: relative;
-  padding-left: 2rem;
-  margin-bottom: 0.5rem;
+.ck-content li,
+.sticky-note-content li {
+  margin-bottom: 0.25rem !important;
+  line-height: 1.5 !important;
 }
 
-/* THIS is the checkbox */
+/* 2. Todo List Container */
+.ck-content .todo-list,
+.sticky-note-content .todo-list {
+  display: block !important;
+  list-style: none !important;
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+  max-width: 100% !important;
+}
+
+/* 3. Todo List Item (IMPORTANT: not flex) */
+.ck-content .todo-list__item,
+.sticky-note-content .todo-list__item {
+  list-style: none !important;
+  display: block !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.ck-content .todo-list > li {
+  list-style: none !important;
+}
+
+.ck-content .todo-list > li::marker {
+  content: none !important;
+}
+
+/* 4. Todo Label (handles layout + clicks) */
+.ck-content .todo-list__label,
+.sticky-note-content .todo-list__label {
+  display: flex !important;
+  align-items: flex-start !important;
+  cursor: pointer !important;
+  user-select: none !important;
+}
+
+/* 5. Visual Checkbox (pseudo-element) */
 .ck-content .todo-list__label::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0.25rem;
-  width: 16px;
-  height: 16px;
-  border: 2px solid #999;
-  border-radius: 3px;
-  background: #fff;
+  content: "" !important;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-right: 0.75rem;
+  margin-top: 0.25rem;
+  flex-shrink: 0;
+  pointer-events: none !important;
 }
 
-/* Checked state */
-.ck-content .todo-list__item[data-checked="true"] .todo-list__label::before {
+/* 6. Checked State */
+.ck-content .todo-list__item.todo-list__item_checked .todo-list__label::before {
   background: #2563eb;
   border-color: #2563eb;
 }
 
-/* Checkmark */
-.ck-content .todo-list__item[data-checked="true"] .todo-list__label::after {
-  content: "";
-  position: absolute;
-  left: 4px;
-  top: 7px;
-  width: 6px;
-  height: 10px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
+/* 7. Hide Native Checkbox */
+.ck-content .todo-list__checkbox {
+  display: none !important;
+}
+
+/* 8. Todo Text */
+.ck-content .todo-list__label__description {
+  line-height: 1.5 !important;
+}
+
+/* Miscellaneous Fixes */
+.ck-body-wrapper {
+  z-index: 9999 !important;
+}
+
+.sticky-note-content {
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+  max-width: 100% !important;
 }
 
 .sticky-note-content a {
-  color: var(--primary);
+  color: #2563eb;
   text-decoration: underline;
 }
 
-/* Make editor fully transparent */
 .ck-editor-custom,
 .ck-editor-custom .ck-editor__main,
 .ck-editor-custom .ck-content {
   background: transparent !important;
 }
 
-/* Editable area */
 .ck-editor-custom .ck-editor__editable {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
-  padding: 0 !important;
+  padding: 4px 0 !important;
 }

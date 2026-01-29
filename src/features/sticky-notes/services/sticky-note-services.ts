@@ -15,6 +15,13 @@ export const useGetStickyNotes = (projectId: string) => {
   });
 };
 
+export const useGetStickyNoteById = (noteId: string | null) => {
+  return useFetchData({
+    url: `${STICKY_NOTES_API}/${noteId}`,
+    enabled: !!noteId,
+  });
+};
+
 export const useCreateStickyNote = () => {
   return usePostData({
     url: STICKY_NOTES_API,
@@ -47,8 +54,7 @@ export const useDeleteStickyNote = () => {
   return useMutation({
     mutationFn: async (id: string) => {
       const response = await instance.delete({
-        url: STICKY_NOTES_API,
-        params: { id },
+        url: `${STICKY_NOTES_API}/${id}`,
       });
       return response.data;
     },

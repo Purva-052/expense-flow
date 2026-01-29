@@ -222,27 +222,7 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
               </div>
             </div>
 
-            {/* Dropdown Menu */}
-            <DropdownMenu>
-              <DropdownMenuContent side="bottom" align="end">
-                <DropdownMenuGroup>
-                  <DropdownMenuItem onClick={() => setOpenDrawer(true)}>
-                    View Details
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleAddStickyNote}>
-                    View Sticky Notes
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleViewTimeline}>
-                    View Timeline
-                  </DropdownMenuItem>
-                  {canEditStatus && (
-                    <DropdownMenuItem onClick={() => setStatusDialogOpen(true)}>
-                      Change Status
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* Removed triggerless DropdownMenu */}
           </div>
         </div>
 
@@ -272,6 +252,9 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
                   <DropdownMenuItem onClick={() => setOpenDrawer(true)}>
                     View Details
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleAddStickyNote}>
+                    View Sticky Notes
+                  </DropdownMenuItem>
                   {/* <DropdownMenuItem onClick={handleViewTimeline}>
                     View Timeline
                   </DropdownMenuItem>
@@ -296,6 +279,9 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
                       Change Status
                     </DropdownMenuItem>
                   )}
+                  <DropdownMenuItem onClick={handleAddStickyNote}>
+                    View Sticky Notes
+                  </DropdownMenuItem>
                 </DropdownMenuGroup>
               </DropdownMenuContent>
             )}
