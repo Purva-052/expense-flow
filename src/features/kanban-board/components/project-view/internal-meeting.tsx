@@ -36,73 +36,61 @@ import CustomButton from "@/components/shared/custom-button";
 import { z } from "zod";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 import { TextInputField } from "@/components/shared/custom-input-field";
-// import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import { ColumnDef } from "@tanstack/react-table";
 import { GlobalTable } from "@/components/table/global-table";
 import { format } from "date-fns";
 import {
-  useGetClientMeetings,
-  createClientMeeting,
-  useUpdateClientMeeting,
-  useDeleteClientMeeting,
+  useGetInternalMeetings,
+  createInternalMeeting,
+  useUpdateInternalMeeting,
+  useDeleteInternalMeeting,
 } from "@/features/kanban-board/services";
-import {
-  ExternalLink,
-  Loader2,
-  Eye,
-  Pencil,
-  Trash2,
-  Calendar,
-} from "lucide-react";
+import { ExternalLink, Loader2, Eye, Pencil, Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 
 // Schema validation
-const ClientMeetingSchema = z.object({
+const InternalMeetingSchema = z.object({
   meetingName: z.string().min(1, "Meeting name is required"),
   description: z.string().min(1, "Description is required"),
   projectId: z.number({ required_error: "Project is required" }),
   startDate: z.date({ required_error: "Start date is required" }),
+  // endDate is removed as per requirement
   link: z.string().url("Invalid URL").optional().or(z.literal("")),
 });
 
-type TClientMeetingSchema = z.infer<typeof ClientMeetingSchema>;
+type TInternalMeetingSchema = z.infer<typeof InternalMeetingSchema>;
 
-interface ClientMeetingDialogProps {
+interface InternalMeetingDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
   onSubmit?: (values: any) => void;
   loading?: boolean;
   isViewOnly?: boolean;
-  currentData?: Partial<TClientMeetingSchema> & {
+  currentData?: Partial<TInternalMeetingSchema> & {
     id?: number;
-    clientName?: string;
   };
   title?: string;
   descriptionLabel?: string;
-  clientsList?: Array<{ id: string | number; name: string }>;
-  clientListLoading?: boolean;
   projectId?: string | number;
-  clientId?: string | number;
 }
 
-export function ClientMeetingDialog({
+export function InternalMeetingDialog({
   open,
   onOpenChange,
   onSubmit: onSubmitValues,
   loading: externalLoading = false,
   isViewOnly = false,
   currentData,
-  title = "Client Meeting Details",
+  title = "Internal Meeting Details",
   descriptionLabel = "Description or Discussion Points",
   projectId,
-  clientId,
   onSuccess,
-}: ClientMeetingDialogProps) {
+}: InternalMeetingDialogProps) {
   const [editorReady, setEditorReady] = useState(false);
 
-  const form = useForm<TClientMeetingSchema>({
-    resolver: zodResolver(ClientMeetingSchema),
+  const form = useForm<TInternalMeetingSchema>({
+    resolver: zodResolver(InternalMeetingSchema),
     defaultValues: {
       meetingName: currentData?.meetingName ?? "",
       description: currentData?.description ?? "",
@@ -122,10 +110,14 @@ export function ClientMeetingDialog({
   }, [form, onOpenChange, onSuccess]);
 
   const { mutate: createMeeting, isPending: isCreating } =
-    createClientMeeting(closeDialog);
+    createInternalMeeting(() => {
+      onOpenChange(false);
+      form.reset();
+      if (onSuccess) onSuccess();
+    });
 
   const { mutate: updateMeeting, isPending: isUpdating } =
-    useUpdateClientMeeting(String(currentData?.id), closeDialog);
+    useUpdateInternalMeeting(String(currentData?.id), closeDialog);
 
   const loading = externalLoading || isCreating || isUpdating;
 
@@ -142,13 +134,14 @@ export function ClientMeetingDialog({
           : undefined,
       });
     }
-  }, [open, currentData, projectId, clientId, form]);
+  }, [open, currentData, projectId, form]);
 
-  const onSubmit = (values: TClientMeetingSchema) => {
+  const onSubmit = (values: TInternalMeetingSchema) => {
     const payload = {
       ...values,
       id: currentData?.id,
       startDate: values.startDate.toISOString(),
+      // endDate is removed
     };
 
     if (onSubmitValues) {
@@ -161,7 +154,7 @@ export function ClientMeetingDialog({
   };
 
   const handleDialogOpenChange = (isOpen: boolean) => {
-    if (!isOpen && !loading) {
+    if (!isOpen) {
       form.reset();
     }
     onOpenChange(isOpen);
@@ -169,19 +162,20 @@ export function ClientMeetingDialog({
 
   return (
     <Dialog modal open={open} onOpenChange={handleDialogOpenChange}>
-      <DialogContent className="max-h-[90vh] w-full max-w-2xl overflow-hidden">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription className="sr-only">
-            {currentData?.clientName
-              ? `Client: ${currentData.clientName}`
-              : "Client meeting form"}
+            Internal Meeting
           </DialogDescription>
         </DialogHeader>
 
-        <div className="overflow-y-auto max-h-[calc(90vh-8rem)] px-1">
+        <div className="h-fit w-full overflow-y-auto py-1">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-4 p-0.5"
+            >
               {/* Meeting Name - Full Width */}
               <TextInputField
                 control={form.control}
@@ -201,7 +195,8 @@ export function ClientMeetingDialog({
                 />
               </div>
 
-              {/* Start Date - Full Width */}
+              {/* Start Date */}
+              {/* <div className="grid grid-cols-1 gap-4 sm:grid-cols-2"> */}
               <CustomDatePicker
                 control={form.control}
                 name="startDate"
@@ -209,6 +204,7 @@ export function ClientMeetingDialog({
                 placeholder="Select Meeting Date"
                 disabled={loading || isViewOnly}
               />
+              {/* </div> */}
 
               {/* Link Field - Full Width */}
               <FormField
@@ -216,11 +212,11 @@ export function ClientMeetingDialog({
                 name="link"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Meeting Link (Optional)</FormLabel>
+                    <FormLabel>Link (Optional)</FormLabel>
                     <FormControl>
                       <Input
                         type="url"
-                        placeholder="https://example.com/meeting"
+                        placeholder="https://example.com"
                         {...field}
                         disabled={loading || isViewOnly}
                         className="w-full"
@@ -239,16 +235,14 @@ export function ClientMeetingDialog({
                   <FormItem>
                     <FormLabel>{descriptionLabel}</FormLabel>
                     <FormControl>
-                      <div className="rounded-md border border-input bg-background overflow-hidden">
+                      <div className="rounded-md border border-input bg-background">
                         <CKEditor
                           //@ts-ignore
                           editor={ClassicEditor}
                           data={field.value}
                           onChange={(_, editor) => {
-                            if (!isViewOnly && !loading) {
-                              const data = editor.getData();
-                              field.onChange(data);
-                            }
+                            const data = editor.getData();
+                            field.onChange(data);
                           }}
                           onReady={() => {
                             setEditorReady(true);
@@ -311,7 +305,7 @@ export function ClientMeetingDialog({
               />
 
               {/* Dialog Footer */}
-              <DialogFooter className="gap-2 pt-4">
+              <DialogFooter className="gap-2">
                 <CustomButton
                   type="button"
                   variant="outline"
@@ -342,12 +336,10 @@ export function ClientMeetingDialog({
   );
 }
 
-export function ClientMeetingListing({
+export function InternalMeetingListing({
   projectId,
-  clientsList = [],
 }: {
   projectId: string | number;
-  clientsList?: Array<{ id: string | number; name: string }>;
 }) {
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -360,12 +352,11 @@ export function ClientMeetingListing({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [meetingToDelete, setMeetingToDelete] = useState<any>(null);
 
-  const { data: meetingsResponse, isLoading } = useGetClientMeetings(
+  const { data: meetingsResponse, isLoading } = useGetInternalMeetings(
     projectId
   ) as any;
-
   const { mutate: deleteMeeting, isPending: isDeleting } =
-    useDeleteClientMeeting(() => {
+    useDeleteInternalMeeting(() => {
       setIsDeleteDialogOpen(false);
       setMeetingToDelete(null);
     });
@@ -392,34 +383,18 @@ export function ClientMeetingListing({
     }
   };
 
-  const handleDialogClose = () => {
-    setIsDialogOpen(false);
-    // Reset after animation completes
-    setTimeout(() => {
-      setSelectedMeeting(null);
-      setIsViewOnly(false);
-    }, 200);
-  };
-
   const columns = useMemo<ColumnDef<any>[]>(
     () => [
       {
         accessorKey: "meetingName",
         header: "Meeting Name",
-        cell: ({ row }) => (
-          <div className="font-medium">{row.original.meetingName}</div>
-        ),
       },
       {
         accessorKey: "startDate",
-        header: "Meeting Date",
+        header: "Start Date",
         cell: ({ row }) => {
           const date = row.original.startDate;
-          return date ? (
-            <div className="text-sm">{format(new Date(date), "PPP")}</div>
-          ) : (
-            <span className="text-muted-foreground">-</span>
-          );
+          return date ? format(new Date(date), "PPP") : "-";
         },
       },
       {
@@ -431,43 +406,39 @@ export function ClientMeetingListing({
               href={row.original.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 text-blue-600 hover:underline text-sm"
-              onClick={(e) => e.stopPropagation()}
+              className="flex items-center text-blue-600 hover:underline gap-1"
             >
-              View Link <ExternalLink className="h-3 w-3" />
+              Link <ExternalLink className="w-3 h-3" />
             </a>
           ) : (
-            <span className="text-muted-foreground">-</span>
+            "-"
           ),
       },
       {
         id: "actions",
-        header: () => <div className="text-right">Actions</div>,
+        header: "Actions",
         cell: ({ row }) => (
-          <div className="flex items-center justify-end gap-1">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => handleAction("view", row.original)}
-              className="p-2 hover:bg-muted rounded-md text-muted-foreground hover:text-primary transition-colors"
-              title="View Details"
-              aria-label="View meeting details"
+              className="p-1 hover:bg-muted rounded text-muted-foreground hover:text-primary transition-colors"
+              title="View"
             >
-              <Eye className="h-4 w-4" />
+              <Eye className="w-4 h-4" />
             </button>
             <button
               onClick={() => handleAction("edit", row.original)}
-              className="p-2 hover:bg-muted rounded-md text-muted-foreground hover:text-primary transition-colors"
-              title="Edit Meeting"
-              aria-label="Edit meeting"
+              className="p-1 hover:bg-muted rounded text-muted-foreground hover:text-primary transition-colors"
+              title="Edit"
             >
-              <Pencil className="h-4 w-4" />
+              <Pencil className="w-4 h-4" />
             </button>
             <button
               onClick={() => handleAction("delete", row.original)}
-              className="p-2 hover:bg-muted rounded-md text-muted-foreground hover:text-destructive transition-colors"
-              title="Delete Meeting"
-              aria-label="Delete meeting"
+              className="p-1 hover:bg-muted rounded text-muted-foreground hover:text-destructive transition-colors"
+              title="Delete"
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="w-4 h-4" />
             </button>
           </div>
         ),
@@ -480,27 +451,13 @@ export function ClientMeetingListing({
     return (
       <div className="flex items-center justify-center p-12">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        <span className="ml-3 text-muted-foreground">Loading meetings...</span>
-      </div>
-    );
-  }
-
-  if (!isLoading && meetings.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center p-12 text-center">
-        <div className="rounded-full bg-muted p-3 mb-4">
-          <Calendar className="h-8 w-8 text-muted-foreground" />
-        </div>
-        <h3 className="text-lg font-semibold mb-1">No meetings yet</h3>
-        <p className="text-sm text-muted-foreground">
-          Create your first client meeting to get started
-        </p>
+        <span className="ml-2">Loading meetings...</span>
       </div>
     );
   }
 
   return (
-    <div className="mt-6 space-y-4">
+    <div className="mt-4">
       <GlobalTable
         data={meetings}
         columns={columns}
@@ -512,37 +469,26 @@ export function ClientMeetingListing({
         loading={isLoading}
       />
 
-      <ClientMeetingDialog
+      <InternalMeetingDialog
         open={isDialogOpen}
-        onOpenChange={handleDialogClose}
+        onOpenChange={setIsDialogOpen}
         isViewOnly={isViewOnly}
         currentData={selectedMeeting}
         projectId={projectId}
-        clientsList={clientsList}
         title={
           isViewOnly
-            ? "View Meeting Details"
-            : selectedMeeting?.id
-              ? "Edit Meeting"
-              : "Create Meeting"
+            ? "View Internal Meeting Details"
+            : "Edit Internal Meeting Details"
         }
       />
 
       <ConfirmDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
-        handleConfirm={() => {
-          if (meetingToDelete?.id) {
-            deleteMeeting(meetingToDelete.id);
-          }
-        }}
+        handleConfirm={() => deleteMeeting(meetingToDelete?.id)}
         isLoading={isDeleting}
-        title="Delete Client Meeting"
-        desc={
-          meetingToDelete
-            ? `Are you sure you want to delete the meeting "${meetingToDelete.meetingName}"? This action cannot be undone.`
-            : "Are you sure you want to delete this meeting?"
-        }
+        title="Delete Internal Meeting"
+        desc={`Are you sure you want to delete the meeting "${meetingToDelete?.meetingName}"? This action cannot be undone.`}
       />
     </div>
   );

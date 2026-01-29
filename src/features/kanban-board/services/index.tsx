@@ -521,13 +521,19 @@ export const useGetClientMeetings = (projectId?: string | number) => {
   });
 };
 
-export const useUpdateClientMeeting = (onSuccess?: () => void) => {
+export const useUpdateClientMeeting = (
+  id?: string,
+  onSuccessCallback?: () => void
+) => {
+  const { setOpen } = useBoardStore();
   return usePatchData({
-    url: API.client_meetings.update,
+    url: `${API.client_meetings.update}/${id}`,
     refetchQueries: [API.client_meetings.list],
-    onSuccess: (response: any) => {
-      if (response.statusCode === 200 || response.statusCode === 201) {
-        onSuccess?.();
+    onSuccess: () => {
+      setOpen(null);
+      // Call the callback if provided
+      if (onSuccessCallback) {
+        onSuccessCallback();
       }
     },
   });
@@ -548,6 +554,65 @@ export const useDeleteClientMeeting = (onSuccess?: () => void) => {
       if (response.statusCode === 200 || response.statusCode === 201) {
         queryClient.invalidateQueries({
           queryKey: [API.client_meetings.list],
+        });
+        setOpen(null);
+        onSuccess?.();
+      }
+    },
+  });
+};
+
+export const createInternalMeeting = (onSuccess?: () => void) => {
+  return usePostData({
+    url: API.internal_meetings.create,
+    refetchQueries: [API.internal_meetings.list, API.projects.list],
+    onSuccess: () => {
+      if (onSuccess) onSuccess();
+    },
+  });
+};
+
+export const useGetInternalMeetings = (projectId?: string | number) => {
+  return useFetchData({
+    url: API.internal_meetings.list,
+    params: projectId ? { projectId } : {},
+    enabled: !!projectId,
+  });
+};
+
+export const useUpdateInternalMeeting = (
+  id?: string,
+  onSuccessCallback?: () => void
+) => {
+  const { setOpen } = useBoardStore();
+  return usePatchData({
+    url: `${API.internal_meetings.update}/${id}`,
+    refetchQueries: [API.internal_meetings.list],
+    onSuccess: () => {
+      setOpen(null);
+      // Call the callback if provided
+      if (onSuccessCallback) {
+        onSuccessCallback();
+      }
+    },
+  });
+};
+
+export const useDeleteInternalMeeting = (onSuccess?: () => void) => {
+  const { setOpen } = useBoardStore();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string | number) => {
+      const response = await instance.delete({
+        url: `${API.internal_meetings.delete}/${id}`,
+      });
+      return response;
+    },
+    onSuccess: (response: any) => {
+      if (response.statusCode === 200 || response.statusCode === 201) {
+        queryClient.invalidateQueries({
+          queryKey: [API.internal_meetings.list],
         });
         setOpen(null);
         onSuccess?.();
