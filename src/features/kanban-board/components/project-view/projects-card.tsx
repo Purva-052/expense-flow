@@ -275,9 +275,23 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
                     View Timeline
                   </DropdownMenuItem>
                   {canEditStatus && (
-                    <DropdownMenuItem onClick={() => setStatusDialogOpen(true)}>
-                      Change Status
-                    </DropdownMenuItem>
+                    <>
+                      <DropdownMenuItem
+                        onClick={() => setStatusDialogOpen(true)}
+                      >
+                        Change Status
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => setStatusDialogOpen(true)}
+                      >
+                        Edit Project
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => setStatusDialogOpen(true)}
+                      >
+                        Delete Project
+                      </DropdownMenuItem>
+                    </>
                   )}
                   <DropdownMenuItem onClick={handleAddStickyNote}>
                     View Sticky Notes

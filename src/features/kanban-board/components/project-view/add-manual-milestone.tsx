@@ -63,7 +63,6 @@ export function AddManualMilestone({
   initialData,
   onSuccess,
 }: AddManualMilestoneProps) {
-  console.log("initialData: ", initialData);
   const queryClient = useQueryClient();
   const { mutate: createMilestone, isPending: isCreating } =
     useCreateManualMilestone(() => {

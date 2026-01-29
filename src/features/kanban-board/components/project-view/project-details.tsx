@@ -23,14 +23,20 @@ import {
 import { Card } from "@/components/ui/card";
 import { IconUserStar } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
-import { ClientMeetingDialog } from "./client-meeting";
+import {
+  ClientMeetingDialog,
+  ClientMeetingListing,
+} from "./client-meeting";
 import { useState } from "react";
 import ProjectServerComponent from "@/features/projects/components/project-server-component";
 import ProjectDocumentComponent from "@/features/projects/components/project-document-component";
 import {
-  useGetProjectsDetailData,
+  createClientMeeting,
+} from "../../services";
+import {
   usePinProject,
   useUnpinProject,
+  useGetProjectsDetailData,
 } from "@/features/projects/services";
 import { useQueryClient } from "@tanstack/react-query";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -96,8 +102,16 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
     };
   };
 
+  const { mutate: createMeeting, isPending: isSavingMeeting } = createClientMeeting(() => {
+    setOpen(false);
+  });
+
   const handleMeetingSubmit = (data: any) => {
-    console.log(data);
+    if (meetingType === "client") {
+      createMeeting(data);
+    } else {
+      console.log(data);
+    }
   };
 
   return (
@@ -228,6 +242,21 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
                       <Plus className="w-4 h-4 mr-2" /> Add Meeting
                     </Button>
                   </div>
+                  <div className="px-6 pb-6">
+                    <ClientMeetingListing
+                      projectId={projectId!}
+                      clientsList={
+                        project?.client
+                          ? [
+                              {
+                                id: project.clientId,
+                                name: project.client.name,
+                              },
+                            ]
+                          : []
+                      }
+                    />
+                  </div>
                 </Card>
               </TabsContent>
 
@@ -263,7 +292,14 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
         open={open}
         onOpenChange={setOpen}
         onSubmit={(data) => handleMeetingSubmit(data)}
-        loading={false}
+        loading={isSavingMeeting}
+        projectId={projectId}
+        clientId={project?.clientId}
+        clientsList={
+          project?.client
+            ? [{ id: project.clientId, name: project.client.name }]
+            : []
+        }
         {...getMeetingDialogProps()}
       />
 
