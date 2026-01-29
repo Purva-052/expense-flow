@@ -28,7 +28,9 @@ export const columns: ColumnDef<any>[] = [
     header: "Currency",
     cell: ({ row }) => {
       const currency = row.original.currency;
-      return <span className="text-sm uppercase">{currency ? currency : "-"}</span>;
+      return (
+        <span className="text-sm uppercase">{currency ? currency : "-"}</span>
+      );
     },
   },
   {
@@ -169,7 +171,15 @@ export const columns: ColumnDef<any>[] = [
       const { setOpen, setCurrentRow } = useTransactionStore();
 
       const user = useAuthStore((state) => state.user);
-      const userRole = user?.user?.role;
+      const userRole = user?.role || user?.user?.role;
+      const currentUserId = user?.user.id;
+      const isAdmin = userRole === roles.ADMIN;
+      const creatorId = row.original.userId;
+      const isCreator = String(creatorId) === String(currentUserId);
+      const isPMorTL =
+        userRole === roles.PROJECT_MANAGER || userRole === roles.TEAM_LEAD;
+
+      const canEditDelete = isAdmin || (isPMorTL && isCreator);
 
       const handleEdit = () => {
         setOpen("edit");
@@ -200,10 +210,12 @@ export const columns: ColumnDef<any>[] = [
             <DropdownMenuItem onClick={handleView}>
               View Transaction
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleEdit}>
-              Edit Transaction
-            </DropdownMenuItem>
-            {userRole === roles.ADMIN && (
+            {canEditDelete && (
+              <DropdownMenuItem onClick={handleEdit}>
+                Edit Transaction
+              </DropdownMenuItem>
+            )}
+            {canEditDelete && (
               <DropdownMenuItem
                 className="text-red-600 focus:bg-red-50 focus:text-red-600"
                 onClick={handleDelete}
