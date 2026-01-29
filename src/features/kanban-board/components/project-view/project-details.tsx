@@ -20,13 +20,10 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { Card } from "@/components/ui/card";
+// import { Card } from "@/components/ui/card";
 import { IconUserStar } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
-import {
-  ClientMeetingDialog,
-  ClientMeetingListing,
-} from "./client-meeting";
+import { ClientMeetingDialog, ClientMeetingListing } from "./client-meeting";
 import {
   InternalMeetingDialog,
   InternalMeetingListing,
@@ -34,9 +31,7 @@ import {
 import { useState } from "react";
 import ProjectServerComponent from "@/features/projects/components/project-server-component";
 import ProjectDocumentComponent from "@/features/projects/components/project-document-component";
-import {
-  createClientMeeting,
-} from "../../services";
+import { createClientMeeting } from "../../services";
 import {
   usePinProject,
   useUnpinProject,
@@ -106,9 +101,10 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
     };
   };
 
-  const { mutate: createMeeting, isPending: isSavingMeeting } = createClientMeeting(() => {
-    setOpen(false);
-  });
+  const { mutate: createMeeting, isPending: isSavingMeeting } =
+    createClientMeeting(() => {
+      setOpen(false);
+    });
 
   const handleMeetingSubmit = (data: any) => {
     if (meetingType === "client") {
@@ -228,48 +224,46 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
               {/* CLIENT MEETING */}
               <TabsContent value="client">
                 {/* <Card> */}
-                  <div className="flex justify-between p-6">
-                    <div>
-                      {/* <h2 className="text-2xl font-semibold">
+                <div className="flex justify-between p-6">
+                  <div>
+                    {/* <h2 className="text-2xl font-semibold">
                         Client Meetings
                       </h2>
                       <p className="text-sm text-muted-foreground">
                         Track and manage all client meetings
                       </p> */}
-                    </div>
-                    <Button
-                      onClick={() => {
-                        setMeetingType("client");
-                        setOpen(true);
-                      }}
-                    >
-                      <Plus className="w-4 h-4 mr-2" /> Add Meeting
-                    </Button>
                   </div>
-                  <div className="px-6 pb-6">
-                    <ClientMeetingListing
-                      projectId={projectId!}
-                      clientsList={
-                        project?.client
-                          ? [
-                              {
-                                id: project.clientId,
-                                name: project.client.name,
-                              },
-                            ]
-                          : []
-                      }
-                    />
-                  </div>
+                  <Button
+                    onClick={() => {
+                      setMeetingType("client");
+                      setOpen(true);
+                    }}
+                  >
+                    <Plus className="w-4 h-4 mr-2" /> Add Meeting
+                  </Button>
+                </div>
+                <div className="px-6 pb-6">
+                  <ClientMeetingListing
+                    projectId={projectId!}
+                    clientsList={
+                      project?.client
+                        ? [
+                            {
+                              id: project.clientId,
+                              name: project.client.name,
+                            },
+                          ]
+                        : []
+                    }
+                  />
+                </div>
                 {/* </Card> */}
               </TabsContent>
 
-
-
               <TabsContent value="internal_meeting">
                 {/* <Card> */}
-                  <div className="flex justify-end p-6">
-                    {/* <div>
+                <div className="flex justify-end p-6">
+                  {/* <div>
                       <h2 className="text-2xl font-semibold">
                         Internal Meetings
                       </h2>
@@ -277,18 +271,18 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
                         Track and manage internal team meetings
                       </p>
                     </div> */}
-                    <Button
-                      onClick={() => {
-                        setMeetingType("internal");
-                        setOpen(true);
-                      }}
-                    >
-                      <Plus className="w-4 h-4 mr-2" /> Add Meeting
-                    </Button>
-                  </div>
-                  <div className="px-6 pb-6">
-                    <InternalMeetingListing projectId={projectId!} />
-                  </div>
+                  <Button
+                    onClick={() => {
+                      setMeetingType("internal");
+                      setOpen(true);
+                    }}
+                  >
+                    <Plus className="w-4 h-4 mr-2" /> Add Meeting
+                  </Button>
+                </div>
+                <div className="px-6 pb-6">
+                  <InternalMeetingListing projectId={projectId!} />
+                </div>
                 {/* </Card> */}
               </TabsContent>
             </div>
