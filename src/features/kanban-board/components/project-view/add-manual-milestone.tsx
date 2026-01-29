@@ -120,14 +120,26 @@ export function AddManualMilestone({
   const onSubmit = (values: FormValues) => {
     if (initialData) {
       const payload: any = {
-        milestoneName: values.name,
-        milestone_name: values.name,
         name: values.name,
         estimatedTime: values.estimatedTime,
         status: values.status,
         projectId: Number(projectId),
-        tasks: values.tasks, // Always send tasks for update
       };
+
+      // Only send tasks if they have been modified
+      const initialTasks =
+        initialData.tasks?.map((t: any) => ({
+          id: t.id,
+          taskName: t.taskName,
+          estimatedTime: t.estimatedTime,
+        })) || [];
+
+      const hasTasksChanged =
+        JSON.stringify(values.tasks) !== JSON.stringify(initialTasks);
+
+      if (hasTasksChanged) {
+        payload.tasks = values.tasks;
+      }
 
       updateMilestone(
         { id: initialData.id, data: payload },
