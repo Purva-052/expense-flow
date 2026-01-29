@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { ChangeStatusDialog } from "@/components/shared/custom-status-change";
+import { StatusConfirmDialog } from "@/components/shared/status-confirm-dialog";
 import ProjectDetailsDialog from "../ProjectDetailsDialog";
 
 const priorityColorMap: any = {
@@ -88,8 +89,19 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
   const { mutateAsync: pinProject } = usePinProject(project?.id);
   const { mutateAsync: unpinProject } = useUnpinProject(project?.id);
   const [isDialogOpen, setDialogOpen] = useState(false);
+  const [isConfirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<"completed" | "stop" | null>(null);
 
   const handleStatusUpdate = async (newStatus: string, note: string) => {
+    // If changing to completed or stop, show the confirm dialog
+    if ((newStatus === "completed" || newStatus === "stop") && !note) {
+      setPendingStatus(newStatus as "completed" | "stop");
+      setStatusDialogOpen(false);
+      setConfirmDialogOpen(true);
+      return;
+    }
+
+    // Otherwise, proceed with the status change
     try {
       setIsStatusUpdating(true);
       await ProjectStatusChange({
@@ -98,6 +110,8 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
         reason: note,
         effectiveDate: new Date().toISOString(),
       });
+      setStatusDialogOpen(false);
+      setConfirmDialogOpen(false);
     } catch (error) {
       console.error("Failed to update status:", error);
     } finally {
@@ -384,6 +398,18 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
         isLoading={isStatusUpdating}
         projectName={project?.name}
       />
+
+      {/* STATUS CONFIRM DIALOG FOR COMPLETED/STOP */}
+      {pendingStatus && (
+        <StatusConfirmDialog
+          open={isConfirmDialogOpen}
+          onOpenChange={setConfirmDialogOpen}
+          projectName={project?.name}
+          newStatus={pendingStatus}
+          onSubmit={handleStatusUpdate}
+          isLoading={isStatusUpdating}
+        />
+      )}
 
       <ConfirmDialog
         open={isPinConfirmOpen}

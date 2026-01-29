@@ -70,8 +70,11 @@ type GroupedDevelopers = {
   technologyColor?: string;
 }[];
 
-const ProjectPage = ({ onTotalCountChange }: any) => {
-  const [activeTab] = useState("project_details");
+const ProjectPage = ({
+  onTotalCountChange,
+  activeTab: initialActiveTab = "project_details",
+}: any) => {
+  const [activeTab] = useState(initialActiveTab);
   const isInactiveTab = activeTab === "Archive Projects" ? true : false;
 
   const { user } = useAuthStore();
@@ -88,6 +91,9 @@ const ProjectPage = ({ onTotalCountChange }: any) => {
 
   const { data: ProjectType, isPending: LoadingProjectType }: any =
     useGetProjectTypesDropdownList();
+
+  // const activeStatuses = ["active-discovery", "running", "slow"];
+  // const inactiveStatuses = ["stop", "completed"];
 
   const getInitialFilters = () => {
     if (typeof window === "undefined")
@@ -132,13 +138,18 @@ const ProjectPage = ({ onTotalCountChange }: any) => {
   // State for the multi-select technology filter
   const [selectedTech, setSelectedTech] = useState<string[]>([]);
 
+  // Update listParams when activeTab changes (to reset status if needed)
+  useEffect(() => {
+     setListParams(getInitialFilters());
+  }, [activeTab]);
+
   useEffect(() => {
     const { clientId, managerId, priority } = listParams;
     localStorage.setItem(
       FILTER_STORAGE_KEY,
       JSON.stringify({ clientId, managerId, priority })
     );
-  }, [listParams]);
+  }, [listParams, FILTER_STORAGE_KEY]);
 
   const resourcePayload = {
     ...(activeTabResource === "available"
