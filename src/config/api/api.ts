@@ -136,6 +136,12 @@ const API = {
     update: "/client-meetings/update",
     delete: "/client-meetings/delete",
   },
+  internal_meetings: {
+    create: "/internal-meeting/create",
+    list: "/internal-meeting",
+    update: "/internal-meeting/update",
+    delete: "/internal-meeting/delete",
+  },
 };
 
 Object.freeze(API);

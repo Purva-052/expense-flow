@@ -286,11 +286,11 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
                       >
                         Edit Project
                       </DropdownMenuItem>
-                      <DropdownMenuItem
+                      {/* <DropdownMenuItem
                         onClick={() => setStatusDialogOpen(true)}
                       >
                         Delete Project
-                      </DropdownMenuItem>
+                      </DropdownMenuItem> */}
                     </>
                   )}
                   <DropdownMenuItem onClick={handleAddStickyNote}>
