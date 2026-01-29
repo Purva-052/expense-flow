@@ -220,16 +220,16 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          {!isProjectHandler && selectedTech.length === 0 ? (
+          {!isProjectHandler && selectedTech.length === 0 && !resourceSearch ? (
             <div className="flex flex-col items-center justify-center py-10 text-center border border-dashed rounded-lg mt-4">
               <div className="mb-3 p-3 rounded-full bg-muted">
                 <Users className="h-10 w-10 text-muted-foreground/70" />
               </div>
               <h3 className="text-lg font-semibold text-muted-foreground">
-                Please select a technology
+                Please select a technology or search by name
               </h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Choose a technology from the dropdown to view available
+                Choose a technology from the dropdown or use the search to view available
                 resources.
               </p>
             </div>

@@ -37,7 +37,7 @@ const priorityColorMap: any = {
 
 const priorityBorderMap: any = {
   high: "border-l-orange-500",
-  medium: "border-l-yellow-500",
+  medium: "border-l-black",
   low: "border-l-teal-500",
 };
 
@@ -85,7 +85,9 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
   const { mutateAsync: unpinProject } = useUnpinProject(project?.id);
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [isConfirmDialogOpen, setConfirmDialogOpen] = useState(false);
-  const [pendingStatus, setPendingStatus] = useState<"completed" | "stop" | null>(null);
+  const [pendingStatus, setPendingStatus] = useState<
+    "completed" | "stop" | null
+  >(null);
 
   const handleStatusUpdate = async (newStatus: string, note: string) => {
     // If changing to completed or stop, show the confirm dialog
@@ -174,8 +176,7 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
       <div
         ref={setNodeRef}
         className={cn(
-          "bg-white border-l-4 rounded-lg shadow-sm p-6 hover:shadow-md transition-all duration-300 relative",
-          priorityBorderMap[priority.toLowerCase()] || "border-l-gray-400",
+          "bg-white border-l-4 rounded-lg shadow-sm p-6 hover:shadow-md transition-all duration-300 relative border-l-gray-700",
           isOver && "ring-2 ring-primary bg-primary/5"
         )}
       >
@@ -307,7 +308,7 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
         {/* Progress Bar */}
         <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
           <div
-            className="h-2 rounded-full transition-all bg-[#E80339]"
+            className="h-2 rounded-full transition-all bg-gray-800"
             style={{ width: `${progress}%` }}
           />
         </div>
