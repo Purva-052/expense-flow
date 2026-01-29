@@ -22,7 +22,7 @@ export const useCreateProjectsData = () => {
   const { setOpen } = useProjectsStore();
   return usePostData({
     url: API.projects.create,
-    refetchQueries: [GET_API_URL],
+    refetchQueries: ["projects"],
     onSuccess: () => {
       setOpen(null);
     },
@@ -33,7 +33,7 @@ export const useUpdateProjectsData = (id: string) => {
   const { setOpen } = useProjectsStore();
   return usePatchData({
     url: `${API.projects.list}/${id}`,
-    refetchQueries: [GET_API_URL],
+    refetchQueries: ["projects"],
     onSuccess: () => setOpen(null),
   });
 };
@@ -84,7 +84,7 @@ export const useDeleteProjectsData = (id: string) => {
   const { setOpen } = useProjectsStore();
   return useDeleteData({
     url: `${API.projects.delete}/${id}`,
-    refetchQueries: [GET_API_URL],
+    refetchQueries: ["projects"],
     onSuccess: () => {
       setOpen(null);
     },
