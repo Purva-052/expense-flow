@@ -10,7 +10,6 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  // FormMessage,
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -20,10 +19,11 @@ interface FileUploadProps {
   label: string;
   fileLabel?: string;
   onFileSelect?: (file: File) => Promise<void>;
-  onFileRemove?: () => void; // Callback when file is removed
-  existingFileUrl?: string; // URL or S3 key of existing file
-  existingFileName?: string; // Optional display name for existing file
-  acceptedFormats?: Record<string, string[]>; // Custom accepted file formats
+  onFileRemove?: () => void;
+  existingFileUrl?: string;
+  existingFileName?: string;
+  acceptedFormats?: Record<string, string[]>;
+  disabled?: boolean;
 }
 
 const formatBytes = (bytes: number) => {
@@ -43,21 +43,18 @@ export const FileUpload = ({
   existingFileUrl,
   existingFileName,
   acceptedFormats,
+  disabled,
 }: FileUploadProps) => {
   const form = useFormContext();
   const file = form.watch(name);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  // Form state se errors nikalein
   const { formState } = form;
-
-  // Error detection logic
   const fieldError =
     formState.errors[name] ||
     (name === "resume" ? formState.errors.resumeS3Key : undefined);
 
-  // Default accept formats - for PDFs, DOCs, DOCXs
   const defaultFormats = {
     "application/pdf": [".pdf"],
     "application/msword": [".doc"],
@@ -73,11 +70,8 @@ export const FileUpload = ({
       if (acceptedFiles.length > 0) {
         const selectedFile = acceptedFiles[0];
         setUploadError(null);
-
-        // Error clear karein jab user file drop kare
         form.clearErrors(name);
         if (name === "resume") form.clearErrors("resumeS3Key");
-
         form.setValue(name, selectedFile, { shouldValidate: true });
 
         if (onFileSelect) {
@@ -106,7 +100,6 @@ export const FileUpload = ({
         const firstRejection = rejectedFiles[0];
         const err = firstRejection.errors && firstRejection.errors[0];
 
-        // Build a short, friendly message
         const getAllowedExts = (acceptObj: Record<string, string[]>) => {
           try {
             const all = Object.values(acceptObj).flat();
@@ -132,22 +125,13 @@ export const FileUpload = ({
             message = "File format not supported";
           }
         } else if (err?.message) {
-          // Fallback to the underlying message but keep it short
           message = err.message;
         }
 
         setUploadError(message);
-
-        // Set form-level error so the UI shows validation message
-        form.setError(name, {
-          type: "manual",
-          message,
-        });
+        form.setError(name, { type: "manual", message });
         if (name === "resume") {
-          form.setError("resumeS3Key", {
-            type: "manual",
-            message,
-          });
+          form.setError("resumeS3Key", { type: "manual", message });
         }
       }
     },
@@ -159,33 +143,26 @@ export const FileUpload = ({
     onDropRejected,
     accept,
     multiple: false,
-    disabled: isUploading,
+    disabled: isUploading || disabled,
   });
 
   const handleRemove = () => {
-    // Clear form values
     form.setValue(name, null, { shouldValidate: true });
     if (name === "resume") {
       form.setValue("resumeS3Key", "", { shouldValidate: true });
     }
-
-    // Clear errors
     form.clearErrors(name);
     if (name === "resume") {
       form.clearErrors("resumeS3Key");
     }
-
     setUploadError(null);
-
-    // Notify parent component that file was removed
     if (onFileRemove) {
       onFileRemove();
     }
   };
 
-  // Check if we have an existing file (when no new file is selected)
   const hasExistingFile = !file && existingFileUrl;
-  const displayFileName = existingFileName || "Uploaded Resume";
+  const displayFileName = existingFileName || "Uploaded File";
 
   return (
     <FormField
@@ -193,18 +170,15 @@ export const FileUpload = ({
       name={name}
       render={() => (
         <FormItem>
-          {/* Label color bhi Red karein agar error hai */}
           <FormLabel className={fieldError ? "text-red-500" : ""}>
             {label}
           </FormLabel>
           <FormControl>
             {file ? (
-              // --- View after NEW file is selected ---
               <div className="space-y-2">
                 <div
                   className={cn(
                     "flex items-center justify-between rounded-md border p-3",
-                    // Error hone par Red border, nahi toh normal logic
                     fieldError ? "border-red-500 bg-red-50" : "border-gray-200"
                   )}
                 >
@@ -245,24 +219,21 @@ export const FileUpload = ({
                     size="icon"
                     className="text-red-500 hover:text-red-600"
                     onClick={handleRemove}
-                    disabled={isUploading}
+                    disabled={isUploading || disabled}
                   >
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
-                {/* Zod Validation Error Message */}
                 {fieldError && (
                   <p className="text-sm text-red-500 font-medium">
                     {String(fieldError?.message)}
                   </p>
                 )}
-                {/* Custom Upload Error (Network fail etc) */}
                 {uploadError && (
                   <p className="text-sm text-red-500">{uploadError}</p>
                 )}
               </div>
             ) : hasExistingFile ? (
-              // --- View for EXISTING file (edit mode) ---
               <div className="space-y-2">
                 <div
                   className={cn(
@@ -304,11 +275,11 @@ export const FileUpload = ({
                     size="icon"
                     className="text-red-500 hover:text-red-600"
                     onClick={handleRemove}
+                    disabled={disabled}
                   >
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
-                {/* Zod Validation Error Message */}
                 {fieldError && (
                   <p className="text-sm text-red-500 font-medium">
                     {String(fieldError?.message)}
@@ -316,7 +287,6 @@ export const FileUpload = ({
                 )}
               </div>
             ) : (
-              // --- Dropzone view (no file) ---
               <div>
                 <div
                   {...getRootProps()}
@@ -327,7 +297,7 @@ export const FileUpload = ({
                       : fieldError
                         ? "border-red-500 bg-red-50 hover:bg-red-100/50"
                         : "border-gray-300 hover:bg-gray-50",
-                    isUploading && "opacity-50 cursor-not-allowed"
+                    (isUploading || disabled) && "opacity-50 cursor-not-allowed"
                   )}
                 >
                   <input {...getInputProps()} />
@@ -361,7 +331,6 @@ export const FileUpload = ({
                     {fileLabel}
                   </p>
                 </div>
-                {/* Zod Validation Error Message */}
                 {(fieldError || uploadError) && (
                   <p className="text-sm text-red-500 mt-2 font-medium">
                     {String(fieldError?.message || uploadError)}

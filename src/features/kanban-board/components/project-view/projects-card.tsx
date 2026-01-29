@@ -35,11 +35,11 @@ const priorityColorMap: any = {
   low: "bg-green-100 text-green-700",
 };
 
-const priorityBorderMap: any = {
-  high: "border-l-orange-500",
-  medium: "border-l-black",
-  low: "border-l-teal-500",
-};
+// const priorityBorderMap: any = {
+//   high: "border-l-orange-500",
+//   medium: "border-l-black",
+//   low: "border-l-teal-500",
+// };
 
 const getStatusBadgeClasses = (status?: string) => {
   const s = (status || "").toLowerCase();
