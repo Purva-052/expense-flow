@@ -4,7 +4,7 @@ import { GlobalTable } from "@/components/table/global-table";
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import { FilterConfig } from "@/components/table/table-toolbar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,7 +27,7 @@ import AddEditDocumentDialog from "./AddEditDocumentDialog";
 import { format } from "date-fns";
 import { useGetUserDropdownList } from "@/features/users/services";
 
-const ProjectDocumentComponent = ({ projectId, projectName }: any) => {
+const ProjectDocumentComponent = ({ projectId }: any) => {
   const [documentListParams, setDocumentListParams] = useState<any>({
     limit: 10,
     page: 1,
@@ -289,13 +289,7 @@ const ProjectDocumentComponent = ({ projectId, projectName }: any) => {
     <>
       <Card className="gap-3">
         <CardHeader className="px-0 gap-0">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-2xl">
-              Project Documents{" "}
-              {projectName && (
-                <span className="text-xl font-normal">({projectName})</span>
-              )}
-            </CardTitle>
+          <div className="flex items-center justify-end">
             <Button onClick={handleAddDocument}>
               {" "}
               <Plus /> Add Document

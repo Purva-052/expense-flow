@@ -53,7 +53,6 @@ import {
 import { DeveloperChip } from "../developer-chip";
 import { DeveloperDialog } from "../developer-dialog";
 import { ProjectCard } from "./projects-card";
-import { StickyNotesDialog } from "@/features/sticky-notes/components/sticky-notes-dialog";
 import { Input } from "@/components/ui/input";
 import useDebounce from "@/hooks/use-debaunce";
 import { useGetProjectTypesDropdownList } from "@/features/Project-type/services";
@@ -764,7 +763,6 @@ const ProjectPage = ({
         }}
         refetchAvailableDevelopers={AllDevelopersRefetch}
       />
-      <StickyNotesDialog />
     </div>
   );
 };

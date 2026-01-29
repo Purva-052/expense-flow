@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/select";
 
 const taskSchema = z.object({
-  taskId: z.number().optional(),
+  id: z.number().optional(),
   taskName: z.string().min(1, "Task name is required"),
   estimatedTime: z.string().min(1, "Estimated time is required"),
 });
@@ -88,11 +88,15 @@ export function AddManualMilestone({
     if (open) {
       if (initialData) {
         form.reset({
-          name: initialData.name || initialData.milestoneName || "",
+          name:
+            initialData.name ||
+            initialData.milestoneName ||
+            initialData.milestone_name ||
+            "",
           estimatedTime: initialData.estimatedTime || "",
           status: initialData.status || "pending",
           tasks: initialData.tasks?.map((t: any) => ({
-            taskId: t.id,
+            id: t.id,
             taskName: t.taskName,
             estimatedTime: t.estimatedTime,
           })) || [{ taskName: "", estimatedTime: "" }],
@@ -115,29 +119,15 @@ export function AddManualMilestone({
 
   const onSubmit = (values: FormValues) => {
     if (initialData) {
-      // Check if tasks were actually modified
-      const initialTasksFromData =
-        initialData.tasks?.map((t: any) => ({
-          taskId: t.id,
-          taskName: t.taskName,
-          estimatedTime: t.estimatedTime,
-        })) || [];
-
-      // Simple comparison of tasks
-      const areTasksUnchanged =
-        JSON.stringify(values.tasks) === JSON.stringify(initialTasksFromData);
-
       const payload: any = {
+        milestoneName: values.name,
+        milestone_name: values.name,
         name: values.name,
         estimatedTime: values.estimatedTime,
         status: values.status,
         projectId: Number(projectId),
+        tasks: values.tasks, // Always send tasks for update
       };
-
-      // Only include tasks if they have changed
-      if (!areTasksUnchanged) {
-        payload.tasks = values.tasks;
-      }
 
       updateMilestone(
         { id: initialData.id, data: payload },
@@ -146,8 +136,11 @@ export function AddManualMilestone({
             queryClient.invalidateQueries({
               queryKey: [API.dropdown_api.milestones, { projectId }],
             });
+            // Also invalidate the specific milestone details
+            queryClient.invalidateQueries({
+              queryKey: [`${API.projects.milestone_list}/${initialData.id}`],
+            });
             onOpenChange(false);
-            form.reset();
             if (onSuccess) onSuccess();
           },
         }
