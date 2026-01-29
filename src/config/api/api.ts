@@ -130,6 +130,12 @@ const API = {
     update: "/daily-reports",
     delete: "/daily-reports",
   },
+  client_meetings: {
+    create: "/client-meetings/create",
+    list: "/client-meetings",
+    update: "/client-meetings/update",
+    delete: "/client-meetings/delete",
+  },
 };
 
 Object.freeze(API);

@@ -502,3 +502,56 @@ export const useUpdateMileStone = () => {
     },
   });
 };
+
+export const createClientMeeting = (onSuccess?: () => void) => {
+  return usePostData({
+    url: API.client_meetings.create,
+    refetchQueries: [API.client_meetings.list, API.projects.list],
+    onSuccess: () => {
+      if (onSuccess) onSuccess();
+    },
+  });
+};
+
+export const useGetClientMeetings = (projectId?: string | number) => {
+  return useFetchData({
+    url: API.client_meetings.list,
+    params: projectId ? { projectId } : {},
+    enabled: !!projectId,
+  });
+};
+
+export const useUpdateClientMeeting = (onSuccess?: () => void) => {
+  return usePatchData({
+    url: API.client_meetings.update,
+    refetchQueries: [API.client_meetings.list],
+    onSuccess: (response: any) => {
+      if (response.statusCode === 200 || response.statusCode === 201) {
+        onSuccess?.();
+      }
+    },
+  });
+};
+
+export const useDeleteClientMeeting = (onSuccess?: () => void) => {
+  const { setOpen } = useBoardStore();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string | number) => {
+      const response = await instance.delete({
+        url: `${API.client_meetings.delete}/${id}`,
+      });
+      return response;
+    },
+    onSuccess: (response: any) => {
+      if (response.statusCode === 200 || response.statusCode === 201) {
+        queryClient.invalidateQueries({
+          queryKey: [API.client_meetings.list],
+        });
+        setOpen(null);
+        onSuccess?.();
+      }
+    },
+  });
+};
