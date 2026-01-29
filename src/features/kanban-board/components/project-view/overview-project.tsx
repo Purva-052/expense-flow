@@ -67,11 +67,8 @@ const OverviewProject = ({ projectId }: { projectId?: any }) => {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 mb-6 border-b">
             <div>
               <h2 className="text-2xl font-bold text-gray-900">
-                Project Details ({project.name})
-              </h2>
-              <p className="text-sm text-gray-500 mt-1">
                 Client: {project.client?.name || "-"}
-              </p>
+              </h2>
             </div>
           </div>
 

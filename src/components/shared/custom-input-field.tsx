@@ -21,6 +21,7 @@ export interface TextInputFieldProps {
   autoComplete?: string; // ✅ add this prop
   onKeyDown?: React.KeyboardEventHandler<HTMLInputElement> | undefined; // ✅ add this prop
   onPaste?: React.ClipboardEventHandler<HTMLInputElement> | undefined; // ✅ add this prop
+  disabled?: boolean;
 }
 
 export function TextInputField({
@@ -36,6 +37,7 @@ export function TextInputField({
   autoComplete = "off", // ✅ default to off
   onKeyDown = undefined, // ✅ add this prop
   onPaste = undefined, // ✅ add this prop
+  disabled = false,
 }: Readonly<TextInputFieldProps>) {
   return (
     <FormField
@@ -57,6 +59,7 @@ export function TextInputField({
                 {...(valueAsNumber ? { valueAsNumber: true } : {})} // 👈 forward valueAsNumber
                 onKeyDown={onKeyDown}
                 onPaste={onPaste}
+                disabled={disabled}
               />
             </FormControl>
             <FormMessage className="col-start-3" />

@@ -7,11 +7,28 @@ import instance from "@/config/instance/instance";
 
 const STICKY_NOTES_API = API.projects.sticky_notes;
 
-export const useGetStickyNotes = (projectId: string) => {
+export const useGetStickyNotes = (params: {
+  projectId: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+  pagination?: boolean;
+}) => {
   return useFetchData({
     url: STICKY_NOTES_API,
-    params: { projectId: Number(projectId), pagination: false },
-    enabled: !!projectId,
+    params: {
+      ...params,
+      projectId: Number(params.projectId),
+      pagination: params.pagination ?? true,
+    },
+    enabled: !!params.projectId,
+  });
+};
+
+export const useGetStickyNoteById = (noteId: string | null) => {
+  return useFetchData({
+    url: `${STICKY_NOTES_API}/${noteId}`,
+    enabled: !!noteId,
   });
 };
 
@@ -47,8 +64,7 @@ export const useDeleteStickyNote = () => {
   return useMutation({
     mutationFn: async (id: string) => {
       const response = await instance.delete({
-        url: STICKY_NOTES_API,
-        params: { id },
+        url: `${STICKY_NOTES_API}/${id}`,
       });
       return response.data;
     },

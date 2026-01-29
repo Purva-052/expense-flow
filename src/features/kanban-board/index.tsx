@@ -2,7 +2,8 @@ import { Main } from "@/components/layout/main";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useGetProjectsData } from "../projects/services";
 import InquiryPage from "../Inquiry";
 import { useGetTechnologyDropdownList } from "../technology/services";
 import Board from "./components/Board";
@@ -20,12 +21,27 @@ import { ActionFormModal } from "../projects/components/action";
 const ProjectBoard = () => {
   const [activeTab, setActiveTab] = useState("project_details");
   const { open, setOpen } = useProjectsStore();
-  const [projectCount, setProjectCount] = useState<number | null>(null);
+  const [activeProjectCount, setActiveProjectCount] = useState<number | null>(null);
+  const [archiveProjectCount, setArchiveProjectCount] = useState<number | null>(null);
   const user = useAuthStore((state) => state.user);
   const userRole = user?.user?.role;
   const userId = user?.user?.id;
   const { data: technologies, isPending: techLoading } =
     useGetTechnologyDropdownList(null, userRole !== roles.BDE);
+
+  // Fetch archive count on initial load
+  const { data: archiveProjectsData } = useGetProjectsData({
+    status: "inactive",
+    page: 1,
+    limit: 1,
+  });
+
+  // Update archive count when data is fetched
+  useEffect(() => {
+    if (archiveProjectsData?.pages?.[0]?.metadata?.totalCount !== undefined) {
+      setArchiveProjectCount(archiveProjectsData.pages[0].metadata.totalCount);
+    }
+  }, [archiveProjectsData]);
 
   const { data: ProjectType, isPending: LoadingProjectType }: any =
     useGetProjectTypesDropdownList();
@@ -58,7 +74,7 @@ const ProjectBoard = () => {
                 className="w-full"
               >
                 <TabsContent value="project_details">
-                  <ProjectPage onTotalCountChange={setProjectCount} />
+                  <ProjectPage onTotalCountChange={setActiveProjectCount} />
                 </TabsContent>
               </Tabs>
             ) : (
@@ -74,8 +90,8 @@ const ProjectBoard = () => {
                   <TabsList className="flex flex-wrap">
                     <TabsTrigger value="project_details">
                       Projects
-                      {projectCount !== null && (
-                        <span className="ml-1">({projectCount})</span>
+                      {activeProjectCount !== null && (
+                        <span className="ml-1">({activeProjectCount})</span>
                       )}
                     </TabsTrigger>
 
@@ -91,6 +107,9 @@ const ProjectBoard = () => {
                     </TabsTrigger>
                     <TabsTrigger value="Archive Projects">
                       Archive Projects
+                      {archiveProjectCount !== null && (
+                        <span className="ml-1">({archiveProjectCount})</span>
+                      )}
                     </TabsTrigger>
                     {userId === 1 && (
                       <TabsTrigger value="inquiry">Inquiries</TabsTrigger>
@@ -126,14 +145,14 @@ const ProjectBoard = () => {
 
                 {/* Board Tab */}
                 <TabsContent value="project_details">
-                  <ProjectPage onTotalCountChange={setProjectCount} />
+                  <ProjectPage onTotalCountChange={setActiveProjectCount} />
                 </TabsContent>
                 <TabsContent value="board">
                   <Board
                     technologies={technologies}
                     techLoading={techLoading}
                     activeTab={activeTab}
-                    onTotalCountChange={setProjectCount}
+                    onTotalCountChange={setActiveProjectCount}
                   />
                 </TabsContent>
 
@@ -155,9 +174,9 @@ const ProjectBoard = () => {
                 </TabsContent>
 
                 <TabsContent value="Archive Projects">
-                  <Board
-                    activeTab={activeTab}
-                    onTotalCountChange={setProjectCount}
+                  <ProjectPage
+                    activeTab="Archive Projects"
+                    onTotalCountChange={setArchiveProjectCount}
                   />
                 </TabsContent>
                 {userId === 1 && (

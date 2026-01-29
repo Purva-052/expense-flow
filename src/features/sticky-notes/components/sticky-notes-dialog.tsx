@@ -1,46 +1,24 @@
 import { useState } from "react";
-import { CKEditor } from "@ckeditor/ckeditor5-react";
-import {
-  ClassicEditor,
-  Bold,
-  Essentials,
-  Italic,
-  Paragraph,
-  Undo,
-  Heading,
-  Link,
-  List,
-  TodoList,
-} from "ckeditor5";
-
-import "ckeditor5/ckeditor5.css";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { DeleteModal } from "@/components/model/delete-model";
 import { useProjectsStore } from "@/features/projects/stores/useProjectsStore";
 import { Button } from "@/components/ui/button";
-import { Plus, X, Trash2, Edit2, Save, Loader2 } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Plus, X, Loader2 } from "lucide-react";
 import {
   useGetStickyNotes,
   useCreateStickyNote,
   useUpdateStickyNote,
   useDeleteStickyNote,
 } from "@/features/sticky-notes/services/sticky-note-services";
-import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-// const COLORS = [
-//   { name: "yellow", bg: "bg-yellow-100", border: "border-yellow-200" },
-//   { name: "blue", bg: "bg-blue-100", border: "border-blue-200" },
-//   { name: "green", bg: "bg-green-100", border: "border-green-200" },
-//   { name: "pink", bg: "bg-pink-100", border: "border-pink-200" },
-//   { name: "purple", bg: "bg-purple-100", border: "border-purple-200" },
-// ];
+import { NoteCard } from "./note-card";
+import { NoteEditor } from "./note-editor";
+import { NoteView } from "./note-view";
 
 export const StickyNotesDialog = () => {
   const { open, setOpen, currentRow } = useProjectsStore();
@@ -54,81 +32,114 @@ export const StickyNotesDialog = () => {
   const { mutateAsync: deleteNote } = useDeleteStickyNote();
 
   const [isAdding, setIsAdding] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    title: "",
-    content: "",
-    color: "yellow",
-  });
-  const [editorReady, setEditorReady] = useState(false);
+  const [viewingNote, setViewingNote] = useState<any>(null);
+  const [editingNote, setEditingNote] = useState<any>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
+
+  const handleOpenAdd = () => {
+    setEditingNote(null);
+    setIsAdding(true);
+    setViewingNote(null);
+  };
 
   const handleClose = () => {
     setOpen(null);
     setIsAdding(false);
-    setEditingId(null);
-    setFormData({ title: "", content: "", color: "yellow" });
+    setViewingNote(null);
+    setEditingNote(null);
   };
 
-  const handleSave = async () => {
+  const handleSave = async (data: any) => {
     try {
-      if (editingId) {
+      if (editingNote?.id) {
         await updateNote({
-          id: editingId,
+          id: editingNote.id,
           data: {
-            title: formData.title,
-            description: formData.content, // API expects description
-            isCompleted: false, // Default
+            title: data.title,
+            description: data.content,
+            color: data.color,
+            isCompleted: false,
           },
         });
       } else {
         await createNote({
-          title: formData.title,
-          description: formData.content, // API expects description
-          isCompleted: false, // Default
+          title: data.title,
+          description: data.content,
+          color: data.color,
+          isCompleted: false,
           projectId: Number(currentRow?.id),
         });
       }
       setIsAdding(false);
-      setEditingId(null);
-      setFormData({ title: "", content: "", color: "yellow" });
+      setEditingNote(null);
     } catch (error) {
       console.error("Failed to save note", error);
     }
   };
 
   const startEdit = (note: any) => {
-    setFormData({
-      title: note.title ?? "",
-      content: note.description,
-      color: "yellow", // Color not supported by API
-    });
-    setEditingId(note.id);
+    setEditingNote(note);
     setIsAdding(true);
+    setViewingNote(null);
   };
 
-  const handleDelete = async (noteId: string) => {
+  const handleDelete = (noteId: string) => {
+    setNoteToDelete(noteId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!noteToDelete) return;
     try {
-      await deleteNote(noteId);
+      await deleteNote(noteToDelete);
+      if (viewingNote?.id === noteToDelete) {
+        setViewingNote(null);
+      }
     } catch (error) {
       console.error("Failed to delete note", error);
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setNoteToDelete(null);
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="max-w-4xl h-[80vh] flex flex-col bg-gray-50/95 backdrop-blur-sm p-0 gap-0 overflow-hidden rounded-2xl border-none shadow-2xl [&>button]:hidden">
+      <DialogContent
+        className="max-w-4xl h-[80vh] flex flex-col bg-gray-50/95 backdrop-blur-sm p-0 gap-0 overflow-hidden rounded-2xl border-none shadow-2xl [&>button]:hidden"
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader className="p-6 border-b bg-white/80 sticky top-0 z-10 flex flex-row items-center justify-between space-y-0">
           <div className="flex flex-col gap-1">
             <DialogTitle className="text-2xl font-bold bg-clip-text text-black">
-              Sticky Notes
+              {isAdding
+                ? editingNote
+                  ? "Edit Note"
+                  : "Add Note"
+                : viewingNote
+                  ? "View Note"
+                  : "Sticky Notes"}
             </DialogTitle>
             <p className="text-sm text-muted-foreground">{currentRow?.name}</p>
           </div>
           <div className="flex items-center gap-2">
-            {!isAdding && (
-              <Button onClick={() => setIsAdding(true)}>
+            {!isAdding && !viewingNote && (
+              <Button onClick={handleOpenAdd}>
                 <Plus className="w-4 h-4 mr-2" />
                 Add Note
+              </Button>
+            )}
+            {(isAdding || viewingNote) && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsAdding(false);
+                  setViewingNote(null);
+                }}
+              >
+                Back to List
               </Button>
             )}
             <Button
@@ -149,90 +160,25 @@ export const StickyNotesDialog = () => {
                 <Loader2 className="w-10 h-10 animate-spin text-primary/50" />
               </div>
             ) : isAdding ? (
-              <div className="max-w-md mx-auto mt-10">
-                <div
-                  className={cn(
-                    "p-6 rounded-xl shadow-xl transition-all duration-300 border-2 bg-yellow-100 border-yellow-200"
-                  )}
-                >
-                  <div className="mb-4">
-                    <Input
-                      placeholder="Title (optional)"
-                      value={formData.title}
-                      onChange={(e) =>
-                        setFormData({ ...formData, title: e.target.value })
+              <NoteEditor
+                initialData={
+                  editingNote
+                    ? {
+                        title: editingNote.title ?? "",
+                        content: editingNote.description,
+                        color: editingNote.color ?? "yellow",
                       }
-                      className="bg-transparent border-none text-lg font-bold placeholder:text-gray-400 focus-visible:ring-0 p-0 h-auto"
-                    />
-                  </div>
-                  <div className="bg-transparent border-none min-h-[200px] text-gray-700 ck-content ck-editor-custom">
-                    <CKEditor
-                      //@ts-ignore
-                      editor={ClassicEditor}
-                      data={formData.content}
-                      onReady={() => setEditorReady(true)}
-                      onChange={(_, editor) => {
-                        const data = editor.getData();
-                        setFormData({ ...formData, content: data });
-                      }}
-                      disabled={!editorReady}
-                      config={{
-                        plugins: [
-                          Essentials,
-                          Paragraph,
-                          Heading,
-                          Bold,
-                          Italic,
-                          Link,
-                          List,
-                          TodoList,
-                          Undo,
-                        ],
-                        toolbar: [
-                          "heading",
-                          "|",
-                          "bold",
-                          "italic",
-                          "link",
-                          "|",
-                          "bulletedList",
-                          "numberedList",
-                          "todoList",
-                          "|",
-                          "undo",
-                          "redo",
-                        ],
-                        placeholder: "Type your note here...",
-                        licenseKey: "GPL",
-                      }}
-                    />
-                  </div>
-                  <div className="flex items-center justify-end mt-4 pt-4 border-t border-black/5">
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setIsAdding(false);
-                          setEditingId(null);
-                        }}
-                        className="hover:bg-black/5"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={handleSave}
-                        disabled={!formData.content}
-                        className="bg-primary hover:bg-primary/90"
-                      >
-                        <Save className="w-4 h-4 mr-2" />
-                        Save
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                    : undefined
+                }
+                onSave={handleSave}
+                onCancel={() => setIsAdding(false)}
+              />
+            ) : viewingNote ? (
+              <NoteView
+                noteId={viewingNote.id}
+                onEdit={startEdit}
+                onDelete={handleDelete}
+              />
             ) : notesData?.data?.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-[50vh] text-center opacity-60">
                 <div className="w-24 h-24 bg-yellow-100 rounded-lg rotate-3 mb-4 shadow-sm border border-yellow-200 flex items-center justify-center">
@@ -246,82 +192,34 @@ export const StickyNotesDialog = () => {
                 <Button
                   variant="outline"
                   className="mt-6 border-dashed"
-                  onClick={() => setIsAdding(true)}
+                  onClick={handleOpenAdd}
                 >
                   Create your first note
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-20">
-                {notesData?.data?.map((note: any) => {
-                  return (
-                    <div
-                      key={note.id}
-                      className={cn(
-                        "group relative p-6 rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 aspect-square flex flex-col border bg-yellow-100 border-yellow-200"
-                      )}
-                    >
-                      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 hover:bg-black/5 rounded-full"
-                          onClick={() => startEdit(note)}
-                        >
-                          <Edit2 className="w-4 h-4 text-gray-600" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 hover:bg-red-500/20 rounded-full"
-                          onClick={() => handleDelete(note.id)}
-                        >
-                          <Trash2 className="w-4 h-4 text-red-500" />
-                        </Button>
-                      </div>
-                      {note.title && (
-                        <h4 className="font-bold text-gray-900 mb-2 truncate pr-16">
-                          {note.title}
-                        </h4>
-                      )}
-                      <div className="flex items-start gap-3 mt-1">
-                        <Checkbox
-                          id={`note-${note.id}`}
-                          checked={note.isCompleted}
-                          onCheckedChange={(checked) => {
-                            updateNote({
-                              id: note.id,
-                              data: {
-                                description: note.description,
-                                isCompleted: checked === true,
-                                projectId: Number(currentRow?.id),
-                              },
-                            });
-                          }}
-                          className="mt-1"
-                        />
-                        <div
-                          className={cn(
-                            "text-sm text-gray-700 flex-1 overflow-hidden text-ellipsis line-clamp-[8] sticky-note-content",
-                            note.isCompleted &&
-                              "line-through text-gray-500 opacity-70"
-                          )}
-                          dangerouslySetInnerHTML={{ __html: note.description }}
-                        />
-                      </div>
-                      <div className="mt-4 text-xs text-gray-500 font-medium pl-8">
-                        {note.createdAt
-                          ? new Date(note.createdAt).toLocaleDateString()
-                          : "Just now"}
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20 w-full max-w-full px-1">
+                {notesData?.data?.map((note: any) => (
+                  <NoteCard
+                    key={note.id}
+                    note={note}
+                    onView={setViewingNote}
+                    onEdit={startEdit}
+                    onDelete={handleDelete}
+                  />
+                ))}
               </div>
             )}
           </ScrollArea>
         </div>
       </DialogContent>
+
+      <DeleteModal
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={confirmDelete}
+        itemName="this note"
+      />
     </Dialog>
   );
 };

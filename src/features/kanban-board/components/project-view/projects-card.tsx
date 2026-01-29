@@ -12,16 +12,12 @@ import {
 import { useState } from "react";
 import { ProjectDetails } from "./project-details";
 import { Drawer } from "@/components/ui/drawer";
-import { useProjectsStore } from "../../../projects/stores/useProjectsStore";
 import { useDroppable } from "@dnd-kit/core";
 import { cn } from "@/lib/utils";
-// import { FormProvider, useForm } from "react-hook-form";
 import { useProjectStatusChange } from "../../services";
-// import { ReasonDialog } from "../status-reason-dialog";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { roles } from "@/utils/constant";
 import { usePinProject, useUnpinProject } from "../../../projects/services";
-// import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import {
   Tooltip,
   TooltipContent,
@@ -30,6 +26,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { ChangeStatusDialog } from "@/components/shared/custom-status-change";
+import { StatusConfirmDialog } from "@/components/shared/status-confirm-dialog";
 import ProjectDetailsDialog from "../ProjectDetailsDialog";
 
 const priorityColorMap: any = {
@@ -64,7 +61,6 @@ const getStatusBadgeClasses = (status?: string) => {
 
 export function ProjectCard({ project, children, onStatusChanged }: any) {
   const [openDrawer, setOpenDrawer] = useState(false);
-  const { setOpen, setCurrentRow } = useProjectsStore();
   const { setNodeRef, isOver } = useDroppable({ id: project?.id });
   const [isStatusDialogOpen, setStatusDialogOpen] = useState(false);
   const [isStatusUpdating, setIsStatusUpdating] = useState(false);
@@ -88,8 +84,19 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
   const { mutateAsync: pinProject } = usePinProject(project?.id);
   const { mutateAsync: unpinProject } = useUnpinProject(project?.id);
   const [isDialogOpen, setDialogOpen] = useState(false);
+  const [isConfirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<"completed" | "stop" | null>(null);
 
   const handleStatusUpdate = async (newStatus: string, note: string) => {
+    // If changing to completed or stop, show the confirm dialog
+    if ((newStatus === "completed" || newStatus === "stop") && !note) {
+      setPendingStatus(newStatus as "completed" | "stop");
+      setStatusDialogOpen(false);
+      setConfirmDialogOpen(true);
+      return;
+    }
+
+    // Otherwise, proceed with the status change
     try {
       setIsStatusUpdating(true);
       await ProjectStatusChange({
@@ -98,6 +105,8 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
         reason: note,
         effectiveDate: new Date().toISOString(),
       });
+      setStatusDialogOpen(false);
+      setConfirmDialogOpen(false);
     } catch (error) {
       console.error("Failed to update status:", error);
     } finally {
@@ -129,11 +138,6 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
     setDialogOpen(true);
     // setCurrentRow(project);
     // setOpen("history");
-  };
-
-  const handleAddStickyNote = () => {
-    setCurrentRow(project);
-    setOpen("sticky-note");
   };
 
   const title = project?.name || "N/A";
@@ -222,27 +226,7 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
               </div>
             </div>
 
-            {/* Dropdown Menu */}
-            <DropdownMenu>
-              <DropdownMenuContent side="bottom" align="end">
-                <DropdownMenuGroup>
-                  <DropdownMenuItem onClick={() => setOpenDrawer(true)}>
-                    View Details
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleAddStickyNote}>
-                    View Sticky Notes
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleViewTimeline}>
-                    View Timeline
-                  </DropdownMenuItem>
-                  {canEditStatus && (
-                    <DropdownMenuItem onClick={() => setStatusDialogOpen(true)}>
-                      Change Status
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* Removed triggerless DropdownMenu */}
           </div>
         </div>
 
@@ -292,9 +276,23 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
                     View Timeline
                   </DropdownMenuItem>
                   {canEditStatus && (
-                    <DropdownMenuItem onClick={() => setStatusDialogOpen(true)}>
-                      Change Status
-                    </DropdownMenuItem>
+                    <>
+                      <DropdownMenuItem
+                        onClick={() => setStatusDialogOpen(true)}
+                      >
+                        Change Status
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => setStatusDialogOpen(true)}
+                      >
+                        Edit Project
+                      </DropdownMenuItem>
+                      {/* <DropdownMenuItem
+                        onClick={() => setStatusDialogOpen(true)}
+                      >
+                        Delete Project
+                      </DropdownMenuItem> */}
+                    </>
                   )}
                 </DropdownMenuGroup>
               </DropdownMenuContent>
@@ -384,6 +382,18 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
         isLoading={isStatusUpdating}
         projectName={project?.name}
       />
+
+      {/* STATUS CONFIRM DIALOG FOR COMPLETED/STOP */}
+      {pendingStatus && (
+        <StatusConfirmDialog
+          open={isConfirmDialogOpen}
+          onOpenChange={setConfirmDialogOpen}
+          projectName={project?.name}
+          newStatus={pendingStatus}
+          onSubmit={handleStatusUpdate}
+          isLoading={isStatusUpdating}
+        />
+      )}
 
       <ConfirmDialog
         open={isPinConfirmOpen}
