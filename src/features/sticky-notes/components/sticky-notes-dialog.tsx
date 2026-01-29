@@ -198,7 +198,7 @@ export const StickyNotesDialog = () => {
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-4 pb-20 w-full max-w-full px-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20 w-full max-w-full px-1">
                 {notesData?.data?.map((note: any) => (
                   <NoteCard
                     key={note.id}

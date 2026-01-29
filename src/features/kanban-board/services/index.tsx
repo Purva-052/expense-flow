@@ -513,10 +513,13 @@ export const createClientMeeting = (onSuccess?: () => void) => {
   });
 };
 
-export const useGetClientMeetings = (projectId?: string | number) => {
+export const useGetClientMeetings = (
+  projectId?: string | number,
+  params?: any
+) => {
   return useFetchData({
     url: API.client_meetings.list,
-    params: projectId ? { projectId } : {},
+    params: { projectId, ...params },
     enabled: !!projectId,
   });
 };
@@ -572,10 +575,13 @@ export const createInternalMeeting = (onSuccess?: () => void) => {
   });
 };
 
-export const useGetInternalMeetings = (projectId?: string | number) => {
+export const useGetInternalMeetings = (
+  projectId?: string | number,
+  params?: any
+) => {
   return useFetchData({
     url: API.internal_meetings.list,
-    params: projectId ? { projectId } : {},
+    params: { projectId, ...params },
     enabled: !!projectId,
   });
 };

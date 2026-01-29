@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Plus, SearchX } from "lucide-react";
 import { useGetProjectServerList } from "../services";
 import { useProjectServerStore } from "../stores/useProjectServerStore";
 import { ProjectServerActionFormModal } from "./project-server-action";
 import ServerDetailsCard from "./server-detail-card";
 
-const ProjectServerComponent = ({ projectId, projectName }: any) => {
+const ProjectServerComponent = ({ projectId }: any) => {
   const { data: projectServerList, isFetching: projectServerListFetched }: any =
     useGetProjectServerList({ pagination: false, projectId: projectId });
   const {
@@ -22,13 +22,7 @@ const ProjectServerComponent = ({ projectId, projectName }: any) => {
     <>
       <Card className="gap-3">
         <CardHeader className="px-0 gap-0">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-2xl">
-              Server Details{" "}
-              {projectName && (
-                <span className="text-xl font-normal">({projectName})</span>
-              )}
-            </CardTitle>
+          <div className="flex items-center justify-end">
             <Button onClick={handleAddServer}>
               {" "}
               <Plus /> Add Server

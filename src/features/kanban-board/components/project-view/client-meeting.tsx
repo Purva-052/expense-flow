@@ -15,6 +15,12 @@ import {
 import "ckeditor5/ckeditor5.css";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { cn } from "@/lib/utils";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Dialog,
   DialogContent,
@@ -33,9 +39,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import CustomButton from "@/components/shared/custom-button";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader } from "@/components/ui/card";
 import { z } from "zod";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 import { TextInputField } from "@/components/shared/custom-input-field";
+import { Calendar } from "@/components/ui/calendar";
+import useDebounce from "@/hooks/use-debaunce";
 // import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import { ColumnDef } from "@tanstack/react-table";
 import { GlobalTable } from "@/components/table/global-table";
@@ -52,7 +62,8 @@ import {
   Eye,
   Pencil,
   Trash2,
-  Calendar,
+  Calendar as CalendarIcon,
+  Plus,
 } from "lucide-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 
@@ -61,6 +72,7 @@ const ClientMeetingSchema = z.object({
   meetingName: z.string().min(1, "Meeting name is required"),
   description: z.string().min(1, "Description is required"),
   projectId: z.number({ required_error: "Project is required" }),
+  clientId: z.number().optional().nullable(),
   startDate: z.date({ required_error: "Start date is required" }),
   link: z.string().url("Invalid URL").optional().or(z.literal("")),
 });
@@ -109,6 +121,7 @@ export function ClientMeetingDialog({
       link: currentData?.link ?? "",
       projectId:
         Number(projectId ?? currentData?.projectId) || (undefined as any),
+      clientId: Number(clientId ?? currentData?.clientId) || (undefined as any),
       startDate: currentData?.startDate
         ? new Date(currentData.startDate)
         : undefined,
@@ -137,6 +150,8 @@ export function ClientMeetingDialog({
         link: currentData?.link ?? "",
         projectId:
           Number(projectId ?? currentData?.projectId) || (undefined as any),
+        clientId:
+          Number(clientId ?? currentData?.clientId) || (undefined as any),
         startDate: currentData?.startDate
           ? new Date(currentData.startDate)
           : undefined,
@@ -360,8 +375,31 @@ export function ClientMeetingListing({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [meetingToDelete, setMeetingToDelete] = useState<any>(null);
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+  const [dateRange, setDateRange] = useState<{
+    from: Date | undefined;
+    to: Date | undefined;
+  }>({
+    from: undefined,
+    to: undefined,
+  });
+
+  useEffect(() => {
+    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+  }, [debouncedSearchQuery]);
+
   const { data: meetingsResponse, isLoading } = useGetClientMeetings(
-    projectId
+    projectId,
+    {
+      page: pagination.pageIndex + 1,
+      limit: pagination.pageSize,
+      search: debouncedSearchQuery,
+      startDate: dateRange.from
+        ? format(dateRange.from, "yyyy-MM-dd")
+        : undefined,
+      endDate: dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
+    }
   ) as any;
 
   const { mutate: deleteMeeting, isPending: isDeleting } =
@@ -476,41 +514,111 @@ export function ClientMeetingListing({
     []
   );
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-12">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        <span className="ml-3 text-muted-foreground">Loading meetings...</span>
-      </div>
-    );
-  }
-
-  if (!isLoading && meetings.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center p-12 text-center">
-        <div className="rounded-full bg-muted p-3 mb-4">
-          <Calendar className="h-8 w-8 text-muted-foreground" />
-        </div>
-        <h3 className="text-lg font-semibold mb-1">No meetings yet</h3>
-        <p className="text-sm text-muted-foreground">
-          Create your first client meeting to get started
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <div className="mt-6 space-y-4">
-      <GlobalTable
-        data={meetings}
-        columns={columns}
-        totalCount={metadata?.total || meetings.length}
-        currentPage={metadata?.page || pagination.pageIndex + 1}
-        pageSize={metadata?.limit || pagination.pageSize}
-        onPaginationChange={setPagination}
-        isPaginationEnabled={true}
-        loading={isLoading}
-      />
+    <div className="space-y-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:flex-start">
+        <div className="flex items-center gap-2 max-w-md">
+          <Input
+            placeholder="Search meetings..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="h-9"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className={cn(
+                  "justify-start text-left font-normal h-9",
+                  !dateRange.from && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {dateRange.from ? (
+                  dateRange.to ? (
+                    <>
+                      {format(dateRange.from, "LLL dd, y")} -{" "}
+                      {format(dateRange.to, "LLL dd, y")}
+                    </>
+                  ) : (
+                    format(dateRange.from, "LLL dd, y")
+                  )
+                ) : (
+                  <span>Pick a date range</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                initialFocus
+                mode="range"
+                defaultMonth={dateRange.from}
+                selected={{
+                  from: dateRange.from,
+                  to: dateRange.to,
+                }}
+                onSelect={(range: any) => {
+                  setDateRange({
+                    from: range?.from,
+                    to: range?.to,
+                  });
+                }}
+                numberOfMonths={2}
+              />
+              <div className="flex items-center justify-end border-t p-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    setDateRange({ from: undefined, to: undefined })
+                  }
+                >
+                  Clear
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+      </div>
+
+      {isLoading ? (
+        <div className="flex items-center justify-center p-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <span className="ml-3 text-muted-foreground">
+            Loading meetings...
+          </span>
+        </div>
+      ) : meetings.length === 0 ? (
+        <div className="flex flex-col items-center justify-center p-12 text-center border rounded-lg bg-muted/10">
+          <div className="rounded-full bg-muted p-3 mb-4">
+            <CalendarIcon className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <h3 className="text-lg font-semibold mb-1">
+            {searchQuery || dateRange.from
+              ? "No matching meetings found"
+              : "No meetings yet"}
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            {searchQuery || dateRange.from
+              ? "Try adjusting your search or filters"
+              : "Create your first client meeting to get started"}
+          </p>
+        </div>
+      ) : (
+        <GlobalTable
+          data={meetings}
+          columns={columns}
+          totalCount={metadata?.total || meetings.length}
+          currentPage={metadata?.page || pagination.pageIndex + 1}
+          pageSize={metadata?.limit || pagination.pageSize}
+          onPaginationChange={setPagination}
+          isPaginationEnabled={true}
+          loading={isLoading}
+        />
+      )}
 
       <ClientMeetingDialog
         open={isDialogOpen}
@@ -545,5 +653,59 @@ export function ClientMeetingListing({
         }
       />
     </div>
+  );
+}
+export function ClientMeetingTab({
+  projectId,
+  project,
+}: {
+  projectId: string | number;
+  project?: any;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Card className="gap-3">
+      <CardHeader className="px-0 gap-0">
+        <div className="flex items-center justify-end">
+          <Button
+            onClick={() => {
+              setOpen(true);
+            }}
+          >
+            <Plus className="w-4 h-4 mr-2" /> Add Meeting
+          </Button>
+        </div>
+      </CardHeader>
+      <div className="px-6 pb-6">
+        <ClientMeetingListing
+          projectId={projectId!}
+          clientsList={
+            project?.client
+              ? [
+                  {
+                    id: project.clientId,
+                    name: project.client.name,
+                  },
+                ]
+              : []
+          }
+        />
+      </div>
+
+      <ClientMeetingDialog
+        open={open}
+        onOpenChange={setOpen}
+        projectId={projectId}
+        clientId={project?.clientId}
+        clientsList={
+          project?.client
+            ? [{ id: project.clientId, name: project.client.name }]
+            : []
+        }
+        title="Client Meeting Details"
+        descriptionLabel="Description or Discussion Points"
+      />
+    </Card>
   );
 }

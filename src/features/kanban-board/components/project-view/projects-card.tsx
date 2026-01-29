@@ -12,16 +12,12 @@ import {
 import { useState } from "react";
 import { ProjectDetails } from "./project-details";
 import { Drawer } from "@/components/ui/drawer";
-import { useProjectsStore } from "../../../projects/stores/useProjectsStore";
 import { useDroppable } from "@dnd-kit/core";
 import { cn } from "@/lib/utils";
-// import { FormProvider, useForm } from "react-hook-form";
 import { useProjectStatusChange } from "../../services";
-// import { ReasonDialog } from "../status-reason-dialog";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { roles } from "@/utils/constant";
 import { usePinProject, useUnpinProject } from "../../../projects/services";
-// import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import {
   Tooltip,
   TooltipContent,
@@ -65,7 +61,6 @@ const getStatusBadgeClasses = (status?: string) => {
 
 export function ProjectCard({ project, children, onStatusChanged }: any) {
   const [openDrawer, setOpenDrawer] = useState(false);
-  const { setOpen, setCurrentRow } = useProjectsStore();
   const { setNodeRef, isOver } = useDroppable({ id: project?.id });
   const [isStatusDialogOpen, setStatusDialogOpen] = useState(false);
   const [isStatusUpdating, setIsStatusUpdating] = useState(false);
@@ -143,11 +138,6 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
     setDialogOpen(true);
     // setCurrentRow(project);
     // setOpen("history");
-  };
-
-  const handleAddStickyNote = () => {
-    setCurrentRow(project);
-    setOpen("sticky-note");
   };
 
   const title = project?.name || "N/A";
@@ -266,9 +256,6 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
                   <DropdownMenuItem onClick={() => setOpenDrawer(true)}>
                     View Details
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleAddStickyNote}>
-                    View Sticky Notes
-                  </DropdownMenuItem>
                   {/* <DropdownMenuItem onClick={handleViewTimeline}>
                     View Timeline
                   </DropdownMenuItem>
@@ -307,9 +294,6 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
                       </DropdownMenuItem> */}
                     </>
                   )}
-                  <DropdownMenuItem onClick={handleAddStickyNote}>
-                    View Sticky Notes
-                  </DropdownMenuItem>
                 </DropdownMenuGroup>
               </DropdownMenuContent>
             )}
