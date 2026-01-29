@@ -2,13 +2,13 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  File,
   FileSpreadsheet,
   Flag,
   Server,
   SquareCheckBig,
   Users,
-  Plus,
+  StickyNote,
+  Files,
 } from "lucide-react";
 import MilestoneList from "./milestone-list";
 import OverviewProject from "./overview-project";
@@ -97,7 +97,7 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
                 <SquareCheckBig className="w-4 h-4" /> Report
               </TabsTrigger>
               <TabsTrigger value="doc" className="flex items-center gap-2">
-                <File className="w-4 h-4" /> Documents
+                <Files className="w-4 h-4" /> Documents
               </TabsTrigger>
               <TabsTrigger value="server" className="flex items-center gap-2">
                 <Server className="w-4 h-4" /> Server
@@ -115,7 +115,7 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
                 value="sticky_notes"
                 className="flex items-center gap-2"
               >
-                <Plus className="w-4 h-4" /> Sticky Notes
+                <StickyNote className="w-4 h-4" /> Sticky Notes
               </TabsTrigger>
             </TabsList>
 
