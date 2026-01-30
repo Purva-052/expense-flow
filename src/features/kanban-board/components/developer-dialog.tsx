@@ -1,6 +1,4 @@
-/* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// src/components/developer-dialog.tsx
 import * as React from "react";
 import { useForm } from "react-hook-form";
 
@@ -25,10 +23,8 @@ import { Switch } from "@/components/ui/switch";
 import { useUpdateUserData } from "@/features/users/services";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
-// ✅ --- ADDED IMPORTS FOR NEW UI ---
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 
-// Define the shape of our form data
 type ScheduleFormData = {
   removalDate: Date | undefined;
   hours: string | undefined;
@@ -51,12 +47,18 @@ export function DeveloperDialog({
   refetchAvailableDevelopers: any;
 }) {
   const { user } = useAuthStore();
-  const isDeveloperView = user?.user?.role === roles.DEVELOPER;
+  const userRole = String(
+    user?.user?.role?.name || user?.user?.role || ""
+  ).toLowerCase();
   const isMyDialog = developer?.developer?.id === user?.user?.id;
 
   // A Project Manager/Admin can manage (remove/schedule) any developer.
   // A Developer should not be able to manage assignments.
-  const canManage = !isDeveloperView;
+  const canManage = [
+    roles.ADMIN,
+    roles.PROJECT_MANAGER,
+    roles.TEAM_LEAD,
+  ].includes(userRole);
 
   // A developer can only change their 'Currently Working' status on their own dialog.
   // PM/Admin can change anyone's status.
@@ -297,7 +299,11 @@ export function DeveloperDialog({
                       </p>
                     </div>
                     <Switch
-                      checked={developer?.developer?.isCurrentProject}
+                      checked={
+                        Number(
+                          developer?.developer?.currentWorkingProjectId
+                        ) === Number(projectId)
+                      }
                       onCheckedChange={handleStatusChange}
                       // Disable if loading or if the user cannot toggle status
                       disabled={
@@ -306,7 +312,6 @@ export function DeveloperDialog({
                     />
                   </FormItem>
                 </Form>
-                {/* ✅ --- START: NEW UI FOR WORKING HOURS --- ✅ */}
                 {canManage && (
                   <div className="rounded-lg border p-4 shadow-sm">
                     <h3 className="text-base font-semibold mb-1">
@@ -361,7 +366,6 @@ export function DeveloperDialog({
                     </Form>
                   </div>
                 )}
-                {/* ✅ --- END: NEW UI FOR WORKING HOURS --- ✅ */}
               </div>
             </>
           )}
