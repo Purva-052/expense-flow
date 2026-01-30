@@ -422,3 +422,14 @@
   box-shadow: none !important;
   padding: 4px 0 !important;
 }
+
+.ck-editor-shared-container .ck-editor__editable {
+  min-height: 120px;
+  max-height: 300px;
+  overflow-y: auto !important;
+}
+
+.ck-editor-shared-container .ck-content {
+  font-size: 14px;
+  line-height: 1.6;
+}

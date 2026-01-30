@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import {
   Briefcase,
@@ -11,6 +12,7 @@ import {
   Code,
   Activity,
   Users,
+  Building,
 } from "lucide-react";
 import { useGetProjectsDetailData } from "@/features/projects/services";
 import { format } from "date-fns";
@@ -22,6 +24,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DeveloperDialog } from "../developer-dialog";
 
 const priorityColorMap: any = {
   high: "bg-red-100 text-red-800",
@@ -38,9 +41,19 @@ const statusColorMap: any = {
 };
 
 const OverviewProject = ({ projectId }: { projectId?: any }) => {
-  const { data: projectDetailsResponse, isLoading } = useGetProjectsDetailData(
-    projectId?.toString()
-  );
+  const {
+    data: projectDetailsResponse,
+    isLoading,
+    refetch: refetchProjectDetails,
+  } = useGetProjectsDetailData(projectId?.toString());
+
+  const [selectedDeveloper, setSelectedDeveloper] = useState<any>(null);
+  const [isDeveloperDialogOpen, setIsDeveloperDialogOpen] = useState(false);
+
+  const handleDeveloperClick = (allocation: any) => {
+    setSelectedDeveloper(allocation);
+    setIsDeveloperDialogOpen(true);
+  };
 
   const project = (projectDetailsResponse as any)?.data;
 
@@ -64,15 +77,17 @@ const OverviewProject = ({ projectId }: { projectId?: any }) => {
     <div className="space-y-4 pb-12">
       <Card>
         <div className="p-4">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 mb-6 border-b">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                Client: {project.client?.name || "-"}
-              </h2>
-            </div>
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8">
+            <div className="flex flex-col">
+              <div className="flex items-center text-sm font-medium text-gray-500 mb-1">
+                <Building size={16} />
+                <h3 className="ml-2">Client Name</h3>
+              </div>
+              <div className="text-base text-gray-800 pl-6">
+                <p>{project.client?.name || "-"}</p>
+              </div>
+            </div>
+
             <div className="flex flex-col">
               <div className="flex items-center text-sm font-medium text-gray-500 mb-1">
                 <Briefcase size={16} />
@@ -234,7 +249,7 @@ const OverviewProject = ({ projectId }: { projectId?: any }) => {
         </div>
       </Card>
 
-      <Card>
+      <Card className="p-0">
         <div className="p-4">
           <div className="flex items-center text-sm font-medium text-gray-500 mb-4 border-b pb-2">
             <Users size={16} />
@@ -244,62 +259,90 @@ const OverviewProject = ({ projectId }: { projectId?: any }) => {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {project.developerAllocations?.length > 0 ? (
-              project.developerAllocations.map((allocation: any) => (
-                <div
-                  key={allocation.id}
-                  className="flex items-center gap-3 p-3 rounded-xl border bg-card hover:shadow-sm transition-shadow"
-                >
-                  <Avatar className="h-10 w-10 shrink-0">
-                    <AvatarImage src={allocation.developer?.avatar} />
-                    <AvatarFallback
-                      className="text-white font-bold"
-                      style={{
-                        backgroundColor:
-                          allocation.developer?.technology?.color || "#94a3b8",
-                      }}
-                    >
-                      {allocation.developer?.fullName?.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 truncate">
-                      {allocation.developer?.fullName}
-                    </p>
-                    <p className="text-sm text-gray-500 truncate">
-                      Exp: {allocation.developer?.experienceInYears} years
-                    </p>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="mt-1">
-                            <span
-                              className="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold uppercase truncate max-w-full"
-                              style={{
-                                backgroundColor:
-                                  (allocation.developer?.technology?.color ||
-                                    "#94a3b8") + "20",
-                                color:
-                                  allocation.developer?.technology?.color ||
-                                  "#94a3b8",
-                                border: `1px solid ${
-                                  allocation.developer?.technology?.color ||
-                                  "#94a3b8"
-                                }40`,
-                              }}
+              project.developerAllocations.map((allocation: any) => {
+                const isWorkingOnCurrentProject =
+                  Number(allocation.developer?.currentWorkingProjectId) ===
+                  Number(projectId);
+
+                return (
+                  <div
+                    key={allocation.id}
+                    className="flex items-center gap-3 p-3 rounded-xl border bg-card hover:shadow-sm transition-shadow cursor-pointer"
+                    onClick={() => handleDeveloperClick(allocation)}
+                  >
+                    <div className="relative shrink-0">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={allocation.developer?.avatar} />
+                        <AvatarFallback
+                          className="text-white font-bold"
+                          style={{
+                            backgroundColor:
+                              allocation.developer?.technology?.color ||
+                              "#94a3b8",
+                          }}
+                        >
+                          {allocation.developer?.fullName?.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      {isWorkingOnCurrentProject && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span
+                                className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-white"
+                                aria-label="Working on current project"
+                              />
+                            </TooltipTrigger>
+                            <TooltipContent
+                              side="bottom"
+                              className="text-[10px]"
                             >
-                              {allocation.developer?.technology?.name ||
-                                "Developer"}
-                            </span>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          {allocation.developer?.technology?.name}
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                              Working on current project
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 truncate">
+                        {allocation.developer?.fullName}
+                      </p>
+                      <p className="text-sm text-gray-500 truncate">
+                        Exp: {allocation.developer?.experienceInYears} years
+                      </p>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="mt-1">
+                              <span
+                                className="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold uppercase truncate max-w-full"
+                                style={{
+                                  backgroundColor:
+                                    (allocation.developer?.technology?.color ||
+                                      "#94a3b8") + "20",
+                                  color:
+                                    allocation.developer?.technology?.color ||
+                                    "#94a3b8",
+                                  border: `1px solid ${
+                                    allocation.developer?.technology?.color ||
+                                    "#94a3b8"
+                                  }40`,
+                                }}
+                              >
+                                {allocation.developer?.technology?.name ||
+                                  "Developer"}
+                              </span>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {allocation.developer?.technology?.name}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="col-span-full py-8 text-center text-muted-foreground">
                 No developers assigned to this project.
@@ -308,6 +351,15 @@ const OverviewProject = ({ projectId }: { projectId?: any }) => {
           </div>
         </div>
       </Card>
+
+      <DeveloperDialog
+        developer={selectedDeveloper}
+        projectId={projectId?.toString()}
+        open={isDeveloperDialogOpen}
+        onOpenChange={setIsDeveloperDialogOpen}
+        afterChange={() => refetchProjectDetails()}
+        refetchAvailableDevelopers={() => {}}
+      />
     </div>
   );
 };
