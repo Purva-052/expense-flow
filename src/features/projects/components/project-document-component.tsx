@@ -4,7 +4,7 @@ import { GlobalTable } from "@/components/table/global-table";
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import { FilterConfig } from "@/components/table/table-toolbar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -124,7 +124,7 @@ const ProjectDocumentComponent = ({ projectId }: any) => {
       key: "search",
       value: documentListParams.search,
       onChange: handleSearch,
-      className: "w-[280px]",
+      className: "w-[280px] rounded-full",
     },
     {
       type: "select",
@@ -141,6 +141,7 @@ const ProjectDocumentComponent = ({ projectId }: any) => {
       key: "dateRange",
       onChange: handleDateRangeChange,
       disable: { after: new Date() },
+      className: "rounded-full h-10",
     },
   ];
   // Add/Edit logic
@@ -288,16 +289,13 @@ const ProjectDocumentComponent = ({ projectId }: any) => {
   return (
     <>
       <Card className="gap-3">
-        <CardHeader className="px-0 gap-0">
-          <div className="flex items-center justify-end">
-            <Button onClick={handleAddDocument}>
-              {" "}
-              <Plus /> Add Document
+        <CardContent className="px-0 gap-0">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+            <GlobalFilterSection filters={filters} className="mb-0" />
+            <Button onClick={handleAddDocument} className="shrink-0">
+              <Plus className="mr-2 h-4 w-4" /> Add Document
             </Button>
           </div>
-        </CardHeader>
-        <CardContent className="px-0 gap-0">
-          <GlobalFilterSection filters={filters} className="mb-4" />
           <GlobalTable
             pageSize={documentListParams.limit}
             currentPage={documentListParams.page}
@@ -306,7 +304,7 @@ const ProjectDocumentComponent = ({ projectId }: any) => {
             onPaginationChange={handlePaginationChange}
             columns={columns}
             loading={projectDocumentListFetched}
-            isPaginationEnabled={true} // Recommended to enable pagination
+            isPaginationEnabled={true}
           />
         </CardContent>
       </Card>

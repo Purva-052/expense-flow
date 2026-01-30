@@ -22,7 +22,10 @@ const ProjectServerComponent = ({ projectId }: any) => {
     <>
       <Card className="gap-3">
         <CardHeader className="px-0 gap-0">
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold bg-clip-text text-black">
+              Server Details
+            </h2>
             <Button onClick={handleAddServer}>
               {" "}
               <Plus /> Add Server

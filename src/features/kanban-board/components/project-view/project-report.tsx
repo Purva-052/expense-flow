@@ -272,7 +272,7 @@ const ProjectReportTable = ({ projectId }: { projectId?: string | number }) => {
               placeholder="Search description..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9"
+              className="pl-9 rounded-full"
             />
           </div>
 
@@ -293,6 +293,7 @@ const ProjectReportTable = ({ projectId }: { projectId?: string | number }) => {
             <DateRangeFilter
               placeholder="Filter by date range"
               onChange={setDateRange}
+              className="rounded-full h-10"
               disabled={{ after: new Date() }}
             />
           </div>

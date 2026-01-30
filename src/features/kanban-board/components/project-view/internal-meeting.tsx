@@ -15,12 +15,6 @@ import {
 import "ckeditor5/ckeditor5.css";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { cn } from "@/lib/utils";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   Dialog,
   DialogContent,
@@ -40,11 +34,10 @@ import {
 import { Input } from "@/components/ui/input";
 import CustomButton from "@/components/shared/custom-button";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { z } from "zod";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 import { TextInputField } from "@/components/shared/custom-input-field";
-import { Calendar } from "@/components/ui/calendar";
 import useDebounce from "@/hooks/use-debaunce";
 import { ColumnDef } from "@tanstack/react-table";
 import { GlobalTable } from "@/components/table/global-table";
@@ -62,9 +55,11 @@ import {
   Pencil,
   Trash2,
   Plus,
-  Calendar as CalendarIcon,
+  CalendarIcon,
 } from "lucide-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import GlobalFilterSection from "@/components/table/global-table-filter";
+import { FilterConfig } from "@/components/table/table-toolbar";
 
 // Schema validation
 const InternalMeetingSchema = z.object({
@@ -356,8 +351,10 @@ export function InternalMeetingDialog({
 
 export function InternalMeetingListing({
   projectId,
+  onAddMeeting,
 }: {
   projectId: string | number;
+  onAddMeeting: () => void;
 }) {
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -423,6 +420,25 @@ export function InternalMeetingListing({
       setIsDialogOpen(true);
     }
   };
+
+  const filters: FilterConfig[] = [
+    {
+      type: "search",
+      placeholder: "Search meetings...",
+      key: "search",
+      value: searchQuery,
+      onChange: setSearchQuery,
+      className: "w-full sm:w-[280px] rounded-full",
+    },
+    {
+      type: "dateRange",
+      placeholder: "Filter by date range",
+      key: "dateRange",
+      onChange: (range: any) =>
+        setDateRange({ from: range?.from, to: range?.to }),
+      className: "rounded-full h-9",
+    },
+  ];
 
   const columns = useMemo<ColumnDef<any>[]>(
     () => [
@@ -490,72 +506,11 @@ export function InternalMeetingListing({
 
   return (
     <div className="space-y-4 gap-0">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:flex-start">
-        <div className="flex items-center gap-2 max-w-md">
-          <Input
-            placeholder="Search meetings..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-9"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className={cn(
-                  "justify-start text-left font-normal h-9",
-                  !dateRange.from && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {dateRange.from ? (
-                  dateRange.to ? (
-                    <>
-                      {format(dateRange.from, "LLL dd, y")} -{" "}
-                      {format(dateRange.to, "LLL dd, y")}
-                    </>
-                  ) : (
-                    format(dateRange.from, "LLL dd, y")
-                  )
-                ) : (
-                  <span>Pick a date range</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
-              <Calendar
-                initialFocus
-                mode="range"
-                defaultMonth={dateRange.from}
-                selected={{
-                  from: dateRange.from,
-                  to: dateRange.to,
-                }}
-                onSelect={(range: any) => {
-                  setDateRange({
-                    from: range?.from,
-                    to: range?.to,
-                  });
-                }}
-                numberOfMonths={2}
-              />
-              <div className="flex items-center justify-end border-t p-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() =>
-                    setDateRange({ from: undefined, to: undefined })
-                  }
-                >
-                  Clear
-                </Button>
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+        <GlobalFilterSection filters={filters} className="mb-0" />
+        <Button onClick={onAddMeeting} className="shrink-0">
+          <Plus className="w-4 h-4 mr-2" /> Add Meeting
+        </Button>
       </div>
 
       {isLoading ? (
@@ -626,20 +581,10 @@ export function InternalMeetingTab({
 
   return (
     <Card className="gap-3">
-      <CardHeader className="px-0 gap-0">
-        <div className="flex items-center justify-end">
-          <Button
-            onClick={() => {
-              setOpen(true);
-            }}
-          >
-            <Plus className="w-4 h-4 mr-2" /> Add Meeting
-          </Button>
-        </div>
-      </CardHeader>
-      <div className="px-6 pb-6">
-        <InternalMeetingListing projectId={projectId!} />
-      </div>
+      <InternalMeetingListing
+        projectId={projectId!}
+        onAddMeeting={() => setOpen(true)}
+      />
 
       <InternalMeetingDialog
         open={open}
