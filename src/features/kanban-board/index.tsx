@@ -17,6 +17,7 @@ import { useGetUserDropdownList } from "../users/services";
 import { useGetClientsDropdownList } from "../clients/services";
 import TablePageHeader from "@/components/table/table-page-header";
 import { ActionFormModal } from "../projects/components/action";
+import { Badge } from "@/components/ui/badge";
 // import { Badge } from "@/components/ui/badge";
 
 const ProjectBoard = () => {
@@ -107,7 +108,7 @@ const ProjectBoard = () => {
                     >
                       Projects
                       {activeProjectCount !== null && (
-                        <span className="ml-1">({activeProjectCount})</span>
+                        <Badge className="ml-1">{activeProjectCount}</Badge>
                       )}
                     </TabsTrigger>
 
@@ -132,7 +133,7 @@ const ProjectBoard = () => {
                     >
                       Archive Projects
                       {archiveProjectCount !== null && (
-                        <span className="ml-1">({archiveProjectCount})</span>
+                        <Badge className="ml-1">{archiveProjectCount}</Badge>
                       )}
                     </TabsTrigger>
                     {userId === 1 && (
@@ -172,35 +173,35 @@ const ProjectBoard = () => {
                   )}
                 </div>
 
-              {/* Board Tab */}
-              <TabsContent value="project_details">
-                <ProjectPage onTotalCountChange={setActiveProjectCount} />
-              </TabsContent>
-              <TabsContent value="board">
-                <Board
-                  technologies={technologies}
-                  techLoading={techLoading}
-                  activeTab={activeTab}
-                  onTotalCountChange={setActiveProjectCount}
-                />
-              </TabsContent>
+                {/* Board Tab */}
+                <TabsContent value="project_details">
+                  <ProjectPage onTotalCountChange={setActiveProjectCount} />
+                </TabsContent>
+                <TabsContent value="board">
+                  <Board
+                    technologies={technologies}
+                    techLoading={techLoading}
+                    activeTab={activeTab}
+                    onTotalCountChange={setActiveProjectCount}
+                  />
+                </TabsContent>
 
-              {/* Resources Tab */}
-              <TabsContent value="resources">
-                <ResourceTab
-                  technologies={technologies}
-                  techLoading={techLoading}
-                  activeTab={activeTab}
-                />
-              </TabsContent>
+                {/* Resources Tab */}
+                <TabsContent value="resources">
+                  <ResourceTab
+                    technologies={technologies}
+                    techLoading={techLoading}
+                    activeTab={activeTab}
+                  />
+                </TabsContent>
 
-              <TabsContent value="Project Coordinator">
-                <ResourceTab
-                  technologies={technologies}
-                  techLoading={techLoading}
-                  activeTab={activeTab}
-                />
-              </TabsContent>
+                <TabsContent value="Project Coordinator">
+                  <ResourceTab
+                    technologies={technologies}
+                    techLoading={techLoading}
+                    activeTab={activeTab}
+                  />
+                </TabsContent>
 
                 <TabsContent value="Archive Projects">
                   <ProjectPage
