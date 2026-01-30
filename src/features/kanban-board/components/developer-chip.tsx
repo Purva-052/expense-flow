@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/tooltip"; // 👈 1. Import Tooltip components
 import { Clock } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useGetUserDetails } from "../../users/services";
 
 const getDaysRemaining = (
   endDate: string | null | undefined
@@ -60,12 +59,7 @@ export function DeveloperChip({
   endDate?: string | null;
   variant?: "default" | "compact" | "avatar";
 }) {
-  const { data: userDetails }: any = useGetUserDetails(
-    developer.profilePic || developer.avatarUrl ? "" : developer.id
-  );
-
-  const profilePic =
-    developer.profilePic || developer.avatarUrl || userDetails?.data?.profilePic;
+  const profilePic = developer.profilePic || developer.avatarUrl;
 
   const sortableId = `${containerId}-${developer.id}`;
 

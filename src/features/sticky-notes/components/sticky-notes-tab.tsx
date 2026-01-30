@@ -145,7 +145,7 @@ export const StickyNotesTab = ({ projectId }: StickyNotesTabProps) => {
                     setSearch(e.target.value);
                     setCurrentPage(1);
                   }}
-                  className="pl-9 h-9"
+                  className="pl-9 h-9 rounded-full"
                 />
               </div>
             )}
