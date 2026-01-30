@@ -1,5 +1,6 @@
 export interface MilestoneTask {
   id?: number;
+  taskId?: number;
   taskName: string;
   estimatedTime: string;
   actualTime: string;
