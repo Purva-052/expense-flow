@@ -28,6 +28,7 @@ import { useAuthStore } from "@/stores/use-auth-store";
 import { ChangeStatusDialog } from "@/components/shared/custom-status-change";
 import { StatusConfirmDialog } from "@/components/shared/status-confirm-dialog";
 import ProjectDetailsDialog from "../ProjectDetailsDialog";
+import { useProjectsStore } from "@/features/projects/stores/useProjectsStore";
 
 const priorityColorMap: any = {
   high: "bg-red-100 text-red-700",
@@ -60,6 +61,7 @@ const getStatusBadgeClasses = (status?: string) => {
 };
 
 export function ProjectCard({ project, children, onStatusChanged }: any) {
+  const { setOpen, setCurrentRow } = useProjectsStore();
   const [openDrawer, setOpenDrawer] = useState(false);
   const { setNodeRef, isOver } = useDroppable({ id: project?.id });
   const [isStatusDialogOpen, setStatusDialogOpen] = useState(false);
@@ -284,7 +286,10 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
                         Change Status
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => setStatusDialogOpen(true)}
+                        onClick={() => {
+                          setCurrentRow(project);
+                          setOpen("edit");
+                        }}
                       >
                         Edit Project
                       </DropdownMenuItem>

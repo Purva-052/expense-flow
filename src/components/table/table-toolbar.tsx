@@ -56,7 +56,10 @@ export function DataTableToolbarCompact({
                 placeholder={filter.placeholder ?? "Search..."}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className={filter.className ?? "w-[150px] lg:w-[350px]"}
+                className={
+                  filter.className ??
+                  "w-[150px] lg:w-[350px] rounded-full bg-white"
+                }
               />
             );
           }
@@ -70,7 +73,7 @@ export function DataTableToolbarCompact({
                 placeholder={filter.placeholder ?? "Select..."}
                 onChange={(val: any) => filter.onChange?.(val ?? undefined)}
                 multiple={filter.multiple}
-                className="w-[200px]"
+                className="w-[200px] "
                 disabled={filter.disable}
               />
             );

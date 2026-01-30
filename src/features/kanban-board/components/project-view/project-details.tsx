@@ -43,8 +43,12 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
   );
   const project = (projectDetailsResponse as any)?.data;
 
+  const tabTriggerClass =
+    "flex items-center gap-2 rounded-[50px] px-3 py-2  transition-all " +
+    "data-[state=active]:bg-black data-[state=active]:text-white";
+
   return (
-    <DrawerContent className="h-full w-full !max-w-[1024px] ml-auto">
+    <DrawerContent className="h-full w-full !max-w-[1100px] ml-auto">
       <DrawerHeader>
         <div className="flex items-center justify-between mb-4 px-1">
           <div className="flex items-center gap-3">
@@ -66,7 +70,7 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
 
         {isDeveloperView ? (
           <Tabs defaultValue="milestone" className="w-full">
-            <TabsList className="mb-4 flex flex-wrap h-auto gap-2">
+            <TabsList className="mb-4 flex flex-wrap h-auto gap-2 ">
               <TabsTrigger
                 value="milestone"
                 className="flex items-center gap-2"
@@ -82,39 +86,30 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
             </div>
           </Tabs>
         ) : (
-          <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="mb-4 flex flex-wrap h-auto gap-2">
-              <TabsTrigger value="overview" className="flex items-center gap-2">
+          <Tabs defaultValue="overview" className="w-full ">
+            <TabsList className="mb-4 flex flex-wrap h-auto gap-2 bg-[#fdebef] rounded-full">
+              <TabsTrigger value="overview" className={tabTriggerClass}>
                 <FileSpreadsheet className="w-4 h-4" /> Overview
               </TabsTrigger>
-              <TabsTrigger
-                value="milestone"
-                className="flex items-center gap-2"
-              >
+              <TabsTrigger value="milestone" className={tabTriggerClass}>
                 <Flag className="w-4 h-4" /> Milestone
               </TabsTrigger>
-              <TabsTrigger value="report" className="flex items-center gap-2">
+              <TabsTrigger value="report" className={tabTriggerClass}>
                 <SquareCheckBig className="w-4 h-4" /> Report
               </TabsTrigger>
-              <TabsTrigger value="doc" className="flex items-center gap-2">
+              <TabsTrigger value="doc" className={tabTriggerClass}>
                 <Files className="w-4 h-4" /> Documents
               </TabsTrigger>
-              <TabsTrigger value="server" className="flex items-center gap-2">
+              <TabsTrigger value="server" className={tabTriggerClass}>
                 <Server className="w-4 h-4" /> Server
               </TabsTrigger>
-              <TabsTrigger value="client" className="flex items-center gap-2">
+              <TabsTrigger value="client" className={tabTriggerClass}>
                 <IconUserStar className="w-4 h-4" /> Client Meeting
               </TabsTrigger>
-              <TabsTrigger
-                value="internal_meeting"
-                className="flex items-center gap-2"
-              >
+              <TabsTrigger value="internal_meeting" className={tabTriggerClass}>
                 <Users className="w-4 h-4" /> Internal Meeting
               </TabsTrigger>
-              <TabsTrigger
-                value="sticky_notes"
-                className="flex items-center gap-2"
-              >
+              <TabsTrigger value="sticky_notes" className={tabTriggerClass}>
                 <StickyNote className="w-4 h-4" /> Sticky Notes
               </TabsTrigger>
             </TabsList>
