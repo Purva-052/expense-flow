@@ -10,7 +10,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"; // 👈 1. Import Tooltip components
 import { Clock } from "lucide-react";
-// import React from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useGetUserDetails } from "../../users/services";
 
 const getDaysRemaining = (
   endDate: string | null | undefined
@@ -44,8 +45,6 @@ const getYearsOfExperience = (
   return `${formattedYears} Year`;
 };
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
 export function DeveloperChip({
   developer,
   containerId,
@@ -61,6 +60,13 @@ export function DeveloperChip({
   endDate?: string | null;
   variant?: "default" | "compact" | "avatar";
 }) {
+  const { data: userDetails }: any = useGetUserDetails(
+    developer.profilePic || developer.avatarUrl ? "" : developer.id
+  );
+
+  const profilePic =
+    developer.profilePic || developer.avatarUrl || userDetails?.data?.profilePic;
+
   const sortableId = `${containerId}-${developer.id}`;
 
   const { attributes, listeners, setNodeRef, isDragging } = useSortable({
@@ -101,7 +107,10 @@ export function DeveloperChip({
             >
               <Avatar className="h-10 w-10 border-2 border-white shadow-sm hover:scale-110 transition-transform">
                 <AvatarImage
-                  src={developer.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${developer.fullName}`}
+                  src={
+                    profilePic ||
+                    `https://api.dicebear.com/7.x/avataaars/svg?seed=${developer.fullName}`
+                  }
                   alt={developer.fullName}
                 />
                 <AvatarFallback>{developer.fullName?.charAt(0)}</AvatarFallback>
@@ -114,10 +123,14 @@ export function DeveloperChip({
           <TooltipContent>
             <div className="space-y-1">
               <p className="font-semibold text-sm">{developer.fullName}</p>
-              <p className="text-xs text-muted-foreground">{developer?.technology?.name}</p>
+              <p className="text-xs text-muted-foreground">
+                {developer?.technology?.name}
+              </p>
               {activeProjects.length > 0 && (
                 <div className="pt-1 border-t mt-1">
-                  <p className="text-[10px] uppercase font-bold text-gray-400">Assigned To:</p>
+                  <p className="text-[10px] uppercase font-bold text-gray-400">
+                    Assigned To:
+                  </p>
                   <ul className="text-[10px] text-muted-foreground">
                     {activeProjects.map((p: any) => (
                       <li key={p.id}>{p.name}</li>
@@ -152,31 +165,45 @@ export function DeveloperChip({
             )}
           >
             <div className="flex items-start gap-3 justify-between">
-              <div className="flex flex-col gap-0.5 truncate">
-                <div className="flex items-center gap-2">
-                  {developer.isCurrentProject && (
-                    <span
-                      className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse shrink-0"
-                      title="Currently working on this project"
-                    />
-                  )}
-                  {/* 👇 3. Wrap the developer's name with the Tooltip components */}
-                  <span className="truncate font-bold text-card-foreground">
-                    {developer.fullName}
-                  </span>
-
-                  {showReleaseWarning && (
-                    <div className="flex items-center gap-1 text-orange-600 dark:text-orange-400 text-xs font-semibold animate-pulse">
-                      <Clock className="h-3 w-3" />
-                      <span>{getReleaseText()}</span>
-                    </div>
-                  )}
-
-                  {experience && (
-                    <span className="text-xs text-muted-foreground">
-                      {experience}
+              <div className="flex items-center gap-2">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage
+                    src={
+                      profilePic ||
+                      `https://api.dicebear.com/7.x/avataaars/svg?seed=${developer.fullName}`
+                    }
+                    alt={developer.fullName}
+                  />
+                  <AvatarFallback className="text-xs">
+                    {developer.fullName?.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col gap-0.5 truncate">
+                  <div className="flex items-center gap-2">
+                    {developer.isCurrentProject && (
+                      <span
+                        className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse shrink-0"
+                        title="Currently working on this project"
+                      />
+                    )}
+                    {/* 👇 3. Wrap the developer's name with the Tooltip components */}
+                    <span className="truncate font-bold text-card-foreground">
+                      {developer.fullName}
                     </span>
-                  )}
+
+                    {showReleaseWarning && (
+                      <div className="flex items-center gap-1 text-orange-600 dark:text-orange-400 text-xs font-semibold animate-pulse">
+                        <Clock className="h-3 w-3" />
+                        <span>{getReleaseText()}</span>
+                      </div>
+                    )}
+
+                    {experience && (
+                      <span className="text-xs text-muted-foreground">
+                        {experience}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -224,4 +251,3 @@ export function DeveloperChip({
     </TooltipProvider>
   );
 }
-

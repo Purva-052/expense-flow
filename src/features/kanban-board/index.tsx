@@ -17,6 +17,7 @@ import { useGetUserDropdownList } from "../users/services";
 import { useGetClientsDropdownList } from "../clients/services";
 import TablePageHeader from "@/components/table/table-page-header";
 import { ActionFormModal } from "../projects/components/action";
+// import { Badge } from "@/components/ui/badge";
 
 const ProjectBoard = () => {
   const [activeTab, setActiveTab] = useState("project_details");
@@ -30,6 +31,11 @@ const ProjectBoard = () => {
   const user = useAuthStore((state) => state.user);
   const userRole = user?.user?.role;
   const userId = user?.user?.id;
+
+  if (userRole === roles.BDE) {
+    return <InquiryPage />;
+  }
+
   const { data: technologies, isPending: techLoading } =
     useGetTechnologyDropdownList(null, userRole !== roles.BDE);
 
@@ -166,35 +172,35 @@ const ProjectBoard = () => {
                   )}
                 </div>
 
-                {/* Board Tab */}
-                <TabsContent value="project_details">
-                  <ProjectPage onTotalCountChange={setActiveProjectCount} />
-                </TabsContent>
-                <TabsContent value="board">
-                  <Board
-                    technologies={technologies}
-                    techLoading={techLoading}
-                    activeTab={activeTab}
-                    onTotalCountChange={setActiveProjectCount}
-                  />
-                </TabsContent>
+              {/* Board Tab */}
+              <TabsContent value="project_details">
+                <ProjectPage onTotalCountChange={setActiveProjectCount} />
+              </TabsContent>
+              <TabsContent value="board">
+                <Board
+                  technologies={technologies}
+                  techLoading={techLoading}
+                  activeTab={activeTab}
+                  onTotalCountChange={setActiveProjectCount}
+                />
+              </TabsContent>
 
-                {/* Resources Tab */}
-                <TabsContent value="resources">
-                  <ResourceTab
-                    technologies={technologies}
-                    techLoading={techLoading}
-                    activeTab={activeTab}
-                  />
-                </TabsContent>
+              {/* Resources Tab */}
+              <TabsContent value="resources">
+                <ResourceTab
+                  technologies={technologies}
+                  techLoading={techLoading}
+                  activeTab={activeTab}
+                />
+              </TabsContent>
 
-                <TabsContent value="Project Coordinator">
-                  <ResourceTab
-                    technologies={technologies}
-                    techLoading={techLoading}
-                    activeTab={activeTab}
-                  />
-                </TabsContent>
+              <TabsContent value="Project Coordinator">
+                <ResourceTab
+                  technologies={technologies}
+                  techLoading={techLoading}
+                  activeTab={activeTab}
+                />
+              </TabsContent>
 
                 <TabsContent value="Archive Projects">
                   <ProjectPage

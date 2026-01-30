@@ -17,6 +17,8 @@ import {
 import { Users } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useInView } from "react-intersection-observer";
+import { useAuthStore } from "@/stores/use-auth-store";
+import { roles } from "@/utils/constant";
 import {
   useAssignDeveloper,
   useGetProjectHandlerProjectsAPI,
@@ -43,6 +45,9 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
 
   const [activeProject, setActiveProject] = useState<any | null>(null);
   const scrollContainerRef = React.useRef<HTMLDivElement | null>(null);
+
+  const user = useAuthStore((state) => state.user);
+  const userRole = user?.user?.role;
 
   const apiParams = {
     pagination: false,
@@ -94,6 +99,11 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
   const userDetails = isProjectHandler
     ? (handledProjects?.data ?? [])
     : (usersList?.data ?? []);
+
+  const filteredUserDetails = userDetails.filter(
+    (user: any) =>
+      user.role !== roles.ADMIN && user.role !== roles.PROJECT_MANAGER
+  );
 
   const handleTechnologyChange = (value: any) => {
     const val = value ?? null;
@@ -150,24 +160,32 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
   ];
 
   const ProjectHandlerFilter: FilterConfig[] = [
-    {
-      type: "search",
-      placeholder: "Search by name ...",
-      key: "search",
-      value: projectHandlerSearch,
-      onChange: handleHandlerSearch,
-    },
+    ...(userRole !== roles.ADMIN && userRole !== roles.PROJECT_MANAGER
+      ? [
+          {
+            type: "search",
+            placeholder: "Search by name ...",
+            key: "search",
+            value: projectHandlerSearch,
+            onChange: handleHandlerSearch,
+          },
+        ]
+      : []),
   ];
 
   const projectFilters: FilterConfig[] = [
-    {
-      type: "search",
-      placeholder: "Search by project name ...",
-      key: "search",
-      value: projectSearch,
-      onChange: handleProjectSearch,
-      className: "w-[292px]",
-    },
+    ...(userRole !== roles.ADMIN && userRole !== roles.PROJECT_MANAGER
+      ? [
+          {
+            type: "search",
+            placeholder: "Search by project name ...",
+            key: "search",
+            value: projectSearch,
+            onChange: handleProjectSearch,
+            className: "w-[292px]",
+          },
+        ]
+      : []),
   ];
 
   const sensors = useSensors(
@@ -229,11 +247,11 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
                 Please select a technology or search by name
               </h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Choose a technology from the dropdown or use the search to view available
-                resources.
+                Choose a technology from the dropdown or use the search to view
+                available resources.
               </p>
             </div>
-          ) : userDetails?.length > 0 ? (
+          ) : filteredUserDetails?.length > 0 ? (
             <div
               className={`grid grid-cols-1 gap-4 ${
                 !isProjectHandler ? "md:grid-cols-[1fr_320px]" : ""
@@ -241,7 +259,7 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
             >
               {/* Developer List */}
               <div className="space-y-4 max-h-[72dvh] overflow-auto p-2">
-                {userDetails.map((dev: any) => (
+                {filteredUserDetails.map((dev: any) => (
                   <ResourceCard key={dev.id} developer={dev} />
                 ))}
               </div>
@@ -249,8 +267,8 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
               {/* Project List Sidebar */}
               {!isProjectHandler && (
                 <aside className="top-4 h-fit">
-                  <Card className="!gap-0">
-                    <CardHeader className="!ps-2 ">
+                  <Card className="gap-0!">
+                    <CardHeader className="ps-2!">
                       <CardTitle className="w-full text-balance flex items-center justify-between ps-2">
                         Project List
                       </CardTitle>
