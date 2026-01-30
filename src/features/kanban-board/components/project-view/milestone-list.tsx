@@ -171,7 +171,9 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
     setPreviewData(null);
     setSelectedFile(null);
   };
-
+  const tabTriggerClass =
+    "group flex items-center gap-2 rounded-[50px] px-3 py-2 transition-all h-[35px] " +
+    "data-[state=active]:bg-black data-[state=active]:text-white";
   return (
     <>
       <div className="mb-4 flex items-center gap-2 overflow-x-auto pb-2">
@@ -245,12 +247,16 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
               <TabsTrigger
                 key={m.id}
                 value={String(m.id)}
-                className="px-4 py-2"
+                className={tabTriggerClass}
               >
                 {m.name || m.milestoneName}
                 <Badge
                   variant="secondary"
-                  className="ml-2 bg-primary/10 text-primary hover:bg-primary/20 shrink-0"
+                  className="
+    ml-2 bg-primary/10 text-primary shrink-0
+    group-data-[state=active]:text-white
+    group-data-[state=active]:bg-white/20
+  "
                 >
                   {m.taskCount || m.tasks?.length || 0}
                 </Badge>
