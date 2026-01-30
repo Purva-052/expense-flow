@@ -9,9 +9,23 @@ import { useGetTaskLogs } from "../services";
 import { useGetUserDropdownList } from "@/features/users/services";
 import SimpleDropDownSearchable from "@/components/shared/custome-simple-dropdown";
 import DateRangeFilter from "@/components/table/custome-dateRange";
-import { Search } from "lucide-react";
+import { Search, Eye } from "lucide-react";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { roles } from "@/utils/constant";
+
+const stripHtml = (html: string) => {
+  if (typeof window === "undefined") return html;
+  const tmp = document.createElement("DIV");
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || "";
+};
 
 interface HoursLogsProps {
   projectId?: string | number;
@@ -38,6 +52,7 @@ const HoursLogs = ({
     pageIndex: 0,
     pageSize: 10,
   });
+  const [viewDescription, setViewDescription] = useState<string | null>(null);
 
   const userRole = String(
     user?.user?.role?.name || user?.user?.role
@@ -113,6 +128,32 @@ const HoursLogs = ({
             : "-",
       },
       {
+        accessorKey: "taskDescription",
+        header: "Description",
+        cell: ({ row }) => {
+          const rawDesc = row.original.taskDescription || "-";
+          const desc = stripHtml(rawDesc);
+          return (
+            <div className="flex items-center gap-2 max-w-[200px]">
+              <span className="line-clamp-2 text-muted-foreground flex-1">
+                {desc}
+              </span>
+              {rawDesc.length > 10 && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 shrink-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                  onClick={() => setViewDescription(rawDesc)}
+                  title="View full description"
+                >
+                  <Eye size={14} />
+                </Button>
+              )}
+            </div>
+          );
+        },
+      },
+      {
         accessorKey: "timeSpent",
         header: "Hours",
         cell: ({ row }) => (
@@ -128,14 +169,14 @@ const HoursLogs = ({
   return (
     <div className="flex flex-col h-[550px] space-y-4 overflow-hidden">
       {/* Filters Row */}
-      <div className="flex flex-nowrap items-center gap-3 overflow-x-auto pb-2 shrink-0 px-1">
+      <div className="flex flex-nowrap items-center gap-3 overflow-x-auto pb-2 shrink-0 pl-1">
         <div className="relative w-56 shrink-0">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-8 h-9"
+            className="pl-8 h-9 rounded-full"
           />
         </div>
 
@@ -154,6 +195,7 @@ const HoursLogs = ({
           <DateRangeFilter
             placeholder="Filter by date range"
             onChange={setDateRange}
+            className="rounded-full h-9"
             disabled={{ after: new Date() }}
           />
         </div>
@@ -173,6 +215,21 @@ const HoursLogs = ({
           scrollY="400px"
         />
       </div>
+
+      <Dialog
+        open={!!viewDescription}
+        onOpenChange={(open) => !open && setViewDescription(null)}
+      >
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl overflow-hidden text-black">
+          <DialogHeader>
+            <DialogTitle>Full Description</DialogTitle>
+          </DialogHeader>
+          <div
+            className="py-4 whitespace-normal leading-relaxed text-muted-foreground break-words overflow-y-auto max-h-[70vh] w-full ck-content"
+            dangerouslySetInnerHTML={{ __html: viewDescription || "" }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
