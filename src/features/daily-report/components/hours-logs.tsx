@@ -128,7 +128,7 @@ const HoursLogs = ({
   return (
     <div className="flex flex-col h-[550px] space-y-4 overflow-hidden">
       {/* Filters Row */}
-      <div className="flex flex-nowrap items-center gap-3 overflow-x-auto pb-2 shrink-0">
+      <div className="flex flex-nowrap items-center gap-3 overflow-x-auto pb-2 shrink-0 px-1">
         <div className="relative w-56 shrink-0">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input

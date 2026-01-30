@@ -27,6 +27,28 @@ const baseUserSchema = z.object({
   status: z.boolean(),
   joining: z.boolean(),
   currentWorkingProjectId: z.any().optional(),
+  profilePic: z.string().optional(),
+  file: z
+    .any()
+    .optional()
+    .nullable()
+    .refine((file) => {
+      if (!file) return true; // Allow empty/null
+      if (!(file instanceof File)) return true; // Allow if not a File object
+
+      const validExtensions = [".jpg", ".jpeg", ".png"];
+      const fileName = file.name.toLowerCase();
+      const hasValidExtension = validExtensions.some((ext) =>
+        fileName.endsWith(ext)
+      );
+
+      if (!hasValidExtension) {
+        return false;
+      }
+
+      const maxSize = 2 * 1024 * 1024; // 2MB
+      return file.size <= maxSize;
+    }, "Profile picture must be a JPG, JPEG, or PNG file and not exceed 2MB"),
 });
 
 // Separate field for add/edit mode
