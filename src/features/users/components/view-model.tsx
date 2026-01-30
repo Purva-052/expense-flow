@@ -24,6 +24,21 @@ export function ViewUserModal() {
         <DialogHeader>
           <DialogTitle>User Details</DialogTitle>
         </DialogHeader>
+        <div className="flex flex-col items-center gap-4 py-4">
+          <div className="h-24 w-24 overflow-hidden rounded-full border-2 border-primary/20 shadow-sm">
+            {currentRow.profilePic ? (
+              <img
+                src={currentRow.profilePic}
+                alt={currentRow.fullName}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-gray-100 text-gray-400">
+                No Photo
+              </div>
+            )}
+          </div>
+        </div>
         <div className="space-y-4">
           <div>
             <h3 className="text-sm font-medium">Full Name</h3>

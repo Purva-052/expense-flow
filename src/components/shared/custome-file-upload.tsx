@@ -24,6 +24,9 @@ interface FileUploadProps {
   existingFileName?: string;
   acceptedFormats?: Record<string, string[]>;
   disabled?: boolean;
+  hideDefaultUI?: boolean;
+  children?: React.ReactNode;
+  className?: string;
 }
 
 const formatBytes = (bytes: number) => {
@@ -44,6 +47,9 @@ export const FileUpload = ({
   existingFileName,
   acceptedFormats,
   disabled,
+  hideDefaultUI,
+  children,
+  className,
 }: FileUploadProps) => {
   const form = useFormContext();
   const file = form.watch(name);
@@ -164,17 +170,25 @@ export const FileUpload = ({
   const hasExistingFile = !file && existingFileUrl;
   const displayFileName = existingFileName || "Uploaded File";
 
+
   return (
     <FormField
       control={form.control}
       name={name}
       render={() => (
-        <FormItem>
-          <FormLabel className={fieldError ? "text-red-500" : ""}>
-            {label}
-          </FormLabel>
+        <FormItem className={className}>
+          {label && (
+            <FormLabel className={fieldError ? "text-red-500" : ""}>
+              {label}
+            </FormLabel>
+          )}
           <FormControl>
-            {file ? (
+            {hideDefaultUI ? (
+              <div {...getRootProps()}>
+                <input {...getInputProps()} />
+                {children}
+              </div>
+            ) : file ? (
               <div className="space-y-2">
                 <div
                   className={cn(
@@ -311,25 +325,31 @@ export const FileUpload = ({
                       )}
                     />
                   )}
-                  <p className="text-sm text-muted-foreground">
-                    <span
-                      className={cn(
-                        "font-semibold",
-                        fieldError ? "text-red-600" : "text-primary"
-                      )}
-                    >
-                      Click to upload
-                    </span>{" "}
-                    or drag and drop
-                  </p>
-                  <p
-                    className={cn(
-                      "text-xs",
-                      fieldError ? "text-red-400" : "text-gray-400"
-                    )}
-                  >
-                    {fileLabel}
-                  </p>
+                  {children ? (
+                    children
+                  ) : (
+                    <>
+                      <p className="text-sm text-muted-foreground">
+                        <span
+                          className={cn(
+                            "font-semibold",
+                            fieldError ? "text-red-600" : "text-primary"
+                          )}
+                        >
+                          Click to upload
+                        </span>{" "}
+                        or drag and drop
+                      </p>
+                      <p
+                        className={cn(
+                          "text-xs",
+                          fieldError ? "text-red-400" : "text-gray-400"
+                        )}
+                      >
+                        {fileLabel}
+                      </p>
+                    </>
+                  )}
                 </div>
                 {(fieldError || uploadError) && (
                   <p className="text-sm text-red-500 mt-2 font-medium">
