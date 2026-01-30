@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/select";
 
 const taskSchema = z.object({
-  id: z.number().optional(),
+  taskId: z.number().optional(),
   taskName: z.string().min(1, "Task name is required"),
   estimatedTime: z.string().min(1, "Estimated time is required"),
 });
@@ -96,7 +96,7 @@ export function AddManualMilestone({
           estimatedTime: initialData.estimatedTime || "",
           status: initialData.status || "pending",
           tasks: initialData.tasks?.map((t: any) => ({
-            id: t.id,
+            taskId: t.id,
             taskName: t.taskName,
             estimatedTime: t.estimatedTime,
           })) || [{ taskName: "", estimatedTime: "" }],
@@ -126,10 +126,9 @@ export function AddManualMilestone({
         projectId: Number(projectId),
       };
 
-      // Only send tasks if they have been modified
       const initialTasks =
         initialData.tasks?.map((t: any) => ({
-          id: t.id,
+          taskId: t.id,
           taskName: t.taskName,
           estimatedTime: t.estimatedTime,
         })) || [];
