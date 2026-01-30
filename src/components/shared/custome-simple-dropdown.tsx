@@ -94,7 +94,7 @@ const SimpleDropDownSearchable = ({
               ref={triggerRef}
               variant="outline"
               className={cn(
-                "m-0 h-10 w-full justify-between pr-8",
+                "m-0 h-10 w-full justify-between pr-8 rounded-full bg-white",
                 !value && "text-muted-foreground"
               )}
               disabled={disabled || isLoading}

@@ -21,8 +21,12 @@ import { ActionFormModal } from "../projects/components/action";
 const ProjectBoard = () => {
   const [activeTab, setActiveTab] = useState("project_details");
   const { open, setOpen } = useProjectsStore();
-  const [activeProjectCount, setActiveProjectCount] = useState<number | null>(null);
-  const [archiveProjectCount, setArchiveProjectCount] = useState<number | null>(null);
+  const [activeProjectCount, setActiveProjectCount] = useState<number | null>(
+    null
+  );
+  const [archiveProjectCount, setArchiveProjectCount] = useState<number | null>(
+    null
+  );
   const user = useAuthStore((state) => state.user);
   const userRole = user?.user?.role;
   const userId = user?.user?.id;
@@ -59,13 +63,16 @@ const ProjectBoard = () => {
   const handleAdd = () => {
     setOpen("add");
   };
+  const tabTriggerClass =
+    "flex items-center gap-2 rounded-[50px] !px-3 !py-2  transition-all " +
+    "data-[state=active]:bg-black data-[state=active]:text-white h-[35px]";
 
   return (
     <>
       {userRole === roles.BDE ? (
         <InquiryPage />
       ) : (
-        <Main className="h-screen overflow-auto  flex flex-col">
+        <Main className="h-screen overflow-auto  flex flex-col bg-[#f9fafb]">
           <div className="flex gap-4">
             {userRole === roles.DEVELOPER ? (
               <Tabs
@@ -86,9 +93,12 @@ const ProjectBoard = () => {
               >
                 {/* Tab Headers */}
 
-                <div className="flex items-center justify-between mb-2">
-                  <TabsList className="flex flex-wrap">
-                    <TabsTrigger value="project_details">
+                <div className="flex items-center justify-between ">
+                  <TabsList className="flex flex-wrap bg-[#fdebef] rounded-full h-auto">
+                    <TabsTrigger
+                      value="project_details"
+                      className={tabTriggerClass}
+                    >
                       Projects
                       {activeProjectCount !== null && (
                         <span className="ml-1">({activeProjectCount})</span>
@@ -101,21 +111,34 @@ const ProjectBoard = () => {
                         <span className="ml-1">({projectCount})</span>
                       )}
                     </TabsTrigger> */}
-                    <TabsTrigger value="resources">Resources</TabsTrigger>
-                    <TabsTrigger value="Project Coordinator">
+                    <TabsTrigger value="resources" className={tabTriggerClass}>
+                      Resources
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="Project Coordinator"
+                      className={tabTriggerClass}
+                    >
                       Project Coordinator
                     </TabsTrigger>
-                    <TabsTrigger value="Archive Projects">
+                    <TabsTrigger
+                      value="Archive Projects"
+                      className={tabTriggerClass}
+                    >
                       Archive Projects
                       {archiveProjectCount !== null && (
                         <span className="ml-1">({archiveProjectCount})</span>
                       )}
                     </TabsTrigger>
                     {userId === 1 && (
-                      <TabsTrigger value="inquiry">Inquiries</TabsTrigger>
+                      <TabsTrigger value="inquiry" className={tabTriggerClass}>
+                        Inquiries
+                      </TabsTrigger>
                     )}
                     {userId === 1 && (
-                      <TabsTrigger value="Archive inquiry">
+                      <TabsTrigger
+                        value="Archive inquiry"
+                        className={tabTriggerClass}
+                      >
                         Archive Inquiries
                       </TabsTrigger>
                     )}

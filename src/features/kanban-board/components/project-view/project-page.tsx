@@ -139,7 +139,7 @@ const ProjectPage = ({
 
   // Update listParams when activeTab changes (to reset status if needed)
   useEffect(() => {
-     setListParams(getInitialFilters());
+    setListParams(getInitialFilters());
   }, [activeTab]);
 
   useEffect(() => {
@@ -472,7 +472,7 @@ const ProjectPage = ({
         >
           <div
             ref={scrollContainerRef}
-            className={`space-y-4 !h-full overflow-y-auto p-2 [scrollbar-gutter:stable] rounded-md border`}
+            className={`space-y-4 !h-full overflow-y-auto p-2 [scrollbar-gutter:stable] rounded-md `}
           >
             {projectListLoading || LoadingProjectType ? (
               <div className="flex flex-col justify-center items-center py-10 gap-3">
@@ -482,7 +482,7 @@ const ProjectPage = ({
                 </span>
               </div>
             ) : projectList?.length ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 2xl:grid-cols-3 gap-6">
                 {projectList?.map((p: any) => (
                   <ProjectCard
                     key={p?.id}
