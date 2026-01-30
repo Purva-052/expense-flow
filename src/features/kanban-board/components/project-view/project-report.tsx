@@ -5,11 +5,12 @@ import { ColumnDef, PaginationState } from "@tanstack/react-table";
 import { GlobalTable } from "@/components/table/global-table";
 import { Input } from "@/components/ui/input";
 import { useGetDailyReportList } from "@/features/daily-report/services";
+import { useQueryClient } from "@tanstack/react-query";
 import { useGetUserDropdownList } from "@/features/users/services";
 import SimpleDropDownSearchable from "@/components/shared/custome-simple-dropdown";
 import DateRangeFilter from "@/components/table/custome-dateRange";
 import { format } from "date-fns";
-import { Search, Eye, Pencil, Trash2, Loader2 } from "lucide-react";
+import { Search, Eye, Pencil, Trash2 } from "lucide-react";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
 import { Card } from "@/components/ui/card";
@@ -20,20 +21,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  useDeleteDailyReport,
-  useUpdateDailyReport,
-} from "@/features/daily-report/services";
+import { useDeleteDailyReport } from "@/features/daily-report/services";
 import { toast } from "sonner";
 import { DeleteModal } from "@/components/model/delete-model";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { AddHoursLogDialog } from "./milestone-list/add-hours-log-dialog";
+import API from "@/config/api/api";
+
+const stripHtml = (html: string) => {
+  const tmp = document.createElement("DIV");
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || "";
+};
 
 /* =======================
    Types
@@ -105,6 +103,7 @@ const reportColumns: ColumnDef<ProjectReport>[] = [
    Component
  ======================= */
 const ProjectReportTable = ({ projectId }: { projectId?: string | number }) => {
+  const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
   const [searchTerm, setSearchTerm] = useState("");
   const [employeeId, setEmployeeId] = useState<string>("all");
@@ -126,10 +125,6 @@ const ProjectReportTable = ({ projectId }: { projectId?: string | number }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const [editHours, setEditHours] = useState("0");
-  const [editMinutes, setEditMinutes] = useState("0");
-  const [editDesc, setEditDesc] = useState("");
-
   const userRole = String(
     user?.user?.role?.name || user?.user?.role
   ).toLowerCase();
@@ -139,31 +134,33 @@ const ProjectReportTable = ({ projectId }: { projectId?: string | number }) => {
     roles.PROJECT_MANAGER,
   ].includes(userRole);
 
+  const { data: usersData, isLoading: usersLoading } = useGetUserDropdownList();
+  const userOptions = useMemo(() => {
+    const base = [{ label: "All Employees", value: "all" }];
+    const users = (usersData as any)?.data;
+    if (!users || !Array.isArray(users)) return base;
+    return [
+      ...base,
+      ...users.map((u: any) => ({
+        label: u.fullName,
+        value: String(u.id),
+      })),
+    ];
+  }, [usersData]);
+
   const { mutate: deleteReport, isPending: isDeleting } = useDeleteDailyReport(
     () => {
       setIsDeleteModalOpen(false);
       setReportToDelete(null);
       toast.success("Report deleted successfully");
-    }
-  );
-
-  const { mutate: updateReport, isPending: isUpdating } = useUpdateDailyReport(
-    editingReport?.id?.toString() || "",
-    () => {
-      setIsEditModalOpen(false);
-      setEditingReport(null);
-      toast.success("Report updated successfully");
+      queryClient.invalidateQueries({
+        queryKey: [API.daily_report.list],
+      });
     }
   );
 
   const handleEdit = (report: ProjectReport) => {
     setEditingReport(report);
-    setEditDesc(report.taskDescription);
-    const timeMatch = report.timeSpent.match(/(\d+)h(\d+)m/);
-    if (timeMatch) {
-      setEditHours(timeMatch[1]);
-      setEditMinutes(timeMatch[2]);
-    }
     setIsEditModalOpen(true);
   };
 
@@ -172,15 +169,13 @@ const ProjectReportTable = ({ projectId }: { projectId?: string | number }) => {
     setIsDeleteModalOpen(true);
   };
 
-  const handleSaveEdit = () => {
-    if (!editingReport) return;
-    updateReport({
-      taskDescription: editDesc,
-      timeSpent: `${editHours}h${editMinutes}m`,
+  const handleEditSuccess = () => {
+    queryClient.invalidateQueries({
+      queryKey: [API.daily_report.list],
     });
   };
 
-  // Columns definition inside component to access handlers
+  // Columns definition
   const columns: ColumnDef<ProjectReport>[] = useMemo(() => {
     return [
       ...reportColumns.slice(0, 2),
@@ -188,22 +183,22 @@ const ProjectReportTable = ({ projectId }: { projectId?: string | number }) => {
         accessorKey: "taskDescription",
         header: "Description",
         cell: ({ row }) => {
-          const desc = row.original.taskDescription;
-          const isLong = desc.length > 100;
+          const rawDesc = row.original.taskDescription || "-";
+          const desc = stripHtml(rawDesc);
           return (
-            <div className="flex items-center gap-2 max-w-[400px]">
+            <div className="flex items-center gap-2 max-w-[200px]">
               <span className="line-clamp-2 text-muted-foreground flex-1">
                 {desc}
               </span>
-              {isLong && (
+              {rawDesc.length > 10 && (
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7 shrink-0"
-                  onClick={() => setViewDescription(desc)}
+                  className="h-7 w-7 shrink-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                  onClick={() => setViewDescription(rawDesc)}
                   title="View full description"
                 >
-                  <Eye className="h-4 w-4" />
+                  <Eye size={14} />
                 </Button>
               )}
             </div>
@@ -243,37 +238,24 @@ const ProjectReportTable = ({ projectId }: { projectId?: string | number }) => {
     ];
   }, [user?.user?.id]);
 
-  // Params for fetching reports
-  const params = {
-    projectId,
-    search: searchTerm,
-    employeeId: employeeId !== "all" ? employeeId : undefined,
-    fromDate: dateRange?.from
+  // Fetch reports
+  const { data: reportsResponse, isLoading } = useGetDailyReportList({
+    projectId: projectId?.toString(),
+    employeeId: employeeId === "all" ? undefined : employeeId,
+    startDate: dateRange?.from
       ? format(dateRange.from, "yyyy-MM-dd")
       : undefined,
-    toDate: dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
+    endDate: dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
+    search: searchTerm || undefined,
     page: pagination.pageIndex + 1,
     limit: pagination.pageSize,
-  };
-
-  const { data: reportsResponse, isLoading } = useGetDailyReportList(params);
-  const { data: usersResponse, isLoading: usersLoading } =
-    useGetUserDropdownList();
+  });
 
   const reports = useMemo(() => {
     return (reportsResponse as any)?.data || [];
   }, [reportsResponse]);
 
   const metadata = (reportsResponse as any)?.metadata;
-
-  const userOptions = useMemo(() => {
-    const options =
-      (usersResponse as any)?.data?.map((u: any) => ({
-        label: u.fullName,
-        value: String(u.id),
-      })) || [];
-    return [{ label: "All Employees", value: "all" }, ...options];
-  }, [usersResponse]);
 
   const handlePaginationChange = (newPagination: PaginationState) => {
     setPagination(newPagination);
@@ -333,85 +315,35 @@ const ProjectReportTable = ({ projectId }: { projectId?: string | number }) => {
         open={!!viewDescription}
         onOpenChange={(open) => !open && setViewDescription(null)}
       >
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl overflow-hidden">
           <DialogHeader>
             <DialogTitle>Full Description</DialogTitle>
           </DialogHeader>
-          <div className="py-4 whitespace-pre-wrap leading-relaxed text-muted-foreground">
-            {viewDescription}
-          </div>
+          <div
+            className="py-4 whitespace-normal leading-relaxed text-muted-foreground break-words overflow-y-auto max-h-[70vh] w-full ck-content"
+            dangerouslySetInnerHTML={{ __html: viewDescription || "" }}
+          />
         </DialogContent>
       </Dialog>
 
-      {/* Edit Report Dialog */}
-      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Hours Log</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium">Actual Hours</label>
-              <div className="grid grid-cols-2 gap-4">
-                <Select value={editHours} onValueChange={setEditHours}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Hrs" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.from({ length: 13 }).map((_, i) => (
-                      <SelectItem key={i} value={String(i)}>
-                        {String(i).padStart(2, "0")} hrs
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Select value={editMinutes} onValueChange={setEditMinutes}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Min" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((m) => (
-                      <SelectItem key={m} value={String(m)}>
-                        {String(m).padStart(2, "0")} min
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium">Work Description</label>
-              <Textarea
-                placeholder="What did you work on?"
-                value={editDesc}
-                onChange={(e) => setEditDesc(e.target.value)}
-                className="min-h-[100px]"
-              />
-            </div>
-          </div>
-          <div className="flex justify-end gap-3 mt-4">
-            <Button
-              variant="outline"
-              onClick={() => setIsEditModalOpen(false)}
-              disabled={isUpdating}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleSaveEdit} disabled={isUpdating}>
-              {isUpdating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Updating...
-                </>
-              ) : (
-                "Save Changes"
-              )}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Edit Dialog - Using Shared Component */}
+      <AddHoursLogDialog
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        projectId={projectId || ""}
+        reportId={editingReport?.id}
+        initialData={
+          editingReport
+            ? {
+                date: editingReport.reportingDate,
+                description: editingReport.taskDescription,
+                timeSpent: editingReport.timeSpent,
+              }
+            : undefined
+        }
+        onSuccess={handleEditSuccess}
+        hideTrigger
+      />
 
       {/* Delete Confirmation */}
       <DeleteModal

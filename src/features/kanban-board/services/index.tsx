@@ -503,6 +503,45 @@ export const useUpdateMileStone = () => {
   });
 };
 
+export const useUpdateTaskStatus = (
+  milestoneId: string | number,
+  onSuccess?: () => void
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      taskId,
+      status,
+      comment,
+    }: {
+      taskId: string | number;
+      status: string;
+      comment: string | null;
+    }) => {
+      const url = `${API.projects.update_milestone}/${milestoneId}`;
+      const response = await instance.patch({
+        url,
+        data: {
+          tasks: [
+            {
+              taskId,
+              status,
+              comment,
+            },
+          ],
+        },
+      });
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [`${API.projects.milestone_list}/${milestoneId}`],
+      });
+      if (onSuccess) onSuccess();
+    },
+  });
+};
+
 export const createClientMeeting = (onSuccess?: () => void) => {
   return usePostData({
     url: API.client_meetings.create,
