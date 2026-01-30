@@ -362,7 +362,7 @@
 .ck-content .todo-list__label,
 .sticky-note-content .todo-list__label {
   display: flex !important;
-  align-items: flex-start !important;
+  /* align-items: flex-start !important; */
   cursor: pointer !important;
   user-select: none !important;
 }
@@ -392,6 +392,7 @@
 /* 8. Todo Text */
 .ck-content .todo-list__label__description {
   line-height: 1.5 !important;
+  /* padding-left: 3px !important; */
 }
 
 /* Miscellaneous Fixes */

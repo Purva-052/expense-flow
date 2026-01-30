@@ -1,10 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Check } from "lucide-react";
+import { Check, Eye, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import { AddHoursLogDialog } from "./add-hours-log-dialog";
 import { UpdateTaskStatusDialog } from "./update-task-status-dialog";
 import { MilestoneTask } from "./types";
@@ -46,10 +53,6 @@ export const TaskActions = ({
         milestoneStatus={milestoneStatus}
       />
 
-      <Button variant="outline" size="sm" onClick={() => onViewLog(task)}>
-        View Log
-      </Button>
-
       <UpdateTaskStatusDialog
         open={updateStatusOpen}
         onOpenChange={setUpdateStatusOpen}
@@ -58,28 +61,70 @@ export const TaskActions = ({
         onSuccess={onAddLogSuccess}
       />
 
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => setUpdateStatusOpen(true)}
-        disabled={task.status === "completed"}
-      >
-        <Check className="mr-2 h-4 w-4" />
-        {task.status === "completed" ? "Task Completed" : "Complete Task"}
-      </Button>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => onViewLog(task)}
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>View log</p>
+          </TooltipContent>
+        </Tooltip>
 
-      {(Role === roles.PROJECT_MANAGER ||
-        Role === roles.TEAM_LEAD ||
-        Role === roles.ADMIN) &&
-        parseFloat(task.actualTime || "0") === 0 && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onDeleteTask(task)}
-          >
-            Delete task
-          </Button>
-        )}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setUpdateStatusOpen(true)}
+              disabled={task.status === "completed"}
+            >
+              <Check
+                className={cn(
+                  "h-4 w-4",
+                  task.status === "completed"
+                    ? "text-muted-foreground"
+                    : "text-green-600 font-bold"
+                )}
+              />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>
+              {task.status === "completed" ? "Task Completed" : "Complete Task"}
+            </p>
+          </TooltipContent>
+        </Tooltip>
+
+        {(Role === roles.PROJECT_MANAGER ||
+          Role === roles.TEAM_LEAD ||
+          Role === roles.ADMIN) &&
+          parseFloat(task.actualTime || "0") === 0 && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={() => onDeleteTask(task)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Delete task</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+      </TooltipProvider>
     </div>
   );
 };
