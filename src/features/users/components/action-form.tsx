@@ -94,14 +94,27 @@ export function UserActionForm({
   });
 
   useEffect(() => {
-    if (currentRow && open) {
-      setUploadedFileKey(currentRow.profilePic || "");
-      setHasExistingFile(!!currentRow.profilePic);
-      if (currentRow.profilePic) {
-        setPreviewUrl(currentRow.profilePic);
-      }
+    if (open && currentRow) {
+      form.reset({
+        fullName: currentRow?.fullName ?? "",
+        email: currentRow?.email ?? "",
+        role: currentRow?.role ?? "",
+        technologyId: currentRow?.technology?.id ?? undefined,
+        careerStartDate: currentRow?.careerStartDate
+          ? currentRow.careerStartDate.slice(0, 10)
+          : "",
+        status: currentRow?.status === "active",
+        joining: currentRow?.joining ?? false,
+        currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
+        profilePic: currentRow?.profilePic ?? "",
+        file: null,
+      });
+
+      setPreviewUrl(currentRow?.profilePic ?? null);
+      setHasExistingFile(!!currentRow?.profilePic);
+      setUploadedFileKey(currentRow?.profilePic ?? "");
     }
-  }, [currentRow, open]);
+  }, [open, currentRow]);
 
   useEffect(() => {
     if (watchedFile instanceof File) {
@@ -235,7 +248,7 @@ export function UserActionForm({
                 </FileUpload>
 
                 <div className="text-xs text-muted-foreground text-center">
-                  JPG, JPEG, PNG (MAX 2MB)
+                  Profile picture must be a JPG, JPEG, PNG (MAX 2MB)
                 </div>
               </div>
 
@@ -254,7 +267,6 @@ export function UserActionForm({
                 type="email"
                 autoComplete="new-email" // 👈 disables auto-fill
               />
-
 
               {!isEdit && (
                 <TextInputField
@@ -360,7 +372,6 @@ export function UserActionForm({
           </CustomButton>
         </DialogFooter>
       </DialogContent>
-
     </Dialog>
   );
 }

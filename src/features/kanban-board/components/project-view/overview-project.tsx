@@ -54,8 +54,18 @@ const OverviewProject = ({ projectId }: { projectId?: any }) => {
     setSelectedDeveloper(allocation);
     setIsDeveloperDialogOpen(true);
   };
+  // console.log(
+  //   "allocation.developer?.profilePic: ",
+  //   allocation.developer?.profilePic
+  // );
 
   const project = (projectDetailsResponse as any)?.data;
+  console.log("project: ", project);
+
+  console.log(
+    "project?.developerAllocations?.developer?.profilePic: ",
+    project?.developerAllocations[0]?.developer?.profilePic
+  );
 
   if (isLoading) {
     return (
@@ -272,7 +282,11 @@ const OverviewProject = ({ projectId }: { projectId?: any }) => {
                   >
                     <div className="relative shrink-0">
                       <Avatar className="h-10 w-10">
-                        <AvatarImage src={allocation.developer?.avatar} />
+                        <AvatarImage
+                          src={
+                            project?.developerAllocations?.developer?.profilePic
+                          }
+                        />
                         <AvatarFallback
                           className="text-white font-bold"
                           style={{
