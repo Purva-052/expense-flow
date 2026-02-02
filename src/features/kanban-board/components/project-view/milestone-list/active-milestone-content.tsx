@@ -165,11 +165,13 @@ export const ActiveMilestoneContent = ({
           <div className="rounded-xl border p-3 bg-card text-card-foreground shadow-sm">
             <p className="text-sm text-muted-foreground">Total Actual Hours</p>
             <p className="text-3xl font-bold">
-              {tasks.reduce(
-                (acc: number, task: MilestoneTask) =>
-                  acc + (parseFloat(task.actualTime || "0") || 0),
-                0
-              )}
+              {tasks
+                .reduce(
+                  (acc: number, task: MilestoneTask) =>
+                    acc + (parseFloat(task.actualTime || "0") || 0),
+                  0
+                )
+                .toFixed(2)}
             </p>
           </div>
         </div>

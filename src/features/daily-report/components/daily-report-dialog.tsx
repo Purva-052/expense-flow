@@ -45,6 +45,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { WorkDescriptionEditor } from "@/components/shared/work-description-editor";
 
 const formSchema = z.object({
   reportingDate: z.date({ required_error: "Date is required" }),
@@ -63,8 +64,8 @@ const formSchema = z.object({
   taskDescription: z
     .string({ required_error: "Description is required" })
     .min(1, "Description is required"),
-  hours: z.string().min(1, "Hours are required"),
-  minutes: z.string().min(1, "Minutes are required"),
+  hours: z.string().refine((v) => Number(v) >= 0, "Invalid hours"),
+  minutes: z.string().refine((v) => Number(v) >= 0, "Invalid minutes"),
   remark: z.string().optional(),
 });
 
@@ -73,7 +74,6 @@ interface DailyReportDialogProps {
   onOpenChange: (open: boolean) => void;
   report?: DailyReport | null; // For Edit mode
   initialData?: {
-    // For Add mode with pre-filled fields
     projectId?: string | number;
     milestoneId?: string | number;
     taskId?: string | number;
@@ -81,25 +81,56 @@ interface DailyReportDialogProps {
   onSuccess?: () => void;
 }
 
-const parseTimeSpent = (time: string) => {
+const parseTimeSpent = (time: any) => {
   let h = "0";
-  let m = "0";
+  let m = "00";
+
   if (!time) return { h, m };
 
-  // Match 1h10m
-  const hmMatch = time.match(/(\d+)h(\d+)m/);
+  const timeStr = String(time).trim();
+  const formatHour = (val: string) => String(parseInt(val || "0", 10));
+
+  // Helper to ensure minutes are 2 digits (e.g. "5" -> "05")
+  const formatMinute = (val: string) => {
+    const num = parseInt(val || "0", 10);
+    return String(num).padStart(2, "0");
+  };
+
+  // "6h10m"
+  const hmMatch = timeStr.match(/(\d+)h(\d+)m/);
   if (hmMatch) {
-    h = String(Number(hmMatch[1]));
-    m = String(Number(hmMatch[2]));
-  } else {
-    // Fallback to dot format 1.10
-    const parts = time.split(".");
-    if (parts.length > 0) h = String(Number(parts[0]));
-    if (parts.length > 1) m = String(Number(parts[1]));
+    h = formatHour(hmMatch[1]);
+    m = formatMinute(hmMatch[2]);
+    return { h, m };
   }
+
+  // "6h"
+  const hMatch = timeStr.match(/(\d+)h$/);
+  if (hMatch) {
+    h = formatHour(hMatch[1]);
+    return { h, m };
+  }
+
+  // "10m"
+  const mMatch = timeStr.match(/^(\d+)m$/);
+  if (mMatch) {
+    m = formatMinute(mMatch[1]);
+    return { h, m };
+  }
+
+  if (timeStr.includes(".")) {
+    const [hoursPart, minutesPart] = timeStr.split(".");
+    h = formatHour(hoursPart);
+    m = formatMinute(minutesPart);
+    return { h, m };
+  }
+
+  // Fallback: treat as hours only
+  h = formatHour(timeStr);
   return { h, m };
 };
 
+// --- MAIN COMPONENT ---
 export function DailyReportDialog({
   open,
   onOpenChange,
@@ -114,7 +145,11 @@ export function DailyReportDialog({
   const { data: reportData, isPending: isReportLoading }: any =
     useGetDailyReportById(isEdit ? String(report?.id || "") : "");
 
-  const fetchedReport = reportData?.data;
+  const fetchedReport = Array.isArray(reportData?.data)
+    ? reportData.data.find(
+        (item: any) => String(item.id) === String(report?.id)
+      ) || reportData.data[0]
+    : reportData?.data;
 
   const { mutate: updateReport, isPending: isUpdating } = useUpdateDailyReport(
     String(report?.id),
@@ -133,6 +168,7 @@ export function DailyReportDialog({
     }
   );
 
+  // FIX 2: Set default minutes to "00" (string) to match Select options
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -143,7 +179,7 @@ export function DailyReportDialog({
       taskId: "",
       taskDescription: "",
       hours: "0",
-      minutes: "0",
+      minutes: "00",
       remark: "",
     },
   });
@@ -151,6 +187,7 @@ export function DailyReportDialog({
   useEffect(() => {
     if (open) {
       if (isEdit && fetchedReport) {
+        // Parse time safely
         const { h, m } = parseTimeSpent(fetchedReport.timeSpent);
         form.reset({
           reportingDate: new Date(fetchedReport.reportingDate),
@@ -176,7 +213,7 @@ export function DailyReportDialog({
           taskId: initialData?.taskId ? String(initialData.taskId) : "",
           taskDescription: "",
           hours: "0",
-          minutes: "0",
+          minutes: "00",
           remark: "",
         });
       }
@@ -252,7 +289,14 @@ export function DailyReportDialog({
           </div>
         ) : (
           <Form {...form}>
+            {/* 
+                FIX 3: Added 'key'. 
+                When fetchedReport changes (API loads), this forces the form 
+                to re-render. This ensures the Select components pick up 
+                the values from form.reset() immediately.
+            */}
             <form
+              key={fetchedReport?.id || "form-key"}
               onSubmit={form.handleSubmit(onSubmit)}
               className="flex flex-col flex-1 overflow-hidden"
             >
@@ -383,7 +427,11 @@ export function DailyReportDialog({
                             Description <span className="text-red-500">*</span>
                           </FormLabel>
                           <FormControl>
-                            <Textarea {...field} />
+                            <WorkDescriptionEditor
+                              placeholder="What did you work on?"
+                              value={field.value}
+                              onChange={field.onChange}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -402,6 +450,7 @@ export function DailyReportDialog({
                               Hours <span className="text-red-500">*</span>
                             </FormLabel>
                             <Select
+                              key={`hours-${field.value}-${fetchedReport?.id || "new"}`} // Force re-render when value changes
                               onValueChange={field.onChange}
                               value={field.value}
                             >
@@ -411,7 +460,7 @@ export function DailyReportDialog({
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {Array.from({ length: 13 }).map((_, i) => (
+                                {Array.from({ length: 24 }).map((_, i) => (
                                   <SelectItem key={i} value={String(i)}>
                                     {String(i).padStart(2, "0")}
                                   </SelectItem>
@@ -434,22 +483,26 @@ export function DailyReportDialog({
                               Minutes <span className="text-red-500">*</span>
                             </FormLabel>
                             <Select
+                              key={`minutes-${field.value}-${fetchedReport?.id || "new"}`} // Force re-render when value changes
                               onValueChange={field.onChange}
                               value={field.value}
                             >
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Minutes" />
+                                  <SelectValue placeholder="Min" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
                                 {[
                                   0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55,
-                                ].map((m) => (
-                                  <SelectItem key={m} value={String(m)}>
-                                    {String(m).padStart(2, "0")}
-                                  </SelectItem>
-                                ))}
+                                ].map((m) => {
+                                  const val = String(m).padStart(2, "0");
+                                  return (
+                                    <SelectItem key={m} value={val}>
+                                      {val}
+                                    </SelectItem>
+                                  );
+                                })}
                               </SelectContent>
                             </Select>
                             <FormMessage />

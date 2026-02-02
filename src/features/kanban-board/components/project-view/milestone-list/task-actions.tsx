@@ -78,31 +78,35 @@ export const TaskActions = ({
           </TooltipContent>
         </Tooltip>
 
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => setUpdateStatusOpen(true)}
-              disabled={task.status === "completed"}
-            >
-              <Check
-                className={cn(
-                  "h-4 w-4",
-                  task.status === "completed"
-                    ? "text-muted-foreground"
-                    : "text-green-600 font-bold"
-                )}
-              />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>
-              {task.status === "completed" ? "Task Completed" : "Complete Task"}
-            </p>
-          </TooltipContent>
-        </Tooltip>
+        {Role !== roles.DEVELOPER && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setUpdateStatusOpen(true)}
+                disabled={task.status === "completed"}
+              >
+                <Check
+                  className={cn(
+                    "h-4 w-4",
+                    task.status === "completed"
+                      ? "text-muted-foreground"
+                      : "text-green-600 font-bold"
+                  )}
+                />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>
+                {task.status === "completed"
+                  ? "Task Completed"
+                  : "Complete Task"}
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        )}
 
         {(Role === roles.PROJECT_MANAGER ||
           Role === roles.TEAM_LEAD ||

@@ -358,6 +358,10 @@ const ProjectPage = ({
   const { data: technologies, isPending: techLoading } =
     useGetTechnologyDropdownList(null, Role !== roles.BDE);
 
+  const tabTriggerClass =
+    "flex items-center gap-2 rounded-[50px] !px-3 !py-2  transition-all " +
+    "data-[state=active]:bg-black data-[state=active]:text-white h-[35px]";
+
   const filters: FilterConfig[] = [
     {
       type: "search",
@@ -590,9 +594,17 @@ const ProjectPage = ({
                     onValueChange={setActiveTabResource}
                     className="!w-full my-1"
                   >
-                    <TabsList>
-                      <TabsTrigger value="available">Available</TabsTrigger>
-                      <TabsTrigger value="becomeAvailable">
+                    <TabsList className="flex flex-wrap bg-[#fdebef] rounded-full h-auto">
+                      <TabsTrigger
+                        value="available"
+                        className={tabTriggerClass}
+                      >
+                        Available
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="becomeAvailable"
+                        className={tabTriggerClass}
+                      >
                         Become Available
                       </TabsTrigger>
                     </TabsList>
@@ -662,7 +674,7 @@ const ProjectPage = ({
                             <CollapsibleTrigger asChild>
                               <div className="flex w-full cursor-pointer items-center justify-between p-2 hover:bg-muted/50 rounded-sm">
                                 <div className="flex items-center gap-3">
-                                  <span className="font-semibold">
+                                  <span className="font-semibold text-sm">
                                     {group.technologyName}
                                   </span>
                                   <Badge

@@ -37,15 +37,15 @@ export const columns = (
     accessorKey: "task.taskName",
     header: "Task Name",
   },
-  {
-    accessorKey: "taskDescription",
-    header: "Description",
-    cell: ({ row }) => (
-      <div className="max-w-[300px] whitespace-normal break-words">
-        {row.original.taskDescription}
-      </div>
-    ),
-  },
+  // {
+  //   accessorKey: "taskDescription",
+  //   header: "Description",
+  //   cell: ({ row }) => (
+  //     <div className="max-w-[300px] whitespace-normal break-words">
+  //       {row.original.taskDescription}
+  //     </div>
+  //   ),
+  // },
   {
     accessorKey: "timeSpent",
     header: "Hours",
