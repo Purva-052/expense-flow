@@ -20,6 +20,7 @@ interface WorkDescriptionEditorProps {
   onChange: (data: string) => void;
   placeholder?: string;
   className?: string;
+  disabled?: boolean;
 }
 
 export const WorkDescriptionEditor = ({
@@ -27,6 +28,7 @@ export const WorkDescriptionEditor = ({
   onChange,
   placeholder = "Type your description here...",
   className,
+  disabled = false,
 }: WorkDescriptionEditorProps) => {
   const [editorReady, setEditorReady] = useState(false);
 
@@ -41,7 +43,7 @@ export const WorkDescriptionEditor = ({
           const data = editor.getData();
           onChange(data);
         }}
-        disabled={!editorReady}
+        disabled={disabled || !editorReady}
         config={{
           plugins: [
             Essentials,

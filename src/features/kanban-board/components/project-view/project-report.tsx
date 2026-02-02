@@ -10,7 +10,7 @@ import { useGetUserDropdownList } from "@/features/users/services";
 import SimpleDropDownSearchable from "@/components/shared/custome-simple-dropdown";
 import DateRangeFilter from "@/components/table/custome-dateRange";
 import { format } from "date-fns";
-import { Search, Eye, Pencil, Trash2 } from "lucide-react";
+import { Search, Eye } from "lucide-react";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
 import { Card } from "@/components/ui/card";
@@ -115,9 +115,7 @@ const ProjectReportTable = ({ projectId }: { projectId?: string | number }) => {
   });
 
   const [viewDescription, setViewDescription] = useState<string | null>(null);
-  const [editingReport, setEditingReport] = useState<ProjectReport | null>(
-    null
-  );
+  const [editingReport, _] = useState<ProjectReport | null>(null);
   const [reportToDelete, setReportToDelete] = useState<ProjectReport | null>(
     null
   );
@@ -158,15 +156,15 @@ const ProjectReportTable = ({ projectId }: { projectId?: string | number }) => {
     }
   );
 
-  const handleEdit = (report: ProjectReport) => {
-    setEditingReport(report);
-    setIsEditModalOpen(true);
-  };
+  // const handleEdit = (report: ProjectReport) => {
+  //   setEditingReport(report);
+  //   setIsEditModalOpen(true);
+  // };
 
-  const handleDelete = (report: ProjectReport) => {
-    setReportToDelete(report);
-    setIsDeleteModalOpen(true);
-  };
+  // const handleDelete = (report: ProjectReport) => {
+  //   setReportToDelete(report);
+  //   setIsDeleteModalOpen(true);
+  // };
 
   const handleEditSuccess = () => {
     queryClient.invalidateQueries({
@@ -204,36 +202,36 @@ const ProjectReportTable = ({ projectId }: { projectId?: string | number }) => {
           );
         },
       },
-      ...reportColumns.slice(3),
-      {
-        id: "actions",
-        header: "Actions",
-        cell: ({ row }) => {
-          const isCurrentUser = row.original.employee?.id === user?.user?.id;
-          if (!isCurrentUser) return null;
+      // ...reportColumns.slice(3),
+      // {
+      //   id: "actions",
+      //   header: "Actions",
+      //   cell: ({ row }) => {
+      //     const isCurrentUser = row.original.employee?.id === user?.user?.id;
+      //     if (!isCurrentUser) return null;
 
-          return (
-            <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-primary"
-                onClick={() => handleEdit(row.original)}
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                onClick={() => handleDelete(row.original)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          );
-        },
-      },
+      //     return (
+      //       <div className="flex items-center gap-1">
+      //         <Button
+      //           variant="ghost"
+      //           size="icon"
+      //           className="h-8 w-8 text-muted-foreground hover:text-primary"
+      //           onClick={() => handleEdit(row.original)}
+      //         >
+      //           <Pencil className="h-4 w-4" />
+      //         </Button>
+      //         <Button
+      //           variant="ghost"
+      //           size="icon"
+      //           className="h-8 w-8 text-muted-foreground hover:text-destructive"
+      //           onClick={() => handleDelete(row.original)}
+      //         >
+      //           <Trash2 className="h-4 w-4" />
+      //         </Button>
+      //       </div>
+      //     );
+      //   },
+      // },
     ];
   }, [user?.user?.id]);
 

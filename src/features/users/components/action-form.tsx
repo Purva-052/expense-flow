@@ -66,7 +66,7 @@ export function UserActionForm({
           status: currentRow?.status === "active",
           joining: currentRow?.joining ?? false, // ✅ FIXED
           currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
-          profilePic: currentRow?.profilePic ?? "",
+          profilePicS3Key: currentRow?.profilePicS3Key ?? "",
           file: null,
         }
       : {
@@ -78,7 +78,7 @@ export function UserActionForm({
           status: true,
           joining: false,
           password: "",
-          profilePic: "",
+          profilePicS3Key: "",
           file: null,
         },
   });
@@ -106,13 +106,13 @@ export function UserActionForm({
         status: currentRow?.status === "active",
         joining: currentRow?.joining ?? false,
         currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
-        profilePic: currentRow?.profilePic ?? "",
+        profilePicS3Key: currentRow?.profilePicS3Key ?? "",
         file: null,
       });
 
-      setPreviewUrl(currentRow?.profilePic ?? null);
-      setHasExistingFile(!!currentRow?.profilePic);
-      setUploadedFileKey(currentRow?.profilePic ?? "");
+      setPreviewUrl(currentRow?.profilePicS3Key ?? null);
+      setHasExistingFile(!!currentRow?.profilePicS3Key);
+      setUploadedFileKey(currentRow?.profilePicS3Key ?? "");
     }
   }, [open, currentRow]);
 
@@ -138,10 +138,10 @@ export function UserActionForm({
     setPreviewUrl(null);
 
     form.setValue("file", null, { shouldValidate: true });
-    form.setValue("profilePic", "", { shouldValidate: true });
+    form.setValue("profilePicS3Key", "", { shouldValidate: true });
 
     form.clearErrors("file");
-    form.clearErrors("profilePic");
+    form.clearErrors("profilePicS3Key");
   };
 
   // 🧹 Auto-clear technology when role = "project_manager"
@@ -153,7 +153,7 @@ export function UserActionForm({
   }
 
   const onSubmit: SubmitHandler<TUserFormSchema> = async (values: any) => {
-    let finalFileKey = uploadedFileKey || values.profilePic || "";
+    let finalFileKey = uploadedFileKey || values.profilePicS3Key || "";
 
     const fileToUpload = values.file;
     if (fileToUpload instanceof File) {
@@ -164,7 +164,7 @@ export function UserActionForm({
       try {
         const response: any = await uploadFile(formData);
         if (response?.key) {
-          finalFileKey = response.url;
+          finalFileKey = response.key;
         }
       } catch (error) {
         console.error("Upload failed", error);
@@ -174,7 +174,7 @@ export function UserActionForm({
 
     const payload = {
       ...values,
-      profilePic: finalFileKey,
+      profilePicS3Key: finalFileKey,
     };
     delete payload.file;
 

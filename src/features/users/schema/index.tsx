@@ -27,7 +27,7 @@ const baseUserSchema = z.object({
   status: z.boolean(),
   joining: z.boolean(),
   currentWorkingProjectId: z.any().optional(),
-  profilePic: z.string().optional(),
+  profilePicS3Key: z.string().optional(),
   file: z
     .any()
     .optional()

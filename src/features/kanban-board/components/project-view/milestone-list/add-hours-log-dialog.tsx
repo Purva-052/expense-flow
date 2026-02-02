@@ -76,6 +76,7 @@ interface AddHoursLogDialogProps {
   milestoneId?: string | number;
   taskId?: string | number;
   taskName?: string;
+  taskStatus?: string;
   onSuccess?: () => void;
   milestoneStatus?: string;
   reportId?: string | number;
@@ -94,6 +95,7 @@ export const AddHoursLogDialog = ({
   milestoneId,
   taskId,
   taskName,
+  taskStatus,
   onSuccess,
   milestoneStatus,
   reportId,
@@ -180,6 +182,7 @@ export const AddHoursLogDialog = ({
           <Button
             size="sm"
             className="bg-[#e11d48] hover:bg-[#be123c] text-white"
+            disabled={taskStatus === "completed"}
           >
             Add Hours Log
           </Button>
