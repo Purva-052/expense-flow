@@ -49,6 +49,7 @@ export const TaskActions = ({
         milestoneId={milestoneId}
         taskId={task.id || ""}
         taskName={task.taskName}
+        taskStatus={task.status}
         onSuccess={onAddLogSuccess}
         milestoneStatus={milestoneStatus}
       />
