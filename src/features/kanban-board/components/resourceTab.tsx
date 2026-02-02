@@ -100,10 +100,16 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
     ? (handledProjects?.data ?? [])
     : (usersList?.data ?? []);
 
-  const filteredUserDetails = userDetails.filter(
-    (user: any) =>
-      user.role !== roles.ADMIN && user.role !== roles.PROJECT_MANAGER
-  );
+  const filteredUserDetails = useMemo(() => {
+    if (isProjectHandler) {
+      return userDetails; // 👈 NO FILTER
+    }
+
+    return userDetails.filter(
+      (user: any) =>
+        user.role !== roles.ADMIN && user.role !== roles.PROJECT_MANAGER
+    );
+  }, [isProjectHandler, userDetails]);
 
   const handleTechnologyChange = (value: any) => {
     const val = value ?? null;

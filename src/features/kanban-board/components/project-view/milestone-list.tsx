@@ -171,6 +171,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
     setPreviewData(null);
     setSelectedFile(null);
   };
+
   const tabTriggerClass =
     "group flex items-center gap-2 rounded-[50px] px-3 py-2 transition-all h-[35px] " +
     "data-[state=active]:bg-black data-[state=active]:text-white";
@@ -242,7 +243,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
           onValueChange={setActiveTab}
           className="w-full border-t-2 p-2"
         >
-          <TabsList className="mb-2">
+          <TabsList className="mb-2 h-auto bg-[#fdebef] rounded-full">
             {milestones.map((m) => (
               <TabsTrigger
                 key={m.id}
@@ -251,11 +252,8 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
               >
                 {m.name || m.milestoneName}
                 <Badge
-                  variant="secondary"
                   className="
-    ml-2 bg-primary/10 text-primary shrink-0
-    group-data-[state=active]:text-white
-    group-data-[state=active]:bg-white/20
+    ml-1
   "
                 >
                   {m.taskCount || m.tasks?.length || 0}

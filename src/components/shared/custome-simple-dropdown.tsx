@@ -208,12 +208,14 @@ const SimpleDropDownSearchable = ({
           </PopoverContent>
         </Popover>
 
-        {allowClear && (Array.isArray(value) ? value.length > 0 : !!value) && (
-          <X
-            className="absolute top-1/2 right-8 h-4 w-4 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-red-500"
-            onClick={() => onChange?.(null)}
-          />
-        )}
+        {allowClear &&
+          !disabled &&
+          (Array.isArray(value) ? value.length > 0 : !!value) && (
+            <X
+              className="absolute top-1/2 right-8 h-4 w-4 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-red-500"
+              onClick={() => onChange?.(null)}
+            />
+          )}
       </div>
     </div>
   );
