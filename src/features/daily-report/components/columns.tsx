@@ -12,7 +12,8 @@ import {
 
 export const columns = (
   onEdit: (report: DailyReport) => void,
-  onDelete: (report: DailyReport) => void
+  onDelete: (report: DailyReport) => void,
+  onView: (report: DailyReport) => void
 ): ColumnDef<DailyReport>[] => [
   {
     accessorKey: "reportingDate",
@@ -41,9 +42,10 @@ export const columns = (
   //   accessorKey: "taskDescription",
   //   header: "Description",
   //   cell: ({ row }) => (
-  //     <div className="max-w-[300px] whitespace-normal break-words">
-  //       {row.original.taskDescription}
-  //     </div>
+  //     <div
+  //       className="max-w-[300px] whitespace-normal break-words prose prose-sm prose-slate"
+  //       dangerouslySetInnerHTML={{ __html: row.original.taskDescription }}
+  //     />
   //   ),
   // },
   {
@@ -72,6 +74,9 @@ export const columns = (
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => onView(row.original)}>
+              View
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onEdit(row.original)}>
               Edit
             </DropdownMenuItem>

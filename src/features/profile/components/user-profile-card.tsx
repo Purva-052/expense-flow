@@ -90,7 +90,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
           status: user.status,
           joining: user.joining ? "true" : "false",
           currentWorkingProjectId: user.currentProject?.id,
-          profilePic: response.url,
+          profilePicS3Key: response.key,
         };
         await updateProfile(payload);
         setPreviewUrl(response.url);

@@ -26,9 +26,9 @@ export function ViewUserModal() {
         </DialogHeader>
         <div className="flex flex-col items-center gap-4 py-4">
           <div className="h-24 w-24 overflow-hidden rounded-full border-2 border-primary/20 shadow-sm">
-            {currentRow.profilePic ? (
+            {currentRow.profilePicUrl ? (
               <img
-                src={currentRow.profilePic}
+                src={currentRow.profilePicUrl}
                 alt={currentRow.fullName}
                 className="h-full w-full object-cover"
               />

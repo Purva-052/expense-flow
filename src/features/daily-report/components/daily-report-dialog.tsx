@@ -79,6 +79,7 @@ interface DailyReportDialogProps {
     taskId?: string | number;
   };
   onSuccess?: () => void;
+  isView?: boolean;
 }
 
 const parseTimeSpent = (time: any) => {
@@ -137,6 +138,7 @@ export function DailyReportDialog({
   report,
   initialData,
   onSuccess,
+  isView,
 }: DailyReportDialogProps) {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
@@ -276,10 +278,15 @@ export function DailyReportDialog({
       <DialogContent className="sm:max-w-2xl max-h-[90vh] p-0 flex flex-col">
         <DialogHeader className="px-6 py-4 border-b">
           <DialogTitle>
-            {isEdit ? "Edit Daily Report" : "Add Daily Report"}
+            {isView
+              ? "View Daily Report"
+              : isEdit
+                ? "Edit Daily Report"
+                : "Add Daily Report"}
           </DialogTitle>
           <DialogDescription className="sr-only">
-            Form to {isEdit ? "edit" : "add"} a daily work report
+            Form to {isView ? "view" : isEdit ? "edit" : "add"} a daily work
+            report
           </DialogDescription>
         </DialogHeader>
 
@@ -308,6 +315,7 @@ export function DailyReportDialog({
                       name="reportingDate"
                       label="Reporting Date"
                       placeholder="Pick a date"
+                      disabled={isView}
                     />
                   </div>
 
@@ -348,7 +356,9 @@ export function DailyReportDialog({
                             <ProjectSelect
                               value={field.value ?? undefined}
                               onChange={field.onChange}
-                              disabled={!!initialData?.projectId || isEdit}
+                              disabled={
+                                !!initialData?.projectId || isEdit || isView
+                              }
                             />
                           </FormControl>
                           <FormMessage />
@@ -378,7 +388,9 @@ export function DailyReportDialog({
                               onChange={field.onChange}
                               placeholder="Select milestone"
                               isLoading={milestonesLoading}
-                              disabled={!!initialData?.milestoneId || isEdit}
+                              disabled={
+                                !!initialData?.milestoneId || isEdit || isView
+                              }
                             />
                           </FormControl>
                           <FormMessage />
@@ -408,7 +420,7 @@ export function DailyReportDialog({
                               onChange={field.onChange}
                               placeholder="Select task"
                               isLoading={tasksLoading}
-                              disabled={!!initialData?.taskId || isEdit}
+                              disabled={!!initialData?.taskId || isEdit || isView}
                             />
                           </FormControl>
                           <FormMessage />
@@ -455,7 +467,7 @@ export function DailyReportDialog({
                               value={field.value}
                             >
                               <FormControl>
-                                <SelectTrigger>
+                                <SelectTrigger disabled={isView}>
                                   <SelectValue placeholder="Hours" />
                                 </SelectTrigger>
                               </FormControl>
@@ -488,7 +500,7 @@ export function DailyReportDialog({
                               value={field.value}
                             >
                               <FormControl>
-                                <SelectTrigger>
+                                <SelectTrigger disabled={isView}>
                                   <SelectValue placeholder="Min" />
                                 </SelectTrigger>
                               </FormControl>
@@ -520,7 +532,7 @@ export function DailyReportDialog({
                         <FormItem>
                           <FormLabel>Remarks</FormLabel>
                           <FormControl>
-                            <Textarea {...field} />
+                            <Textarea {...field} disabled={isView} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -531,19 +543,31 @@ export function DailyReportDialog({
               </ScrollArea>
 
               <div className="px-6 py-4 border-t flex justify-end gap-2 bg-white">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => onOpenChange(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  {isEdit ? "Save Changes" : "Save Report"}
-                </Button>
+                {isView ? (
+                  <Button
+                    type="button"
+                    className="min-w-[100px]"
+                    onClick={() => onOpenChange(false)}
+                  >
+                    Close
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => onOpenChange(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={isSubmitting}>
+                      {isSubmitting && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      {isEdit ? "Save Changes" : "Save Report"}
+                    </Button>
+                  </>
+                )}
               </div>
             </form>
           </Form>

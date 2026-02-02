@@ -38,6 +38,8 @@ export default function DailyReportPage() {
 
   const [editReport, setEditReport] = useState<DailyReport | null>(null);
   const [editOpen, setEditOpen] = useState(false);
+  const [viewReport, setViewReport] = useState<DailyReport | null>(null);
+  const [viewOpen, setViewOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
@@ -53,6 +55,11 @@ export default function DailyReportPage() {
   const handleEdit = (report: DailyReport) => {
     setEditReport(report);
     setEditOpen(true);
+  };
+
+  const handleView = (report: DailyReport) => {
+    setViewReport(report);
+    setViewOpen(true);
   };
 
   const handleDelete = (report: DailyReport) => {
@@ -263,7 +270,7 @@ export default function DailyReportPage() {
         totalCount={totalCount ?? 0}
         data={(listData as any)?.data ?? []}
         onPaginationChange={handlePaginationChange}
-        columns={columns(handleEdit, handleDelete).filter((col) => {
+        columns={columns(handleEdit, handleDelete, handleView).filter((col) => {
           if ((col as any).accessorKey === "employee.fullName") {
             const userRole = String(
               user?.user?.role?.name || user?.user?.role
@@ -283,6 +290,12 @@ export default function DailyReportPage() {
         open={editOpen}
         onOpenChange={setEditOpen}
         report={editReport}
+      />
+      <DailyReportDialog
+        open={viewOpen}
+        onOpenChange={setViewOpen}
+        report={viewReport}
+        isView={true}
       />
       <DeleteModal
         isOpen={deleteOpen}
