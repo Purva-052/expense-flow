@@ -230,6 +230,11 @@ export function ProjectActionForm({
                   rows={3}
                   className="resize-none"
                 />
+                {form.formState.errors.description && (
+                  <p className="text-sm text-red-500">
+                    {form.formState.errors.description.message}
+                  </p>
+                )}
               </div>
             </form>
           </Form>

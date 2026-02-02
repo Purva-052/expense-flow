@@ -6,16 +6,17 @@ export const projectFormSchema = z.object({
     .string()
     .min(2, "Project name must be at least 2 characters")
     .max(100),
-  description: z
-    .string()
-    .max(500, "Description must be under 500 characters")
-    .optional()
-    .nullable(),
+  description: z.preprocess((val) => {
+    if (typeof val === "string" && val.trim() === "") {
+      return undefined;
+    }
+    return val;
+  }, z.string().max(500, "Description must be under 500 characters").optional()),
   clientId: z.number({ invalid_type_error: "Client is required" }),
   technologyId: z
     .array(z.number(), { invalid_type_error: "Technologies are required" })
     .nonempty("At least one technology is required"),
-  projectTypeId: z.number({ message: "Project Type is required" }), 
+  projectTypeId: z.number({ message: "Project Type is required" }),
   startDate: z.preprocess(
     (val) => {
       if (val instanceof Date) {
