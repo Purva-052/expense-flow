@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { ColumnDef, PaginationState } from "@tanstack/react-table";
+import { ColumnDef } from "@tanstack/react-table";
 import { GlobalTable } from "@/components/table/global-table";
 import { Input } from "@/components/ui/input";
 import { useGetDailyReportList } from "@/features/daily-report/services";
@@ -105,14 +105,13 @@ const reportColumns: ColumnDef<ProjectReport>[] = [
 const ProjectReportTable = ({ projectId }: { projectId?: string | number }) => {
   const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [employeeId, setEmployeeId] = useState<string>("all");
-  const [dateRange, setDateRange] = useState<
-    { from: Date; to?: Date } | undefined
-  >();
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
+
+  const [listParams, setListParams] = useState({
     pageSize: 10,
+    currentPage: 1,
+    search: "",
+    employeeId: "all" as string | undefined,
+    dateRange: undefined as { from: Date; to?: Date } | undefined,
   });
 
   const [viewDescription, setViewDescription] = useState<string | null>(null);
@@ -241,24 +240,60 @@ const ProjectReportTable = ({ projectId }: { projectId?: string | number }) => {
   // Fetch reports
   const { data: reportsResponse, isLoading } = useGetDailyReportList({
     projectId: projectId?.toString(),
-    employeeId: employeeId === "all" ? undefined : employeeId,
-    startDate: dateRange?.from
-      ? format(dateRange.from, "yyyy-MM-dd")
+    employeeId:
+      listParams.employeeId === "all" ? undefined : listParams.employeeId,
+    startDate: listParams.dateRange?.from
+      ? format(listParams.dateRange.from, "yyyy-MM-dd")
       : undefined,
-    endDate: dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
-    search: searchTerm || undefined,
-    page: pagination.pageIndex + 1,
-    limit: pagination.pageSize,
+    endDate: listParams.dateRange?.to
+      ? format(listParams.dateRange.to, "yyyy-MM-dd")
+      : undefined,
+    search: listParams.search || undefined,
+    page: listParams.currentPage,
+    limit: listParams.pageSize,
   });
 
   const reports = useMemo(() => {
     return (reportsResponse as any)?.data || [];
   }, [reportsResponse]);
 
-  const metadata = (reportsResponse as any)?.metadata;
+  const totalCount = (reportsResponse as any)?.metadata?.totalCount;
 
-  const handlePaginationChange = (newPagination: PaginationState) => {
-    setPagination(newPagination);
+  const handlePaginationChange = (newPagination: {
+    pageIndex: number;
+    pageSize: number;
+  }) => {
+    setListParams({
+      ...listParams,
+      pageSize: newPagination.pageSize,
+      currentPage: newPagination.pageIndex + 1,
+    });
+  };
+
+  const handleSearchChange = (value: string) => {
+    setListParams({
+      ...listParams,
+      search: value,
+      currentPage: 1,
+    });
+  };
+
+  const handleEmployeeChange = (value: string) => {
+    setListParams({
+      ...listParams,
+      employeeId: value,
+      currentPage: 1,
+    });
+  };
+
+  const handleDateRangeChange = (
+    range: { from: Date; to?: Date } | undefined
+  ) => {
+    setListParams({
+      ...listParams,
+      dateRange: range,
+      currentPage: 1,
+    });
   };
 
   return (
@@ -270,8 +305,8 @@ const ProjectReportTable = ({ projectId }: { projectId?: string | number }) => {
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search description..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={listParams.search}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-9 rounded-full"
             />
           </div>
@@ -280,8 +315,8 @@ const ProjectReportTable = ({ projectId }: { projectId?: string | number }) => {
           <div className="w-full sm:w-64">
             <SimpleDropDownSearchable
               options={userOptions}
-              value={employeeId}
-              onChange={setEmployeeId}
+              value={listParams.employeeId!}
+              onChange={handleEmployeeChange}
               placeholder="Select Employee"
               isLoading={usersLoading}
               disabled={!canSelectEmployee}
@@ -292,7 +327,7 @@ const ProjectReportTable = ({ projectId }: { projectId?: string | number }) => {
           <div className="w-full sm:w-auto">
             <DateRangeFilter
               placeholder="Filter by date range"
-              onChange={setDateRange}
+              onChange={handleDateRangeChange}
               className="rounded-full h-10"
               disabled={{ after: new Date() }}
             />
@@ -302,9 +337,9 @@ const ProjectReportTable = ({ projectId }: { projectId?: string | number }) => {
         <GlobalTable<ProjectReport>
           data={reports}
           columns={columns}
-          totalCount={metadata?.total || reports.length}
-          currentPage={pagination.pageIndex + 1}
-          pageSize={pagination.pageSize}
+          totalCount={totalCount ?? 0}
+          currentPage={listParams.currentPage}
+          pageSize={listParams.pageSize}
           onPaginationChange={handlePaginationChange}
           isPaginationEnabled
           loading={isLoading}

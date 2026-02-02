@@ -4,7 +4,7 @@ import { GlobalTable } from "@/components/table/global-table";
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import TablePageHeader from "@/components/table/table-page-header";
 import { FilterConfig } from "@/components/table/table-toolbar";
-import { PaginationState } from "@tanstack/react-table";
+// import { PaginationState } from "@tanstack/react-table";
 import {
   useGetDailyReportList,
   useGetProjectMilestonesList,
@@ -120,11 +120,14 @@ export default function DailyReportPage() {
     setListParams({ ...listParams, search: search ?? "", currentPage: 1 });
   };
 
-  const handlePaginationChange = (pagination: PaginationState) => {
+  const handlePaginationChange = (newPagination: {
+    pageIndex: number;
+    pageSize: number;
+  }) => {
     setListParams({
       ...listParams,
-      pageSize: pagination.pageSize,
-      currentPage: pagination.pageIndex + 1,
+      pageSize: newPagination.pageSize,
+      currentPage: newPagination.pageIndex + 1,
     });
   };
 
