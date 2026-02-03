@@ -21,7 +21,7 @@ import {
   KeyRound,
   Loader2,
   Pencil,
-  X,
+  // X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
@@ -63,8 +63,8 @@ export const UserProfileCard = ({ user }: { user: any }) => {
   });
 
   useEffect(() => {
-    if (user?.profilePic) {
-      setPreviewUrl(user.profilePic);
+    if (user?.profilePicUrl) {
+      setPreviewUrl(user.profilePicUrl);
     } else if (user?.avatarUrl) {
       setPreviewUrl(user.avatarUrl);
     }
@@ -104,31 +104,31 @@ export const UserProfileCard = ({ user }: { user: any }) => {
     }
   };
 
-  const handleFileRemove = async () => {
-    setLocalIsUploading(true);
-    try {
-      const payload = {
-        fullName: user.fullName,
-        email: user.email,
-        role: user.role,
-        technologyId: user.technology?.id,
-        careerStartDate: user.careerStartDate,
-        status: user.status,
-        joining: user.joining ? "true" : "false",
-        currentWorkingProjectId: user.currentProject?.id,
-        profilePic: "",
-      };
-      await updateProfile(payload);
-      setPreviewUrl(null);
-      methods.setValue("file", null);
-      toast.success("Profile picture removed");
-    } catch (error) {
-      console.error("Remove failed", error);
-      toast.error("Failed to remove profile picture");
-    } finally {
-      setLocalIsUploading(false);
-    }
-  };
+  // const handleFileRemove = async () => {
+  //   setLocalIsUploading(true);
+  //   try {
+  //     const payload = {
+  //       fullName: user.fullName,
+  //       email: user.email,
+  //       role: user.role,
+  //       technologyId: user.technology?.id,
+  //       careerStartDate: user.careerStartDate,
+  //       status: user.status,
+  //       joining: user.joining ? "true" : "false",
+  //       currentWorkingProjectId: user.currentProject?.id,
+  //       profilePicUrl: "",
+  //     };
+  //     await updateProfile(payload);
+  //     setPreviewUrl(null);
+  //     methods.setValue("file", null);
+  //     toast.success("Profile picture removed");
+  //   } catch (error) {
+  //     console.error("Remove failed", error);
+  //     toast.error("Failed to remove profile picture");
+  //   } finally {
+  //     setLocalIsUploading(false);
+  //   }
+  // };
 
   const getInitials = (name: string = "") =>
     name
@@ -155,7 +155,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
               name="file"
               label=""
               onFileSelect={handleFileSelect}
-              onFileRemove={handleFileRemove}
+              // onFileRemove={handleFileRemove}
               hideDefaultUI
               acceptedFormats={{
                 "image/jpeg": [".jpg", ".jpeg"],
@@ -180,7 +180,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                 <div className="absolute bottom-1 right-1 h-8 w-8 bg-primary rounded-full flex items-center justify-center border-2 border-white shadow-sm text-white group-hover:scale-110 transition-all duration-200">
                   <Pencil className="h-4 w-4" />
                 </div>
-                {previewUrl && (
+                {/* {previewUrl && (
                   <Button
                     type="button"
                     variant="destructive"
@@ -188,12 +188,12 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                     className="absolute -top-1 -right-1 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleFileRemove();
+                      // handleFileRemove();
                     }}
                   >
                     <X className="h-3 w-3" />
                   </Button>
-                )}
+                )} */}
               </div>
             </FileUpload>
           </FormProvider>
