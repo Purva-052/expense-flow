@@ -11,7 +11,11 @@ import {
 import { Form } from "@/components/ui/form";
 import CustomButton from "@/components/shared/custom-button";
 import { TextInputField } from "@/components/shared/custom-input-field";
-import { projectFormSchema, projectFormSchemaWithoutRefine, TProjectFormSchema } from "../schema";
+import {
+  projectFormSchema,
+  projectFormSchemaWithoutRefine,
+  TProjectFormSchema,
+} from "../schema";
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 import { Textarea } from "@/components/ui/textarea";
@@ -54,10 +58,10 @@ export function ProjectActionForm({
         (data) => {
           // Only validate if both dates are present
           if (!data.startDate || !data.expectedCompletionDate) return true;
-          
+
           const startDate = new Date(data.startDate);
           const expectedDate = new Date(data.expectedCompletionDate);
-          
+
           return expectedDate >= startDate;
         },
         {
@@ -206,6 +210,7 @@ export function ProjectActionForm({
                 control={form.control}
                 name="expectedCompletionDate"
                 label="Expected Completion Date"
+                minDate={form.watch("startDate")}
               />
 
               {/* Progress */}

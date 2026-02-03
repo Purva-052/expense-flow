@@ -26,8 +26,8 @@ import { useProjectDocumentStore } from "../stores/useProjectDocumentStore";
 import AddEditDocumentDialog from "./AddEditDocumentDialog";
 import { format } from "date-fns";
 import { useGetUserDropdownList } from "@/features/users/services";
-import { useAuthStore } from "@/stores/use-auth-store";
-import { roles } from "@/utils/constant";
+// import { useAuthStore } from "@/stores/use-auth-store";
+// import { roles } from "@/utils/constant";
 
 const ProjectDocumentComponent = ({ projectId }: any) => {
   const [documentListParams, setDocumentListParams] = useState<any>({
@@ -72,9 +72,9 @@ const ProjectDocumentComponent = ({ projectId }: any) => {
   const { data: usersResponse, isLoading: usersLoading } =
     useGetUserDropdownList();
 
-  const { user } = useAuthStore();
-  const Role = user?.user?.role;
-  const isDeveloperView = Role === roles.DEVELOPER;
+  // const { user } = useAuthStore();
+  // const Role = user?.user?.role;
+  // const isDeveloperView = Role === roles.DEVELOPER;
 
   const userOptions = [
     { label: "All Users", value: "all" },
@@ -298,11 +298,11 @@ const ProjectDocumentComponent = ({ projectId }: any) => {
         <CardContent className="px-0 gap-0">
           <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
             <GlobalFilterSection filters={filters} className="mb-0" />
-            {!isDeveloperView && (
-              <Button onClick={handleAddDocument} className="shrink-0">
-                <Plus className="mr-2 h-4 w-4" /> Add Document
-              </Button>
-            )}
+            {/* {!isDeveloperView && ( */}
+            <Button onClick={handleAddDocument} className="shrink-0">
+              <Plus className="mr-2 h-4 w-4" /> Add Document
+            </Button>
+            {/* )} */}
           </div>
           <GlobalTable
             pageSize={documentListParams.limit}
