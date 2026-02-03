@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
-import { toast } from "sonner";
+// import { toast } from "sonner";
 import { useUploadTransactionFile } from "../../transaction-logs/services";
 import { useUpdateUserData } from "../../users/services";
 
@@ -94,11 +94,9 @@ export const UserProfileCard = ({ user }: { user: any }) => {
         };
         await updateProfile(payload);
         setPreviewUrl(response.url);
-        toast.success("Profile picture updated successfully");
       }
     } catch (error) {
       console.error("Upload failed", error);
-      toast.error("Failed to update profile picture");
     } finally {
       setLocalIsUploading(false);
     }
