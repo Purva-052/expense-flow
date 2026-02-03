@@ -22,6 +22,7 @@ interface ActiveMilestoneContentProps {
   milestoneId: number;
   onViewTaskLog: (task: MilestoneTask) => void;
   onEditMilestone: (data: any) => void;
+  isCurrentUserProjectHandler: boolean;
 }
 
 const getReportColumns = (
@@ -30,58 +31,74 @@ const getReportColumns = (
   projectId: string | number,
   milestoneId: number,
   onAddLogSuccess: () => void,
+  isAuthorized: boolean,
+  isCurrentUserProjectHandler: boolean,
   milestoneStatus?: string
-): ColumnDef<MilestoneTask>[] => [
-  {
-    accessorKey: "taskName",
-    header: "Functionality Name",
-    cell: ({ row }) => (
-      <span className="font-medium">{row.original.taskName}</span>
-    ),
-  },
-  {
-    accessorKey: "estimatedTime",
-    header: "Estimated Time (hrs)",
-    cell: ({ row }) => (
-      <span className="font-semibold">{row.original.estimatedTime || "0"}</span>
-    ),
-  },
-  {
-    accessorKey: "actualTime",
-    header: "Actual Hours (hrs)",
-    cell: ({ row }) => (
-      <span className="font-semibold text-green-600">
-        {row.original.actualTime || "0"}
-      </span>
-    ),
-  },
-  {
-    id: "action",
-    header: "Action",
-    cell: ({ row }) => (
-      <TaskActions
-        task={row.original}
-        onViewLog={onViewLog}
-        onDeleteTask={onDeleteTask}
-        projectId={projectId}
-        milestoneId={milestoneId}
-        onAddLogSuccess={onAddLogSuccess}
-        milestoneStatus={milestoneStatus}
-      />
-    ),
-  },
-];
+): ColumnDef<MilestoneTask>[] => {
+  const columns: ColumnDef<MilestoneTask>[] = [
+    {
+      accessorKey: "taskName",
+      header: "Functionality Name",
+      cell: ({ row }) => (
+        <span className="font-medium">{row.original.taskName}</span>
+      ),
+    },
+    {
+      accessorKey: "estimatedTime",
+      header: "Estimated Time (hrs)",
+      cell: ({ row }) => (
+        <span className="font-semibold">
+          {row.original.estimatedTime || "0"}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "actualTime",
+      header: "Actual Hours (hrs)",
+      cell: ({ row }) => (
+        <span className="font-semibold text-green-600">
+          {row.original.actualTime || "0"}
+        </span>
+      ),
+    },
+  ];
+
+  if (isAuthorized) {
+    columns.push({
+      id: "action",
+      header: "Action",
+      cell: ({ row }) => (
+        <TaskActions
+          task={row.original}
+          onViewLog={onViewLog}
+          onDeleteTask={onDeleteTask}
+          projectId={projectId}
+          milestoneId={milestoneId}
+          onAddLogSuccess={onAddLogSuccess}
+          isCurrentUserProjectHandler={isCurrentUserProjectHandler}
+          milestoneStatus={milestoneStatus}
+        />
+      ),
+    });
+  }
+
+  return columns;
+};
 
 export const ActiveMilestoneContent = ({
   projectId,
   milestoneId,
   onViewTaskLog,
   onEditMilestone,
+  isCurrentUserProjectHandler,
 }: ActiveMilestoneContentProps) => {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
   const Role = user?.user?.role;
-  const isDeveloperView = Role === roles.DEVELOPER;
+  const isAdmin = Role === roles.ADMIN;
+  const isDeveloper = Role === roles.DEVELOPER;
+  const isAuthorized = isAdmin || isDeveloper || isCurrentUserProjectHandler;
+
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
@@ -176,8 +193,9 @@ export const ActiveMilestoneContent = ({
           </div>
         </div>
 
-        {!isDeveloperView && milestone.status === "pending" && (
-          <div className="flex shrink-0 flex-col gap-2 min-w-[160px]">
+        {(isAdmin || isCurrentUserProjectHandler) &&
+          milestone.status === "pending" && (
+            <div className="flex shrink-0 flex-col gap-2 min-w-[160px]">
             <Button
               variant="outline"
               className="w-full justify-start"
@@ -213,6 +231,8 @@ export const ActiveMilestoneContent = ({
               queryKey: [API.dropdown_api.milestones, { projectId }],
             });
           },
+          isAuthorized,
+          isCurrentUserProjectHandler,
           actualMilestone?.status
         )}
         totalCount={metadata?.total || tasks.length}
