@@ -64,7 +64,7 @@ import { FilterConfig } from "@/components/table/table-toolbar";
 
 // Schema validation
 const ClientMeetingSchema = z.object({
-  meetingName: z.string().min(1, "Meeting name is required"),
+  meetingName: z.string().trim().min(1, "Meeting name is required"),
   description: z.string().min(1, "Description is required"),
   projectId: z.number({ required_error: "Project is required" }),
   clientId: z.number().optional().nullable(),
