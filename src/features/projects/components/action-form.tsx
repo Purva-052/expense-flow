@@ -11,7 +11,7 @@ import {
 import { Form } from "@/components/ui/form";
 import CustomButton from "@/components/shared/custom-button";
 import { TextInputField } from "@/components/shared/custom-input-field";
-import { projectFormSchema, TProjectFormSchema } from "../schema";
+import { projectFormSchema, projectFormSchemaWithoutRefine, TProjectFormSchema } from "../schema";
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 import { Textarea } from "@/components/ui/textarea";
@@ -50,8 +50,22 @@ export function ProjectActionForm({
   const isEdit = !!currentRow;
 
   const schema = isEdit
-    ? projectFormSchema.omit({ status: true }) // remove status when editing
-    : projectFormSchema; // keep status required when adding
+    ? projectFormSchemaWithoutRefine.omit({ status: true }).refine(
+        (data) => {
+          // Only validate if both dates are present
+          if (!data.startDate || !data.expectedCompletionDate) return true;
+          
+          const startDate = new Date(data.startDate);
+          const expectedDate = new Date(data.expectedCompletionDate);
+          
+          return expectedDate >= startDate;
+        },
+        {
+          message: "Expected completion date cannot be before start date",
+          path: ["expectedCompletionDate"],
+        }
+      ) // use base schema without status, then apply date validation
+    : projectFormSchema; // use full schema with date validation when adding
 
   const form = useForm<TProjectFormSchema>({
     resolver: zodResolver(schema) as any,
