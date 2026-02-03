@@ -64,7 +64,9 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
   }, [handledProjectsResponse, projectId]);
 
   const isAdmin = Role === roles.ADMIN;
-  const canModifyMilestones = isAdmin || isCurrentUserProjectHandler;
+  const isProjectManager = Role === roles.PROJECT_MANAGER;
+  const canModifyMilestones =
+    isAdmin || isProjectManager || isCurrentUserProjectHandler;
 
   const milestones = useMemo<any[]>(() => {
     const rawData = milestonesListResponse?.data;

@@ -33,6 +33,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 const taskSchema = z.object({
   taskId: z.number().optional(),
@@ -200,7 +201,15 @@ export function AddManualMilestone({
                   name="name"
                   render={({ field }: { field: any }) => (
                     <FormItem className="col-span-2">
-                      <FormLabel>Milestone Name</FormLabel>
+                      <FormLabel
+                        className={cn(
+                          "flex items-center gap-1",
+                          field.error && "text-red-500"
+                        )}
+                      >
+                        Milestone Name
+                        <span className="text-red-500">*</span>
+                      </FormLabel>
                       <FormControl>
                         <Input placeholder="Enter milestone name" {...field} />
                       </FormControl>
@@ -214,7 +223,15 @@ export function AddManualMilestone({
                   name="estimatedTime"
                   render={({ field }: { field: any }) => (
                     <FormItem>
-                      <FormLabel>Total Estimated Time (e.g., 1h10m)</FormLabel>
+                      <FormLabel
+                        className={cn(
+                          "flex items-center gap-1",
+                          field.error && "text-red-500"
+                        )}
+                      >
+                        Total Estimated Time (e.g., 1h10m)
+                        <span className="text-red-500">*</span>
+                      </FormLabel>
                       <FormControl>
                         <Input placeholder="1h10m" {...field} />
                       </FormControl>

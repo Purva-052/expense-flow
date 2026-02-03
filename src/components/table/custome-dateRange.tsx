@@ -50,7 +50,7 @@ export default function DateRangeFilter({
         <Button
           variant={"outline"}
           className={cn(
-            "w-[260px] justify-between text-left font-normal",
+            "w-[260px] justify-between text-left font-normal rounded-2xl",
             !date && "text-muted-foreground",
             className
           )}
