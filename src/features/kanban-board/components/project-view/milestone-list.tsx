@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -45,6 +45,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isParsingFile, setIsParsingFile] = useState(false);
   const [milestoneToEdit, setMilestoneToEdit] = useState<any | null>(null);
+  const justCreatedMilestoneIdRef = useRef<string | null>(null);
 
   const { isDownloading, downloadSample } = useDownloadMilestoneSample();
   const { isUploading, uploadFile } = useUploadMilestoneFile();
@@ -79,8 +80,17 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
 
   useEffect(() => {
     if (milestones.length > 0) {
-      if (!activeTab || !milestones.find((m) => String(m.id) === activeTab)) {
+      const isPresent = milestones.some((m) => String(m.id) === activeTab);
+
+      if (
+        !activeTab ||
+        (!isPresent && justCreatedMilestoneIdRef.current !== activeTab)
+      ) {
         setActiveTab(String(milestones[0].id));
+      }
+
+      if (isPresent) {
+        justCreatedMilestoneIdRef.current = null;
       }
     }
   }, [milestones, activeTab]);
@@ -332,6 +342,12 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
           }}
           projectId={projectId}
           initialData={milestoneToEdit}
+          onMilestoneCreated={(milestone) => {
+            if (milestone?.id) {
+              justCreatedMilestoneIdRef.current = String(milestone.id);
+              setActiveTab(String(milestone.id));
+            }
+          }}
         />
       )}
     </>

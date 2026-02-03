@@ -296,6 +296,7 @@ export default function DailyReportPage() {
         onOpenChange={setViewOpen}
         report={viewReport}
         isView={true}
+        isDescriptionOnly={true}
       />
       <DeleteModal
         isOpen={deleteOpen}

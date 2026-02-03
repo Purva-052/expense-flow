@@ -416,7 +416,7 @@ export const useUploadMilestoneFile = (): UseUploadMilestoneFileReturn => {
  * Custom hook to create a milestone manually
  * Uses the add_milestones endpoint
  */
-export const useCreateManualMilestone = (onSuccess?: () => void) => {
+export const useCreateManualMilestone = (onSuccess?: (data: any) => void) => {
   return usePostData({
     url: API.projects.add_milestones,
     refetchQueries: [
@@ -424,8 +424,8 @@ export const useCreateManualMilestone = (onSuccess?: () => void) => {
       GET_MILESTONE_LIST_API_URL,
       API.projects.milestone_list,
     ],
-    onSuccess: () => {
-      if (onSuccess) onSuccess();
+    onSuccess: (data) => {
+      onSuccess?.(data); // 🔥 API RESPONSE PASS
     },
   });
 };
