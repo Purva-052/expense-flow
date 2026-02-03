@@ -16,6 +16,7 @@ import {
   useDownloadMilestoneSample,
   useUploadMilestoneFile,
   useGetProjectMilestonesList,
+  useGetProjectHandlerProjectsAPI,
 } from "@/features/kanban-board/services";
 import { ExcelImportPreview, ExcelPreviewData } from "./excel-import-preview";
 import { AddManualMilestone } from "./add-manual-milestone";
@@ -52,6 +53,18 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
 
   const { data: milestonesListResponse, isLoading: isFetchingMilestones } =
     useGetProjectMilestonesList(projectId);
+
+  const { data: handledProjectsResponse } = useGetProjectHandlerProjectsAPI({
+    enabled: !!user && !isDeveloperView,
+  }) as any;
+
+  const isCurrentUserProjectHandler = useMemo(() => {
+    const handledProjects = handledProjectsResponse?.data || [];
+    return handledProjects.some((p: any) => String(p.id) === String(projectId));
+  }, [handledProjectsResponse, projectId]);
+
+  const isAdmin = Role === roles.ADMIN;
+  const canModifyMilestones = isAdmin || isCurrentUserProjectHandler;
 
   const milestones = useMemo<any[]>(() => {
     const rawData = milestonesListResponse?.data;
@@ -189,7 +202,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
     <>
       <div className="mb-4 flex items-center gap-2 overflow-x-auto pb-2">
         <div className="flex items-center gap-2">
-          {milestones.length === 0 && !isDeveloperView && (
+          {milestones.length === 0 && canModifyMilestones && (
             <>
               <Button
                 onClick={downloadSample}
@@ -226,7 +239,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
             </>
           )}
         </div>
-        {!isDeveloperView && (
+        {canModifyMilestones && (
           <div className="flex items-center gap-2">
             <Button
               onClick={() => {
@@ -278,6 +291,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
                 milestoneId={m.id}
                 onViewTaskLog={handleViewTaskLog}
                 onEditMilestone={(data) => handleEditMilestone(data)}
+                isCurrentUserProjectHandler={isCurrentUserProjectHandler}
               />
             </TabsContent>
           ))}

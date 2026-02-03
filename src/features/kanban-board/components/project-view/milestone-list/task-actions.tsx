@@ -23,6 +23,7 @@ interface TaskActionsProps {
   projectId: string | number;
   milestoneId: number;
   onAddLogSuccess: () => void;
+  isCurrentUserProjectHandler: boolean;
   milestoneStatus?: string;
 }
 
@@ -33,12 +34,19 @@ export const TaskActions = ({
   projectId,
   milestoneId,
   onAddLogSuccess,
+  isCurrentUserProjectHandler,
   milestoneStatus,
 }: TaskActionsProps) => {
   const { user } = useAuthStore();
   const Role = user?.user?.role;
   const [addLogOpen, setAddLogOpen] = useState(false);
   const [updateStatusOpen, setUpdateStatusOpen] = useState(false);
+  const isAdmin = Role === roles.ADMIN;
+  const isDeveloper = Role === roles.DEVELOPER;
+
+  const isAuthorized = isAdmin || isCurrentUserProjectHandler || isDeveloper;
+
+  if (!isAuthorized) return null;
 
   return (
     <div className="flex items-center gap-2">
