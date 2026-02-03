@@ -1,7 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { DailyReport } from "../schema";
-import { MoreHorizontal } from "lucide-react";
+import { Eye, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -38,29 +38,34 @@ export const columns = (
     accessorKey: "task.taskName",
     header: "Task Name",
   },
-  // {
-  //   accessorKey: "taskDescription",
-  //   header: "Description",
-  //   cell: ({ row }) => (
-  //     <div
-  //       className="max-w-[300px] whitespace-normal break-words prose prose-sm prose-slate"
-  //       dangerouslySetInnerHTML={{ __html: row.original.taskDescription }}
-  //     />
-  //   ),
-  // },
+  {
+    accessorKey: "taskDescription",
+    header: "Description",
+    cell: ({ row }) => (
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+        onClick={() => onView(row.original)}
+        title="View Description"
+      >
+        <Eye className="h-4 w-4" />
+      </Button>
+    ),
+  },
   {
     accessorKey: "timeSpent",
     header: "Hours",
   },
-  {
-    accessorKey: "remark",
-    header: "Remarks",
-    cell: ({ row }) => (
-      <div className="max-w-[200px] whitespace-normal break-words">
-        {row.original.remark ?? "-"}
-      </div>
-    ),
-  },
+  // {
+  //   accessorKey: "remark",
+  //   header: "Remarks",
+  //   cell: ({ row }) => (
+  //     <div className="max-w-[200px] whitespace-normal break-words">
+  //       {row.original.remark ?? "-"}
+  //     </div>
+  //   ),
+  // },
   {
     id: "actions",
     header: "Actions",
@@ -74,9 +79,6 @@ export const columns = (
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onView(row.original)}>
-              View
-            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onEdit(row.original)}>
               Edit
             </DropdownMenuItem>

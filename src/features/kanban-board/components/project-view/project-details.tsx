@@ -30,14 +30,14 @@ import {
   TooltipContent,
   TooltipProvider,
 } from "@/components/ui/tooltip";
-import { useAuthStore } from "@/stores/use-auth-store";
-import { roles } from "@/utils/constant";
+// import { useAuthStore } from "@/stores/use-auth-store";
+// import { roles } from "@/utils/constant";
 import { StickyNotesTab } from "@/features/sticky-notes/components/sticky-notes-tab";
 
 export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
-  const { user } = useAuthStore();
-  const Role = user?.user?.role;
-  const isDeveloperView = Role === roles.DEVELOPER;
+  // const { user } = useAuthStore();
+  // const Role = user?.user?.role;
+  // const isDeveloperView = Role === roles.DEVELOPER;
   const { data: projectDetailsResponse } = useGetProjectsDetailData(
     projectId?.toString()
   );
@@ -68,118 +68,68 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
           </div>
         </div>
 
-        {isDeveloperView ? (
-          <Tabs defaultValue="milestone" className="w-full">
-            <TabsList className="mb-4 flex flex-wrap h-auto gap-2 bg-[#fdebef] rounded-full">
-              <TabsTrigger value="overview" className={tabTriggerClass}>
-                <FileSpreadsheet className="w-4 h-4" /> Overview
-              </TabsTrigger>
-              <TabsTrigger value="milestone" className={tabTriggerClass}>
-                <Flag className="w-4 h-4" /> Milestone
-              </TabsTrigger>
-              <TabsTrigger value="doc" className={tabTriggerClass}>
-                <Files className="w-4 h-4" /> Documents
-              </TabsTrigger>
-              <TabsTrigger value="client" className={tabTriggerClass}>
-                <IconUserStar className="w-4 h-4" /> Client Meeting
-              </TabsTrigger>
-              <TabsTrigger value="internal_meeting" className={tabTriggerClass}>
-                <Users className="w-4 h-4" /> Internal Meeting
-              </TabsTrigger>
-              <TabsTrigger value="sticky_notes" className={tabTriggerClass}>
-                <StickyNote className="w-4 h-4" /> Sticky Notes
-              </TabsTrigger>
-            </TabsList>
+        <Tabs defaultValue="overview" className="w-full ">
+          <TabsList className="mb-4 flex flex-wrap h-auto gap-2 bg-[#fdebef] rounded-full">
+            <TabsTrigger value="overview" className={tabTriggerClass}>
+              <FileSpreadsheet className="w-4 h-4" /> Overview
+            </TabsTrigger>
+            <TabsTrigger value="milestone" className={tabTriggerClass}>
+              <Flag className="w-4 h-4" /> Milestone
+            </TabsTrigger>
+            <TabsTrigger value="report" className={tabTriggerClass}>
+              <SquareCheckBig className="w-4 h-4" /> Report
+            </TabsTrigger>
+            <TabsTrigger value="doc" className={tabTriggerClass}>
+              <Files className="w-4 h-4" /> Documents
+            </TabsTrigger>
+            <TabsTrigger value="server" className={tabTriggerClass}>
+              <Server className="w-4 h-4" /> Server
+            </TabsTrigger>
+            <TabsTrigger value="client" className={tabTriggerClass}>
+              <IconUserStar className="w-4 h-4" /> Client Meeting
+            </TabsTrigger>
+            <TabsTrigger value="internal_meeting" className={tabTriggerClass}>
+              <Users className="w-4 h-4" /> Internal Meeting
+            </TabsTrigger>
+            <TabsTrigger value="sticky_notes" className={tabTriggerClass}>
+              <StickyNote className="w-4 h-4" /> Sticky Notes
+            </TabsTrigger>
+          </TabsList>
 
-            <div className="overflow-y-auto h-[calc(100vh-131px)] pr-2">
-              <TabsContent value="overview">
-                <OverviewProject projectId={projectId} />
-              </TabsContent>
+          <div className="overflow-y-auto h-[calc(100vh-131px)] pr-2">
+            <TabsContent value="overview">
+              <OverviewProject projectId={projectId} />
+            </TabsContent>
 
-              <TabsContent value="milestone">
-                <MilestoneList projectId={projectId} />
-              </TabsContent>
+            <TabsContent value="milestone">
+              <MilestoneList projectId={projectId} />
+            </TabsContent>
 
-              <TabsContent value="doc">
-                <ProjectDocumentComponent projectId={projectId} />
-              </TabsContent>
+            <TabsContent value="report">
+              <ProjectReport projectId={projectId} />
+            </TabsContent>
 
-              <TabsContent value="client">
-                <ClientMeetingTab projectId={projectId} project={project} />
-              </TabsContent>
-              <TabsContent value="internal_meeting">
-                <InternalMeetingTab projectId={projectId} />
-              </TabsContent>
+            <TabsContent value="doc">
+              <ProjectDocumentComponent projectId={projectId} />
+            </TabsContent>
 
-              <TabsContent value="sticky_notes">
-                <StickyNotesTab projectId={projectId} />
-              </TabsContent>
-            </div>
-          </Tabs>
-        ) : (
-          <Tabs defaultValue="overview" className="w-full ">
-            <TabsList className="mb-4 flex flex-wrap h-auto gap-2 bg-[#fdebef] rounded-full">
-              <TabsTrigger value="overview" className={tabTriggerClass}>
-                <FileSpreadsheet className="w-4 h-4" /> Overview
-              </TabsTrigger>
-              <TabsTrigger value="milestone" className={tabTriggerClass}>
-                <Flag className="w-4 h-4" /> Milestone
-              </TabsTrigger>
-              <TabsTrigger value="report" className={tabTriggerClass}>
-                <SquareCheckBig className="w-4 h-4" /> Report
-              </TabsTrigger>
-              <TabsTrigger value="doc" className={tabTriggerClass}>
-                <Files className="w-4 h-4" /> Documents
-              </TabsTrigger>
-              <TabsTrigger value="server" className={tabTriggerClass}>
-                <Server className="w-4 h-4" /> Server
-              </TabsTrigger>
-              <TabsTrigger value="client" className={tabTriggerClass}>
-                <IconUserStar className="w-4 h-4" /> Client Meeting
-              </TabsTrigger>
-              <TabsTrigger value="internal_meeting" className={tabTriggerClass}>
-                <Users className="w-4 h-4" /> Internal Meeting
-              </TabsTrigger>
-              <TabsTrigger value="sticky_notes" className={tabTriggerClass}>
-                <StickyNote className="w-4 h-4" /> Sticky Notes
-              </TabsTrigger>
-            </TabsList>
+            <TabsContent value="server">
+              <ProjectServerComponent projectId={projectId} />
+            </TabsContent>
 
-            <div className="overflow-y-auto h-[calc(100vh-131px)] pr-2">
-              <TabsContent value="overview">
-                <OverviewProject projectId={projectId} />
-              </TabsContent>
+            <TabsContent value="client">
+              <ClientMeetingTab projectId={projectId} project={project} />
+            </TabsContent>
 
-              <TabsContent value="milestone">
-                <MilestoneList projectId={projectId} />
-              </TabsContent>
+            <TabsContent value="internal_meeting">
+              <InternalMeetingTab projectId={projectId} />
+            </TabsContent>
 
-              <TabsContent value="report">
-                <ProjectReport projectId={projectId} />
-              </TabsContent>
-
-              <TabsContent value="doc">
-                <ProjectDocumentComponent projectId={projectId} />
-              </TabsContent>
-
-              <TabsContent value="server">
-                <ProjectServerComponent projectId={projectId} />
-              </TabsContent>
-
-              <TabsContent value="client">
-                <ClientMeetingTab projectId={projectId} project={project} />
-              </TabsContent>
-
-              <TabsContent value="internal_meeting">
-                <InternalMeetingTab projectId={projectId} />
-              </TabsContent>
-
-              <TabsContent value="sticky_notes">
-                <StickyNotesTab projectId={projectId} />
-              </TabsContent>
-            </div>
-          </Tabs>
-        )}
+            <TabsContent value="sticky_notes">
+              <StickyNotesTab projectId={projectId} />
+            </TabsContent>
+          </div>
+        </Tabs>
       </DrawerHeader>
     </DrawerContent>
   );

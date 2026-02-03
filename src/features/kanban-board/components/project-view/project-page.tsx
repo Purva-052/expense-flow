@@ -113,7 +113,7 @@ const ProjectPage = ({
           pagination: true,
           status: isInactiveTab ? "inactive" : "active",
           projectTypeId: undefined,
-          handlerId: isCoordinatorView ? currentUserId : undefined,
+          handlerId: isCoordinatorView && !isInactiveTab ? currentUserId : undefined,
           technologyId: undefined,
           ...JSON.parse(saved),
         }
@@ -121,9 +121,9 @@ const ProjectPage = ({
           pagination: true,
           clientId: null,
           status: isInactiveTab ? "inactive" : "active",
-          handlerId: isCoordinatorView ? currentUserId : undefined,
+          handlerId: isCoordinatorView && !isInactiveTab ? currentUserId : undefined,
           technologyId: undefined,
-          priority: "high",
+          priority: isInactiveTab ? undefined : "high",
           projectTypeId: undefined,
           search: "",
         };
@@ -342,7 +342,7 @@ const ProjectPage = ({
   };
 
   useEffect(() => {
-    if (!listParams.projectTypeId && ProjectType?.data?.length) {
+    if (!isInactiveTab && !listParams.projectTypeId && ProjectType?.data?.length) {
       const fixedType = ProjectType.data.find(
         (type: any) => type.name === "Fixed"
       );

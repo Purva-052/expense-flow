@@ -55,6 +55,7 @@ interface AddManualMilestoneProps {
   projectId: string | number;
   initialData?: any;
   onSuccess?: () => void;
+  onMilestoneCreated?: (milestone: any) => void;
 }
 
 export function AddManualMilestone({
@@ -63,13 +64,19 @@ export function AddManualMilestone({
   projectId,
   initialData,
   onSuccess,
+  onMilestoneCreated,
 }: AddManualMilestoneProps) {
   const queryClient = useQueryClient();
   const { mutate: createMilestone, isPending: isCreating } =
-    useCreateManualMilestone(() => {
+    useCreateManualMilestone((response: any) => {
       onOpenChange(false);
       form.reset();
-      if (onSuccess) onSuccess();
+
+      const createdMilestone =
+        response?.data || response?.milestone || response;
+
+      onMilestoneCreated?.(createdMilestone);
+      onSuccess?.();
     });
 
   const { mutate: updateMilestone, isPending: isUpdating } =

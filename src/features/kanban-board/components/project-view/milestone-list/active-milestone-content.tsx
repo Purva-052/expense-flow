@@ -176,7 +176,7 @@ export const ActiveMilestoneContent = ({
           </div>
         </div>
 
-        {!isDeveloperView && (
+        {!isDeveloperView && milestone.status === "pending" && (
           <div className="flex shrink-0 flex-col gap-2 min-w-[160px]">
             <Button
               variant="outline"
@@ -186,6 +186,14 @@ export const ActiveMilestoneContent = ({
               <Pencil className="mr-2 h-4 w-4" />
               Edit Milestone
             </Button>
+            {/* <Button
+              variant="outline"
+              className="w-full justify-start"
+              onClick={() => onEditMilestone(actualMilestone)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete Milestone
+            </Button> */}
           </div>
         )}
       </div>

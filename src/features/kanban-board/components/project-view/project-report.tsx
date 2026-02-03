@@ -309,17 +309,18 @@ const ProjectReportTable = ({ projectId }: { projectId?: string | number }) => {
             />
           </div>
 
-          {/* Employee Dropdown */}
-          <div className="w-full sm:w-64">
-            <SimpleDropDownSearchable
-              options={userOptions}
-              value={listParams.employeeId!}
-              onChange={handleEmployeeChange}
-              placeholder="Select Employee"
-              isLoading={usersLoading}
-              disabled={!canSelectEmployee}
-            />
-          </div>
+          {canSelectEmployee && (
+            <div className="w-full sm:w-64">
+              <SimpleDropDownSearchable
+                options={userOptions}
+                value={listParams.employeeId!}
+                onChange={handleEmployeeChange}
+                placeholder="Select Employee"
+                isLoading={usersLoading}
+                disabled={!canSelectEmployee}
+              />
+            </div>
+          )}
 
           {/* Date Range */}
           <div className="w-full sm:w-auto">

@@ -80,6 +80,7 @@ interface DailyReportDialogProps {
   };
   onSuccess?: () => void;
   isView?: boolean;
+  isDescriptionOnly?: boolean;
 }
 
 const parseTimeSpent = (time: any) => {
@@ -139,6 +140,7 @@ export function DailyReportDialog({
   initialData,
   onSuccess,
   isView,
+  isDescriptionOnly,
 }: DailyReportDialogProps) {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
@@ -278,15 +280,18 @@ export function DailyReportDialog({
       <DialogContent className="sm:max-w-2xl max-h-[90vh] p-0 flex flex-col">
         <DialogHeader className="px-6 py-4 border-b">
           <DialogTitle>
-            {isView
-              ? "View Daily Report"
-              : isEdit
-                ? "Edit Daily Report"
-                : "Add Daily Report"}
+            {isDescriptionOnly
+              ? "Work Description"
+              : isView
+                ? "View Daily Report"
+                : isEdit
+                  ? "Edit Daily Report"
+                  : "Add Daily Report"}
           </DialogTitle>
           <DialogDescription className="sr-only">
-            Form to {isView ? "view" : isEdit ? "edit" : "add"} a daily work
-            report
+            {isDescriptionOnly
+              ? "View work description"
+              : `Form to ${isView ? "view" : isEdit ? "edit" : "add"} a daily work report`}
           </DialogDescription>
         </DialogHeader>
 
@@ -308,242 +313,256 @@ export function DailyReportDialog({
               className="flex flex-col flex-1 overflow-hidden"
             >
               <ScrollArea className="flex-1 p-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-1">
-                    <CustomDatePicker
-                      control={form.control}
-                      name="reportingDate"
-                      label="Reporting Date"
-                      placeholder="Pick a date"
-                      disabled={isView}
+                {isDescriptionOnly ? (
+                  <div className="space-y-4">
+                    <WorkDescriptionEditor
+                      placeholder="What did you work on?"
+                      value={form.getValues("taskDescription")}
+                      onChange={() => {}}
+                      disabled={true}
                     />
                   </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-1">
+                      <CustomDatePicker
+                        control={form.control}
+                        name="reportingDate"
+                        label="Reporting Date"
+                        placeholder="Pick a date"
+                        disabled={isView}
+                      />
+                    </div>
 
-                  <div className="col-span-1">
-                    <FormField
-                      control={form.control}
-                      name="employeeName"
-                      render={() => (
-                        <FormItem>
-                          <FormLabel>Employee Name</FormLabel>
-                          <FormControl>
-                            <Input
-                              value={
-                                isEdit
-                                  ? fetchedReport?.employee?.fullName || ""
-                                  : user?.user?.fullName || ""
-                              }
-                              disabled
-                              className="bg-gray-100"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="col-span-2">
-                    <FormField
-                      control={form.control}
-                      name="projectId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Project <span className="text-red-500">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <ProjectSelect
-                              value={field.value ?? undefined}
-                              onChange={field.onChange}
-                              disabled={
-                                !!initialData?.projectId || isEdit || isView
-                              }
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="col-span-1">
-                    <FormField
-                      control={form.control}
-                      name="milestoneId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Milestone <span className="text-red-500">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <SimpleDropDownSearchable
-                              options={
-                                milestonesList?.data?.map((m: any) => ({
-                                  label: m.name,
-                                  value: String(m.id),
-                                })) || []
-                              }
-                              value={field.value ?? undefined}
-                              onChange={field.onChange}
-                              placeholder="Select milestone"
-                              isLoading={milestonesLoading}
-                              disabled={
-                                !!initialData?.milestoneId || isEdit || isView
-                              }
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="col-span-1">
-                    <FormField
-                      control={form.control}
-                      name="taskId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Task <span className="text-red-500">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <SimpleDropDownSearchable
-                              options={
-                                tasksList?.data?.map((t: any) => ({
-                                  label: t.taskName || t.name,
-                                  value: String(t.id),
-                                })) || []
-                              }
-                              value={field.value ?? undefined}
-                              onChange={field.onChange}
-                              placeholder="Select task"
-                              isLoading={tasksLoading}
-                              disabled={!!initialData?.taskId || isEdit || isView}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="col-span-2">
-                    <FormField
-                      control={form.control}
-                      name="taskDescription"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Description <span className="text-red-500">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <WorkDescriptionEditor
-                              placeholder="What did you work on?"
-                              value={field.value}
-                              onChange={field.onChange}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="col-span-2 flex gap-2">
-                    <div className="w-[85px]">
+                    <div className="col-span-1">
                       <FormField
                         control={form.control}
-                        name="hours"
-                        render={({ field }) => (
+                        name="employeeName"
+                        render={() => (
                           <FormItem>
-                            <FormLabel>
-                              Hours <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <Select
-                              key={`hours-${field.value}-${fetchedReport?.id || "new"}`} // Force re-render when value changes
-                              onValueChange={field.onChange}
-                              value={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger disabled={isView}>
-                                  <SelectValue placeholder="Hours" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {Array.from({ length: 24 }).map((_, i) => (
-                                  <SelectItem key={i} value={String(i)}>
-                                    {String(i).padStart(2, "0")}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <FormLabel>Employee Name</FormLabel>
+                            <FormControl>
+                              <Input
+                                value={
+                                  isEdit
+                                    ? fetchedReport?.employee?.fullName || ""
+                                    : user?.user?.fullName || ""
+                                }
+                                disabled
+                                className="bg-gray-100"
+                              />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
                     </div>
 
-                    <div className="w-[85px]">
+                    <div className="col-span-2">
                       <FormField
                         control={form.control}
-                        name="minutes"
+                        name="projectId"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>
-                              Minutes <span className="text-red-500">*</span>
+                              Project <span className="text-red-500">*</span>
                             </FormLabel>
-                            <Select
-                              key={`minutes-${field.value}-${fetchedReport?.id || "new"}`} // Force re-render when value changes
-                              onValueChange={field.onChange}
-                              value={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger disabled={isView}>
-                                  <SelectValue placeholder="Min" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {[
-                                  0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55,
-                                ].map((m) => {
-                                  const val = String(m).padStart(2, "0");
-                                  return (
-                                    <SelectItem key={m} value={val}>
-                                      {val}
+                            <FormControl>
+                              <ProjectSelect
+                                value={field.value ?? undefined}
+                                onChange={field.onChange}
+                                disabled={
+                                  !!initialData?.projectId || isEdit || isView
+                                }
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="col-span-1">
+                      <FormField
+                        control={form.control}
+                        name="milestoneId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              Milestone <span className="text-red-500">*</span>
+                            </FormLabel>
+                            <FormControl>
+                              <SimpleDropDownSearchable
+                                options={
+                                  milestonesList?.data?.map((m: any) => ({
+                                    label: m.name,
+                                    value: String(m.id),
+                                  })) || []
+                                }
+                                value={field.value ?? undefined}
+                                onChange={field.onChange}
+                                placeholder="Select milestone"
+                                isLoading={milestonesLoading}
+                                disabled={
+                                  !!initialData?.milestoneId || isEdit || isView
+                                }
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="col-span-1">
+                      <FormField
+                        control={form.control}
+                        name="taskId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              Task <span className="text-red-500">*</span>
+                            </FormLabel>
+                            <FormControl>
+                              <SimpleDropDownSearchable
+                                options={
+                                  tasksList?.data?.map((t: any) => ({
+                                    label: t.taskName || t.name,
+                                    value: String(t.id),
+                                  })) || []
+                                }
+                                value={field.value ?? undefined}
+                                onChange={field.onChange}
+                                placeholder="Select task"
+                                isLoading={tasksLoading}
+                                disabled={
+                                  !!initialData?.taskId || isEdit || isView
+                                }
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="col-span-2">
+                      <FormField
+                        control={form.control}
+                        name="taskDescription"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              Description <span className="text-red-500">*</span>
+                            </FormLabel>
+                            <FormControl>
+                              <WorkDescriptionEditor
+                                placeholder="What did you work on?"
+                                value={field.value}
+                                onChange={field.onChange}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="col-span-2 flex gap-2">
+                      <div className="w-[85px]">
+                        <FormField
+                          control={form.control}
+                          name="hours"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>
+                                Hours <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <Select
+                                key={`hours-${field.value}-${fetchedReport?.id || "new"}`} // Force re-render when value changes
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger disabled={isView}>
+                                    <SelectValue placeholder="Hours" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {Array.from({ length: 24 }).map((_, i) => (
+                                    <SelectItem key={i} value={String(i)}>
+                                      {String(i).padStart(2, "0")}
                                     </SelectItem>
-                                  );
-                                })}
-                              </SelectContent>
-                            </Select>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="w-[85px]">
+                        <FormField
+                          control={form.control}
+                          name="minutes"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>
+                                Minutes <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <Select
+                                key={`minutes-${field.value}-${fetchedReport?.id || "new"}`} // Force re-render when value changes
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger disabled={isView}>
+                                    <SelectValue placeholder="Min" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {[
+                                    0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50,
+                                    55,
+                                  ].map((m) => {
+                                    const val = String(m).padStart(2, "0");
+                                    return (
+                                      <SelectItem key={m} value={val}>
+                                        {val}
+                                      </SelectItem>
+                                    );
+                                  })}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="col-span-2">
+                      <FormField
+                        control={form.control}
+                        name="remark"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Remarks</FormLabel>
+                            <FormControl>
+                              <Textarea {...field} disabled={isView} />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
                     </div>
                   </div>
-
-                  <div className="col-span-2">
-                    <FormField
-                      control={form.control}
-                      name="remark"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Remarks</FormLabel>
-                          <FormControl>
-                            <Textarea {...field} disabled={isView} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
+                )}
               </ScrollArea>
 
               <div className="px-6 py-4 border-t flex justify-end gap-2 bg-white">
-                {isView ? (
+                {isView || isDescriptionOnly ? (
                   <Button
                     type="button"
                     className="min-w-[100px]"
