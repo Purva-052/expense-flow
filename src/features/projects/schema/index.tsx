@@ -1,7 +1,8 @@
 import { PROJECT_SERVER_STATUS, PROJECT_SERVER_TYPE } from "@/types";
 import { z } from "zod";
 
-export const projectFormSchema = z.object({
+// Base schema without refine - can be used with .omit()
+const projectFormSchemaBase = z.object({
   name: z
     .string()
     .min(2, "Project name must be at least 2 characters")
@@ -22,7 +23,16 @@ export const projectFormSchema = z.object({
     },
     z.string().min(1, "Start date is required")
   ),
-  expectedCompletionDate: z.any(),
+  expectedCompletionDate: z.preprocess(
+    (val) => {
+      if (val instanceof Date) {
+        return val.toISOString().split("T")[0]; // convert Date -> "YYYY-MM-DD"
+      }
+      if (typeof val === "string") return val;
+      return "";
+    },
+    z.string().min(1, "Expected completion date is required")
+  ),
 
   handlerId: z
     .number({ invalid_type_error: "Manager must be a number" })
@@ -55,6 +65,26 @@ export const projectFormSchema = z.object({
     )
     .optional(),
 });
+
+// Main schema with date validation
+export const projectFormSchema = projectFormSchemaBase.refine(
+  (data) => {
+    // Only validate if both dates are present
+    if (!data.startDate || !data.expectedCompletionDate) return true;
+    
+    const startDate = new Date(data.startDate);
+    const expectedDate = new Date(data.expectedCompletionDate);
+    
+    return expectedDate >= startDate;
+  },
+  {
+    message: "Expected completion date cannot be before start date",
+    path: ["expectedCompletionDate"], // This will show the error on the expectedCompletionDate field
+  }
+);
+
+// Export base schema for cases where .omit() is needed
+export const projectFormSchemaWithoutRefine = projectFormSchemaBase;
 
 export type TProjectFormSchema = z.infer<typeof projectFormSchema>;
 

@@ -14,6 +14,7 @@ interface DeleteDataOptions<TData> {
   mutationOptions?: UseMutationOptions<TData, Error, void>;
   onSuccess?: (data: TData) => void;
   onError?: (error: Error) => void;
+  isSuccessMessage?: boolean;
 }
 
 const useDeleteData = <TData = unknown>({
@@ -22,6 +23,7 @@ const useDeleteData = <TData = unknown>({
   mutationOptions,
   onError,
   onSuccess,
+  isSuccessMessage = true,
 }: DeleteDataOptions<TData>) => {
   const queryClient = useQueryClient();
 
@@ -34,10 +36,13 @@ const useDeleteData = <TData = unknown>({
         response?.statusCode === 202 ||
         response?.statusCode === 201
       ) {
-        toast.success("Data deleted successfully", {
-          duration: 3000,
-          position: "top-right",
-        });
+        if (isSuccessMessage) {
+          toast.success("Data deleted successfully", {
+            duration: 3000,
+            position: "top-right",
+          });
+        }
+
         return response.data as TData;
       }
 

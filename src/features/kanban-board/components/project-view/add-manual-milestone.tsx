@@ -32,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from "sonner";
 
 const taskSchema = z.object({
   taskId: z.number().optional(),
@@ -153,6 +154,12 @@ export function AddManualMilestone({
             });
             onOpenChange(false);
             if (onSuccess) onSuccess();
+          },
+          onError: () => {
+            onOpenChange(false);
+            toast.error(
+              "Complete all tasks to mark the milestone as completed"
+            );
           },
         }
       );

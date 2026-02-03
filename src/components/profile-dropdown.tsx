@@ -42,8 +42,7 @@ export function ProfileDropdown() {
   const fullName = user?.user?.fullName || "";
   const { data: userDetails }: any = useGetUserDetails(user?.user?.id);
 
-  const profilePic = userDetails?.data?.profilePic;
-  userDetails?.data?.profilePic;
+  const profilePic = userDetails?.data?.profilePicUrl;
   const email = user?.user?.email || "admin@gmail.com";
 
   return (

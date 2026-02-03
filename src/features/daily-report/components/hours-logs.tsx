@@ -53,7 +53,6 @@ const HoursLogs = ({
     pageSize: 10,
   });
   const [viewDescription, setViewDescription] = useState<string | null>(null);
-
   const userRole = String(
     user?.user?.role?.name || user?.user?.role
   ).toLowerCase();
@@ -62,6 +61,7 @@ const HoursLogs = ({
     roles.TEAM_LEAD,
     roles.PROJECT_MANAGER,
   ].includes(userRole);
+  const isDeveloperView = userRole === roles.DEVELOPER;
 
   // Initialize employeeId when user or taskId becomes available
   useEffect(() => {
@@ -180,16 +180,18 @@ const HoursLogs = ({
           />
         </div>
 
-        <div className="w-56 shrink-0">
-          <SimpleDropDownSearchable
-            options={userOptions}
-            value={employeeId}
-            onChange={setEmployeeId}
-            placeholder="Select Employee"
-            isLoading={usersLoading}
-            disabled={!canSelectEmployee}
-          />
-        </div>
+        {!isDeveloperView && (
+          <div className="w-56 shrink-0">
+            <SimpleDropDownSearchable
+              options={userOptions}
+              value={employeeId}
+              onChange={setEmployeeId}
+              placeholder="Select Employee"
+              isLoading={usersLoading}
+              disabled={!canSelectEmployee}
+            />
+          </div>
+        )}
 
         <div className="shrink-0">
           <DateRangeFilter

@@ -59,7 +59,7 @@ export function DeveloperChip({
   endDate?: string | null;
   variant?: "default" | "compact" | "avatar";
 }) {
-  const profilePic = developer.profilePic || developer.avatarUrl;
+  const profilePic = developer.profilePicUrl || developer.avatarUrl;
 
   const sortableId = `${containerId}-${developer.id}`;
 

@@ -70,18 +70,49 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
 
         {isDeveloperView ? (
           <Tabs defaultValue="milestone" className="w-full">
-            <TabsList className="mb-4 flex flex-wrap h-auto gap-2 ">
-              <TabsTrigger
-                value="milestone"
-                className="flex items-center gap-2"
-              >
+            <TabsList className="mb-4 flex flex-wrap h-auto gap-2 bg-[#fdebef] rounded-full">
+              <TabsTrigger value="overview" className={tabTriggerClass}>
+                <FileSpreadsheet className="w-4 h-4" /> Overview
+              </TabsTrigger>
+              <TabsTrigger value="milestone" className={tabTriggerClass}>
                 <Flag className="w-4 h-4" /> Milestone
+              </TabsTrigger>
+              <TabsTrigger value="doc" className={tabTriggerClass}>
+                <Files className="w-4 h-4" /> Documents
+              </TabsTrigger>
+              <TabsTrigger value="client" className={tabTriggerClass}>
+                <IconUserStar className="w-4 h-4" /> Client Meeting
+              </TabsTrigger>
+              <TabsTrigger value="internal_meeting" className={tabTriggerClass}>
+                <Users className="w-4 h-4" /> Internal Meeting
+              </TabsTrigger>
+              <TabsTrigger value="sticky_notes" className={tabTriggerClass}>
+                <StickyNote className="w-4 h-4" /> Sticky Notes
               </TabsTrigger>
             </TabsList>
 
             <div className="overflow-y-auto h-[calc(100vh-131px)] pr-2">
+              <TabsContent value="overview">
+                <OverviewProject projectId={projectId} />
+              </TabsContent>
+
               <TabsContent value="milestone">
                 <MilestoneList projectId={projectId} />
+              </TabsContent>
+
+              <TabsContent value="doc">
+                <ProjectDocumentComponent projectId={projectId} />
+              </TabsContent>
+
+              <TabsContent value="client">
+                <ClientMeetingTab projectId={projectId} project={project} />
+              </TabsContent>
+              <TabsContent value="internal_meeting">
+                <InternalMeetingTab projectId={projectId} />
+              </TabsContent>
+
+              <TabsContent value="sticky_notes">
+                <StickyNotesTab projectId={projectId} />
               </TabsContent>
             </div>
           </Tabs>
