@@ -276,7 +276,7 @@ const OverviewProject = ({ projectId }: { projectId?: any }) => {
                   >
                     <div className="relative shrink-0">
                       <Avatar className="h-10 w-10">
-                        <AvatarImage src={allocation.developer.profilePic} />
+                        <AvatarImage src={allocation.developer.profilePicUrl} />
                         <AvatarFallback
                           className="text-white font-bold"
                           style={{
