@@ -765,7 +765,7 @@ const ProjectPage = ({
         </DndContext>
       </div>
 
-      {/* <DeveloperDialog
+      <DeveloperDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         developer={selectedDeveloper}
@@ -774,7 +774,7 @@ const ProjectPage = ({
           refetch();
         }}
         refetchAvailableDevelopers={AllDevelopersRefetch}
-      /> */}
+      />
     </div>
   );
 };
