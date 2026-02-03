@@ -292,9 +292,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
       >
         <DialogHeader className="flex flex-row items-center justify-between pr-12">
           <div className="space-y-0.5">
-            <DialogTitle>
-              Hours Log - {selectedTaskForLogs?.taskName}
-            </DialogTitle>
+            <DialogTitle>{selectedTaskForLogs?.taskName}</DialogTitle>
             <DialogDescription className="sr-only">
               List of hours logged for the task {selectedTaskForLogs?.taskName}
             </DialogDescription>

@@ -12,6 +12,7 @@ import useFetchData from "@/hooks/use-fetch-data";
 import { buildQueryString } from "@/utils/storage";
 import { useProjectServerStore } from "../stores/useProjectServerStore";
 import { useProjectDocumentStore } from "../stores/useProjectDocumentStore";
+import { toast } from "sonner";
 
 const GET_API_URL = API.projects.list;
 const GET_PRIORITY_DROPDOWN = API.dropdown_api.priority;
@@ -194,5 +195,9 @@ export const useUnpinProject = (id: string) => {
   return useDeleteData({
     url: `${API.projects.list}/${id}${API.projects.remove_pin_project}`,
     refetchQueries: ["projects"],
+    isSuccessMessage: false,
+    onSuccess: () => {
+      toast.success("Project Unpinned successfully");
+    },
   });
 };
