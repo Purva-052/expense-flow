@@ -66,7 +66,7 @@ export function UserActionForm({
           status: currentRow?.status === "active",
           joining: currentRow?.joining ?? false, // ✅ FIXED
           currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
-          profilePicS3Key: currentRow?.profilePicS3Key ?? "",
+          profilePicS3Key: currentRow?.profilePicUrl ?? "",
           file: null,
         }
       : {
@@ -106,13 +106,15 @@ export function UserActionForm({
         status: currentRow?.status === "active",
         joining: currentRow?.joining ?? false,
         currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
-        profilePicS3Key: currentRow?.profilePicS3Key ?? "",
+
+        // 🔥 IMPORTANT
+        profilePicS3Key: currentRow?.profilePicUrl ?? "",
         file: null,
       });
 
-      setPreviewUrl(currentRow?.profilePicS3Key ?? null);
-      setHasExistingFile(!!currentRow?.profilePicS3Key);
-      setUploadedFileKey(currentRow?.profilePicS3Key ?? "");
+      setPreviewUrl(currentRow?.profilePicUrl ?? null);
+      setHasExistingFile(!!currentRow?.profilePicUrl);
+      setUploadedFileKey(currentRow?.profilePicUrl ?? "");
     }
   }, [open, currentRow]);
 
@@ -121,10 +123,12 @@ export function UserActionForm({
       const url = URL.createObjectURL(watchedFile);
       setPreviewUrl(url);
       return () => URL.revokeObjectURL(url);
-    } else if (!watchedFile && !hasExistingFile) {
+    }
+
+    if (!watchedFile && !hasExistingFile && !isEdit) {
       setPreviewUrl(null);
     }
-  }, [watchedFile, hasExistingFile]);
+  }, [watchedFile, hasExistingFile, isEdit]);
 
   // ✅ Watch the "role" field
   const selectedRole = useWatch({
@@ -203,6 +207,7 @@ export function UserActionForm({
             >
               <div className="flex flex-col items-center gap-4 py-4 border-b border-gray-100 mb-6">
                 <FileUpload
+                  existingFileUrl={previewUrl ?? undefined}
                   name="file"
                   label=""
                   onFileRemove={handleFileRemove}
