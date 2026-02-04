@@ -25,13 +25,17 @@ const projectFormSchemaBase = z.object({
   ),
   expectedCompletionDate: z.preprocess(
     (val) => {
+      if (!val) return undefined;
       if (val instanceof Date) {
-        return val.toISOString().split("T")[0]; // convert Date -> "YYYY-MM-DD"
+        return val.toISOString().split("T")[0]; // YYYY-MM-DD
       }
       if (typeof val === "string") return val;
-      return "";
+      return undefined;
     },
-    z.string().min(1, "Expected completion date is required")
+    z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format")
+      .optional()
   ),
 
   handlerId: z
@@ -71,10 +75,10 @@ export const projectFormSchema = projectFormSchemaBase.refine(
   (data) => {
     // Only validate if both dates are present
     if (!data.startDate || !data.expectedCompletionDate) return true;
-    
+
     const startDate = new Date(data.startDate);
     const expectedDate = new Date(data.expectedCompletionDate);
-    
+
     return expectedDate >= startDate;
   },
   {
