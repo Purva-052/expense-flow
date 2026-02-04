@@ -33,7 +33,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 
 const taskSchema = z.object({
   taskId: z.number().optional(),
@@ -182,8 +181,9 @@ export function AddManualMilestone({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[550px] max-h-[95vh] flex flex-col p-0 overflow-hidden">
-        <DialogHeader className="px-6 py-4">
+      <DialogContent className="sm:max-w-[550px] max-h-[95vh] flex flex-col p-0">
+        {/* 🔒 Header (fixed) */}
+        <DialogHeader className="px-6 py-4 border-b shrink-0">
           <DialogTitle>
             {initialData ? "Edit Milestone" : "Add Milestone"}
           </DialogTitle>
@@ -192,23 +192,19 @@ export function AddManualMilestone({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="flex flex-col flex-1 min-h-0 overflow-hidden"
+            className="flex flex-col flex-1 min-h-0"
           >
-            <div className="flex-1 overflow-y-auto px-6 py-4">
-              <div className="grid grid-cols-2 gap-4 mb-6 px-1">
+            {/* 🔽 Scrollable content only */}
+            <div className="flex-1 overflow-y-auto px-6 py-4 min-h-0">
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                {/* Milestone Name */}
                 <FormField
                   control={form.control}
                   name="name"
-                  render={({ field }: { field: any }) => (
+                  render={({ field }: any) => (
                     <FormItem className="col-span-2">
-                      <FormLabel
-                        className={cn(
-                          "flex items-center gap-1",
-                          field.error && "text-red-500"
-                        )}
-                      >
-                        Milestone Name
-                        <span className="text-red-500">*</span>
+                      <FormLabel>
+                        Milestone Name <span className="text-red-500">*</span>
                       </FormLabel>
                       <FormControl>
                         <Input placeholder="Enter milestone name" {...field} />
@@ -218,18 +214,14 @@ export function AddManualMilestone({
                   )}
                 />
 
+                {/* Estimated Time */}
                 <FormField
                   control={form.control}
                   name="estimatedTime"
-                  render={({ field }: { field: any }) => (
+                  render={({ field }: any) => (
                     <FormItem>
-                      <FormLabel
-                        className={cn(
-                          "flex items-center gap-1",
-                          field.error && "text-red-500"
-                        )}
-                      >
-                        Total Estimated Time (e.g., 1h10m)
+                      <FormLabel>
+                        Total Estimated Time{" "}
                         <span className="text-red-500">*</span>
                       </FormLabel>
                       <FormControl>
@@ -240,15 +232,16 @@ export function AddManualMilestone({
                   )}
                 />
 
+                {/* Status */}
                 <FormField
                   control={form.control}
                   name="status"
-                  render={({ field }: { field: any }) => (
+                  render={({ field }: any) => (
                     <FormItem>
                       <FormLabel>Status</FormLabel>
                       <Select
+                        value={field.value}
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -269,30 +262,34 @@ export function AddManualMilestone({
                 />
               </div>
 
+              {/* Tasks */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-medium">Tasks</h3>
                   <Button
                     type="button"
-                    variant="default"
                     size="sm"
                     onClick={() => append({ taskName: "", estimatedTime: "" })}
                   >
-                    <Plus className="h-4 w-4 mr-1" /> Add Task
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Task
                   </Button>
                 </div>
 
-                {fields.map((field: any, index: number) => (
+                {fields.map((item: any, index: number) => (
                   <div
-                    key={field.id}
-                    className="grid grid-cols-12 gap-3 items-start p-3 border rounded-lg bg-slate-50/50"
+                    key={item.id}
+                    className="grid grid-cols-12 gap-3 p-3 border rounded-lg bg-slate-50"
                   >
                     <div className="col-span-7">
                       <FormField
                         control={form.control}
                         name={`tasks.${index}.taskName`}
-                        render={({ field }: { field: any }) => (
+                        render={({ field }: any) => (
                           <FormItem>
+                            <FormLabel>
+                              Task Name <span className="text-red-500">*</span>
+                            </FormLabel>
                             <FormControl>
                               <Input placeholder="Task Name" {...field} />
                             </FormControl>
@@ -301,12 +298,17 @@ export function AddManualMilestone({
                         )}
                       />
                     </div>
+
                     <div className="col-span-4">
                       <FormField
                         control={form.control}
                         name={`tasks.${index}.estimatedTime`}
-                        render={({ field }: { field: any }) => (
+                        render={({ field }: any) => (
                           <FormItem>
+                            <FormLabel>
+                              Estimated Time{" "}
+                              <span className="text-red-500">*</span>
+                            </FormLabel>
                             <FormControl>
                               <Input placeholder="1h10m" {...field} />
                             </FormControl>
@@ -315,15 +317,16 @@ export function AddManualMilestone({
                         )}
                       />
                     </div>
+
                     {!initialData && (
-                      <div className="col-span-1 pt-1">
+                      <div className="col-span-1 flex items-end">
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
                           onClick={() => remove(index)}
                           disabled={fields.length === 1}
+                          className="text-destructive"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -334,7 +337,8 @@ export function AddManualMilestone({
               </div>
             </div>
 
-            <DialogFooter className="px-6 py-4 border-t bg-slate-50/50">
+            {/* 🔒 Footer (fixed) */}
+            <DialogFooter className="px-6 py-4 border-t shrink-0 bg-slate-50">
               <Button
                 type="button"
                 variant="outline"
@@ -342,6 +346,7 @@ export function AddManualMilestone({
               >
                 Cancel
               </Button>
+
               <Button type="submit" disabled={isCreating || isUpdating}>
                 {(isCreating || isUpdating) && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
