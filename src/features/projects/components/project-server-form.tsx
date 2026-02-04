@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import CustomButton from "@/components/shared/custom-button";
-import { TextInputField } from "@/components/shared/custom-input-field";
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import {
   Dialog,
@@ -9,7 +8,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Form } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { useGetServerList } from "@/features/server/services";
 import {
   ProjectServerStatusOptions,
@@ -20,6 +26,7 @@ import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { ProjectServerSchema, TProjectServerSchema } from "../schema";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 interface Props {
   currentRow?: any;
@@ -82,12 +89,28 @@ export function ProjectServerActionForm({
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-4 p-0.5"
             >
-              <TextInputField
+              {/* <TextInputField
                 control={form.control}
                 name="url"
                 label="URL"
                 placeholder="https://example.com"
+              /> */}
+              <FormField
+                control={form.control}
+                name="url"
+                render={({ field }: any) => (
+                  <FormItem className="col-span-2">
+                    <FormLabel>
+                      Meeting Name <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
+
               {/* Server ID */}
               <CustomDropDownSearchable
                 form={form}
@@ -127,23 +150,61 @@ export function ProjectServerActionForm({
               />
 
               {/* Type Dropdown */}
-              <CustomDropDownSearchable
-                form={form}
+              <FormField
+                control={form.control}
                 name="type"
-                label="Type"
-                options={ProjectServerTypeOptions}
-                placeholder="Select Type"
-                searchEnabled={false}
+                render={({ fieldState }) => (
+                  <FormItem>
+                    <FormLabel
+                      className={cn(
+                        "flex items-center gap-1",
+                        fieldState.error && "text-red-500"
+                      )}
+                    >
+                      Type
+                      <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <CustomDropDownSearchable
+                        form={form}
+                        name="type"
+                        label=""
+                        options={ProjectServerTypeOptions}
+                        placeholder="Select Type"
+                        searchEnabled={false}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
               />
 
               {/* Status Dropdown */}
-              <CustomDropDownSearchable
-                form={form}
+              <FormField
+                control={form.control}
                 name="status"
-                label="Status"
-                options={ProjectServerStatusOptions}
-                placeholder="Select Status"
-                searchEnabled={false}
+                render={({ fieldState }) => (
+                  <FormItem>
+                    <FormLabel
+                      className={cn(
+                        "flex items-center gap-1",
+                        fieldState.error && "text-red-500"
+                      )}
+                    >
+                      Status
+                      <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <CustomDropDownSearchable
+                        form={form}
+                        name="status"
+                        label=""
+                        options={ProjectServerStatusOptions}
+                        placeholder="Select Status"
+                        searchEnabled={false}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
               />
             </form>
           </Form>

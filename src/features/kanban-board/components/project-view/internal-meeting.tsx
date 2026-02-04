@@ -60,6 +60,7 @@ import {
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import { FilterConfig } from "@/components/table/table-toolbar";
+import { cn } from "@/lib/utils";
 
 // Schema validation
 const InternalMeetingSchema = z.object({
@@ -190,12 +191,20 @@ export function InternalMeetingDialog({
               className="space-y-4 p-0.5"
             >
               {/* Meeting Name - Full Width */}
-              <TextInputField
+              <FormField
                 control={form.control}
                 name="meetingName"
-                label="Meeting Name"
-                placeholder="Enter Meeting Name"
-                disabled={loading || isViewOnly}
+                render={({ field }: any) => (
+                  <FormItem className="col-span-2">
+                    <FormLabel>
+                      Meeting Name <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter meeting name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
 
               {/* Hidden Project ID */}
@@ -210,12 +219,30 @@ export function InternalMeetingDialog({
 
               {/* Start Date */}
               {/* <div className="grid grid-cols-1 gap-4 sm:grid-cols-2"> */}
-              <CustomDatePicker
+              <FormField
                 control={form.control}
                 name="startDate"
-                label="Meeting Date"
-                placeholder="Select Meeting Date"
-                disabled={loading || isViewOnly}
+                render={({ fieldState }) => (
+                  <FormItem>
+                    <FormLabel
+                      className={cn(
+                        "flex items-center gap-1",
+                        fieldState.error && "text-red-500"
+                      )}
+                    >
+                      Meeting Date
+                      <span className="text-red-500">*</span>
+                    </FormLabel>
+
+                    <CustomDatePicker
+                      control={form.control}
+                      name="startDate"
+                      label=""
+                      placeholder="Select Meeting Date"
+                      disabled={loading || isViewOnly}
+                    />
+                  </FormItem>
+                )}
               />
               {/* </div> */}
 
@@ -246,7 +273,10 @@ export function InternalMeetingDialog({
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{descriptionLabel}</FormLabel>
+                    <FormLabel>
+                      {descriptionLabel}
+                      <span className="text-red-500">*</span>
+                    </FormLabel>
                     <FormControl>
                       <div className="rounded-md border border-input bg-background">
                         <CKEditor
