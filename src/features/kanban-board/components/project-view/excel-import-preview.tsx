@@ -62,7 +62,7 @@ export const ExcelImportPreview: React.FC<ExcelImportPreviewProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+      <DialogContent className="w-[45vw] max-w-none max-h-[90vh] flex flex-col sm:max-w-none">
         <DialogHeader>
           <DialogTitle>Import Excel Preview</DialogTitle>
           <DialogDescription>
