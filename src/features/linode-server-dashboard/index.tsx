@@ -50,6 +50,10 @@ const LinodeDashboard = () => {
   const activeCount = analytics.activeInstanceCount || 0;
   const zombieCount = analytics.zombieCount || 0;
 
+  const tabTriggerClass =
+    "flex items-center gap-2 rounded-[50px] px-3 py-2  transition-all " +
+    "data-[state=active]:bg-black data-[state=active]:text-white";
+
   // --- HANDLERS ---
   const handleSearch = (search: string | undefined) => {
     setListParams({ ...listParams, search: search ?? "", currentPage: 1 });
@@ -266,9 +270,13 @@ const LinodeDashboard = () => {
           }}
           className="w-full"
         >
-          <TabsList>
-            <TabsTrigger value={FilterType.ALL}>All Instances</TabsTrigger>
-            <TabsTrigger value={FilterType.ZOMBIE}>Zombies</TabsTrigger>
+          <TabsList className="bg-[#fdebef] rounded-full">
+            <TabsTrigger className={tabTriggerClass} value={FilterType.ALL}>
+              All Instances
+            </TabsTrigger>
+            <TabsTrigger className={tabTriggerClass} value={FilterType.ZOMBIE}>
+              Zombies
+            </TabsTrigger>
           </TabsList>
         </Tabs>
 
