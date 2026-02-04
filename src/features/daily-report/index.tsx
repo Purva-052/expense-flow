@@ -270,7 +270,12 @@ export default function DailyReportPage() {
         totalCount={totalCount ?? 0}
         data={(listData as any)?.data ?? []}
         onPaginationChange={handlePaginationChange}
-        columns={columns(handleEdit, handleDelete, handleView).filter((col) => {
+        columns={columns(
+          handleEdit,
+          handleDelete,
+          handleView,
+          String(user?.user?.role?.name || user?.user?.role).toLowerCase()
+        ).filter((col) => {
           if ((col as any).accessorKey === "employee.fullName") {
             const userRole = String(
               user?.user?.role?.name || user?.user?.role

@@ -41,7 +41,11 @@ const taskSchema = z.object({
 });
 
 const formSchema = z.object({
-  name: z.string().min(1, "Milestone name is required"),
+  name: z
+    .string()
+    .nonempty("Milestone name is required")
+    .min(3, "Milestone name must be at least 3 characters")
+    .max(20, "Milestone name should be less than 20 characters"),
   estimatedTime: z.string().min(1, "Total estimated time is required"),
   status: z.string().min(1, "Status is required"),
   tasks: z.array(taskSchema).min(1, "At least one task is required"),

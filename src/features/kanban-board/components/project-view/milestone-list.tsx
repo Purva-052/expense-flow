@@ -275,24 +275,42 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
           onValueChange={setActiveTab}
           className="w-full border-t-2 p-2"
         >
-          <TabsList className="mb-2 h-auto bg-[#fdebef] rounded-full">
-            {milestones.map((m) => (
-              <TabsTrigger
-                key={m.id}
-                value={String(m.id)}
-                className={tabTriggerClass}
-              >
-                {m.name || m.milestoneName}
-                <Badge
-                  className="
-    ml-1
-  "
+          <div>
+            <TabsList
+              className="
+      mb-2
+      h-auto
+      bg-[#fdebef]
+      rounded-full
+      inline-flex
+      gap-1
+      max-w-full
+    "
+            >
+              {milestones.map((m) => (
+                <TabsTrigger
+                  key={m.id}
+                  value={String(m.id)}
+                  className={`
+          ${tabTriggerClass}
+          max-w-45
+          truncate
+          flex
+          items-center
+          gap-1
+        `}
+                  title={m.name || m.milestoneName} // hover pe full name
                 >
-                  {m.taskCount || m.tasks?.length || 0}
-                </Badge>
-              </TabsTrigger>
-            ))}
-          </TabsList>
+                  <span className="truncate">{m.name || m.milestoneName}</span>
+
+                  <Badge className="shrink-0">
+                    {m.taskCount || m.tasks?.length || 0}
+                  </Badge>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
+
           {milestones.map((m) => (
             <TabsContent key={m.id} value={String(m.id)}>
               <ActiveMilestoneContent
@@ -308,13 +326,32 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
       ) : (
         <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-xl bg-muted/10 text-muted-foreground">
           <FileDown className="h-10 w-10 mb-4 opacity-20" />
+
           <p className="text-lg font-medium text-foreground">
-            No milestones uploaded yet.
+            No milestones uploaded yet
           </p>
-          <p className="text-sm max-w-xs text-center">
+
+          <p className="text-sm max-w-sm text-center mt-1">
             Upload an Excel or CSV file containing your project milestones to
-            view them here.
+            get started.
           </p>
+
+          {/* 💡 Helpful tips */}
+          <div className="mt-6 w-full max-w-md rounded-lg bg-background border p-4 text-sm">
+            <p className="font-medium text-foreground mb-2">
+              Milestone naming tips
+            </p>
+
+            <ul className="space-y-1 list-disc list-inside text-muted-foreground">
+              <li>
+                Use clear names like{" "}
+                <span className="font-medium">Milestone 1</span>,{" "}
+                <span className="font-medium">Milestone 2</span>, etc{" "}
+              </li>
+              <li>Minimum 3 characters required</li>
+              <li>Maximum 20 characters allowed</li>
+            </ul>
+          </div>
         </div>
       )}
 

@@ -10,10 +10,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import { roles as roleConstants } from "@/utils/constant";
+
 export const columns = (
   onEdit: (report: DailyReport) => void,
   onDelete: (report: DailyReport) => void,
-  onView: (report: DailyReport) => void
+  onView: (report: DailyReport) => void,
+  userRole: string
 ): ColumnDef<DailyReport>[] => [
   {
     accessorKey: "reportingDate",
@@ -70,6 +73,20 @@ export const columns = (
     id: "actions",
     header: "Actions",
     cell: ({ row }) => {
+      const reportDate = format(new Date(row.original.reportingDate), "yyyy-MM-dd");
+      const today = format(new Date(), "yyyy-MM-dd");
+      const isToday = reportDate === today;
+
+      const canEditOrDelete =
+        userRole === roleConstants.ADMIN ||
+        userRole === roleConstants.PROJECT_MANAGER ||
+        userRole === roleConstants.TEAM_LEAD ||
+        (userRole === roleConstants.DEVELOPER && isToday);
+
+      if (!canEditOrDelete) {
+        return null;
+      }
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
