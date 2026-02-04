@@ -150,6 +150,7 @@ export default function AddEditDocumentDialog({ ProjectId }: any) {
                 {/* Document Name */}
                 <div className="w-full min-w-0">
                   <label className="text-sm font-medium">Name</label>
+                  <span className="text-red-500 ml-1">*</span>
                   <Controller
                     name={`documents.${index}.documentName`}
                     control={control}
@@ -188,6 +189,7 @@ export default function AddEditDocumentDialog({ ProjectId }: any) {
                 {/* Link */}
                 <div className="w-full min-w-0">
                   <label className="text-sm font-medium">Link</label>
+                  <span className="text-red-500 ml-1">*</span>
                   <Controller
                     name={`documents.${index}.link`}
                     control={control}
