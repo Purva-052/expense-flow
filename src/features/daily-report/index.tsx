@@ -29,7 +29,7 @@ export default function DailyReportPage() {
     currentPage: 1,
     search: "",
     projectId: undefined,
-    milestoneId: undefined,
+    projectMilestoneId: undefined,
     taskId: undefined,
     employeeId: undefined,
     fromDate: undefined as string | undefined,
@@ -72,7 +72,7 @@ export default function DailyReportPage() {
     limit: listParams.pageSize,
     search: listParams.search,
     projectId: listParams.projectId,
-    milestoneId: listParams.milestoneId,
+    projectMilestoneId: listParams.projectMilestoneId,
     taskId: listParams.taskId,
     employeeId: listParams.employeeId,
     fromDate: listParams.fromDate,
@@ -109,10 +109,10 @@ export default function DailyReportPage() {
       listParams.projectId
         ? {
             projectId: listParams.projectId,
-            projectMilestoneId: listParams.milestoneId,
+            projectMilestoneId: listParams.projectMilestoneId,
           }
         : undefined,
-      !!listParams.milestoneId
+      !!listParams.projectMilestoneId
     );
 
   const formatDate = (date?: Date) => {
@@ -190,11 +190,11 @@ export default function DailyReportPage() {
         value: milestone.id,
         label: milestone.name,
       })),
-      value: listParams.milestoneId,
+      value: listParams.projectMilestoneId,
       onChange: (value: any) => {
         setListParams({
           ...listParams,
-          milestoneId: value ?? undefined,
+          projectMilestoneId: value ?? undefined,
           currentPage: 1,
         });
       },
@@ -248,7 +248,7 @@ export default function DailyReportPage() {
           if (f.key === "milestoneId" && !listParams.projectId) {
             return false;
           }
-          if (f.key === "taskId" && !listParams.milestoneId) {
+          if (f.key === "taskId" && !listParams.projectMilestoneId) {
             return false;
           }
           if (f.key === "employeeId") {
