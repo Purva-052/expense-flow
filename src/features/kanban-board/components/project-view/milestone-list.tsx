@@ -59,8 +59,15 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
   }) as any;
 
   const isCurrentUserProjectHandler = useMemo(() => {
-    const handledProjects = handledProjectsResponse?.data || [];
-    return handledProjects.some((p: any) => String(p.id) === String(projectId));
+    const users = handledProjectsResponse?.data || [];
+
+    return users.some((user: any) => {
+      return user.handledProjects?.some((project: any) => {
+        const isMatch = String(project.id) === String(projectId);
+
+        return isMatch;
+      });
+    });
   }, [handledProjectsResponse, projectId]);
 
   const isAdmin = Role === roles.ADMIN;
