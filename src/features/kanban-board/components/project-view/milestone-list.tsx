@@ -28,6 +28,7 @@ import { roles } from "@/utils/constant";
 
 import { MilestoneTask } from "./milestone-list/types";
 import { ActiveMilestoneContent } from "./milestone-list/active-milestone-content";
+import { toast } from "sonner";
 
 const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
   const { user } = useAuthStore();
@@ -174,11 +175,11 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
             setPreviewData({ headers, rows });
             setPreviewOpen(true);
           } else {
-            alert("No data found in the Excel file.");
+            toast.error("No data found in the Excel file.");
           }
         } catch (error) {
           console.error("Error parsing Excel file:", error);
-          alert("Error parsing Excel file.");
+          toast.error("Please check the file format.");
         } finally {
           setIsParsingFile(false);
         }
@@ -332,8 +333,8 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
           </p>
 
           <p className="text-sm max-w-sm text-center mt-1">
-            Upload an Excel or CSV file containing your project milestones to
-            get started.
+            Upload an Excel file containing your project milestones to get
+            started.
           </p>
 
           {/* 💡 Helpful tips */}
