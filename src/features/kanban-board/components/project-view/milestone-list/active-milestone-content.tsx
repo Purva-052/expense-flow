@@ -196,15 +196,15 @@ export const ActiveMilestoneContent = ({
         {(isAdmin || isCurrentUserProjectHandler) &&
           milestone.status === "pending" && (
             <div className="flex shrink-0 flex-col gap-2 min-w-[160px]">
-            <Button
-              variant="outline"
-              className="w-full justify-start"
-              onClick={() => onEditMilestone(actualMilestone)}
-            >
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit Milestone
-            </Button>
-            {/* <Button
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => onEditMilestone(actualMilestone)}
+              >
+                <Pencil className="mr-2 h-4 w-4" />
+                Edit Milestone
+              </Button>
+              {/* <Button
               variant="outline"
               className="w-full justify-start"
               onClick={() => onEditMilestone(actualMilestone)}
@@ -212,8 +212,8 @@ export const ActiveMilestoneContent = ({
               <Trash2 className="mr-2 h-4 w-4" />
               Delete Milestone
             </Button> */}
-          </div>
-        )}
+            </div>
+          )}
       </div>
 
       <GlobalTable<MilestoneTask>

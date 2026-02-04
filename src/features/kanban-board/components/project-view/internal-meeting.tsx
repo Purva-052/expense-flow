@@ -200,7 +200,11 @@ export function InternalMeetingDialog({
                       Meeting Name <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter meeting name" {...field} />
+                      <Input
+                        placeholder="Enter meeting name"
+                        {...field}
+                        disabled={loading || isViewOnly}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -509,21 +513,21 @@ export function InternalMeetingListing({
             <button
               onClick={() => handleAction("view", row.original)}
               className="p-1 hover:bg-muted rounded text-muted-foreground hover:text-primary transition-colors"
-              title="View"
+              title="View Meeting"
             >
               <Eye className="w-4 h-4" />
             </button>
             <button
               onClick={() => handleAction("edit", row.original)}
               className="p-1 hover:bg-muted rounded text-muted-foreground hover:text-primary transition-colors"
-              title="Edit"
+              title="Edit Meeting"
             >
               <Pencil className="w-4 h-4" />
             </button>
             <button
               onClick={() => handleAction("delete", row.original)}
               className="p-1 hover:bg-muted rounded text-muted-foreground hover:text-destructive transition-colors"
-              title="Delete"
+              title="Delete Meeting"
             >
               <Trash2 className="w-4 h-4" />
             </button>

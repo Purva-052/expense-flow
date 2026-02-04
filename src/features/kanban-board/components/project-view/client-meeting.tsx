@@ -203,7 +203,11 @@ export function ClientMeetingDialog({
                       Meeting Name <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter meeting name" {...field} />
+                      <Input
+                        placeholder="Enter meeting name"
+                        {...field}
+                        disabled={loading || isViewOnly}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -528,11 +532,11 @@ export function ClientMeetingListing({
         id: "actions",
         header: () => <div className="text-right">Actions</div>,
         cell: ({ row }) => (
-          <div className="flex items-center justify-end gap-1">
+          <div className="flex items-center gap-1">
             <button
               onClick={() => handleAction("view", row.original)}
               className="p-2 hover:bg-muted rounded-md text-muted-foreground hover:text-primary transition-colors"
-              title="View Details"
+              title="View Meeting"
               aria-label="View meeting details"
             >
               <Eye className="h-4 w-4" />
