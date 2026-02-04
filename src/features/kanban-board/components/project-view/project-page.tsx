@@ -511,7 +511,7 @@ const ProjectPage = ({
                       >
                         <div className="flex -space-x-2 mb-2 items-center">
                           {p?.developerAllocations
-                            ?.slice(0, 10)
+                            ?.slice(0, 8)
                             .map((allocation: any) => {
                               const isMyChip =
                                 allocation.developer.id === currentUserId;
@@ -533,12 +533,12 @@ const ProjectPage = ({
                                 />
                               );
                             })}
-                            {p?.developerAllocations?.length > 10 && (
+                            {p?.developerAllocations?.length > 8 && (
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <div className="flex items-center justify-center h-10 w-10 rounded-full border-2 border-white bg-gray-100 text-[10px] font-bold text-gray-600 relative z-10 cursor-default hover:bg-gray-200 transition-colors">
-                                      +{p.developerAllocations.length - 10}
+                                      +{p.developerAllocations.length - 8}
                                     </div>
                                   </TooltipTrigger>
                                   <TooltipContent>
@@ -547,7 +547,7 @@ const ProjectPage = ({
                                         Additional Team Members:
                                       </p>
                                       {p.developerAllocations
-                                        .slice(10)
+                                        .slice(8)
                                         .map((allocation: any) => {
                                           const isMyChip =
                                             allocation.developer.id ===
