@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+// import { Textarea } from "@/components/ui/textarea";
 import { DailyReport } from "../schema";
 import { ProjectSelect } from "./project-select";
 import {
@@ -277,8 +277,17 @@ export function DailyReportDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] p-0 flex flex-col">
-        <DialogHeader className="px-6 py-4 border-b">
+      <DialogContent
+        className="
+    sm:max-w-2xl
+    max-h-[90vh]
+    p-0
+    flex
+    flex-col
+  "
+      >
+        {/* HEADER */}
+        <DialogHeader className="px-6 py-4 border-b shrink-0">
           <DialogTitle>
             {isDescriptionOnly
               ? "Work Description"
@@ -288,6 +297,7 @@ export function DailyReportDialog({
                   ? "Edit Daily Report"
                   : "Add Daily Report"}
           </DialogTitle>
+
           <DialogDescription className="sr-only">
             {isDescriptionOnly
               ? "View work description"
@@ -301,25 +311,20 @@ export function DailyReportDialog({
           </div>
         ) : (
           <Form {...form}>
-            {/* 
-                FIX 3: Added 'key'. 
-                When fetchedReport changes (API loads), this forces the form 
-                to re-render. This ensures the Select components pick up 
-                the values from form.reset() immediately.
-            */}
             <form
               key={fetchedReport?.id || "form-key"}
               onSubmit={form.handleSubmit(onSubmit)}
-              className="flex flex-col flex-1 overflow-hidden"
+              className="flex flex-col flex-1 min-h-0"
             >
-              <ScrollArea className="flex-1 p-6">
+              {/* ✅ ONLY THIS AREA SCROLLS */}
+              <ScrollArea className="flex-1 min-h-0 px-6 py-4">
                 {isDescriptionOnly ? (
                   <div className="space-y-4">
                     <WorkDescriptionEditor
                       placeholder="What did you work on?"
                       value={form.getValues("taskDescription")}
                       onChange={() => {}}
-                      disabled={true}
+                      disabled
                     />
                   </div>
                 ) : (
@@ -352,7 +357,6 @@ export function DailyReportDialog({
                                 className="bg-gray-100"
                               />
                             </FormControl>
-                            <FormMessage />
                           </FormItem>
                         )}
                       />
@@ -453,7 +457,8 @@ export function DailyReportDialog({
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>
-                              Description <span className="text-red-500">*</span>
+                              Description{" "}
+                              <span className="text-red-500">*</span>
                             </FormLabel>
                             <FormControl>
                               <WorkDescriptionEditor
@@ -479,7 +484,7 @@ export function DailyReportDialog({
                                 Hours <span className="text-red-500">*</span>
                               </FormLabel>
                               <Select
-                                key={`hours-${field.value}-${fetchedReport?.id || "new"}`} // Force re-render when value changes
+                                key={`hours-${field.value}-${fetchedReport?.id || "new"}`}
                                 onValueChange={field.onChange}
                                 value={field.value}
                               >
@@ -496,7 +501,6 @@ export function DailyReportDialog({
                                   ))}
                                 </SelectContent>
                               </Select>
-                              <FormMessage />
                             </FormItem>
                           )}
                         />
@@ -512,7 +516,7 @@ export function DailyReportDialog({
                                 Minutes <span className="text-red-500">*</span>
                               </FormLabel>
                               <Select
-                                key={`minutes-${field.value}-${fetchedReport?.id || "new"}`} // Force re-render when value changes
+                                key={`minutes-${field.value}-${fetchedReport?.id || "new"}`}
                                 onValueChange={field.onChange}
                                 value={field.value}
                               >
@@ -535,14 +539,13 @@ export function DailyReportDialog({
                                   })}
                                 </SelectContent>
                               </Select>
-                              <FormMessage />
                             </FormItem>
                           )}
                         />
                       </div>
                     </div>
 
-                    <div className="col-span-2">
+                    {/* <div className="col-span-2">
                       <FormField
                         control={form.control}
                         name="remark"
@@ -550,18 +553,18 @@ export function DailyReportDialog({
                           <FormItem>
                             <FormLabel>Remarks</FormLabel>
                             <FormControl>
-                              <Textarea {...field} disabled={isView} />
+                              <Textarea {...field} disabled={isView} rows={1}/>
                             </FormControl>
-                            <FormMessage />
                           </FormItem>
                         )}
                       />
-                    </div>
+                    </div> */}
                   </div>
                 )}
               </ScrollArea>
 
-              <div className="px-6 py-4 border-t flex justify-end gap-2 bg-white">
+              {/* FOOTER */}
+              <div className="px-6 py-4 border-t flex justify-end gap-2 bg-white shrink-0">
                 {isView || isDescriptionOnly ? (
                   <Button
                     type="button"
