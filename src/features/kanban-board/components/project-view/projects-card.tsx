@@ -214,20 +214,68 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
               </Tooltip>
             </TooltipProvider>
 
-            <div className="flex flex-col gap-2">
-              <div className="mt-1">
-                <div
-                  className={cn(
-                    "inline-flex px-3 py-1 rounded-full text-xs font-medium capitalize",
-                    getStatusBadgeClasses(currentStatus),
-                    canEditStatus && "cursor-pointer hover:bg-gray-200"
-                  )}
-                  onClick={() => canEditStatus && setStatusDialogOpen(true)}
+            {/* Dropdown Menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="p-1 rounded-full hover:bg-gray-200"
                 >
-                  {currentStatus.replace(/-/g, " ")}
-                </div>
-              </div>
-            </div>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              {isDeveloperView ? (
+                <DropdownMenuContent side="bottom" align="end">
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem onClick={() => setOpenDrawer(true)}>
+                      View Details
+                    </DropdownMenuItem>
+                    {/* <DropdownMenuItem onClick={handleViewTimeline}>
+                    View Timeline
+                  </DropdownMenuItem>
+                  {canEditStatus && (
+                    <DropdownMenuItem onClick={() => setStatusDialogOpen(true)}>
+                      Change Status
+                    </DropdownMenuItem>
+                  )} */}
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              ) : (
+                <DropdownMenuContent side="bottom" align="end">
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem onClick={() => setOpenDrawer(true)}>
+                      View Details
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleViewTimeline}>
+                      View Timeline
+                    </DropdownMenuItem>
+                    {canEditStatus && (
+                      <>
+                        <DropdownMenuItem
+                          onClick={() => setStatusDialogOpen(true)}
+                        >
+                          Change Status
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setCurrentRow(project);
+                            setOpen("edit");
+                          }}
+                        >
+                          Edit Project
+                        </DropdownMenuItem>
+                        {/* <DropdownMenuItem
+                        onClick={() => setStatusDialogOpen(true)}
+                      >
+                        Delete Project
+                      </DropdownMenuItem> */}
+                      </>
+                    )}
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              )}
+            </DropdownMenu>
 
             {/* Removed triggerless DropdownMenu */}
           </div>
@@ -243,67 +291,20 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
               Deadline: {deadline}
             </span>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="p-1 rounded-full hover:bg-gray-200"
+          <div className="flex flex-col gap-2">
+            <div className="mt-1">
+              <div
+                className={cn(
+                  "inline-flex px-3 py-1 rounded-full text-xs font-medium capitalize",
+                  getStatusBadgeClasses(currentStatus),
+                  canEditStatus && "cursor-pointer hover:bg-gray-200"
+                )}
+                onClick={() => canEditStatus && setStatusDialogOpen(true)}
               >
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            {isDeveloperView ? (
-              <DropdownMenuContent side="bottom" align="end">
-                <DropdownMenuGroup>
-                  <DropdownMenuItem onClick={() => setOpenDrawer(true)}>
-                    View Details
-                  </DropdownMenuItem>
-                  {/* <DropdownMenuItem onClick={handleViewTimeline}>
-                    View Timeline
-                  </DropdownMenuItem>
-                  {canEditStatus && (
-                    <DropdownMenuItem onClick={() => setStatusDialogOpen(true)}>
-                      Change Status
-                    </DropdownMenuItem>
-                  )} */}
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            ) : (
-              <DropdownMenuContent side="bottom" align="end">
-                <DropdownMenuGroup>
-                  <DropdownMenuItem onClick={() => setOpenDrawer(true)}>
-                    View Details
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleViewTimeline}>
-                    View Timeline
-                  </DropdownMenuItem>
-                  {canEditStatus && (
-                    <>
-                      <DropdownMenuItem
-                        onClick={() => setStatusDialogOpen(true)}
-                      >
-                        Change Status
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => {
-                          setCurrentRow(project);
-                          setOpen("edit");
-                        }}
-                      >
-                        Edit Project
-                      </DropdownMenuItem>
-                      {/* <DropdownMenuItem
-                        onClick={() => setStatusDialogOpen(true)}
-                      >
-                        Delete Project
-                      </DropdownMenuItem> */}
-                    </>
-                  )}
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            )}
-          </DropdownMenu>
+                {currentStatus.replace(/-/g, " ")}
+              </div>
+            </div>
+          </div>
         </div>
         <div className="flex justify-between">
           <span className="text-xs text-muted-foreground mb-1">Progress</span>
