@@ -1,10 +1,17 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/components/resource-card.tsx
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ProjectChip } from "./project-chip";
 import { useDroppable } from "@dnd-kit/core";
 import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Briefcase } from "lucide-react";
+// import { useUsersStore } from "../../users/stores/useUsersStore";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // ✅ Helper: Calculate years of experience
 const getYearsOfExperience = (
@@ -28,93 +35,186 @@ const getYearsOfExperience = (
 
 export const ResourceCard = ({ developer }: { developer: any }) => {
   const techColor = developer?.technology?.color || "#e2e8f0";
+  // const { setOpen, setCurrentRow } = useUsersStore();
 
-  // --- dnd-kit hook to make the card a drop zone ---
   const { setNodeRef, isOver } = useDroppable({
-    id: developer.id, // The unique ID for this droppable area
+    id: developer.id,
   });
 
-  // ✅ Calculate developer experience
   const experience = getYearsOfExperience(developer?.careerStartDate);
+  const profilePic = developer.profilePicUrl || developer.avatarUrl;
+
+  // const handleViewDetails = () => {
+  //   setCurrentRow(developer);
+  //   setOpen("view");
+  // };
+
+  const joinDate = developer?.careerStartDate
+    ? new Date(developer.careerStartDate).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+    : "N/A";
+
+  const allProjects = [
+    ...(developer.activeProjects || []),
+    ...(developer.handledProjects || []),
+  ];
+  const PROJECT_LIMIT = 2;
+  const displayedProjects = allProjects.slice(0, PROJECT_LIMIT);
+  const overflowCount = allProjects.length - PROJECT_LIMIT;
 
   return (
-    <Card
+    <div
       ref={setNodeRef}
       className={cn(
-        "overflow-hidden transition-shadow duration-300 hover:shadow-lg py-0",
-        isOver ? "ring-2 ring-pink-500 ring-offset-2" : ""
+        "bg-white border-l-4 rounded-lg shadow-sm p-6 hover:shadow-md transition-all duration-300 relative",
+        developer?.technology?.color ? "" : "border-l-gray-300",
+        isOver && "ring-2 ring-primary bg-primary/5"
       )}
+      style={
+        developer?.technology?.color
+          ? { borderLeftColor: developer.technology.color }
+          : undefined
+      }
     >
-      <CardContent className="p-0">
-        <div className="grid grid-cols-1 items-start lg:grid-cols-[230px_1fr]">
-          {/* Left Side: Developer Details */}
-          <div
-            className={`flex flex-col gap-3 p-4 bg-secondary/50 h-full ${
-              developer?.technology?.color ? "border-l-8" : ""
-            }`}
-            style={
-              developer?.technology?.color
-                ? { borderColor: developer.technology.color }
-                : undefined
-            }
-          >
-            <div className="flex w-full items-start justify-between">
-              <div className="flex justify-between w-full overflow-hidden flex-wrap gap-3">
-                <div className="flex flex-col">
-                  <h3 className="text-lg font-bold text-card-foreground wrap-break-word leading-tight">
-                    {developer.fullName}
-                  </h3>
-
-                  {/* ✅ Show Experience under the name */}
-                  {experience && (
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {experience}
-                    </p>
-                  )}
-                </div>
-
-                {developer?.technology && (
-                  <div className="items-start flex justify-start flex-wrap">
-                    <Badge
-                      className="text-xs text-white"
-                      style={{ backgroundColor: techColor }}
-                    >
-                      {developer?.technology?.name}
-                    </Badge>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Right Side: Displays only projects from the initial API fetch */}
-          <div className="p-4 min-h-[100px] bg-transparent">
-            {developer?.activeProjects?.length > 0 ||
-            developer?.handledProjects?.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {developer.activeProjects?.map((project: any) => {
-                  return (
-                    <ProjectChip
-                      key={`assigned-${project.id}`}
-                      project={project}
-                    />
-                  );
-                })}
-                {developer.handledProjects?.map((project: any) => (
-                  <ProjectChip
-                    key={`handled-${project.id}`}
-                    project={project}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="flex items-center justify-center text-sm text-muted-foreground h-full min-h-[80px]">
-                <p>No projects assigned.</p>
+      {/* Header */}
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start gap-3">
+          <Avatar className="h-12 w-12 shrink-0 border-2 border-white shadow-sm">
+            <AvatarImage
+              src={
+                profilePic ||
+                `https://api.dicebear.com/7.x/avataaars/svg?seed=${developer.fullName}`
+              }
+              alt={developer.fullName}
+            />
+            <AvatarFallback>{developer.fullName?.charAt(0)}</AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col min-w-0">
+            <h3 className="text-lg font-semibold text-gray-900 leading-tight truncate">
+              {developer.fullName}
+            </h3>
+            {experience && (
+              <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground font-medium">
+                <Briefcase className="h-3.5 w-3.5" />
+                <span>{experience}</span>
               </div>
             )}
           </div>
         </div>
-      </CardContent>
-    </Card>
+
+        {/* <div className="shrink-0">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info
+                  className="h-5 w-5 cursor-pointer text-muted-foreground hover:text-primary transition-colors"
+                  onClick={handleViewDetails}
+                />
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-sm">
+                User Details
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div> */}
+      </div>
+
+      {/* Technology Badge */}
+      {developer?.technology && (
+        <div className="mb-4">
+          <Badge
+            className="text-[10px] text-white px-2.5 py-0.5 rounded uppercase font-bold tracking-wider"
+            style={{ backgroundColor: techColor }}
+          >
+            {developer?.technology?.name}
+          </Badge>
+        </div>
+      )}
+
+      {/* Projects Section */}
+      <div className="mb-4 min-h-[40px] border-t border-gray-50 pt-4">
+        {allProjects.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {displayedProjects.map((project: any) => (
+              <ProjectChip key={`project-${project.id}`} project={project} />
+            ))}
+            {overflowCount > 0 && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge
+                      variant="secondary"
+                      className="cursor-default py-1 whitespace-nowrap"
+                    >
+                      + {overflowCount} more
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1">
+                      More Projects:
+                    </p>
+                    <ul className="text-xs space-y-1">
+                      {allProjects.slice(PROJECT_LIMIT).map((p: any) => (
+                        <li key={p.id} className="flex items-center gap-1.5">
+                          <span className="w-1 h-1 rounded-full bg-primary" />
+                          {p.name}
+                        </li>
+                      ))}
+                    </ul>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground italic">
+            No projects assigned.
+          </p>
+        )}
+      </div>
+
+      {/* Details Grid (2x2) */}
+      <div className="grid grid-cols-2 gap-x-6 gap-y-4 border-t border-gray-100 pt-4 mt-auto">
+        <div>
+          <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">
+            Email
+          </p>
+          <p
+            className="text-xs font-semibold text-gray-800 truncate"
+            title={developer.email}
+          >
+            {developer.email || "N/A"}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">
+            Role
+          </p>
+          <p className="text-xs font-semibold text-gray-800 capitalize">
+            {developer.role?.replace(/_/g, " ") || "N/A"}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">
+            Technology
+          </p>
+          <p className="text-xs font-semibold text-gray-800">
+            {developer?.technology?.name || "N/A"}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">
+            Join Date
+          </p>
+          <p className="text-xs font-semibold text-gray-800">{joinDate}</p>
+        </div>
+      </div>
+    </div>
   );
 };
