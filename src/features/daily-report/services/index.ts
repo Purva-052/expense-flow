@@ -74,3 +74,18 @@ export const useGetTaskLogs = (taskId: string | number, params?: any) => {
     enabled: !!taskId,
   });
 };
+
+export const useGetReportsAnalytics = () => {
+  return useFetchData({
+    url: API.daily_report.report_analytics,
+  });
+};
+
+export const useGetReportDetails = (params: { type: string; [key: string]: any }) => {
+  return useFetchData({
+    url: `${API.daily_report.report_details}`,
+    params,
+    enabled: !!params.type,
+  });
+};
+

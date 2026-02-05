@@ -95,7 +95,9 @@ export const TaskActions = ({
                 size="icon"
                 className="h-8 w-8"
                 onClick={() => setUpdateStatusOpen(true)}
-                disabled={task.status === "pending"}
+                disabled={
+                  task.status === "pending" || task.status === "completed"
+                }
               >
                 <Check
                   className={cn(

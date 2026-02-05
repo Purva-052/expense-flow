@@ -9,6 +9,7 @@ import {
   useGetDailyReportList,
   useGetProjectMilestonesList,
   useGetTasksDropdownList,
+  useGetReportsAnalytics,
 } from "./services";
 import { columns } from "./components/columns";
 import { useGetProjectSDropdownList } from "../Project-type/services";
@@ -21,6 +22,8 @@ import { DeleteModal } from "@/components/model/delete-model";
 import { useDeleteDailyReport } from "./services";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ReportsStatsDialog } from "./components/reports-stats-dialog";
 
 export default function DailyReportPage() {
   const { user } = useAuthStore();
@@ -42,6 +45,10 @@ export default function DailyReportPage() {
   const [viewOpen, setViewOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [reportType, setReportType] = useState<"pending" | "incomplete" | null>(
+    null
+  );
+  const [statsOpen, setStatsOpen] = useState(false);
 
   const queryClient = useQueryClient();
   const { mutate: deleteReport, isPending: isDeleting } = useDeleteDailyReport(
@@ -77,6 +84,14 @@ export default function DailyReportPage() {
     employeeId: listParams.employeeId,
     fromDate: listParams.fromDate,
     toDate: listParams.toDate,
+  };
+
+  const { data: analyticsData } = useGetReportsAnalytics();
+  const analytics = (analyticsData as any)?.data;
+
+  const handleCardClick = (type: "pending" | "incomplete") => {
+    setReportType(type);
+    setStatsOpen(true);
   };
 
   const { data: listData, isPending: loading } =
@@ -240,75 +255,145 @@ export default function DailyReportPage() {
 
   return (
     <PageLayout>
-      <TablePageHeader title="Daily Reports" showActionButton={false}>
-        Get list of daily report logs
-      </TablePageHeader>
-      <GlobalFilterSection
-        filters={filters.filter((f) => {
-          if (f.key === "milestoneId" && !listParams.projectId) {
-            return false;
-          }
-          if (f.key === "taskId" && !listParams.projectMilestoneId) {
-            return false;
-          }
-          if (f.key === "employeeId") {
-            const userRole = String(
-              user?.user?.role?.name || user?.user?.role
-            ).toLowerCase();
-            return (
-              userRole === roles.ADMIN ||
-              userRole === roles.TEAM_LEAD ||
-              userRole === roles.PROJECT_MANAGER
-            );
-          }
-          return true;
-        })}
-      />
-      <GlobalTable<DailyReport>
-        pageSize={listParams.pageSize}
-        currentPage={listParams.currentPage}
-        totalCount={totalCount ?? 0}
-        data={(listData as any)?.data ?? []}
-        onPaginationChange={handlePaginationChange}
-        columns={columns(
-          handleEdit,
-          handleDelete,
-          handleView,
-          String(user?.user?.role?.name || user?.user?.role).toLowerCase()
-        ).filter((col) => {
-          if ((col as any).accessorKey === "employee.fullName") {
-            const userRole = String(
-              user?.user?.role?.name || user?.user?.role
-            ).toLowerCase();
-            return (
-              userRole === roles.ADMIN ||
-              userRole === roles.TEAM_LEAD ||
-              userRole === roles.PROJECT_MANAGER
-            );
-          }
-          return true;
-        })}
-        loading={loading}
-        isPaginationEnabled
-      />
-      <DailyReportDialog
-        open={editOpen}
-        onOpenChange={setEditOpen}
-        report={editReport}
-      />
-      <DailyReportDialog
-        open={viewOpen}
-        onOpenChange={setViewOpen}
-        report={viewReport}
-        isView={true}
-        isDescriptionOnly={true}
-      />
-      <DeleteModal
-        isOpen={deleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        onConfirm={() => deleteId && deleteReport(deleteId)}
-        loading={isDeleting}
-      />
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card
+            className={`cursor-pointer transition-all hover:shadow-md ${
+              reportType === "pending"
+                ? "border-orange-500 bg-orange-50/50"
+                : "hover:border-orange-200"
+            }`}
+            onClick={() => handleCardClick("pending")}
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-orange-600">
+                Pending Reports
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {analytics?.pendingCount ?? 0}
+              </div>
+            </CardContent>
+          </Card>
+          <Card
+            className={`cursor-pointer transition-all hover:shadow-md ${
+              reportType === "incomplete"
+                ? "border-red-500 bg-red-50/50"
+                : "hover:border-red-200"
+            }`}
+            onClick={() => handleCardClick("incomplete")}
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-red-600">
+                Incomplete Reports
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {analytics?.incompleteCount ?? 0}
+              </div>
+            </CardContent>
+          </Card>
+          <Card
+            className={`cursor-pointer transition-all hover:shadow-md ${
+              reportType === "incomplete"
+                ? "border-red-500 bg-red-50/50"
+                : "hover:border-red-200"
+            }`}
+            onClick={() => handleCardClick("incomplete")}
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-indigo-500">
+                Total Holidays
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {analytics?.holidayCount ?? 0}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <TablePageHeader title="Daily Reports" showActionButton={false}>
+          Get list of daily report logs
+        </TablePageHeader>
+
+        <GlobalFilterSection
+          filters={filters.filter((f) => {
+            if (f.key === "milestoneId" && !listParams.projectId) {
+              return false;
+            }
+            if (f.key === "taskId" && !listParams.projectMilestoneId) {
+              return false;
+            }
+            if (f.key === "employeeId") {
+              const userRole = String(
+                user?.user?.role?.name || user?.user?.role
+              ).toLowerCase();
+              return (
+                userRole === roles.ADMIN ||
+                userRole === roles.TEAM_LEAD ||
+                userRole === roles.PROJECT_MANAGER
+              );
+            }
+            return true;
+          })}
+        />
+        <GlobalTable<DailyReport>
+          pageSize={listParams.pageSize}
+          currentPage={listParams.currentPage}
+          totalCount={totalCount ?? 0}
+          data={(listData as any)?.data ?? []}
+          onPaginationChange={handlePaginationChange}
+          columns={columns(
+            handleEdit,
+            handleDelete,
+            handleView,
+            String(user?.user?.role?.name || user?.user?.role).toLowerCase()
+          ).filter((col) => {
+            if ((col as any).accessorKey === "employee.fullName") {
+              const userRole = String(
+                user?.user?.role?.name || user?.user?.role
+              ).toLowerCase();
+              return (
+                userRole === roles.ADMIN ||
+                userRole === roles.TEAM_LEAD ||
+                userRole === roles.PROJECT_MANAGER
+              );
+            }
+            return true;
+          })}
+          loading={loading}
+          isPaginationEnabled
+        />
+
+        <DailyReportDialog
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          report={editReport}
+        />
+        <DailyReportDialog
+          open={viewOpen}
+          onOpenChange={setViewOpen}
+          report={viewReport}
+          isView={true}
+          isDescriptionOnly={true}
+        />
+        <DeleteModal
+          isOpen={deleteOpen}
+          onClose={() => setDeleteOpen(false)}
+          onConfirm={() => deleteId && deleteReport(deleteId)}
+          loading={isDeleting}
+        />
+        <ReportsStatsDialog
+          open={statsOpen}
+          onOpenChange={setStatsOpen}
+          type={reportType}
+          reportingDate={listParams.fromDate}
+        />
+      </div>
     </PageLayout>
   );
 }
