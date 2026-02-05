@@ -2,7 +2,6 @@ import { useState } from "react";
 import PageLayout from "@/components/layout/layout-provider";
 import { GlobalTable } from "@/components/table/global-table";
 import GlobalFilterSection from "@/components/table/global-table-filter";
-import TablePageHeader from "@/components/table/table-page-header";
 import { FilterConfig } from "@/components/table/table-toolbar";
 // import { PaginationState } from "@tanstack/react-table";
 import {
@@ -22,8 +21,9 @@ import { DeleteModal } from "@/components/model/delete-model";
 import { useDeleteDailyReport } from "./services";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { ReportsStatsDialog } from "./components/reports-stats-dialog";
+import { Clock, AlertCircle, CalendarDays } from "lucide-react";
 
 export default function DailyReportPage() {
   const { user } = useAuthStore();
@@ -256,69 +256,104 @@ export default function DailyReportPage() {
   return (
     <PageLayout>
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Pending Reports Card */}
           <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
+            className={`border transition-all cursor-pointer hover:shadow-md ${
               reportType === "pending"
-                ? "border-orange-500 bg-orange-50/50"
-                : "hover:border-orange-200"
+                ? "bg-orange-50 border-orange-200 ring-2 ring-orange-100"
+                : "border-slate-200"
             }`}
             onClick={() => handleCardClick("pending")}
           >
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-orange-600">
-                Pending Reports
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
+            <CardContent className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <span
+                  className={`text-xs font-semibold uppercase tracking-wide ${
+                    reportType === "pending" ? "text-orange-700" : "text-slate-400"
+                  }`}
+                >
+                  Pending Reports
+                </span>
+                <div
+                  className={`p-2 rounded-xl ${
+                    reportType === "pending"
+                      ? "bg-orange-200 text-orange-700"
+                      : "bg-orange-50 text-orange-500"
+                  }`}
+                >
+                  <Clock size={20} />
+                </div>
+              </div>
+              <div
+                className={`text-3xl font-bold tracking-tight ${
+                  reportType === "pending" ? "text-orange-900" : "text-slate-900"
+                }`}
+              >
                 {analytics?.pendingCount ?? 0}
               </div>
             </CardContent>
           </Card>
+
+          {/* Incomplete Reports Card */}
           <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
+            className={`border transition-all cursor-pointer hover:shadow-md ${
               reportType === "incomplete"
-                ? "border-red-500 bg-red-50/50"
-                : "hover:border-red-200"
+                ? "bg-red-50 border-red-200 ring-2 ring-red-100"
+                : "border-slate-200"
             }`}
             onClick={() => handleCardClick("incomplete")}
           >
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-red-600">
-                Incomplete Reports
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
+            <CardContent className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <span
+                  className={`text-xs font-semibold uppercase tracking-wide ${
+                    reportType === "incomplete" ? "text-red-700" : "text-slate-400"
+                  }`}
+                >
+                  Incomplete Reports
+                </span>
+                <div
+                  className={`p-2 rounded-xl ${
+                    reportType === "incomplete"
+                      ? "bg-red-200 text-red-700"
+                      : "bg-red-50 text-red-500"
+                  }`}
+                >
+                  <AlertCircle size={20} />
+                </div>
+              </div>
+              <div
+                className={`text-3xl font-bold tracking-tight ${
+                  reportType === "incomplete" ? "text-red-900" : "text-slate-900"
+                }`}
+              >
                 {analytics?.incompleteCount ?? 0}
               </div>
             </CardContent>
           </Card>
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              reportType === "incomplete"
-                ? "border-red-500 bg-red-50/50"
-                : "hover:border-red-200"
-            }`}
-            onClick={() => handleCardClick("incomplete")}
-          >
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-indigo-500">
-                Total Holidays
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
+
+          {/* Total Holidays Card */}
+          <Card className="border-slate-200 hover:shadow-md transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
+                  Total Holidays
+                </span>
+                <div className="p-2 bg-indigo-50 text-indigo-500 rounded-xl">
+                  <CalendarDays size={20} />
+                </div>
+              </div>
+              <div className="text-3xl font-bold text-slate-900 tracking-tight">
                 {analytics?.holidayCount ?? 0}
               </div>
             </CardContent>
           </Card>
         </div>
 
-        <TablePageHeader title="Daily Reports" showActionButton={false}>
+        {/* <TablePageHeader title="Daily Reports" showActionButton={false}>
           Get list of daily report logs
-        </TablePageHeader>
+        </TablePageHeader> */}
 
         <GlobalFilterSection
           filters={filters.filter((f) => {
