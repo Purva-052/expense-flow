@@ -181,19 +181,19 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
   ];
 
   const projectFilters: FilterConfig[] = [
-    ...(userRole !== roles.ADMIN && userRole !== roles.PROJECT_MANAGER
-      ? [
-          {
-            type: "search",
-            placeholder: "Search by project name ...",
-            key: "search",
-            value: projectSearch,
-            onChange: handleProjectSearch,
-            className: "w-[292px]",
-          },
-        ]
-      : []),
+    // ...(userRole !== roles.ADMIN && userRole !== roles.PROJECT_MANAGER
+    //   ? [
+    {
+      type: "search",
+      placeholder: "Search by project name ...",
+      key: "search",
+      value: projectSearch,
+      onChange: handleProjectSearch,
+      className: "w-[292px]",
+    },
   ];
+  // : []),
+  // ];
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -267,58 +267,62 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
               {/* Developer List */}
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 max-h-[72dvh] overflow-auto p-2 self-start">
                 {filteredUserDetails.map((dev: any) => (
-                  <ResourceCard key={dev.id} developer={dev} />
+                  <ResourceCard
+                    key={dev.id}
+                    developer={dev}
+                    isProjectHandler={isProjectHandler}
+                  />
                 ))}
               </div>
 
               {/* Project List Sidebar */}
-              {!isProjectHandler && (
-                <aside className="top-4 h-fit">
-                  <Card className="gap-0!">
-                    <CardHeader className="ps-2!">
-                      <CardTitle className="w-full text-balance flex items-center justify-between ps-2">
-                        Project List
-                      </CardTitle>
-                      <GlobalFilterSection filters={projectFilters} />
-                    </CardHeader>
-                    <CardContent className="max-h-[62dvh] overflow-auto p-2 space-y-2">
-                      {projectListLoading ? (
-                        <div className="flex flex-col justify-center items-center py-10 gap-3">
-                          <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
-                          <span className="text-sm text-muted-foreground">
-                            Loading Projects...
-                          </span>
+              {/* {!isProjectHandler && ( */}
+              <aside className="top-4 h-fit">
+                <Card className="gap-0!">
+                  <CardHeader className="ps-2!">
+                    <CardTitle className="w-full text-balance flex items-center justify-between ps-2">
+                      Project List
+                    </CardTitle>
+                    <GlobalFilterSection filters={projectFilters} />
+                  </CardHeader>
+                  <CardContent className="max-h-[62dvh] overflow-auto p-2 space-y-2">
+                    {projectListLoading ? (
+                      <div className="flex flex-col justify-center items-center py-10 gap-3">
+                        <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
+                        <span className="text-sm text-muted-foreground">
+                          Loading Projects...
+                        </span>
+                      </div>
+                    ) : projectList?.length > 0 ? (
+                      projectList.map((project: any) => (
+                        <DraggableProjectChip
+                          key={`draggable-${project?.id}`}
+                          project={project}
+                        />
+                      ))
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-10 text-center transition-all duration-300 hover:bg-muted/30">
+                        <div className="mb-3 p-3 rounded-full bg-muted">
+                          <Users className="h-8 w-8 text-muted-foreground/70" />
                         </div>
-                      ) : projectList?.length > 0 ? (
-                        projectList.map((project: any) => (
-                          <DraggableProjectChip
-                            key={`draggable-${project.id}`}
-                            project={project}
-                          />
-                        ))
-                      ) : (
-                        <div className="flex flex-col items-center justify-center py-10 text-center transition-all duration-300 hover:bg-muted/30">
-                          <div className="mb-3 p-3 rounded-full bg-muted">
-                            <Users className="h-8 w-8 text-muted-foreground/70" />
-                          </div>
-                          <h3 className="text-lg font-semibold text-muted-foreground">
-                            No projects found
-                          </h3>
-                          <p className="text-sm text-muted-foreground/70 mt-1">
-                            There are currently no projects to display.
-                          </p>
-                        </div>
-                      )}
-                      <div ref={loadMoreRef} className="h-2" />
-                      {isFetchingNextPage && (
-                        <div className="flex justify-center items-center py-4">
-                          <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </aside>
-              )}
+                        <h3 className="text-lg font-semibold text-muted-foreground">
+                          No projects found
+                        </h3>
+                        <p className="text-sm text-muted-foreground/70 mt-1">
+                          There are currently no projects to display.
+                        </p>
+                      </div>
+                    )}
+                    <div ref={loadMoreRef} className="h-2" />
+                    {isFetchingNextPage && (
+                      <div className="flex justify-center items-center py-4">
+                        <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </aside>
+              {/* )} */}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-10 text-center border border-dashed rounded-lg mt-4">

@@ -17,7 +17,7 @@ export const ProjectChip = ({ project }: { project: any }) => {
   return (
     <div
       className={cn(
-        "flex flex-col gap-2 rounded-lg border p-3 text-sm shadow-sm bg-secondary/50",
+        "flex flex-col gap-2 rounded-full border p-2 text-sm shadow-sm bg-secondary/50",
         getBorderColor()
       )}
     >
@@ -30,8 +30,8 @@ export const ProjectChip = ({ project }: { project: any }) => {
             />
           )}
           <Briefcase className="h-4 w-4 text-muted-foreground shrink-0" />
-          <span className="truncate text-wrap font-bold text-card-foreground">
-            {project.name}
+          <span className="truncate text-wrap font-semibold text-card-foreground">
+            {project?.name}
           </span>
           {workinghours > 0 && (
             <span className="text-sm font-semibold text-muted-foreground shrink-0">
