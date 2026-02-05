@@ -260,11 +260,7 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
               </p>
             </div>
           ) : filteredUserDetails?.length > 0 ? (
-            <div
-              className={`grid grid-cols-1 gap-4 ${
-                !isProjectHandler ? "md:grid-cols-[1fr_320px]" : ""
-              }`}
-            >
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_320px] gap-4">
               {/* Developer List */}
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 max-h-[72dvh] overflow-auto p-2 self-start">
                 {filteredUserDetails.map((dev: any) => (

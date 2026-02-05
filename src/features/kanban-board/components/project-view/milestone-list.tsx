@@ -294,8 +294,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
                   value={String(m.id)}
                   className={`
           ${tabTriggerClass}
-          max-w-45
-          truncate
+          max-w-[400px]
           flex
           items-center
           gap-1
