@@ -33,7 +33,13 @@ const getYearsOfExperience = (
   return `${formattedYears} Year`;
 };
 
-export const ResourceCard = ({ developer }: { developer: any }) => {
+export const ResourceCard = ({
+  developer,
+  isProjectHandler,
+}: {
+  developer: any;
+  isProjectHandler?: boolean;
+}) => {
   const techColor = developer?.technology?.color || "#e2e8f0";
   // const { setOpen, setCurrentRow } = useUsersStore();
 
@@ -61,7 +67,7 @@ export const ResourceCard = ({ developer }: { developer: any }) => {
     ...(developer.activeProjects || []),
     ...(developer.handledProjects || []),
   ];
-  const PROJECT_LIMIT = 2;
+  const PROJECT_LIMIT = isProjectHandler ? 6 : 2;
   const displayedProjects = allProjects.slice(0, PROJECT_LIMIT);
   const overflowCount = allProjects.length - PROJECT_LIMIT;
 
@@ -69,19 +75,19 @@ export const ResourceCard = ({ developer }: { developer: any }) => {
     <div
       ref={setNodeRef}
       className={cn(
-        "bg-white border-l-4 rounded-lg shadow-sm p-6 hover:shadow-md transition-all duration-300 relative",
-        developer?.technology?.color ? "" : "border-l-gray-300",
+        "bg-white border-l-4 border-b-4 rounded-lg shadow-sm p-6 hover:shadow-md transition-all duration-300 relative h-full flex flex-col",
+        !developer?.technology?.color && "border-b-gray-300",
         isOver && "ring-2 ring-primary bg-primary/5"
       )}
       style={
         developer?.technology?.color
-          ? { borderLeftColor: developer.technology.color }
+          ? { borderBottomColor: developer.technology.color , borderLeftColor: developer.technology.color}
           : undefined
       }
     >
       {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-start gap-3">
+      <div className="flex items-start justify-between mb-2">
+        <div className="flex gap-3 items-center">
           <Avatar className="h-12 w-12 shrink-0 border-2 border-white shadow-sm">
             <AvatarImage
               src={
@@ -93,7 +99,7 @@ export const ResourceCard = ({ developer }: { developer: any }) => {
             <AvatarFallback>{developer.fullName?.charAt(0)}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col min-w-0">
-            <h3 className="text-lg font-semibold text-gray-900 leading-tight truncate">
+            <h3 className="text-md font-semibold text-gray-800 leading-tight truncate">
               {developer.fullName}
             </h3>
             {experience && (
@@ -104,6 +110,15 @@ export const ResourceCard = ({ developer }: { developer: any }) => {
             )}
           </div>
         </div>
+
+        {!isProjectHandler && (
+          <div className="flex flex-col items-end gap-1">
+            <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider">
+              Join Date
+            </p>
+            <p className="text-xs font-semibold text-gray-800">{joinDate}</p>
+          </div>
+        )}
 
         {/* <div className="shrink-0">
           <TooltipProvider>
@@ -135,9 +150,9 @@ export const ResourceCard = ({ developer }: { developer: any }) => {
       )}
 
       {/* Projects Section */}
-      <div className="mb-4 min-h-[40px] border-t border-gray-50 pt-4">
+      <div className="mb-4 min-h-[48px] border-t border-gray-50 pt-4 flex-grow">
         {allProjects.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 items-start content-start">
             {displayedProjects.map((project: any) => (
               <ProjectChip key={`project-${project.id}`} project={project} />
             ))}
@@ -159,7 +174,12 @@ export const ResourceCard = ({ developer }: { developer: any }) => {
                     <ul className="text-xs space-y-1">
                       {allProjects.slice(PROJECT_LIMIT).map((p: any) => (
                         <li key={p.id} className="flex items-center gap-1.5">
-                          <span className="w-1 h-1 rounded-full bg-primary" />
+                          <span
+                            className={cn(
+                              "w-1.5 h-1.5 rounded-full",
+                              p.isCurrentProject ? "bg-green-500" : "bg-primary"
+                            )}
+                          />
                           {p.name}
                         </li>
                       ))}
@@ -199,21 +219,23 @@ export const ResourceCard = ({ developer }: { developer: any }) => {
           </p>
         </div>
 
-        <div>
+        {/* <div>
           <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">
             Technology
           </p>
           <p className="text-xs font-semibold text-gray-800">
             {developer?.technology?.name || "N/A"}
           </p>
-        </div>
+        </div> */}
 
-        <div>
-          <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">
-            Join Date
-          </p>
-          <p className="text-xs font-semibold text-gray-800">{joinDate}</p>
-        </div>
+        {/* {!isProjectHandler && (
+          <div>
+            <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">
+              Join Date
+            </p>
+            <p className="text-xs font-semibold text-gray-800">{joinDate}</p>
+          </div>
+        )} */}
       </div>
     </div>
   );

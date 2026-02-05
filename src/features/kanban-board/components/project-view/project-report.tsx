@@ -240,10 +240,10 @@ const ProjectReportTable = ({ projectId }: { projectId?: string | number }) => {
     projectId: projectId?.toString(),
     employeeId:
       listParams.employeeId === "all" ? undefined : listParams.employeeId,
-    startDate: listParams.dateRange?.from
+    fromDate: listParams.dateRange?.from
       ? format(listParams.dateRange.from, "yyyy-MM-dd")
       : undefined,
-    endDate: listParams.dateRange?.to
+    toDate: listParams.dateRange?.to
       ? format(listParams.dateRange.to, "yyyy-MM-dd")
       : undefined,
     search: listParams.search || undefined,
