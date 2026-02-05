@@ -26,6 +26,7 @@ import {
 import { DraggableProjectChip } from "./drragable-projectChip";
 import { ProjectChip } from "./project-chip";
 import { ResourceCard } from "./resource-card";
+import { ViewUserModal } from "@/features/users/components/view-model";
 
 const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
   const isProjectHandler = activeTab === "Project Coordinator";
@@ -264,7 +265,7 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
               }`}
             >
               {/* Developer List */}
-              <div className="space-y-4 max-h-[72dvh] overflow-auto p-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 max-h-[72dvh] overflow-auto p-2 self-start">
                 {filteredUserDetails.map((dev: any) => (
                   <ResourceCard key={dev.id} developer={dev} />
                 ))}
@@ -336,6 +337,7 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
       <DragOverlay dropAnimation={null}>
         {activeProject ? <ProjectChip project={activeProject} /> : null}
       </DragOverlay>
+      <ViewUserModal />
     </DndContext>
   );
 };
