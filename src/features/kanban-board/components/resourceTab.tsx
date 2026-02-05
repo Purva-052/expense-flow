@@ -65,7 +65,8 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
     isFetchingNextPage,
   }: any = useGetProjectsData({
     pagination: false,
-    search: projectSearch, // 👈 separate search for project list
+    search: projectSearch,
+    isPinned: false, // 👈 separate search for project list
   });
 
   const projectList = useMemo(

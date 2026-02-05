@@ -129,6 +129,8 @@ const API = {
     list: "/daily-reports",
     update: "/daily-reports",
     delete: "/daily-reports",
+    report_details: "/daily-reports/reports-stats",
+    report_analytics: "/daily-reports/reports-counts",
   },
   client_meetings: {
     create: "/client-meetings/create",

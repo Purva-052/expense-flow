@@ -46,7 +46,7 @@ const formSchema = z.object({
     .nonempty("Milestone name is required")
     .min(2, "Milestone name must be at least 2 characters")
     .max(20, "Milestone name should be less than 20 characters"),
-  estimatedTime: z.string().min(1, "Total estimated time is required"),
+  estimatedTime: z.string().optional(),
   status: z.string().min(1, "Status is required"),
   tasks: z.array(taskSchema).min(1, "At least one task is required"),
 });
@@ -229,7 +229,7 @@ export function AddManualMilestone({
                         <span className="text-red-500">*</span>
                       </FormLabel>
                       <FormControl>
-                        <Input placeholder="1h10m" {...field} />
+                        <Input placeholder="1h10m" {...field} disabled={true} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
