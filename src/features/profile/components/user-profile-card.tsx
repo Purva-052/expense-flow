@@ -289,7 +289,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                 onCreateSkill={handleCreateSkill}
                 loading={skillsLoading}
                 creating={isCreatingSkill}
-                placeholder="Add skills..."
+                placeholder="Add strengths..."
                 maxSelectedShow={5}
               />
             </div>

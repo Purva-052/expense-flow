@@ -100,6 +100,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
     }
     return list;
   }, [milestonesListResponse]);
+
   useEffect(() => {
     if (milestones.length > 0) {
       const isPresent = milestones.some((m) => String(m.id) === activeTab);
@@ -211,8 +212,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
     <>
       <div className="mb-4 flex items-center gap-2 overflow-x-auto pb-2">
         <div className="flex items-center gap-2">
-          {/* @ts-ignore */}
-          {!milestones.isExcelUploaded && canModifyMilestones && (
+          {canModifyMilestones && (
             <>
               <Button
                 onClick={downloadSample}
