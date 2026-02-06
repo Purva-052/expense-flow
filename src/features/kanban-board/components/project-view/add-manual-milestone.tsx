@@ -295,7 +295,14 @@ export function AddManualMilestone({
                               Task Name <span className="text-red-500">*</span>
                             </FormLabel>
                             <FormControl>
-                              <Input placeholder="Task Name" {...field} />
+                              <Input
+                                placeholder="Task Name"
+                                {...field}
+                                disabled={
+                                  initialData?.tasks[index].status ===
+                                  "completed"
+                                }
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -314,7 +321,14 @@ export function AddManualMilestone({
                               <span className="text-red-500">*</span>
                             </FormLabel>
                             <FormControl>
-                              <Input placeholder="1h10m" {...field} />
+                              <Input
+                                placeholder="1h10m"
+                                {...field}
+                                disabled={
+                                  initialData?.tasks[index].status ===
+                                  "completed"
+                                }
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
