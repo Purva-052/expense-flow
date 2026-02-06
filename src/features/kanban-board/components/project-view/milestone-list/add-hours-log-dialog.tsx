@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { CalendarIcon, Clock, Loader2 } from "lucide-react";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,6 +31,12 @@ import {
 } from "@/features/daily-report/services";
 import { useUpdateMileStone } from "@/features/kanban-board/services";
 import { WorkDescriptionEditor } from "@/components/shared/work-description-editor";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const parseTime = (time: string | null) => {
   if (!time) return { hours: "0", minutes: "0" };
@@ -178,15 +184,25 @@ export const AddHoursLogDialog = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {!hideTrigger && (
-        <DialogTrigger asChild>
-          <Button
-            size="sm"
-            className="bg-[#e11d48] hover:bg-[#be123c] text-white"
-            disabled={taskStatus === "completed"}
-          >
-            Add Hours Log
-          </Button>
-        </DialogTrigger>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DialogTrigger asChild>
+                <button
+                  type="button"
+                  disabled={taskStatus === "completed"}
+                  className="p-2 rounded-md hover:bg-[#fee2e2] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Clock className="h-5 w-5 text-[#e11d48]" />
+                </button>
+              </DialogTrigger>
+            </TooltipTrigger>
+
+            <TooltipContent side="top">
+              <p>Add Hours Log</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
 
       <DialogContent className="max-w-2xl">
@@ -213,6 +229,16 @@ export const AddHoursLogDialog = ({
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
+                    disabled={(date) => {
+                      const today = new Date();
+
+                      // remove time part
+                      today.setHours(0, 0, 0, 0);
+
+                      const day = date.getDay(); // 0 = Sunday, 6 = Saturday
+
+                      return date > today || day === 0 || day === 6;
+                    }}
                     mode="single"
                     selected={date}
                     onSelect={setDate}

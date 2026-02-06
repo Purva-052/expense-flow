@@ -91,9 +91,6 @@ const ProjectPage = ({
   const { data: ProjectType, isPending: LoadingProjectType }: any =
     useGetProjectTypesDropdownList();
 
-  // const activeStatuses = ["active-discovery", "running", "slow"];
-  // const inactiveStatuses = ["stop", "completed"];
-
   const getInitialFilters = () => {
     if (typeof window === "undefined")
       return {
@@ -145,10 +142,10 @@ const ProjectPage = ({
   }, [activeTab]);
 
   useEffect(() => {
-    const { clientId, managerId, priority } = listParams;
+    const { clientId, managerId, priority, isPinned } = listParams;
     localStorage.setItem(
       FILTER_STORAGE_KEY,
-      JSON.stringify({ clientId, managerId, priority })
+      JSON.stringify({ clientId, managerId, priority, isPinned })
     );
   }, [listParams, FILTER_STORAGE_KEY]);
 
@@ -179,6 +176,9 @@ const ProjectPage = ({
     );
   }, [groupedDevelopers]);
 
+  // -----------------------------------------------------------
+  // CHANGE HERE: Spreading listParams and FORCING isPinned: true
+  // -----------------------------------------------------------
   const {
     data: projectPages,
     isPending: projectListLoading,
@@ -186,7 +186,7 @@ const ProjectPage = ({
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  }: any = useGetProjectsData(listParams);
+  }: any = useGetProjectsData({ ...listParams, isPinned: true });
 
   // Extract total count from pagination metadata and notify parent when it changes
   const totalCount =
@@ -455,20 +455,6 @@ const ProjectPage = ({
     <div className="flex flex-col gap-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <GlobalFilterSection filters={filters ?? []} />
-        {/* <div className="flex flex-wrap items-center gap-3 mb-4">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-orange-500"></span>
-            <span className="text-sm font-medium">High</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
-            <span className="text-sm font-medium">Medium</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-teal-500"></span>
-            <span className="text-sm font-medium">Low</span>
-          </div>
-        </div> */}
       </div>
 
       <div
