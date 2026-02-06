@@ -27,11 +27,14 @@ import { DraggableProjectChip } from "./drragable-projectChip";
 import { ProjectChip } from "./project-chip";
 import { ResourceCard } from "./resource-card";
 import { ViewUserModal } from "@/features/users/components/view-model";
+import { useGetSkillsList } from "@/features/profile/services";
 
 const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
   const isProjectHandler = activeTab === "Project Coordinator";
   const [selectedTech, setSelectedTech] = useState<Array<string | number>>([]);
-
+  const [selectedSkill, setSelectedSkill] = useState<Array<string | number>>(
+    []
+  );
   // Separate search states for resources and projects
   const [resourceSearch, setResourceSearch] = useState<string | undefined>();
   const [projectSearch, setProjectSearch] = useState<string | undefined>();
@@ -42,6 +45,7 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
   const [listParams, setListParams] = useState<any>({
     technologyId: null,
     search: undefined,
+    skillId: null,
   });
 
   const [activeProject, setActiveProject] = useState<any | null>(null);
@@ -53,6 +57,7 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
   const apiParams = {
     pagination: false,
     technologyId: listParams.technologyId,
+    skillId: listParams.skillId,
     search: isProjectHandler ? projectHandlerSearch : resourceSearch,
     status: "active",
   };
@@ -91,6 +96,7 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
     refetch,
   }: any = useGetUsersList(apiParams);
 
+  const { data: skillsData } = useGetSkillsList({ pagination: false });
   const { data: handledProjects, isPending: handledProjectsLoading }: any =
     useGetProjectHandlerProjectsAPI({
       enabled: isProjectHandler,
@@ -118,6 +124,15 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
     setListParams({
       ...listParams,
       technologyId:
+        val && Array.isArray(val) && val.length ? val : val ? [val] : null,
+    });
+  };
+  const handleSkillChange = (value: any) => {
+    const val = value ?? null;
+    setSelectedSkill(val && Array.isArray(val) ? val : val ? [val] : []);
+    setListParams({
+      ...listParams,
+      skillId:
         val && Array.isArray(val) && val.length ? val : val ? [val] : null,
     });
   };
@@ -161,6 +176,19 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
       })),
       value: selectedTech,
       onChange: handleTechnologyChange,
+      isLoading: techLoading,
+      multiple: true,
+    },
+    {
+      type: "select",
+      key: "skillId",
+      placeholder: "Filter by Skills",
+      options: skillsData?.data?.map((skill: any) => ({
+        value: skill.id,
+        label: skill.skillName,
+      })),
+      value: selectedSkill,
+      onChange: handleSkillChange,
       isLoading: techLoading,
       multiple: true,
     },
@@ -245,17 +273,20 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          {!isProjectHandler && selectedTech.length === 0 && !resourceSearch ? (
+          {!isProjectHandler &&
+          selectedTech.length === 0 &&
+          selectedSkill.length === 0 &&
+          !resourceSearch ? (
             <div className="flex flex-col items-center justify-center py-10 text-center border border-dashed rounded-lg mt-4">
               <div className="mb-3 p-3 rounded-full bg-muted">
                 <Users className="h-10 w-10 text-muted-foreground/70" />
               </div>
               <h3 className="text-lg font-semibold text-muted-foreground">
-                Please select a technology or search by name
+                Please select a technology, skill or search by name
               </h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Choose a technology from the dropdown or use the search to view
-                available resources.
+                Choose a technology or skill from the dropdown or use the search
+                to view available resources.
               </p>
             </div>
           ) : filteredUserDetails?.length > 0 ? (
