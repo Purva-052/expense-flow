@@ -14,7 +14,7 @@ import { Search } from "lucide-react";
 interface ReportsStatsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  type: "pending" | "incomplete" | null;
+  type: "pending" | "incomplete" | "holiday" | null;
   reportingDate?: string;
 }
 
@@ -65,28 +65,43 @@ export function ReportsStatsDialog({
               format(new Date(row.original.reportingDate), "dd/MM/yyyy"),
           },
         ]
-      : [
-          {
-            accessorKey: "fullName",
-            header: "Employee Name",
-          },
-          {
-            accessorKey: "reportingDate",
-            header: "Reporting Date",
-            cell: ({ row }: any) =>
-              format(new Date(row.original.reportingDate), "dd/MM/yyyy"),
-          },
-          {
-            accessorKey: "workingHours",
-            header: "Working Hours",
-          },
-        ];
+      : type === "holiday"
+        ? [
+            {
+              accessorKey: "description",
+              header: "Holiday Name", // 👈 ya "Occasion" / "Holiday Title"
+            },
+            {
+              accessorKey: "date",
+              header: "Holiday Date",
+              cell: ({ row }: any) =>
+                format(new Date(row.original.date), "dd/MM/yyyy"),
+            },
+          ]
+        : [
+            {
+              accessorKey: "fullName",
+              header: "Employee Name",
+            },
+            {
+              accessorKey: "reportingDate",
+              header: "Reporting Date",
+              cell: ({ row }: any) =>
+                format(new Date(row.original.reportingDate), "dd/MM/yyyy"),
+            },
+            {
+              accessorKey: "workingHours",
+              header: "Working Hours",
+            },
+          ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[45vw] max-w-none max-h-[90vh] flex flex-col sm:max-w-none">
         <DialogHeader>
-          <DialogTitle className="capitalize">{type} Reports</DialogTitle>
+          <DialogTitle className="capitalize">
+            {type === "holiday" ? "Holiday List" : `${type} Reports`}
+          </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-4">
           <div className="relative w-full sm:w-72">
