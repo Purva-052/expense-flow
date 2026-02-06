@@ -6,10 +6,10 @@ import {
 } from "@/components/ui/dialog";
 import { GlobalTable } from "@/components/table/global-table";
 import { useGetReportDetails } from "../services";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import GlobalFilterSection from "@/components/table/global-table-filter";
+import { FilterConfig } from "@/components/table/table-toolbar";
 
 interface ReportsStatsDialogProps {
   open: boolean;
@@ -24,15 +24,25 @@ export function ReportsStatsDialog({
   type,
   reportingDate,
 }: ReportsStatsDialogProps) {
+  const [currentType, setCurrentType] = useState<any>(type);
   const [listParams, setListParams] = useState({
     pageSize: 10,
     currentPage: 1,
     search: "",
+    fromDate: reportingDate || undefined,
+    toDate: reportingDate || undefined,
   });
 
+  useEffect(() => {
+    if (type) {
+      setCurrentType(type);
+    }
+  }, [type]);
+
   const { data: listData, isPending: loading } = useGetReportDetails({
-    type: type!,
-    reportingDate,
+    type: currentType!,
+    fromDate: listParams.fromDate,
+    toDate: listParams.toDate,
     search: listParams.search,
     page: listParams.currentPage,
     limit: listParams.pageSize,
@@ -51,8 +61,55 @@ export function ReportsStatsDialog({
     });
   };
 
+  const formatDate = (date?: Date) => {
+    if (!date) return undefined;
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
+  const filters: FilterConfig[] =
+    currentType !== "holiday"
+      ? [
+          {
+            type: "search",
+            placeholder: "Search...",
+            key: "search",
+            value: listParams.search,
+            onChange: (value: any) => {
+              setListParams({
+                ...listParams,
+                search: value ?? "",
+                currentPage: 1,
+              });
+            },
+          },
+          {
+            type: "dateRange",
+            key: "dateRange",
+            placeholder: "Filter by Date",
+            disable: { after: new Date() },
+            value: {
+              from: listParams.fromDate
+                ? new Date(listParams.fromDate)
+                : undefined,
+              to: listParams.toDate ? new Date(listParams.toDate) : undefined,
+            },
+            onChange: (range?: { from?: Date; to?: Date }) => {
+              setListParams({
+                ...listParams,
+                fromDate: formatDate(range?.from),
+                toDate: formatDate(range?.to),
+                currentPage: 1,
+              });
+            },
+          },
+        ]
+      : [];
+
   const columns =
-    type === "pending"
+    currentType === "pending"
       ? [
           {
             accessorKey: "fullName",
@@ -65,11 +122,11 @@ export function ReportsStatsDialog({
               format(new Date(row.original.reportingDate), "dd/MM/yyyy"),
           },
         ]
-      : type === "holiday"
+      : currentType === "holiday"
         ? [
             {
               accessorKey: "description",
-              header: "Holiday Name", // 👈 ya "Occasion" / "Holiday Title"
+              header: "Holiday Name",
             },
             {
               accessorKey: "date",
@@ -97,28 +154,17 @@ export function ReportsStatsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[45vw] max-w-none max-h-[90vh] flex flex-col sm:max-w-none">
-        <DialogHeader>
+      <DialogContent className="w-[60vw] max-w-none max-h-[90vh] flex flex-col sm:max-w-none">
+        <DialogHeader className="flex flex-row items-center justify-between">
           <DialogTitle className="capitalize">
-            {type === "holiday" ? "Holiday List" : `${type} Reports`}
+            {currentType === "holiday"
+              ? "Holiday List"
+              : `${currentType} Reports`}
           </DialogTitle>
         </DialogHeader>
+
         <div className="space-y-4 pt-4">
-          <div className="relative w-full sm:w-72">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search..."
-              className="pl-8"
-              value={listParams.search}
-              onChange={(e) =>
-                setListParams({
-                  ...listParams,
-                  search: e.target.value,
-                  currentPage: 1,
-                })
-              }
-            />
-          </div>
+          <GlobalFilterSection filters={filters} className="mb-4" />
           <GlobalTable<any>
             pageSize={listParams.pageSize}
             currentPage={listParams.currentPage}
@@ -128,7 +174,7 @@ export function ReportsStatsDialog({
             columns={columns}
             loading={loading}
             isPaginationEnabled
-            scrollY="40dvh"
+            scrollY="45dvh"
           />
         </div>
       </DialogContent>
