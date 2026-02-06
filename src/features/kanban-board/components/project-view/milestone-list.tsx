@@ -47,7 +47,6 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isParsingFile, setIsParsingFile] = useState(false);
   const [milestoneToEdit, setMilestoneToEdit] = useState<any | null>(null);
-  const [hasImportedExcel, setHasImportedExcel] = useState(false);
   const justCreatedMilestoneIdRef = useRef<string | null>(null);
 
   const { isDownloading, downloadSample } = useDownloadMilestoneSample();
@@ -101,14 +100,6 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
     }
     return list;
   }, [milestonesListResponse]);
-
-  // Initialize hasImportedExcel based on existing milestones
-  useEffect(() => {
-    if (milestones.length > 0 && !hasImportedExcel) {
-      setHasImportedExcel(true);
-    }
-  }, [milestones.length]); // Only run when milestones.length changes
-
   useEffect(() => {
     if (milestones.length > 0) {
       const isPresent = milestones.some((m) => String(m.id) === activeTab);
@@ -204,7 +195,6 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
     if (!selectedFile) return;
     const response = await uploadFile(selectedFile, projectId);
     if (response?.statusCode === 200 || response?.statusCode === 201) {
-      setHasImportedExcel(true);
       queryClient.invalidateQueries({
         queryKey: [API.dropdown_api.milestones, { projectId }],
       });
@@ -221,7 +211,8 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
     <>
       <div className="mb-4 flex items-center gap-2 overflow-x-auto pb-2">
         <div className="flex items-center gap-2">
-          {!hasImportedExcel && canModifyMilestones && (
+          {/* @ts-ignore */}
+          {!milestones.isExcelUploaded && canModifyMilestones && (
             <>
               <Button
                 onClick={downloadSample}
