@@ -181,7 +181,25 @@ export const ResourceCard = ({
 
       {/* Details Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 border-t border-gray-100 pt-4 mt-auto">
-        <div>
+        {developer?.skills?.length > 0 && (
+          <div className=" border-gray-100 pt-3 mt-3">
+            <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-2">
+              Strengths
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {developer.skills.map((s: any) => (
+                <Badge
+                  key={s.skill.id}
+                  variant="secondary"
+                  className="font-medium text-[12px]"
+                >
+                  {s.skill.skillName}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+        {/* <div>
           <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">
             Email
           </p>
@@ -200,8 +218,10 @@ export const ResourceCard = ({
           <p className="text-xs font-semibold text-gray-800 capitalize">
             {developer.role?.replace(/_/g, " ") || "N/A"}
           </p>
-        </div>
+        </div> */}
       </div>
+
+      {/* Skills */}
     </div>
   );
 };

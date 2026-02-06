@@ -4,6 +4,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { useUsersStore } from "../stores/useUsersStore";
 
 export function ViewUserModal() {
@@ -86,6 +87,24 @@ export function ViewUserModal() {
               {currentRow.status}
             </p>
           </div>
+          {currentRow.skills &&
+            Array.isArray(currentRow.skills) &&
+            currentRow.skills.length > 0 && (
+              <div>
+                <h3 className="text-sm font-medium mb-1.5">Strengths</h3>
+                <div className="flex flex-wrap gap-1.5">
+                  {currentRow.skills.map((item: any) => (
+                    <Badge
+                      key={item?.skill?.id}
+                      variant="secondary"
+                      className="font-normal"
+                    >
+                      {item?.skill?.skillName}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
         </div>
       </DialogContent>
     </Dialog>

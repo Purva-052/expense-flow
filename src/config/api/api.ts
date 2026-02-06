@@ -144,6 +144,10 @@ const API = {
     update: "/internal-meeting/update",
     delete: "/internal-meeting/delete",
   },
+  skills: {
+    create: "/skills",
+    list: "/skills",
+  },
 };
 
 Object.freeze(API);

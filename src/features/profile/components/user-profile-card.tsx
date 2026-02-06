@@ -21,6 +21,7 @@ import {
   KeyRound,
   Loader2,
   Pencil,
+  Sparkles,
   // X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -28,6 +29,8 @@ import { FormProvider, useForm } from "react-hook-form";
 // import { toast } from "sonner";
 import { useUploadTransactionFile } from "../../transaction-logs/services";
 import { useUpdateUserData } from "../../users/services";
+import { CreatableSkillsSelect } from "./creatable-skills-select";
+import { useGetSkillsList, useCreateSkill, Skill } from "../services";
 
 const ProfileDetailRow = ({
   icon: Icon,
@@ -38,13 +41,13 @@ const ProfileDetailRow = ({
   label: string;
   value: React.ReactNode;
 }) => (
-  <div className="flex items-start gap-4">
+  <div className="flex items-start gap-4 w-full">
     <Icon className="h-5 w-5 text-muted-foreground mt-1 flex-shrink-0" />
-    <div className="flex flex-col">
+    <div className="flex flex-col w-full min-w-0">
       <span className="text-sm font-semibold text-muted-foreground">
         {label}
       </span>
-      <span className="font-medium break-words">{value}</span>
+      <div className="font-medium break-words w-full">{value}</div>
     </div>
   </div>
 );
@@ -52,9 +55,14 @@ const ProfileDetailRow = ({
 export const UserProfileCard = ({ user }: { user: any }) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [localIsUploading, setLocalIsUploading] = useState(false);
+  const [selectedSkills, setSelectedSkills] = useState<Skill[]>([]);
+
   const { mutateAsync: uploadFile } = useUploadTransactionFile();
   const { mutateAsync: updateProfile, isPending: isUpdating } =
     useUpdateUserData(user?.id);
+  const { data: skillsData, isLoading: skillsLoading } = useGetSkillsList();
+  const { mutateAsync: createSkill, isPending: isCreatingSkill } =
+    useCreateSkill();
 
   const methods = useForm({
     defaultValues: {
@@ -67,6 +75,16 @@ export const UserProfileCard = ({ user }: { user: any }) => {
       setPreviewUrl(user.profilePicUrl);
     } else if (user?.avatarUrl) {
       setPreviewUrl(user.avatarUrl);
+    }
+
+    // Initialize selected skills from user data
+    if (user?.skills && Array.isArray(user.skills)) {
+      setSelectedSkills(
+        user.skills.map((item: any) => ({
+          id: item?.skill?.id,
+          skillName: item?.skill?.skillName,
+        }))
+      );
     }
   }, [user]);
 
@@ -99,6 +117,43 @@ export const UserProfileCard = ({ user }: { user: any }) => {
       console.error("Upload failed", error);
     } finally {
       setLocalIsUploading(false);
+    }
+  };
+
+  const handleSkillsChange = async (skills: Skill[]) => {
+    setSelectedSkills(skills);
+
+    try {
+      const payload = {
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        technologyId: user.technology?.id,
+        careerStartDate: user.careerStartDate,
+        status: user.status,
+        joining: user.joining ? "true" : "false",
+        currentWorkingProjectId: user.currentProject?.id,
+        skillIds: skills.map((s) => s.id),
+      };
+      await updateProfile(payload);
+    } catch (error) {
+      console.error("Failed to update skills", error);
+    }
+  };
+
+  const handleCreateSkill = async (
+    skillName: string
+  ): Promise<Skill | void> => {
+    try {
+      const response: any = await createSkill({ skillName });
+      if (response?.id && (response?.skillName || response?.name)) {
+        return {
+          id: response.id,
+          skillName: response.skillName || response.name,
+        };
+      }
+    } catch (error) {
+      console.error("Failed to create skill", error);
     }
   };
 
@@ -220,6 +275,24 @@ export const UserProfileCard = ({ user }: { user: any }) => {
             >
               {user?.technology?.name || "-"}
             </Badge>
+          }
+        />
+        <ProfileDetailRow
+          icon={Sparkles}
+          label="Strengths"
+          value={
+            <div className="w-full mt-1">
+              <CreatableSkillsSelect
+                options={skillsData?.data || []}
+                selected={selectedSkills}
+                onChange={handleSkillsChange}
+                onCreateSkill={handleCreateSkill}
+                loading={skillsLoading}
+                creating={isCreatingSkill}
+                placeholder="Add skills..."
+                maxSelectedShow={5}
+              />
+            </div>
           }
         />
       </CardContent>
