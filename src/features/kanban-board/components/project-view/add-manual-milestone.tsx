@@ -299,7 +299,7 @@ export function AddManualMilestone({
                                 placeholder="Task Name"
                                 {...field}
                                 disabled={
-                                  initialData?.tasks[index].status ===
+                                  initialData?.tasks[index]?.status ===
                                   "completed"
                                 }
                               />
@@ -325,7 +325,7 @@ export function AddManualMilestone({
                                 placeholder="1h10m"
                                 {...field}
                                 disabled={
-                                  initialData?.tasks[index].status ===
+                                  initialData?.tasks[index]?.status ===
                                   "completed"
                                 }
                               />

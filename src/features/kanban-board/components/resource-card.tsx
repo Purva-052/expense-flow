@@ -87,7 +87,7 @@ export const ResourceCard = ({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
         <div className="flex gap-3 items-center min-w-0">
-          <Avatar className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 border-2 border-white shadow-sm">
+          <Avatar className="h-10 w-9 shrink-0 border-2 border-white shadow-sm object-cover">
             <AvatarImage
               src={
                 profilePic ||

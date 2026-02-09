@@ -29,6 +29,7 @@ import { ChangeStatusDialog } from "@/components/shared/custom-status-change";
 import { StatusConfirmDialog } from "@/components/shared/status-confirm-dialog";
 import ProjectDetailsDialog from "../ProjectDetailsDialog";
 import { useProjectsStore } from "@/features/projects/stores/useProjectsStore";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const priorityColorMap: any = {
   high: "bg-red-100 text-red-700",
@@ -156,6 +157,7 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
   const progress = project?.percentageComplete || 0;
   const clientName = project?.client?.name || "N/A";
   const coordinatorName = project?.projectHandler?.fullName || "N/A";
+  const coordinatorProfilePic = project?.projectHandler?.profilePicUrl || "";
   const startDate = project?.startDate
     ? new Date(project.startDate).toLocaleDateString("en-GB", {
         day: "2-digit",
@@ -339,9 +341,19 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
             <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">
               Project Coordinator
             </p>
-            <p className="text-xs font-semibold text-gray-800">
-              {coordinatorName}
-            </p>
+
+            <div className="flex items-center gap-2">
+              <Avatar className="h-6 w-6">
+                <AvatarImage src={coordinatorProfilePic} />
+                <AvatarFallback className="text-black text-[10px] font-semibold">
+                  {coordinatorName?.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+
+              <p className="text-xs font-semibold text-gray-800 leading-none">
+                {coordinatorName}
+              </p>
+            </div>
           </div>
 
           {/* Start Date */}
@@ -408,8 +420,8 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
         title={project?.isPinned ? "Unpin Project" : "Pin Project"}
         desc={
           project?.isPinned
-            ? `Are you sure you want to unpin ${project.name || "this"} project?`
-            : `Are you sure you want to pin ${project.name || "this"} project?`
+            ? `Are you sure you want to unpin ${project?.name || "this"} project?`
+            : `Are you sure you want to pin ${project?.name || "this"} project?`
         }
         confirmText={project?.isPinned ? "Unpin" : "Pin"}
         destructive={false}
