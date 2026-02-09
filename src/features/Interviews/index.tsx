@@ -471,7 +471,7 @@ const InterviewsPage = () => {
 
       {selectedDate && (
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogContent className="w-[95vw] sm:w-full sm:max-w-[850px]  p-4 sm:p-6">
+          <DialogContent className="w-[95vw] sm:w-full sm:max-w-[850px] p-4 sm:p-6">
             <DialogHeader>
               <DialogTitle>
                 Schedule Interview for {format(selectedDate, "PPP")}

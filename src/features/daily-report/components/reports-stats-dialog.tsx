@@ -162,7 +162,7 @@ export function ReportsStatsDialog({
         <DialogHeader className="flex flex-row items-center justify-between">
           <DialogTitle className="capitalize">
             {currentType === "holiday"
-              ? "Holiday List"
+              ? "Holiday List 2026"
               : `${currentType} Reports`}
           </DialogTitle>
         </DialogHeader>
