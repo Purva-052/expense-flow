@@ -356,7 +356,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
                 <span className="font-medium">Milestone 1</span>,{" "}
                 <span className="font-medium">Milestone 2</span>, etc{" "}
               </li>
-              <li>Minimum 3 characters required</li>
+              <li>Minimum 2 characters required</li>
               <li>Maximum 20 characters allowed</li>
             </ul>
           </div>

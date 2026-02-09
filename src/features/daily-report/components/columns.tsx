@@ -11,6 +11,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { roles as roleConstants } from "@/utils/constant";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export const columns = (
   onEdit: (report: DailyReport) => void,
@@ -38,8 +44,31 @@ export const columns = (
     cell: ({ row }) => row.original.milestone?.name ?? "-",
   },
   {
-    accessorKey: "task.taskName",
+    accessorKey: "taskName",
     header: "Task Name",
+    cell: ({ row }) => {
+      const taskName = row.original.task.taskName;
+
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="truncate max-w-[250px] block cursor-pointer">
+                {taskName}
+              </span>
+            </TooltipTrigger>
+
+            <TooltipContent
+              side="top"
+              align="start"
+              className="max-w-xs break-words"
+            >
+              {taskName}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    },
   },
   {
     accessorKey: "taskDescription",
@@ -73,7 +102,10 @@ export const columns = (
     id: "actions",
     header: "Actions",
     cell: ({ row }) => {
-      const reportDate = format(new Date(row.original.reportingDate), "yyyy-MM-dd");
+      const reportDate = format(
+        new Date(row.original.reportingDate),
+        "yyyy-MM-dd"
+      );
       const today = format(new Date(), "yyyy-MM-dd");
       const isToday = reportDate === today;
 
