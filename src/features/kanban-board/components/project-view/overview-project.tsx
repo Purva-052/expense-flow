@@ -102,13 +102,22 @@ const OverviewProject = ({ projectId }: { projectId?: any }) => {
               </div>
             </div>
 
-            <div className="flex flex-col">
-              <div className="flex items-center text-sm font-medium text-gray-500 mb-1">
-                <User size={16} />
-                <h3 className="ml-2">Project Coordinator</h3>
-              </div>
-              <div className="text-base text-gray-800 pl-6">
-                <p>{project.projectHandler?.fullName || "-"}</p>
+            <div className="flex flex-col gap-1.5">
+              <p className="text-[10px] uppercase tracking-wider font-medium text-gray-400">
+                Project Coordinator
+              </p>
+
+              <div className="flex items-center gap-2">
+                <Avatar className="h-7 w-7">
+                  <AvatarImage src={project.projectHandler?.profilePicUrl} />
+                  <AvatarFallback className="bg-gray-200 text-gray-700 text-[11px] font-semibold">
+                    {project.projectHandler?.fullName?.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+
+                <span className="text-base text-gray-800">
+                  {project.projectHandler?.fullName || "—"}
+                </span>
               </div>
             </div>
 
