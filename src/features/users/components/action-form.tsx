@@ -194,7 +194,7 @@ export function UserActionForm({
         onOpenChange(state);
       }}
     >
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col">
         <DialogHeader className="text-left">
           <DialogTitle>{isEdit ? "Edit User" : "Add User"}</DialogTitle>
         </DialogHeader>
@@ -371,7 +371,7 @@ export function UserActionForm({
           </Form>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="pt-4">
           <CustomButton type="submit" loading={loading} form="user-form">
             Save Changes
           </CustomButton>

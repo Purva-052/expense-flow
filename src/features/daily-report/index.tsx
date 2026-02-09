@@ -360,7 +360,7 @@ export default function DailyReportPage() {
                       : "text-slate-400"
                   }`}
                 >
-                  Total Holidays
+                  Holiday List 2026
                 </span>
 
                 <div
