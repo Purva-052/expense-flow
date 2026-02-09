@@ -17,6 +17,7 @@ import {
   useUploadMilestoneFile,
   useGetProjectMilestonesList,
   useGetProjectHandlerProjectsAPI,
+  useGetMilestoneTasks,
 } from "@/features/kanban-board/services";
 import { ExcelImportPreview, ExcelPreviewData } from "./excel-import-preview";
 import { AddManualMilestone } from "./add-manual-milestone";
@@ -58,6 +59,13 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
   const { data: handledProjectsResponse } = useGetProjectHandlerProjectsAPI({
     enabled: !!user && !isDeveloperView,
   }) as any;
+
+  const { data: activeMilestoneDetail } = useGetMilestoneTasks(activeTab, {
+    enabled: !!activeTab,
+  });
+
+  const activeMilestone = activeMilestoneDetail?.data || activeMilestoneDetail;
+  const isExcelUploaded = activeMilestone?.isExcelUploaded === true;
 
   const isCurrentUserProjectHandler = useMemo(() => {
     const users = handledProjectsResponse?.data || [];
@@ -212,7 +220,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
     <>
       <div className="mb-4 flex items-center gap-2 overflow-x-auto pb-2">
         <div className="flex items-center gap-2">
-          {canModifyMilestones && (
+          {canModifyMilestones && !isExcelUploaded && (
             <>
               <Button
                 onClick={downloadSample}
