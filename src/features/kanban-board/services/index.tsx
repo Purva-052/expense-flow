@@ -1,12 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, useCallback } from "react";
+import { AxiosError } from "axios";
+import axios from "axios";
+import { toast } from "sonner";
 import API from "@/config/api/api";
 import useFetchData from "@/hooks/use-fetch-data";
 import usePatchData from "@/hooks/use-patch-data";
 import usePostData from "@/hooks/use-post-data";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { buildQueryString } from "@/utils/storage";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import axios from "axios";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
+import instance from "@/config/instance/instance";
+import { useBoardStore } from "../store/useBoardStore";
 
 const GET_API_URL = API.users.available_developers;
 const PROJECTS_API_URL = API.projects.list;
@@ -15,6 +24,7 @@ const GET_BECOMEING_AVAILABLE_DEVELOPER_API_URL =
   API.users.becoming_available_developer;
 const GET_PROJECT_HANDLER_API_URL = API.users.project_handler;
 const GET_Inquiry_API_URL = API.inquiry.dashboard;
+const GET_MILESTONE_LIST_API_URL = API.projects.project_milestone_list;
 
 export const useGetAvailableDeveloperList = (params?: any) => {
   return useFetchData({ url: GET_API_URL, params });
@@ -110,12 +120,15 @@ const fetchInquirysDashboard = async ({ pageParam = 1, queryKey }: any) => {
     page: pageParam,
     limit: 10,
   });
-  const response = await axios.get(baseURL + `${GET_Inquiry_API_URL}${queryStr}`, {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await axios.get(
+    baseURL + `${GET_Inquiry_API_URL}${queryStr}`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
 
   return response.data;
 };
@@ -130,6 +143,525 @@ export const useGetInquiryDashboardData = (params?: any) => {
       return metadata?.page < metadata?.totalPages
         ? metadata.page + 1
         : undefined;
+    },
+  });
+};
+
+export const useGetProjectMilestonesList = (
+  projectId: any,
+  enabled: boolean = true
+) => {
+  return useFetchData<any>({
+    url: API.dropdown_api.milestones,
+    params: { projectId },
+    enabled: !!projectId && enabled,
+  });
+};
+
+export const useGetMilestoneTasks = (
+  milestoneId: any,
+  params?: any,
+  enabled: boolean = true
+) => {
+  return useFetchData<any>({
+    url: `${API.projects.milestone_list}/${milestoneId}`,
+    params,
+    enabled: !!milestoneId && enabled,
+  });
+};
+
+/* =======================
+   Milestone Hooks
+======================= */
+
+interface UseDownloadMilestoneSampleReturn {
+  isDownloading: boolean;
+  downloadSample: () => Promise<void>;
+}
+
+/**
+ * Custom hook to download milestone sample file
+ * Uses the milestone_sample endpoint
+ */
+export const useDownloadMilestoneSample =
+  (): UseDownloadMilestoneSampleReturn => {
+    const [isDownloading, setIsDownloading] = useState(false);
+
+    // Helper function to extract error messages
+    const extractErrorMessage = (error: unknown): string => {
+      if (error instanceof AxiosError) {
+        // Network error
+        if (error.code === "ERR_NETWORK") {
+          return "Network error. Please check your internet connection.";
+        }
+
+        // Authentication error
+        if (error.response?.status === 401) {
+          return "Authentication failed. Please log in again.";
+        }
+
+        // Server error (5xx)
+        if (error.response?.status && error.response.status >= 500) {
+          return "Server error. Please try again later.";
+        }
+
+        // Other errors with response message
+        if (error.response?.data?.message) {
+          return error.response.data.message;
+        }
+      }
+
+      return "Failed to download sample file. Please try again.";
+    };
+
+    // Download handler function
+    const downloadSample = useCallback(async () => {
+      setIsDownloading(true);
+
+      try {
+        const baseURL = import.meta.env.VITE_API_BASE_URL;
+        const token =
+          useAuthStore.getState().user?.token ?? useAuthStore.getState().token;
+
+        // Make API call with blob responseType using axios directly
+        const response = await axios.get(
+          baseURL + API.projects.milestone_sample,
+          {
+            responseType: "blob",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        // Create blob URL
+        const blob = new Blob([response.data], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+        const url = URL.createObjectURL(blob);
+
+        // Extract filename from Content-Disposition header or use default
+        const contentDisposition = response.headers["content-disposition"];
+        let filename = "milestone_sample.xlsx";
+
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(
+            /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+          );
+          if (filenameMatch && filenameMatch[1]) {
+            filename = filenameMatch[1].replace(/['"]/g, "");
+          }
+        }
+
+        // Create temporary link and trigger download
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+
+        // Cleanup
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        toast.success("Sample file downloaded successfully");
+      } catch (error) {
+        const errorMessage = extractErrorMessage(error);
+        toast.error(errorMessage);
+      } finally {
+        setIsDownloading(false);
+      }
+    }, []);
+
+    return {
+      isDownloading,
+      downloadSample,
+    };
+  };
+
+interface UploadResponse {
+  statusCode: number;
+  message: string;
+  data?: unknown;
+}
+
+interface UseUploadMilestoneFileReturn {
+  isUploading: boolean;
+  uploadFile: (
+    file: File,
+    projectId?: string | number
+  ) => Promise<UploadResponse | undefined>;
+}
+
+/**
+ * Custom hook to upload/export milestone file
+ * Uses the project_milestones endpoint
+ */
+export const useUploadMilestoneFile = (): UseUploadMilestoneFileReturn => {
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Helper function to extract error messages
+  const extractErrorMessage = (error: unknown): string => {
+    if (error instanceof AxiosError) {
+      // Network error
+      if (error.code === "ERR_NETWORK") {
+        return "Network error. Please check your internet connection.";
+      }
+
+      // Authentication error
+      if (error.response?.status === 401) {
+        return "Authentication failed. Please log in again.";
+      }
+
+      // Validation error (4xx)
+      if (
+        error.response?.status &&
+        error.response.status >= 400 &&
+        error.response.status < 500
+      ) {
+        if (error.response?.data?.message) {
+          return error.response.data.message;
+        }
+        return "Invalid file or request. Please check and try again.";
+      }
+
+      // Server error (5xx)
+      if (error.response?.status && error.response.status >= 500) {
+        return "Server error. Please try again later.";
+      }
+
+      // Other errors with response message
+      if (error.response?.data?.message) {
+        return error.response.data.message;
+      }
+    }
+
+    return "Failed to upload file. Please try again.";
+  };
+
+  // Upload handler function
+  const uploadFile = useCallback(
+    async (file: File, projectId?: string | number) => {
+      // Validate file
+      if (!file) {
+        toast.error("Please select a file to upload.");
+        return;
+      }
+
+      // Validate file type
+      const allowedTypes = [
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/vnd.ms-excel",
+        "text/csv",
+      ];
+
+      if (!allowedTypes.includes(file.type)) {
+        toast.error("Please upload a valid Excel or CSV file.");
+        return;
+      }
+
+      setIsUploading(true);
+
+      try {
+        const baseURL = import.meta.env.VITE_API_BASE_URL;
+        const token =
+          useAuthStore.getState().user?.token ?? useAuthStore.getState().token;
+
+        // Create FormData for file upload
+        const formData = new FormData();
+        formData.append("file", file);
+
+        // Build URL with projectId query parameter if provided
+        let uploadUrl = baseURL + API.projects.project_milestones;
+        if (projectId) {
+          uploadUrl += `?projectId=${projectId}`;
+        }
+
+        // Make API call using axios directly
+        const response = await axios.post<UploadResponse>(uploadUrl, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        if (
+          response?.data?.statusCode === 200 ||
+          response?.data?.statusCode === 201
+        ) {
+          toast.success(
+            response?.data?.message || "File uploaded successfully"
+          );
+          return response.data;
+        } else {
+          toast.error(response?.data?.message || "Failed to upload file");
+        }
+      } catch (error) {
+        const errorMessage = extractErrorMessage(error);
+        toast.error(errorMessage);
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    []
+  );
+
+  return {
+    isUploading,
+    uploadFile,
+  };
+};
+
+/**
+ * Custom hook to create a milestone manually
+ * Uses the add_milestones endpoint
+ */
+export const useCreateManualMilestone = (onSuccess?: (data: any) => void) => {
+  return usePostData({
+    url: API.projects.add_milestones,
+    refetchQueries: [
+      API.dropdown_api.milestones,
+      GET_MILESTONE_LIST_API_URL,
+      API.projects.milestone_list,
+    ],
+    onSuccess: (data) => {
+      onSuccess?.(data); // 🔥 API RESPONSE PASS
+    },
+  });
+};
+
+export const useAddMileStones = () => {
+  return usePostData({
+    url: API.projects.add_milestones,
+    refetchQueries: [
+      GET_MILESTONE_LIST_API_URL,
+      API.dropdown_api.milestones,
+      API.projects.milestone_list,
+    ],
+    // onSuccess: () => {
+    //   setOpen(null);
+    // },
+  });
+};
+
+export const useDeleteMilestone = () => {
+  const { setOpen } = useBoardStore();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      taskId,
+    }: {
+      id: string | number;
+      taskId?: string | number;
+    }) => {
+      let url = `${API.projects.delete_milestone}/${id}`;
+      if (taskId) {
+        url += `?taskId=${taskId}`;
+      }
+      const response = await instance.delete({ url });
+      return response;
+    },
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({
+        queryKey: [`${API.projects.milestone_list}/${id}`],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: [GET_MILESTONE_LIST_API_URL],
+        exact: false,
+      });
+      setOpen(null);
+    },
+  });
+};
+
+export const useUpdateMileStone = () => {
+  const { setOpen } = useBoardStore();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string | number; data: any }) => {
+      const url = `${API.projects.update_milestone}/${id}`;
+      const response = await instance.patch({ url, data });
+      return response;
+    },
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({
+        queryKey: [`${API.projects.milestone_list}/${id}`],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: [API.dropdown_api.milestones],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: [GET_MILESTONE_LIST_API_URL],
+        exact: false,
+      });
+      setOpen(null);
+    },
+  });
+};
+
+export const useUpdateTaskStatus = (
+  milestoneId: string | number,
+  onSuccess?: () => void
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      taskId,
+      status,
+      comment,
+    }: {
+      taskId: string | number;
+      status: string;
+      comment: string | null;
+    }) => {
+      const url = `${API.projects.update_milestone}/${milestoneId}`;
+      const response = await instance.patch({
+        url,
+        data: {
+          tasks: [
+            {
+              taskId,
+              status,
+              comment,
+            },
+          ],
+        },
+      });
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [`${API.projects.milestone_list}/${milestoneId}`],
+      });
+      if (onSuccess) onSuccess();
+    },
+  });
+};
+
+export const createClientMeeting = (onSuccess?: () => void) => {
+  return usePostData({
+    url: API.client_meetings.create,
+    refetchQueries: [API.client_meetings.list, API.projects.list],
+    onSuccess: () => {
+      if (onSuccess) onSuccess();
+    },
+  });
+};
+
+export const useGetClientMeetings = (
+  projectId?: string | number,
+  params?: any
+) => {
+  return useFetchData({
+    url: API.client_meetings.list,
+    params: { projectId, ...params },
+    enabled: !!projectId,
+  });
+};
+
+export const useUpdateClientMeeting = (
+  id?: string,
+  onSuccessCallback?: () => void
+) => {
+  const { setOpen } = useBoardStore();
+  return usePatchData({
+    url: `${API.client_meetings.update}/${id}`,
+    refetchQueries: [API.client_meetings.list],
+    onSuccess: () => {
+      setOpen(null);
+      // Call the callback if provided
+      if (onSuccessCallback) {
+        onSuccessCallback();
+      }
+    },
+  });
+};
+
+export const useDeleteClientMeeting = (onSuccess?: () => void) => {
+  const { setOpen } = useBoardStore();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string | number) => {
+      const response = await instance.delete({
+        url: `${API.client_meetings.delete}/${id}`,
+      });
+      return response;
+    },
+    onSuccess: (response: any) => {
+      if (response.statusCode === 200 || response.statusCode === 201) {
+        queryClient.invalidateQueries({
+          queryKey: [API.client_meetings.list],
+        });
+        setOpen(null);
+        onSuccess?.();
+      }
+    },
+  });
+};
+
+export const createInternalMeeting = (onSuccess?: () => void) => {
+  return usePostData({
+    url: API.internal_meetings.create,
+    refetchQueries: [API.internal_meetings.list, API.projects.list],
+    onSuccess: () => {
+      if (onSuccess) onSuccess();
+    },
+  });
+};
+
+export const useGetInternalMeetings = (
+  projectId?: string | number,
+  params?: any
+) => {
+  return useFetchData({
+    url: API.internal_meetings.list,
+    params: { projectId, ...params },
+    enabled: !!projectId,
+  });
+};
+
+export const useUpdateInternalMeeting = (
+  id?: string,
+  onSuccessCallback?: () => void
+) => {
+  const { setOpen } = useBoardStore();
+  return usePatchData({
+    url: `${API.internal_meetings.update}/${id}`,
+    refetchQueries: [API.internal_meetings.list],
+    onSuccess: () => {
+      setOpen(null);
+      // Call the callback if provided
+      if (onSuccessCallback) {
+        onSuccessCallback();
+      }
+    },
+  });
+};
+
+export const useDeleteInternalMeeting = (onSuccess?: () => void) => {
+  const { setOpen } = useBoardStore();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string | number) => {
+      const response = await instance.delete({
+        url: `${API.internal_meetings.delete}/${id}`,
+      });
+      return response;
+    },
+    onSuccess: (response: any) => {
+      if (response.statusCode === 200 || response.statusCode === 201) {
+        queryClient.invalidateQueries({
+          queryKey: [API.internal_meetings.list],
+        });
+        setOpen(null);
+        onSuccess?.();
+      }
     },
   });
 };

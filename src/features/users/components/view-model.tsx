@@ -4,6 +4,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { useUsersStore } from "../stores/useUsersStore";
 
 export function ViewUserModal() {
@@ -24,6 +25,21 @@ export function ViewUserModal() {
         <DialogHeader>
           <DialogTitle>User Details</DialogTitle>
         </DialogHeader>
+        <div className="flex flex-col items-center gap-4 py-4">
+          <div className="h-24 w-24 overflow-hidden rounded-full border-2 border-primary/20 shadow-sm">
+            {currentRow.profilePicUrl ? (
+              <img
+                src={currentRow.profilePicUrl}
+                alt={currentRow.fullName}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-gray-100 text-gray-400">
+                No Photo
+              </div>
+            )}
+          </div>
+        </div>
         <div className="space-y-4">
           <div>
             <h3 className="text-sm font-medium">Full Name</h3>
@@ -71,6 +87,24 @@ export function ViewUserModal() {
               {currentRow.status}
             </p>
           </div>
+          {currentRow.skills &&
+            Array.isArray(currentRow.skills) &&
+            currentRow.skills.length > 0 && (
+              <div>
+                <h3 className="text-sm font-medium mb-1.5">Strengths</h3>
+                <div className="flex flex-wrap gap-1.5">
+                  {currentRow.skills.map((item: any) => (
+                    <Badge
+                      key={item?.skill?.id}
+                      variant="secondary"
+                      className="font-normal"
+                    >
+                      {item?.skill?.skillName}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
         </div>
       </DialogContent>
     </Dialog>

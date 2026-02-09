@@ -29,6 +29,7 @@ interface CustomDatePickerProps {
   dateFormat?: string;
   disabledDays?: (day: Date) => boolean;
   defaultMonth?: Date;
+  minDate?: Date | string;
 }
 
 export function CustomDatePicker({
@@ -40,10 +41,11 @@ export function CustomDatePicker({
   dateFormat = "PPP",
   disabledDays,
   defaultMonth,
+  minDate,
 }: Readonly<CustomDatePickerProps>) {
   const [open, setOpen] = useState(false);
   const [month, setMonth] = useState(defaultMonth || new Date());
-  
+
   // Update month when defaultMonth changes
   useEffect(() => {
     if (defaultMonth) {
@@ -133,7 +135,7 @@ export function CustomDatePicker({
               </div>
 
               {/* ✅ Fixed-height container for calendar */}
-              <div className="h-[340px] overflow-hidden">
+              <div className="h-[230px] overflow-hidden">
                 <Calendar
                   mode="single"
                   month={month}
@@ -145,7 +147,21 @@ export function CustomDatePicker({
                       setOpen(false);
                     }
                   }}
-                  disabled={disabledDays}
+                  disabled={(date) => {
+                    // minDate check
+                    if (minDate) {
+                      const min = new Date(minDate);
+                      min.setHours(0, 0, 0, 0);
+
+                      const current = new Date(date);
+                      current.setHours(0, 0, 0, 0);
+
+                      if (current < min) return true;
+                    }
+
+                    // existing disabledDays logic
+                    return disabledDays ? disabledDays(date) : false;
+                  }}
                   initialFocus
                   classNames={{
                     month_caption: "hidden",

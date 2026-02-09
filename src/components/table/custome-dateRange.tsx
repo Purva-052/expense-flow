@@ -7,15 +7,20 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { format, isSameDay } from "date-fns";
 
 export default function DateRangeFilter({
   placeholder,
   onChange,
+  disabled,
+  className,
 }: {
   placeholder?: string;
   onChange?: (val: { from: Date; to?: Date } | undefined) => void;
+  disabled?: any;
+  className?: string;
 }) {
   const [date, setDate] = useState<{ from: Date; to?: Date } | undefined>();
   const [open, setOpen] = useState(false);
@@ -44,9 +49,11 @@ export default function DateRangeFilter({
       <PopoverTrigger asChild>
         <Button
           variant={"outline"}
-          className={`w-[260px] justify-between text-left font-normal ${
-            !date ? "text-muted-foreground" : ""
-          }`}
+          className={cn(
+            "w-[260px] justify-between text-left font-normal rounded-2xl",
+            !date && "text-muted-foreground",
+            className
+          )}
         >
           <div className="flex items-center">
             <CalendarIcon className="mr-2 h-4 w-4" />
@@ -113,6 +120,7 @@ export default function DateRangeFilter({
           captionLayout="dropdown"
           fromYear={2015}
           toYear={2050}
+          disabled={disabled}
         />
       </PopoverContent>
     </Popover>

@@ -4,7 +4,7 @@ import { GlobalTable } from "@/components/table/global-table";
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import { FilterConfig } from "@/components/table/table-toolbar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,14 +24,21 @@ import { useState } from "react";
 import { useDeleteProjectDocument, useGetProjectsDocument } from "../services";
 import { useProjectDocumentStore } from "../stores/useProjectDocumentStore";
 import AddEditDocumentDialog from "./AddEditDocumentDialog";
+import { format } from "date-fns";
+import { useGetUserDropdownList } from "@/features/users/services";
+// import { useAuthStore } from "@/stores/use-auth-store";
+// import { roles } from "@/utils/constant";
 
-const ProjectDocumentComponent = ({ projectId, projectName }: any) => {
+const ProjectDocumentComponent = ({ projectId }: any) => {
   const [documentListParams, setDocumentListParams] = useState<any>({
     limit: 10,
     page: 1,
     search: "",
     pagination: true,
     projectId: projectId,
+    createdBy: undefined,
+    fromDate: undefined,
+    toDate: undefined,
   });
 
   const {
@@ -62,11 +69,45 @@ const ProjectDocumentComponent = ({ projectId, projectName }: any) => {
     setOpenDocumentModal("delete");
   };
 
+  const { data: usersResponse, isLoading: usersLoading } =
+    useGetUserDropdownList();
+
+  // const { user } = useAuthStore();
+  // const Role = user?.user?.role;
+  // const isDeveloperView = Role === roles.DEVELOPER;
+
+  const userOptions = [
+    { label: "All Users", value: "all" },
+    ...((usersResponse as any)?.data?.map((u: any) => ({
+      label: u.fullName,
+      value: String(u.id),
+    })) || []),
+  ];
+
   // Filter and pagination handlers
   const handleSearch = (search: string | undefined) => {
     setDocumentListParams({
       ...documentListParams,
       search: search ?? "",
+      page: 1,
+    });
+  };
+
+  const handleUserChange = (userId: string) => {
+    setDocumentListParams({
+      ...documentListParams,
+      createdBy: userId === "all" ? undefined : userId,
+      page: 1,
+    });
+  };
+
+  const handleDateRangeChange = (
+    range: { from: Date; to?: Date } | undefined
+  ) => {
+    setDocumentListParams({
+      ...documentListParams,
+      fromDate: range?.from ? format(range.from, "yyyy-MM-dd") : undefined,
+      toDate: range?.to ? format(range.to, "yyyy-MM-dd") : undefined,
       page: 1,
     });
   };
@@ -85,10 +126,28 @@ const ProjectDocumentComponent = ({ projectId, projectName }: any) => {
   const filters: FilterConfig[] = [
     {
       type: "search",
-      placeholder: "Search by document name...",
+      placeholder: "Search by document name and notes",
       key: "search",
       value: documentListParams.search,
       onChange: handleSearch,
+      className: "w-[280px] rounded-full",
+    },
+    {
+      type: "select",
+      placeholder: "Created By",
+      key: "createdBy",
+      value: documentListParams.createdBy || "all",
+      options: userOptions,
+      onChange: handleUserChange,
+      isLoading: usersLoading,
+    },
+    {
+      type: "dateRange",
+      placeholder: "Filter by date range",
+      key: "dateRange",
+      onChange: handleDateRangeChange,
+      disable: { after: new Date() },
+      className: "rounded-full h-10",
     },
   ];
   // Add/Edit logic
@@ -106,7 +165,29 @@ const ProjectDocumentComponent = ({ projectId, projectName }: any) => {
     {
       header: "Document Name",
       accessorKey: "documentName",
-      cell: ({ row }: any) => row.original?.documentName || "-",
+      cell: ({ row }: any) => {
+        const documentName = row.original?.documentName;
+        return documentName ? (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="truncate max-w-[200px] cursor-pointer text-ellipsis">
+                  {documentName}
+                </div>
+              </TooltipTrigger>
+              <TooltipContent
+                side="top"
+                align="start"
+                className="text-sm max-w-sm border shadow break-all"
+              >
+                {documentName}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        ) : (
+          "-"
+        );
+      },
     },
     {
       header: "Notes",
@@ -117,17 +198,14 @@ const ProjectDocumentComponent = ({ projectId, projectName }: any) => {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div
-                  className="truncate max-w-[200px] cursor-pointer text-ellipsis"
-                  title={note}
-                >
+                <div className="truncate max-w-[200px] cursor-pointer text-ellipsis">
                   {note}
                 </div>
               </TooltipTrigger>
               <TooltipContent
                 side="top"
                 align="start"
-                className="text-sm max-w-xs border shadow"
+                className="text-sm max-w-sm border shadow break-all"
               >
                 {note}
               </TooltipContent>
@@ -144,19 +222,44 @@ const ProjectDocumentComponent = ({ projectId, projectName }: any) => {
       cell: ({ row }: any) => {
         const link = row.original?.link;
         return link ? (
-          <a
-            href={link}
-            target="_blank"
-            className="text-blue-500 underline truncate max-w-[200px] cursor-pointer block"
-            title={link}
-            rel="noopener noreferrer"
-          >
-            {link}
-          </a>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <a
+                  href={link}
+                  target="_blank"
+                  className="text-blue-500 underline truncate max-w-[200px] cursor-pointer block"
+                  rel="noopener noreferrer"
+                >
+                  {link}
+                </a>
+              </TooltipTrigger>
+              <TooltipContent
+                side="top"
+                align="start"
+                className="text-sm max-w-sm border shadow break-all"
+              >
+                {link}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         ) : (
           "-"
         );
       },
+    },
+    {
+      header: "Created Date",
+      accessorKey: "createdAt",
+      cell: ({ row }: any) =>
+        row.original.createdAt
+          ? format(new Date(row.original.createdAt), "dd/MM/yyyy")
+          : "-",
+    },
+    {
+      header: "Created By",
+      accessorKey: "createdBy",
+      cell: ({ row }: any) => row.original?.createdBy?.name || "-",
     },
     {
       header: "Actions",
@@ -191,23 +294,16 @@ const ProjectDocumentComponent = ({ projectId, projectName }: any) => {
   const totalCount = (projectDocumentList as any)?.metadata?.totalCount;
   return (
     <>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-2xl">
-              Project Documents{" "}
-              {projectName && (
-                <span className="text-xl font-normal">({projectName})</span>
-              )}
-            </CardTitle>
-            <Button onClick={handleAddDocument}>
-              {" "}
-              <Plus /> Add Document
+      <Card className="gap-3">
+        <CardContent className="px-0 gap-0">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+            <GlobalFilterSection filters={filters} className="mb-0" />
+            {/* {!isDeveloperView && ( */}
+            <Button onClick={handleAddDocument} className="shrink-0">
+              <Plus className="mr-2 h-4 w-4" /> Add Document
             </Button>
+            {/* )} */}
           </div>
-        </CardHeader>
-        <CardContent>
-          <GlobalFilterSection filters={filters} />
           <GlobalTable
             pageSize={documentListParams.limit}
             currentPage={documentListParams.page}
@@ -216,7 +312,7 @@ const ProjectDocumentComponent = ({ projectId, projectName }: any) => {
             onPaginationChange={handlePaginationChange}
             columns={columns}
             loading={projectDocumentListFetched}
-            isPaginationEnabled={true} // Recommended to enable pagination
+            isPaginationEnabled={true}
           />
         </CardContent>
       </Card>

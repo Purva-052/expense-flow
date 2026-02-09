@@ -1,7 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { MoreHorizontal } from "lucide-react";
-// ASSUMED IMPORTS for shadcn/ui components
-// Replace with your actual import paths
+import { MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { format } from "date-fns";
 
 const getTypeBadgeClasses = (serverType: string) => {
   switch (serverType?.toLowerCase()) {
@@ -48,7 +47,7 @@ const ServerDetailsCard = ({
   return (
     <TooltipProvider>
       <div
-        className={`group relative bg-white shadow-md rounded-lg p-6 border-l-4 ${
+        className={`group relative bg-white shadow-md rounded-lg p-6 border-l-4 m-1 ${
           isActive ? "border-green-500" : "border-red-500"
         }`}
       >
@@ -73,23 +72,14 @@ const ServerDetailsCard = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <div title={server?.status}>
-              <span
-                className={`px-2 py-1 text-xs font-bold leading-none rounded-full ${
-                  isActive
-                    ? "bg-green-100 text-green-800"
-                    : "bg-red-100 text-red-800"
-                }`}
-              >
-                {server?.status}
-              </span>
-            </div>
-
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="  bg-gray-50">
+                <Button
+                  variant="outline"
+                  className="h-8 w-8 p-0 bg-gray-50 border-none shadow-none"
+                >
                   <span className="sr-only">Open menu</span>
-                  <MoreHorizontal className="h-4 w-4" />
+                  <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -120,11 +110,43 @@ const ServerDetailsCard = ({
               {server?.type}
             </span>
           </div>
+          <div className="flex justify-between items-center">
+            <span className="font-medium">Status:</span>
+            <span
+              className={`px-2 py-1 text-xs font-bold leading-none rounded-full ${
+                isActive
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
+              }`}
+            >
+              {server?.status}
+            </span>
+          </div>
           <div className={`flex justify-between items-center gap-2`}>
             <span className="font-medium">Server:</span>
             {server?.server?.ip ? (
-              <h3 className="text-xl font-semibold text-gray-800 break-all pr-4">
+              <h3 className="font-semibold text-gray-800 break-all">
                 {server?.server?.ip}
+              </h3>
+            ) : (
+              "-"
+            )}
+          </div>
+          <div className={`flex justify-between items-center gap-2`}>
+            <span className="font-medium">Created at:</span>
+            {server?.createdAt ? (
+              <h3 className="font-semibold text-gray-800 break-all">
+                {format(new Date(server?.createdAt), "dd/MM/yyyy")}
+              </h3>
+            ) : (
+              "-"
+            )}
+          </div>
+          <div className={`flex justify-between items-center gap-2`}>
+            <span className="font-medium">Created by:</span>
+            {server?.createdBy?.name ? (
+              <h3 className="font-semibold text-gray-800 break-all">
+                {server?.createdBy?.name}
               </h3>
             ) : (
               "-"

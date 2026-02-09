@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Plus, SearchX } from "lucide-react";
 import { useGetProjectServerList } from "../services";
 import { useProjectServerStore } from "../stores/useProjectServerStore";
 import { ProjectServerActionFormModal } from "./project-server-action";
 import ServerDetailsCard from "./server-detail-card";
 
-const ProjectServerComponent = ({ projectId, projectName }: any) => {
+const ProjectServerComponent = ({ projectId }: any) => {
   const { data: projectServerList, isFetching: projectServerListFetched }: any =
     useGetProjectServerList({ pagination: false, projectId: projectId });
   const {
@@ -20,22 +20,19 @@ const ProjectServerComponent = ({ projectId, projectName }: any) => {
   };
   return (
     <>
-      <Card className="">
-        <CardHeader>
+      <Card className="gap-3">
+        <CardHeader className="px-0 gap-0">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-2xl">
-              Server Details{" "}
-              {projectName && (
-                <span className="text-xl font-normal">({projectName})</span>
-              )}
-            </CardTitle>
+            <h2 className="text-2xl font-bold bg-clip-text text-black">
+              Server Details
+            </h2>
             <Button onClick={handleAddServer}>
               {" "}
               <Plus /> Add Server
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-0 gap-0">
           <div className="flex items-center flex-wrap gap-6 max-h-[60dvh] overflow-y-auto w-full">
             {projectServerListFetched ? (
               <div className="flex flex-col justify-center items-center py-16 gap-3 w-full">

@@ -27,7 +27,7 @@ const ProfilePage = () => {
     <Main>
       {/* --- Page Header --- */}
       <div className="mb-10">
-        <h1 className="text-4xl font-bold tracking-tight">My Profile</h1>
+        <h1 className="text-2xl font-bold tracking-tight">My Profile</h1>
         <p className="text-muted-foreground mt-2">
           View your personal details and manage your account security.
         </p>

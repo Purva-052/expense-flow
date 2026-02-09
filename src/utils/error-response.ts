@@ -59,7 +59,7 @@ export const extractErrorInfo = (error: EnhancedError) => {
                 break;
 
             default:
-                title = `Error ${status}`;
+                title = "Error";
                 description = responseData?.message ?? "An unexpected error occurred";
         }
     } else if (errorCode) {

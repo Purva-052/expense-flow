@@ -11,7 +11,6 @@ import {
   useUpdateUserData,
 } from "../services";
 import { useGetProjectListForListView } from "@/features/projects/services";
-
 export function ActionFormModal({
   technologyList,
   technologyListLoading,
@@ -43,6 +42,7 @@ export function ActionFormModal({
       careerStartDate: values.careerStartDate,
       password: values.password,
       status: values.status ? "active" : "inactive",
+      profilePicS3Key: values.profilePicS3Key || "",
     };
 
     createMutate(payload);
@@ -58,6 +58,7 @@ export function ActionFormModal({
       status: values.status ? "active" : "inactive",
       joining: values.joining ? "true" : "false",
       currentWorkingProjectId: values.currentWorkingProjectId,
+      profilePicS3Key: values.profilePicS3Key || "",
     };
     updateMutate(payload);
   };

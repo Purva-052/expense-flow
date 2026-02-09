@@ -15,6 +15,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { LogoutModal } from "./model/logout-model";
+import { useGetUserDetails } from "@/features/users/services";
 
 export function ProfileDropdown() {
   const { logout, user } = useAuthStore();
@@ -39,6 +40,9 @@ export function ProfileDropdown() {
   };
 
   const fullName = user?.user?.fullName || "";
+  const { data: userDetails }: any = useGetUserDetails(user?.user?.id);
+
+  const profilePic = userDetails?.data?.profilePicUrl;
   const email = user?.user?.email || "admin@gmail.com";
 
   return (
@@ -48,7 +52,7 @@ export function ProfileDropdown() {
           <Button variant="outline" className="relative h-8 w-8 rounded-full">
             <Avatar className="h-8 w-8">
               <AvatarImage
-                src={user?.user?.avatarUrl || "/avatars/01.png"}
+                src={profilePic || "/avatars/01.png"}
                 alt={fullName}
               />
               <AvatarFallback>{getInitials(fullName)}</AvatarFallback>
