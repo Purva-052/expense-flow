@@ -66,6 +66,10 @@ const InquiryPage = () => {
     status: activeTab,
   };
 
+  const tabTriggerClass =
+    "flex items-center gap-2 rounded-[50px] px-3 py-2  transition-all " +
+    "data-[state=active]:bg-black data-[state=active]:text-white";
+
   const { data: listData, isPending: loading } = useGetInquiry(apiParams);
 
   const totalCount = (listData as any)?.metadata?.totalCount;
@@ -409,9 +413,13 @@ const InquiryPage = () => {
           extraItemShow={true}
           className={"!my-2 flex flex-wrap gap-2"}
           extraItem={
-            <TabsList className="">
-              <TabsTrigger value="active">Active Inquiries</TabsTrigger>
-              <TabsTrigger value="inactive">Archive Inquiries</TabsTrigger>
+            <TabsList className="bg-[#fdebef] rounded-full">
+              <TabsTrigger value="active" className={tabTriggerClass}>
+                Active Inquiries
+              </TabsTrigger>
+              <TabsTrigger value="inactive" className={tabTriggerClass}>
+                Archive Inquiries
+              </TabsTrigger>
             </TabsList>
           }
         />

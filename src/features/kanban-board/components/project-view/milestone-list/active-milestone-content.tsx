@@ -16,6 +16,12 @@ import {
 import API from "@/config/api/api";
 import { MilestoneTask } from "./types";
 import { TaskActions } from "./task-actions";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ActiveMilestoneContentProps {
   projectId: string | number;
@@ -39,9 +45,29 @@ const getReportColumns = (
     {
       accessorKey: "taskName",
       header: "Functionality Name",
-      cell: ({ row }) => (
-        <span className="font-medium">{row.original.taskName}</span>
-      ),
+      cell: ({ row }) => {
+        const taskName = row.original.taskName;
+
+        return (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="font-medium truncate max-w-[200px] block cursor-pointer">
+                  {taskName}
+                </span>
+              </TooltipTrigger>
+
+              <TooltipContent
+                side="top"
+                align="start"
+                className="max-w-xs break-words"
+              >
+                {taskName}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        );
+      },
     },
     {
       accessorKey: "estimatedTime",

@@ -134,6 +134,10 @@ export function ReportsStatsDialog({
               cell: ({ row }: any) =>
                 format(new Date(row.original.date), "dd/MM/yyyy"),
             },
+            {
+              accessorKey: "day",
+              header: "Day",
+            },
           ]
         : [
             {

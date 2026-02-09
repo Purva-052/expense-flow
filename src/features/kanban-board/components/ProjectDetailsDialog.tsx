@@ -62,6 +62,10 @@ const ProjectDetailsDialog = ({
 
   const [activeTab, setActiveTab] = useState<string>(defaultTab);
 
+  const tabTriggerClass =
+    "flex items-center gap-2 rounded-[50px] px-3 py-2  transition-all " +
+    "data-[state=active]:bg-black data-[state=active]:text-white";
+
   useEffect(() => {
     if (isOpen) {
       setActiveTab(defaultTab);
@@ -123,9 +127,13 @@ const ProjectDetailsDialog = ({
           onValueChange={setActiveTab}
           className="w-full flex-1 flex flex-col"
         >
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="developers">Assigned Developers</TabsTrigger>
-            <TabsTrigger value="history">Project History</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 bg-[#fdebef] rounded-full">
+            <TabsTrigger value="developers" className={tabTriggerClass}>
+              Assigned Developers
+            </TabsTrigger>
+            <TabsTrigger value="history" className={tabTriggerClass}>
+              Project History
+            </TabsTrigger>
           </TabsList>
 
           {/* --- TAB 1: Assigned Developers (Your Original Code) --- */}

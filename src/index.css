@@ -434,3 +434,7 @@
   font-size: 14px;
   line-height: 1.6;
 }
+
+.ck-editor-lg .ck-editor__editable {
+  min-height: 150px;
+}
