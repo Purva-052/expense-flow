@@ -277,24 +277,26 @@ export const UserProfileCard = ({ user }: { user: any }) => {
             </Badge>
           }
         />
-        <ProfileDetailRow
-          icon={Sparkles}
-          label="Strengths"
-          value={
-            <div className="w-full mt-1">
-              <CreatableSkillsSelect
-                options={skillsData?.data || []}
-                selected={selectedSkills}
-                onChange={handleSkillsChange}
-                onCreateSkill={handleCreateSkill}
-                loading={skillsLoading}
-                creating={isCreatingSkill}
-                placeholder="Add strengths..."
-                maxSelectedShow={5}
-              />
-            </div>
-          }
-        />
+        {user?.role !== "admin" && user?.role !== "project_manager" && (
+          <ProfileDetailRow
+            icon={Sparkles}
+            label="Strengths"
+            value={
+              <div className="w-full mt-1">
+                <CreatableSkillsSelect
+                  options={skillsData?.data || []}
+                  selected={selectedSkills}
+                  onChange={handleSkillsChange}
+                  onCreateSkill={handleCreateSkill}
+                  loading={skillsLoading}
+                  creating={isCreatingSkill}
+                  placeholder="Add strengths..."
+                  maxSelectedShow={5}
+                />
+              </div>
+            }
+          />
+        )}
       </CardContent>
       <CardFooter>
         <DialogTrigger asChild>
