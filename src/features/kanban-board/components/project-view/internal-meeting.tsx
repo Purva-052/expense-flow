@@ -282,7 +282,7 @@ export function InternalMeetingDialog({
                       <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
-                      <div className="rounded-md border border-input bg-background">
+                      <div className="rounded-md border border-input bg-background ck-editor-lg">
                         <CKEditor
                           //@ts-ignore
                           editor={ClassicEditor}
