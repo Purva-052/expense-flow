@@ -151,6 +151,7 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
   };
 
   const title = project?.name || "N/A";
+  const canDeleteProject = project?.percentageComplete === 0;
   const currentStatus = project?.currentStatus || "N/A";
   const deadline = project?.expectedCompletionDate
     ? new Date(project.expectedCompletionDate).toLocaleDateString("en-GB", {
@@ -272,9 +273,11 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
                         >
                           Edit Project
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleDelete}>
-                          Delete Project
-                        </DropdownMenuItem>
+                        {canDeleteProject && (
+                          <DropdownMenuItem onClick={handleDelete}>
+                            Delete Project
+                          </DropdownMenuItem>
+                        )}
                       </>
                     )}
                   </DropdownMenuGroup>
