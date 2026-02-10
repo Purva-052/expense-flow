@@ -39,9 +39,10 @@ const projectFormSchemaBase = z.object({
   ),
 
   handlerId: z
-    .number({ invalid_type_error: "Manager must be a number" })
-    .optional()
-    .nullable(),
+    .union([z.number().min(1), z.undefined(), z.null()])
+    .refine((val) => val !== null && val !== undefined && val >= 1, {
+      message: "Project Coordinator is required",
+    }),
 
   percentageComplete: z.preprocess(
     (val) => (val === "" || val == null ? 0 : Number(val)),

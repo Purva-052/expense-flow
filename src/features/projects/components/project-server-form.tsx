@@ -101,7 +101,7 @@ export function ProjectServerActionForm({
                 render={({ field }: any) => (
                   <FormItem className="col-span-2">
                     <FormLabel>
-                      Meeting Name <span className="text-red-500">*</span>
+                      Server URL <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input placeholder="https://example.com" {...field} />

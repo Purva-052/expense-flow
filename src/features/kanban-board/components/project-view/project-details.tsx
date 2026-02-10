@@ -1,6 +1,8 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   FileSpreadsheet,
   Flag,
@@ -42,6 +44,36 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
     projectId?.toString()
   );
   const project = (projectDetailsResponse as any)?.data;
+  const [activeMainTab, setActiveMainTab] = useState("overview");
+  const [isChangingTab, setIsChangingTab] = useState(false);
+
+  useEffect(() => {
+    setIsChangingTab(true);
+    const timer = setTimeout(() => setIsChangingTab(false), 500);
+    return () => clearTimeout(timer);
+  }, [activeMainTab]);
+
+  const TabContentSkeleton = () => (
+    <div className="space-y-6 pt-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Skeleton className="h-32 w-full rounded-xl" />
+        <Skeleton className="h-32 w-full rounded-xl" />
+        <Skeleton className="h-32 w-full rounded-xl" />
+      </div>
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-1/4" />
+        <div className="rounded-md border p-6 space-y-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="flex gap-4">
+              <Skeleton className="h-4 flex-1" />
+              <Skeleton className="h-4 flex-1" />
+              <Skeleton className="h-4 w-20" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 
   const tabTriggerClass =
     "flex items-center gap-2 rounded-[50px] px-3 py-2  transition-all " +
@@ -68,7 +100,11 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
           </div>
         </div>
 
-        <Tabs defaultValue="overview" className="w-full ">
+        <Tabs
+          value={activeMainTab}
+          onValueChange={setActiveMainTab}
+          className="w-full "
+        >
           <TabsList className="mb-4 flex flex-wrap h-auto gap-2 bg-[#fdebef] rounded-full">
             <TabsTrigger value="overview" className={tabTriggerClass}>
               <FileSpreadsheet className="w-4 h-4" /> Overview
@@ -97,37 +133,43 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
           </TabsList>
 
           <div className="overflow-y-auto h-[calc(100vh-131px)] pr-2">
-            <TabsContent value="overview">
-              <OverviewProject projectId={projectId} />
-            </TabsContent>
+            {isChangingTab ? (
+              <TabContentSkeleton />
+            ) : (
+              <>
+                <TabsContent value="overview">
+                  <OverviewProject projectId={projectId} />
+                </TabsContent>
 
-            <TabsContent value="milestone">
-              <MilestoneList projectId={projectId} />
-            </TabsContent>
+                <TabsContent value="milestone">
+                  <MilestoneList projectId={projectId} />
+                </TabsContent>
 
-            <TabsContent value="report">
-              <ProjectReport projectId={projectId} />
-            </TabsContent>
+                <TabsContent value="report">
+                  <ProjectReport projectId={projectId} />
+                </TabsContent>
 
-            <TabsContent value="doc">
-              <ProjectDocumentComponent projectId={projectId} />
-            </TabsContent>
+                <TabsContent value="doc">
+                  <ProjectDocumentComponent projectId={projectId} />
+                </TabsContent>
 
-            <TabsContent value="server">
-              <ProjectServerComponent projectId={projectId} />
-            </TabsContent>
+                <TabsContent value="server">
+                  <ProjectServerComponent projectId={projectId} />
+                </TabsContent>
 
-            <TabsContent value="client">
-              <ClientMeetingTab projectId={projectId} project={project} />
-            </TabsContent>
+                <TabsContent value="client">
+                  <ClientMeetingTab projectId={projectId} project={project} />
+                </TabsContent>
 
-            <TabsContent value="internal_meeting">
-              <InternalMeetingTab projectId={projectId} />
-            </TabsContent>
+                <TabsContent value="internal_meeting">
+                  <InternalMeetingTab projectId={projectId} />
+                </TabsContent>
 
-            <TabsContent value="sticky_notes">
-              <StickyNotesTab projectId={projectId} />
-            </TabsContent>
+                <TabsContent value="sticky_notes">
+                  <StickyNotesTab projectId={projectId} />
+                </TabsContent>
+              </>
+            )}
           </div>
         </Tabs>
       </DrawerHeader>

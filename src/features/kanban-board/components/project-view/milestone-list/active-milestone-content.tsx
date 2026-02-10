@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2, Pencil } from "lucide-react";
+import { Pencil } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { GlobalTable } from "@/components/table/global-table";
@@ -186,9 +187,29 @@ export const ActiveMilestoneContent = ({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-12">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        <span className="ml-2">Loading tasks...</span>
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <Skeleton className="h-24 w-full rounded-xl" />
+          <Skeleton className="h-24 w-full rounded-xl" />
+        </div>
+        <div className="rounded-md border p-4 space-y-4">
+          <div className="flex items-center justify-between border-b pb-4">
+            <Skeleton className="h-8 w-48" />
+            <div className="flex gap-2">
+              <Skeleton className="h-9 w-32" />
+            </div>
+          </div>
+          <div className="space-y-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex gap-4">
+                <Skeleton className="h-10 flex-1" />
+                <Skeleton className="h-10 w-32" />
+                <Skeleton className="h-10 w-32" />
+                <Skeleton className="h-10 w-16" />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
