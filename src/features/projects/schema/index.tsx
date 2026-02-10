@@ -69,6 +69,7 @@ const projectFormSchemaBase = z.object({
       })
     )
     .optional(),
+  isGlobal: z.boolean(),
 });
 
 // Main schema with date validation

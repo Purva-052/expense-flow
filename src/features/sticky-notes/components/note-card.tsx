@@ -1,5 +1,6 @@
-import { Trash2, Edit2 } from "lucide-react";
+import { Trash2, Edit2, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { COLORS } from "./color-picker";
 
@@ -24,11 +25,17 @@ export const NoteCard = ({ note, onView, onEdit, onDelete }: NoteCardProps) => {
     >
       <div className="flex items-start justify-between gap-4 mb-2">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 mb-1">
             {note.title && (
               <h4 className="font-bold text-gray-900 truncate text-lg">
                 {note.title}
               </h4>
+            )}
+            {note.isPublic && (
+              <Badge variant="outline" className="h-5 px-1.5 text-[10px] font-bold bg-black/5 border-none text-gray-600 flex gap-1 items-center">
+                <Lock className="w-2.5 h-2.5" />
+                PRIVATE
+              </Badge>
             )}
           </div>
         </div>

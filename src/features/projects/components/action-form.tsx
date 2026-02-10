@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { SubmitHandler, useForm } from "react-hook-form";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
@@ -19,6 +19,7 @@ import {
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Props {
   currentRow?: any;
@@ -86,6 +87,7 @@ export function ProjectActionForm({
           priority: currentRow.priority ?? "",
           status: currentRow.status,
           projectTypeId: currentRow.projectTypeId ?? undefined,
+          isGlobal: currentRow.isGlobal ?? false,
         }
       : {
           name: "",
@@ -99,6 +101,7 @@ export function ProjectActionForm({
           priority: "",
           status: undefined,
           projectTypeId: undefined,
+          isGlobal: false,
         },
   });
 
@@ -254,6 +257,21 @@ export function ProjectActionForm({
                     {form.formState.errors.description.message}
                   </p>
                 )} */}
+              </div>
+              <div className="flex gap-6">
+                <Controller
+                  control={form.control}
+                  name="isGlobal"
+                  render={({ field }) => (
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                      <label className="text-sm font-medium">is Global</label>
+                    </div>
+                  )}
+                />
               </div>
             </form>
           </Form>

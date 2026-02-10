@@ -76,6 +76,7 @@ export const StickyNotesTab = ({ projectId }: StickyNotesTabProps) => {
             description: data.content,
             color: data.color,
             isCompleted: false,
+            isPublic: data.isPublic,
           },
         });
       } else {
@@ -85,6 +86,7 @@ export const StickyNotesTab = ({ projectId }: StickyNotesTabProps) => {
           color: data.color,
           isCompleted: false,
           projectId: Number(projectId),
+          isPublic: data.isPublic,
         });
       }
       setIsAdding(false);
@@ -189,6 +191,7 @@ export const StickyNotesTab = ({ projectId }: StickyNotesTabProps) => {
                       title: editingNote.title ?? "",
                       content: editingNote.description,
                       color: editingNote.color ?? "yellow",
+                      isPublic: editingNote.isPublic ?? false,
                     }
                   : undefined
               }

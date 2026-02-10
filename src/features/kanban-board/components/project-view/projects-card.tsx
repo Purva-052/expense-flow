@@ -191,7 +191,7 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
         )}
       >
         {/* Header */}
-        <div className="flex items-start justify-between">
+        <div className="flex items-center justify-between">
           <div className="flex-1">
             <div className="flex flex-col gap-1 mb-1">
               <h3 className="text-lg font-semibold text-gray-900 leading-tight pr-4">

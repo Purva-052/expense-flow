@@ -92,6 +92,8 @@ const ProjectPage = ({
   const { data: ProjectType, isPending: LoadingProjectType }: any =
     useGetProjectTypesDropdownList();
 
+  const isBdeView = Role === roles.BDE;
+
   const getInitialFilters = () => {
     if (typeof window === "undefined")
       return {
@@ -103,6 +105,7 @@ const ProjectPage = ({
         projectTypeId: undefined,
         status: isInactiveTab ? "inactive" : "active",
         technologyId: undefined,
+        isGlobal: isBdeView ? true : undefined,
       };
     const saved = localStorage.getItem(FILTER_STORAGE_KEY);
     return saved
@@ -114,6 +117,7 @@ const ProjectPage = ({
           handlerId:
             isCoordinatorView && !isInactiveTab ? currentUserId : undefined,
           technologyId: undefined,
+          isGlobal: isBdeView ? true : undefined,
           ...JSON.parse(saved),
         }
       : {
@@ -126,6 +130,7 @@ const ProjectPage = ({
           priority: isInactiveTab ? undefined : "high",
           projectTypeId: undefined,
           search: "",
+          isGlobal: isBdeView ? true : undefined,
         };
   };
 
@@ -143,10 +148,10 @@ const ProjectPage = ({
   }, [activeTab]);
 
   useEffect(() => {
-    const { clientId, managerId, priority, isPinned } = listParams;
+    const { clientId, managerId, priority, isPinned, isGlobal } = listParams;
     localStorage.setItem(
       FILTER_STORAGE_KEY,
-      JSON.stringify({ clientId, managerId, priority, isPinned })
+      JSON.stringify({ clientId, managerId, priority, isPinned, isGlobal })
     );
   }, [listParams, FILTER_STORAGE_KEY]);
 
@@ -187,7 +192,10 @@ const ProjectPage = ({
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  }: any = useGetProjectsData({ ...listParams, isPinned: true });
+  }: any = useGetProjectsData({
+    ...listParams,
+    isPinned: isBdeView ? undefined : true,
+  });
 
   // Extract total count from pagination metadata and notify parent when it changes
   const totalCount =
@@ -251,7 +259,7 @@ const ProjectPage = ({
   const availableDroppable = useDroppable({ id: "available" });
 
   function onDragStart(event: DragStartEvent) {
-    if (isDeveloperView) return;
+    if (isDeveloperView || isBdeView) return;
     const developer = event.active.data.current?.developer as any;
     if (developer) {
       setActiveDeveloper(developer);
@@ -259,7 +267,7 @@ const ProjectPage = ({
   }
 
   async function onDragEnd(event: DragEndEvent) {
-    if (isDeveloperView) return;
+    if (isDeveloperView || isBdeView) return;
     setActiveDeveloper(null);
 
     const { active, over } = event;
@@ -294,7 +302,10 @@ const ProjectPage = ({
   }
 
   const handleDeveloperClick = (developer: any, projectId: string) => {
-    if (isDeveloperView && developer?.developer?.id !== currentUserId) {
+    if (
+      (isDeveloperView && developer?.developer?.id !== currentUserId) ||
+      isBdeView
+    ) {
       return;
     }
     setSelectedDeveloper(developer);
@@ -454,12 +465,14 @@ const ProjectPage = ({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <GlobalFilterSection filters={filters ?? []} />
-      </div>
+      {!isBdeView && (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <GlobalFilterSection filters={filters ?? []} />
+        </div>
+      )}
 
       <div
-        className={`${isDeveloperView ? "grid grid-cols-1 gap-4" : "grid grid-cols-1 gap-4 md:grid-cols-[1fr_320px] h-[75dvh]"}`}
+        className={`${isDeveloperView || isBdeView ? "grid grid-cols-1 gap-4" : "grid grid-cols-1 gap-4 md:grid-cols-[1fr_320px] h-[75dvh]"}`}
       >
         <DndContext
           sensors={sensors}
@@ -600,7 +613,7 @@ const ProjectPage = ({
             <div ref={loadMoreRef} className="h-2" />
           </div>
 
-          {!isDeveloperView && (
+          {!isDeveloperView && !isBdeView && (
             <aside className="top-4 !h-full">
               <Card
                 ref={availableDroppable.setNodeRef}

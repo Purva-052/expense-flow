@@ -42,6 +42,7 @@ export function ActionFormModal({
       status: values.status,
       projectTypeId: values.projectTypeId,
       technologyId: values.technologyId,
+      isGlobal: values.isGlobal,
     };
     createMutate(payload);
   };
@@ -58,6 +59,7 @@ export function ActionFormModal({
       priority: values.priority,
       projectTypeId: values.projectTypeId,
       technologyId: values.technologyId,
+      isGlobal: values.isGlobal,
     };
 
     updateMutate(payload);
