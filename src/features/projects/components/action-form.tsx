@@ -81,7 +81,7 @@ export function ProjectActionForm({
           technologyId: currentRow.technologyId ?? null,
           startDate: currentRow.startDate ?? "",
           expectedCompletionDate: currentRow.expectedCompletionDate ?? "",
-          handlerId: currentRow.projectHandler?.id ?? 0,
+          handlerId: currentRow.projectHandler?.id ?? undefined,
           percentageComplete: currentRow.percentageComplete ?? 0,
           priority: currentRow.priority ?? "",
           status: currentRow.status,
@@ -214,7 +214,7 @@ export function ProjectActionForm({
               />
 
               {/* Progress */}
-              <TextInputField
+              {/* <TextInputField
                 control={form.control}
                 name="percentageComplete"
                 type="number"
@@ -223,7 +223,7 @@ export function ProjectActionForm({
                 max={100}
                 placeholder="Enter progress percentage"
                 valueAsNumber
-              />
+              /> */}
 
               {/* Priority */}
               <CustomDropDownSearchable
