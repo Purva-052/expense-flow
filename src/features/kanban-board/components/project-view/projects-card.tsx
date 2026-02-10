@@ -119,6 +119,11 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
     }
   };
 
+  const handleDelete = () => {
+    setOpen("delete");
+    setCurrentRow(project);
+  };
+
   const handlePinToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsPinConfirmOpen(true);
@@ -267,11 +272,9 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
                         >
                           Edit Project
                         </DropdownMenuItem>
-                        {/* <DropdownMenuItem
-                        onClick={() => setStatusDialogOpen(true)}
-                      >
-                        Delete Project
-                      </DropdownMenuItem> */}
+                        <DropdownMenuItem onClick={handleDelete}>
+                          Delete Project
+                        </DropdownMenuItem>
                       </>
                     )}
                   </DropdownMenuGroup>

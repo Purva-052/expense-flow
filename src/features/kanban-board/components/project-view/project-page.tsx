@@ -62,6 +62,7 @@ import { capitalizeFirstLetter } from "@/utils/commonFunctions";
 import { roles } from "@/utils/constant";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CustomMultiSelect } from "@/components/shared/custom-multiselect";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type GroupedDevelopers = {
   technologyName: string;
@@ -343,23 +344,23 @@ const ProjectPage = ({
     setListParams((prev: any) => ({ ...prev, search: search ?? "" }));
   };
 
-  useEffect(() => {
-    if (
-      !isInactiveTab &&
-      !listParams.projectTypeId &&
-      ProjectType?.data?.length
-    ) {
-      const fixedType = ProjectType.data.find(
-        (type: any) => type.name === "Fixed"
-      );
-      if (fixedType) {
-        setListParams((prev: any) => ({
-          ...prev,
-          projectTypeId: fixedType.id,
-        }));
-      }
-    }
-  }, [ProjectType]);
+  // useEffect(() => {
+  //   if (
+  //     !isInactiveTab &&
+  //     !listParams.projectTypeId &&
+  //     ProjectType?.data?.length
+  //   ) {
+  //     const fixedType = ProjectType.data.find(
+  //       (type: any) => type.name === "Fixed"
+  //     );
+  //     if (fixedType) {
+  //       setListParams((prev: any) => ({
+  //         ...prev,
+  //         projectTypeId: fixedType.id,
+  //       }));
+  //     }
+  //   }
+  // }, [ProjectType]);
 
   const { data: technologies, isPending: techLoading } =
     useGetTechnologyDropdownList(null, Role !== roles.BDE);
@@ -668,11 +669,16 @@ const ProjectPage = ({
 
                 <CardContent className="h-[50dvh] overflow-y-auto [scrollbar-gutter:stable] pr-2">
                   {AllDevelopersLoading ? (
-                    <div className="flex flex-col justify-center items-center py-10 gap-3">
-                      <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
-                      <span className="text-sm text-muted-foreground">
-                        Loading developers...
-                      </span>
+                    <div className="space-y-4">
+                      {Array.from({ length: 6 }).map((_, i) => (
+                        <div key={i} className="flex items-center gap-3 p-2 border rounded-md">
+                          <Skeleton className="h-10 w-10 rounded-full" />
+                          <div className="flex-1 space-y-2">
+                            <Skeleton className="h-4 w-3/4" />
+                            <Skeleton className="h-3 w-1/2" />
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   ) : groupedDevelopers?.length > 0 ? (
                     <SortableContext

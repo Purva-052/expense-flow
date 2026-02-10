@@ -46,7 +46,7 @@ const formSchema = z.object({
     .nonempty("Milestone name is required")
     .min(2, "Milestone name must be at least 2 characters")
     .max(20, "Milestone name should be less than 20 characters"),
-  estimatedTime: z.string().optional(),
+  estimatedTime: z.string().min(0, "Estimated time is required"),
   status: z.string().min(1, "Status is required"),
   tasks: z.array(taskSchema).min(1, "At least one task is required"),
 });
@@ -336,20 +336,21 @@ export function AddManualMilestone({
                       />
                     </div>
 
-                    {!initialData && (
-                      <div className="col-span-1 flex items-end">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => remove(index)}
-                          disabled={fields.length === 1}
-                          className="text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    )}
+                    {!initialData ||
+                      (!initialData.tasks[index]?.status && (
+                        <div className="col-span-1 flex items-start pt-6">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => remove(index)}
+                            disabled={fields.length === 1}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
                   </div>
                 ))}
               </div>
