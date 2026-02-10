@@ -5,7 +5,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Download, FileDown, Loader2 } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   DialogHeader,
   DialogTitle,
@@ -50,7 +49,6 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
   const [isParsingFile, setIsParsingFile] = useState(false);
   const [milestoneToEdit, setMilestoneToEdit] = useState<any | null>(null);
   const justCreatedMilestoneIdRef = useRef<string | null>(null);
-  // Stable rendering will be driven from loading state + activeTab
 
   const { isDownloading, downloadSample } = useDownloadMilestoneSample();
   const { isUploading, uploadFile } = useUploadMilestoneFile();
@@ -62,32 +60,12 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
     enabled: !!user && !isDeveloperView,
   }) as any;
 
-  // --- FIX START: Get isLoading state ---
-  const { data: activeMilestoneDetail, isLoading: isLoadingActiveMilestone } =
-    useGetMilestoneTasks(activeTab, {
-      enabled: !!activeTab,
-    });
-  // --- FIX END ---
+  const { data: activeMilestoneDetail } = useGetMilestoneTasks(activeTab, {
+    enabled: !!activeTab,
+  });
 
   const activeMilestone = activeMilestoneDetail?.data || activeMilestoneDetail;
   const isExcelUploaded = activeMilestone?.isExcelUploaded === true;
-
-  const [isChangingTab, setIsChangingTab] = useState(false);
-
-  useEffect(() => {
-    if (activeTab) {
-      setIsChangingTab(true);
-      const timer = setTimeout(() => setIsChangingTab(false), 500);
-      return () => clearTimeout(timer);
-    }
-  }, [activeTab]);
-
-  // Helper to determine if we are waiting for data to decide button visibility
-  // Prevent buttons from briefly showing before data loads by requiring an
-  // `activeTab` and waiting while `isLoadingActiveMilestone` or there's no data yet.
-  const isResolvingMilestoneStatus =
-    isChangingTab ||
-    (!!activeTab && (isLoadingActiveMilestone || !activeMilestoneDetail));
 
   const isCurrentUserProjectHandler = useMemo(() => {
     const users = handledProjectsResponse?.data || [];
@@ -238,96 +216,74 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
   const tabTriggerClass =
     "group flex items-center gap-2 rounded-[50px] px-3 py-2 transition-all h-[35px] " +
     "data-[state=active]:bg-black data-[state=active]:text-white";
-
   return (
     <>
-
-      {isFetchingMilestones ? (
-        <div className="w-full space-y-6 border-t-2 p-2 pt-4">
-          <div className="flex items-center justify-between">
-            <div className="flex gap-2">
-              <Skeleton className="h-9 w-32" />
-              <Skeleton className="h-9 w-32" />
-            </div>
-            <Skeleton className="h-9 w-32" />
-          </div>
-          <div className="flex gap-2">
-            <Skeleton className="h-9 w-32 rounded-full" />
-            <Skeleton className="h-9 w-32 rounded-full" />
-            <Skeleton className="h-9 w-32 rounded-full" />
-          </div>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <Skeleton className="h-24 w-full rounded-xl" />
-              <Skeleton className="h-24 w-full rounded-xl" />
-            </div>
-            <Skeleton className="h-[400px] w-full rounded-md" />
-          </div>
-        </div>
-      ) : milestones.length > 0 ? (
-        <div className="w-full">
-          <div className="mb-4 flex items-center justify-between gap-2 overflow-x-auto pb-2 min-h-[45px]">
-            <div className="flex items-center gap-2">
-              {canModifyMilestones &&
-                !!activeTab &&
-                !isExcelUploaded &&
-                !isResolvingMilestoneStatus && (
-                  <>
-                    <Button
-                      onClick={downloadSample}
-                      disabled={isDownloading}
-                      variant="default"
-                      size="default"
-                    >
-                      {isDownloading ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        <Download className="mr-2 h-4 w-4" />
-                      )}
-                      Download Sample
-                    </Button>
-                    <input
-                      type="file"
-                      accept=".xlsx,.xls,.csv"
-                      onChange={handleFileUpload}
-                      disabled={isUploading}
-                      className="hidden"
-                      id="milestone-file-input"
-                    />
-                    <Button
-                      onClick={() =>
-                        document.getElementById("milestone-file-input")?.click()
-                      }
-                      disabled={isUploading || isParsingFile}
-                      variant="default"
-                      size="default"
-                    >
-                      <FileDown className="mr-2 h-4 w-4" size={24} />
-                      Import Excel
-                    </Button>
-                  </>
-                )}
-            </div>
-
-            {canModifyMilestones && (
+      <div className="mb-4 flex items-center gap-2 overflow-x-auto pb-2">
+        <div className="flex items-center gap-2">
+          {canModifyMilestones && !isExcelUploaded && (
+            <>
               <Button
-                onClick={() => {
-                  setMilestoneToEdit(null);
-                  setOpenAddMilestone(true);
-                }}
+                onClick={downloadSample}
+                disabled={isDownloading}
                 variant="default"
                 size="default"
               >
-                Add Milestone
+                {isDownloading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Download className="mr-2 h-4 w-4" />
+                )}
+                Download Sample
               </Button>
-            )}
+              <input
+                type="file"
+                accept=".xlsx,.xls,.csv"
+                onChange={handleFileUpload}
+                disabled={isUploading}
+                className="hidden"
+                id="milestone-file-input"
+              />
+              <Button
+                onClick={() =>
+                  document.getElementById("milestone-file-input")?.click()
+                }
+                disabled={isUploading || isParsingFile}
+                variant="default"
+                size="default"
+              >
+                <FileDown className="mr-2 h-4 w-4" size={24} />
+                Import Excel
+              </Button>
+            </>
+          )}
+        </div>
+        {canModifyMilestones && (
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() => {
+                setMilestoneToEdit(null);
+                setOpenAddMilestone(true);
+              }}
+              variant="default"
+              size="default"
+            >
+              Add Milestone
+            </Button>
           </div>
+        )}
+      </div>
 
-          <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="w-full border-t-2 p-2"
-          >
+      {isFetchingMilestones ? (
+        <div className="flex items-center justify-center p-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <span className="ml-2">Loading milestones...</span>
+        </div>
+      ) : milestones.length > 0 ? (
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="w-full border-t-2 p-2"
+        >
           <div>
             <TabsList
               className="
@@ -363,41 +319,18 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
             </TabsList>
           </div>
 
-          {isResolvingMilestoneStatus ? (
-            <div className="space-y-4 pt-4">
-              <div className="grid grid-cols-2 gap-4">
-                <Skeleton className="h-24 w-full rounded-xl" />
-                <Skeleton className="h-24 w-full rounded-xl" />
-              </div>
-              <div className="rounded-md border p-4 space-y-4">
-                <div className="flex items-center justify-between border-b pb-4">
-                  <Skeleton className="h-8 w-48" />
-                  <Skeleton className="h-8 w-24" />
-                </div>
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="flex gap-4">
-                    <Skeleton className="h-6 flex-1" />
-                    <Skeleton className="h-6 flex-1" />
-                    <Skeleton className="h-6 flex-1" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            milestones.map((m) => (
-              <TabsContent key={m.id} value={String(m.id)}>
-                <ActiveMilestoneContent
-                  projectId={projectId!}
-                  milestoneId={m.id}
-                  onViewTaskLog={handleViewTaskLog}
-                  onEditMilestone={(data) => handleEditMilestone(data)}
-                  isCurrentUserProjectHandler={isCurrentUserProjectHandler}
-                />
-              </TabsContent>
-            ))
-          )}
+          {milestones.map((m) => (
+            <TabsContent key={m.id} value={String(m.id)}>
+              <ActiveMilestoneContent
+                projectId={projectId!}
+                milestoneId={m.id}
+                onViewTaskLog={handleViewTaskLog}
+                onEditMilestone={(data) => handleEditMilestone(data)}
+                isCurrentUserProjectHandler={isCurrentUserProjectHandler}
+              />
+            </TabsContent>
+          ))}
         </Tabs>
-      </div>
       ) : (
         <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-xl bg-muted/10 text-muted-foreground">
           <FileDown className="h-10 w-10 mb-4 opacity-20" />
