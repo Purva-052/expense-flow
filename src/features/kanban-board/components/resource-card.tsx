@@ -30,7 +30,7 @@ const getYearsOfExperience = (
 
 export const ResourceCard = ({
   developer,
-  isProjectHandler,
+  // isProjectHandler,
 }: {
   developer: any;
   isProjectHandler?: boolean;
@@ -46,22 +46,21 @@ export const ResourceCard = ({
   const experience = getYearsOfExperience(developer?.careerStartDate);
   const profilePic = developer.profilePicUrl || developer.avatarUrl;
 
-  const joinDate = developer?.careerStartDate
-    ? new Date(developer.careerStartDate).toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      })
-    : "N/A";
+  // const joinDate = developer?.careerStartDate
+  //   ? new Date(developer.careerStartDate).toLocaleDateString("en-GB", {
+  //       day: "2-digit",
+  //       month: "short",
+  //       year: "numeric",
+  //     })
+  //   : "N/A";
 
   const allProjects = [
     ...(developer.activeProjects || []),
     ...(developer.handledProjects || []),
   ];
 
-  const PROJECT_LIMIT = isProjectHandler ? 6 : 2;
-  const displayedProjects = allProjects.slice(0, PROJECT_LIMIT);
-  const overflowCount = allProjects.length - PROJECT_LIMIT;
+  // Show all projects without limiting
+  const displayedProjects = allProjects;
 
   return (
     <Card
@@ -85,7 +84,7 @@ export const ResourceCard = ({
             }
           >
             {/* Top Section: Avatar, Name, Experience */}
-            <div className="flex items-start gap-3">
+            <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10 shrink-0 border-2 border-white shadow-sm">
                 <AvatarImage
                   src={
@@ -111,7 +110,7 @@ export const ResourceCard = ({
             </div>
 
             {/* Join Date */}
-            {!isProjectHandler && (
+            {/* {!isProjectHandler && (
               <div className="flex items-center justify-between gap-1">
                 <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider">
                   Join Date
@@ -120,7 +119,7 @@ export const ResourceCard = ({
                   {joinDate}
                 </p>
               </div>
-            )}
+            )} */}
 
             {/* Technology Badge */}
             {developer?.technology && (
@@ -140,7 +139,7 @@ export const ResourceCard = ({
                 <div className="flex items-center gap-1.5 mb-2">
                   <Zap className="h-3 w-3 text-primary animate-pulse" />
                   <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
-                    Strengths
+                    Skills
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
@@ -168,11 +167,6 @@ export const ResourceCard = ({
                     project={project}
                   />
                 ))}
-                {overflowCount > 0 && (
-                  <div className="flex items-center justify-center px-2 py-1 rounded-md bg-muted text-xs font-medium text-muted-foreground">
-                    +{overflowCount}
-                  </div>
-                )}
               </div>
             ) : (
               <div className="flex items-center justify-center text-sm text-muted-foreground h-full min-h-[80px]">

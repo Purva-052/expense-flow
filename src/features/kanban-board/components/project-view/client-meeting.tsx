@@ -9,7 +9,6 @@ import {
   Heading,
   List,
   TodoList,
-  BlockQuote,
 } from "ckeditor5";
 
 import "ckeditor5/ckeditor5.css";
@@ -307,7 +306,6 @@ export function ClientMeetingDialog({
                               List,
                               TodoList,
                               Undo,
-                              BlockQuote,
                             ],
                             toolbar: [
                               "heading",

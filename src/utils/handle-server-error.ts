@@ -15,7 +15,9 @@ export function handleServerError(error: unknown) {
   }
 
   if (error instanceof AxiosError) {
-    errMsg = error.response?.data.title;
+    errMsg = error.response?.data?.message || error.response?.data?.title || error.message || errMsg;
+  } else if (error instanceof Error) {
+    errMsg = error.message || errMsg;
   }
 
   toast.error(errMsg);

@@ -50,16 +50,20 @@ export const formatExperience = (
 
   if (months < 0) months += 12;
 
-  // 🔥 SPECIAL CASE: 10 or 11 months → show Y M
-  if (months >= 10) {
-    return `${years}y ${months}m`;
+  // 🔹 Less than 1 year → show only months
+  if (years < 1) {
+    return `${months} month${months !== 1 ? "s" : ""}`;
   }
 
-  // Normal decimal year format
-  const totalMonths = years * 12 + months;
-  const yearsDecimal = totalMonths / 12;
+  // 🔹 1 year or more → show years + months
+  const yearLabel = `${years} Year${years !== 1 ? "s" : ""}`;
 
-  return `${yearsDecimal.toFixed(1)} yrs`;
+  if (months === 0) {
+    return yearLabel;
+  }
+
+  const monthLabel = `${months} month${months !== 1 ? "s" : ""}`;
+  return `${yearLabel} ${monthLabel}`;
 };
 
 const priorityColorMap: any = {
