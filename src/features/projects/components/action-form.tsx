@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { SubmitHandler, useForm } from "react-hook-form";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
@@ -19,6 +19,7 @@ import {
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 
 interface Props {
   currentRow?: any;
@@ -61,7 +62,6 @@ export function ProjectActionForm({
 
           const startDate = new Date(data.startDate);
           const expectedDate = new Date(data.expectedCompletionDate);
-
           return expectedDate >= startDate;
         },
         {
@@ -79,26 +79,35 @@ export function ProjectActionForm({
           description: currentRow.description ?? "",
           clientId: currentRow.clientId ?? null,
           technologyId: currentRow.technologyId ?? null,
-          startDate: currentRow.startDate ?? "",
-          expectedCompletionDate: currentRow.expectedCompletionDate ?? "",
+          startDate: currentRow?.startDate
+            ? new Date(currentRow.startDate)
+            : undefined,
+
+          expectedCompletionDate: currentRow?.expectedCompletionDate
+            ? new Date(currentRow.expectedCompletionDate)
+            : undefined,
           handlerId: currentRow.projectHandler?.id ?? undefined,
           percentageComplete: currentRow.percentageComplete ?? 0,
           priority: currentRow.priority ?? "",
           status: currentRow.status,
           projectTypeId: currentRow.projectTypeId ?? undefined,
+          isVisibleToAllDevTeam: currentRow.isVisibleToAllDevTeam ?? false,
+          isVisibleToAllBdeTeam: currentRow.isVisibleToAllBdeTeam ?? false,
         }
       : {
           name: "",
           description: "",
           clientId: null,
           technologyId: null,
-          startDate: "",
-          expectedCompletionDate: "",
+          startDate: undefined,
+          expectedCompletionDate: undefined,
           handlerId: undefined,
           percentageComplete: 0,
           priority: "",
           status: undefined,
           projectTypeId: undefined,
+          isVisibleToAllDevTeam: false,
+          isVisibleToAllBdeTeam: false,
         },
   });
 
@@ -124,108 +133,89 @@ export function ProjectActionForm({
             <form
               id="project-form"
               onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-4 p-0.5"
+              className="space-y-6"
             >
-              {/* Project Name */}
-              <TextInputField
-                control={form.control}
-                name="name"
-                label="Project Name"
-                placeholder="Enter project name"
-              />
+              {/* Basic Info */}
+              <div className="space-y-4">
+                <TextInputField
+                  control={form.control}
+                  name="name"
+                  label="Project Name"
+                  placeholder="Enter project name"
+                />
+              </div>
 
-              {/* Project Description */}
-
+              {/* Status (only Add) */}
               {!isEdit && (
                 <CustomDropDownSearchable
                   form={form}
                   name="status"
-                  label="Status"
+                  label="Project Status"
                   options={[
                     { value: "active-discovery", label: "Active Discovery" },
                     { value: "running", label: "Running" },
                     { value: "slow", label: "Slow" },
-                    { value: "stop", label: "Stop" },
+                    { value: "stop", label: "Stopped" },
                     { value: "completed", label: "Completed" },
                   ]}
-                  placeholder="Select Status"
                   searchEnabled={false}
+                  placeholder="Select status"
                 />
               )}
 
-              {/* Client Dropdown */}
-              <CustomDropDownSearchable
-                form={form}
-                name="clientId"
-                label="Client"
-                options={clientsList?.map((client) => ({
-                  value: client.id,
-                  label: client.name,
-                }))}
-                isLoading={clientListLoading}
-                placeholder="Select Client"
-              />
-              <CustomDropDownSearchable
-                form={form}
-                name="projectTypeId"
-                label="Project Type"
-                options={projectTypes?.map((type: any) => ({
-                  value: type.id,
-                  label: type.name,
-                }))}
-                searchEnabled={false}
-                isLoading={projectTypesLoading}
-                placeholder="Select Project Type"
-              />
+              {/* Relations */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <CustomDropDownSearchable
+                  form={form}
+                  name="clientId"
+                  label="Client"
+                  options={clientsList?.map((c) => ({
+                    value: c.id,
+                    label: c.name,
+                  }))}
+                  isLoading={clientListLoading}
+                  placeholder="Select client"
+                />
+
+                <CustomDropDownSearchable
+                  form={form}
+                  name="projectTypeId"
+                  label="Project Type"
+                  options={projectTypes?.map((t: any) => ({
+                    value: t.id,
+                    label: t.name,
+                  }))}
+                  isLoading={projectTypesLoading}
+                  searchEnabled={false}
+                  placeholder="Select type"
+                />
+              </div>
+
               <CustomDropDownSearchable
                 form={form}
                 name="technologyId"
-                label="Project Technologies"
-                options={technologyList?.data?.map((technology: any) => {
-                  return { value: technology.id, label: technology.name };
-                })}
+                label="Technologies"
+                options={technologyList?.data?.map((t: any) => ({
+                  value: t.id,
+                  label: t.name,
+                }))}
                 isLoading={technologyListLoading}
-                placeholder="Select Technologies"
+                placeholder="Select technologies"
                 multiple
               />
-              {/* Manager */}
+
               <CustomDropDownSearchable
                 form={form}
                 name="handlerId"
                 label="Project Coordinator"
-                options={projecthandler?.data?.map((handler: any) => ({
-                  value: handler.id,
-                  label: handler.fullName,
+                options={projecthandler?.data?.map((h: any) => ({
+                  value: h.id,
+                  label: h.fullName,
                 }))}
                 isLoading={projecthandlerLoading}
-                placeholder="Select Coordinator"
-              />
-              {/* Dates */}
-              <CustomDatePicker
-                control={form.control}
-                name="startDate"
-                label="Start Date"
-              />
-              <CustomDatePicker
-                control={form.control}
-                name="expectedCompletionDate"
-                label="Expected Completion Date"
-                minDate={form.watch("startDate")}
+                placeholder="Select coordinator"
               />
 
-              {/* Progress */}
-              {/* <TextInputField
-                control={form.control}
-                name="percentageComplete"
-                type="number"
-                label="Progress (%)"
-                min={0}
-                max={100}
-                placeholder="Enter progress percentage"
-                valueAsNumber
-              /> */}
-
-              {/* Priority */}
               <CustomDropDownSearchable
                 form={form}
                 name="priority"
@@ -235,26 +225,76 @@ export function ProjectActionForm({
                   { value: "medium", label: "Medium" },
                   { value: "high", label: "High" },
                 ]}
-                placeholder="Select Priority"
                 searchEnabled={false}
+                placeholder="Select priority"
               />
 
-              <div className="flex flex-col space-y-2">
+              {/* Dates */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <CustomDatePicker
+                  control={form.control}
+                  name="startDate"
+                  label="Start Date"
+                />
+                <CustomDatePicker
+                  control={form.control}
+                  name="expectedCompletionDate"
+                  label="Expected Completion Date"
+                  minDate={form.watch("startDate")}
+                />
+              </div>
+
+              {/* Priority */}
+              <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
                   Description
                 </label>
                 <Textarea
                   {...form.register("description")}
-                  placeholder="Enter project description"
+                  placeholder="Brief project overview"
                   rows={3}
                   className="resize-none"
                 />
-                {/* {form.formState.errors.description && (
-                  <p className="text-sm text-red-500">
-                    {form.formState.errors.description.message}
-                  </p>
-                )} */}
               </div>
+
+              {/* Global Switch */}
+              <Controller
+                control={form.control}
+                name="isVisibleToAllDevTeam"
+                render={({ field }) => (
+                  <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-medium">Global Project</p>
+                      <p className="text-xs text-muted-foreground">
+                        Accessible across all roles and members
+                      </p>
+                    </div>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </div>
+                )}
+              />
+
+              <Controller
+                control={form.control}
+                name="isVisibleToAllBdeTeam"
+                render={({ field }) => (
+                  <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-medium">BDE Team</p>
+                      <p className="text-xs text-muted-foreground">
+                        Accessible across BDE team
+                      </p>
+                    </div>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </div>
+                )}
+              />
             </form>
           </Form>
         </div>

@@ -19,14 +19,23 @@ import { Input } from "@/components/ui/input";
 import { Save } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ColorPicker, COLORS } from "./color-picker";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Lock, Globe } from "lucide-react";
 
 interface NoteEditorProps {
   initialData?: {
     title: string;
     content: string;
     color: string;
+    isPublic?: boolean;
   };
-  onSave: (data: { title: string; content: string; color: string }) => void;
+  onSave: (data: {
+    title: string;
+    content: string;
+    color: string;
+    isPublic: boolean;
+  }) => void;
   onCancel: () => void;
 }
 
@@ -35,9 +44,12 @@ export const NoteEditor = ({
   onSave,
   onCancel,
 }: NoteEditorProps) => {
-  const [formData, setFormData] = useState(
-    initialData ?? { title: "", content: "", color: "yellow" }
-  );
+  const [formData, setFormData] = useState({
+    title: initialData?.title ?? "",
+    content: initialData?.content ?? "",
+    color: initialData?.color ?? "yellow",
+    isPublic: initialData?.isPublic ?? false,
+  });
   const [editorReady, setEditorReady] = useState(false);
 
   const colorObj = COLORS.find((c) => c.id === formData.color) || COLORS[0];
@@ -56,6 +68,27 @@ export const NoteEditor = ({
             selectedColor={formData.color}
             onColorSelect={(color) => setFormData({ ...formData, color })}
           />
+          <div className="flex items-center space-x-2 bg-black/5 px-3 py-1.5 rounded-full transition-colors hover:bg-black/10">
+            {formData.isPublic ? (
+              <Globe className="w-3.5 h-3.5 text-gray-600" />
+            ) : (
+              <Lock className="w-3.5 h-3.5 text-gray-600" />
+            )}
+            <Label
+              htmlFor="privacy-toggle"
+              className="text-xs font-semibold text-gray-700 cursor-pointer"
+            >
+              {formData.isPublic ? "Public" : "Private"}
+            </Label>
+            <Switch
+              id="privacy-toggle"
+              checked={formData.isPublic}
+              onCheckedChange={(checked) =>
+                setFormData({ ...formData, isPublic: checked })
+              }
+              className="data-[state=checked]:bg-primary"
+            />
+          </div>
         </div>
         <div className="mb-4">
           <Input
