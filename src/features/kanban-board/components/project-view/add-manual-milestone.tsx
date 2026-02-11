@@ -325,91 +325,102 @@ export function AddManualMilestone({
                   </Button>
                 </div>
 
-                {fields.map((item: any, index: number) => (
-                  <div
-                    key={item.id}
-                    className="grid grid-cols-12 gap-3 p-3 border rounded-lg bg-slate-50"
-                  >
-                    <div className="col-span-7">
-                      <FormField
-                        control={form.control}
-                        name={`tasks.${index}.taskName`}
-                        render={({ field }: any) => (
-                          <FormItem>
-                            <FormLabel>
-                              Task Name <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="Task Name"
-                                {...field}
-                                disabled={
-                                  initialData?.tasks[index]?.status ===
-                                  "completed"
-                                }
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                {fields.map((item: any, index: number) => {
+                  const isExistingTask = !!item.taskId; // backend-provided task
+                  const taskStatus = initialData?.tasks?.find(
+                    (t: any) => t.id === item.taskId
+                  )?.status;
 
-                    <div className="col-span-4">
-                      <FormField
-                        control={form.control}
-                        name={`tasks.${index}.estimatedTime`}
-                        render={({ field }: any) => (
-                          <FormItem>
-                            <FormLabel>
-                              Estimated Time{" "}
-                              <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="1h10m"
-                                {...field}
-                                disabled={
-                                  initialData?.tasks[index]?.status ===
-                                  "completed"
-                                }
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    {(!initialData ||
-                      initialData?.tasks?.[index]?.status === "pending") && (
-                      <div className="col-span-1 flex items-start pt-6">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleDeleteTask(item, index)}
-                                disabled={fields.length === 1 || isDeletingTask}
-                                className={cn(
-                                  "text-destructive",
-                                  isDeletingTask && "opacity-50"
-                                )}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Delete task</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                  return (
+                    <div
+                      key={item.id}
+                      className="grid grid-cols-12 gap-3 p-3 border rounded-lg bg-slate-50"
+                    >
+                      <div className="col-span-7">
+                        <FormField
+                          control={form.control}
+                          name={`tasks.${index}.taskName`}
+                          render={({ field }: any) => (
+                            <FormItem>
+                              <FormLabel>
+                                Task Name{" "}
+                                <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="Task Name"
+                                  {...field}
+                                  disabled={
+                                    initialData?.tasks[index]?.status ===
+                                    "completed"
+                                  }
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </div>
-                    )}
-                  </div>
-                ))}
+
+                      <div className="col-span-4">
+                        <FormField
+                          control={form.control}
+                          name={`tasks.${index}.estimatedTime`}
+                          render={({ field }: any) => (
+                            <FormItem>
+                              <FormLabel>
+                                Estimated Time{" "}
+                                <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="1h10m"
+                                  {...field}
+                                  disabled={
+                                    initialData?.tasks[index]?.status ===
+                                    "completed"
+                                  }
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      {(!initialData || // add milestone
+                        !isExistingTask || // edit mode + newly added task
+                        taskStatus === "pending") && (
+                        <div className="col-span-1 flex items-start pt-6">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleDeleteTask(item, index)}
+                                  disabled={
+                                    fields.length === 1 || isDeletingTask
+                                  }
+                                  className={cn(
+                                    "text-destructive",
+                                    isDeletingTask && "opacity-50"
+                                  )}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Delete task</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 

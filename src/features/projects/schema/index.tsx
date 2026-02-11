@@ -81,19 +81,17 @@ export const projectFormSchemaWithoutRefine = projectFormSchemaBase;
 
 export type TProjectFormSchema = z.infer<typeof projectFormSchema>;
 
-export const singleDocSchema = z
-  .object({
-    documentName: z.string().min(1, "Document name is required"),
-    notes: z.string().optional(),
-    link: z
-      .string()
-      .url("Please enter a valid URL like https://example.com")
-      .or(z.literal(""))
-      .optional(),
-  })
-  .refine((data) => data.notes || data.link, {
-    message: "Either Notes or Link must be filled.",
-  });
+export const singleDocSchema = z.object({
+  documentName: z.string().trim().min(1, "Document name is required"),
+
+  notes: z.string().trim().optional(),
+
+  link: z
+    .string()
+    .trim()
+    .min(1, "Link is required")
+    .url("Please enter a valid URL like https://example.com"),
+});
 
 export const _documentListSchema = z.object({
   documents: z.array(singleDocSchema).min(1, "At least one document required"),
