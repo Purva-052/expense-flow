@@ -34,14 +34,20 @@ export function ActionFormModal({
       name: values.name,
       description: values.description,
       clientId: values.clientId,
-      startDate: values.startDate,
-      expectedCompletionDate: values.expectedCompletionDate,
+      startDate: values.startDate
+        ? values.startDate.toISOString().split("T")[0]
+        : null,
+      expectedCompletionDate: values.expectedCompletionDate
+        ? values.expectedCompletionDate.toISOString().split("T")[0]
+        : null,
       handlerId: values.handlerId ? values.handlerId : undefined,
       percentageComplete: values.percentageComplete,
       priority: values.priority,
       status: values.status,
       projectTypeId: values.projectTypeId,
       technologyId: values.technologyId,
+      isVisibleToAllDevTeam: values.isVisibleToAllDevTeam,
+      isVisibleToAllBdeTeam: values.isVisibleToAllBdeTeam,
     };
     createMutate(payload);
   };
@@ -58,6 +64,8 @@ export function ActionFormModal({
       priority: values.priority,
       projectTypeId: values.projectTypeId,
       technologyId: values.technologyId,
+      isVisibleToAllDevTeam: values.isVisibleToAllDevTeam,
+      isVisibleToAllBdeTeam: values.isVisibleToAllBdeTeam,
     };
 
     updateMutate(payload);

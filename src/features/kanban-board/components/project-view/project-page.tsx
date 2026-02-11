@@ -92,6 +92,8 @@ const ProjectPage = ({
   const { data: ProjectType, isPending: LoadingProjectType }: any =
     useGetProjectTypesDropdownList();
 
+  const isBdeView = Role === roles.BDE;
+
   const getInitialFilters = () => {
     if (typeof window === "undefined")
       return {
@@ -187,7 +189,10 @@ const ProjectPage = ({
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  }: any = useGetProjectsData({ ...listParams, isPinned: true });
+  }: any = useGetProjectsData({
+    ...listParams,
+    isPinned: isBdeView ? undefined : true,
+  });
 
   // Extract total count from pagination metadata and notify parent when it changes
   const totalCount =
@@ -251,7 +256,7 @@ const ProjectPage = ({
   const availableDroppable = useDroppable({ id: "available" });
 
   function onDragStart(event: DragStartEvent) {
-    if (isDeveloperView) return;
+    if (isDeveloperView || isBdeView) return;
     const developer = event.active.data.current?.developer as any;
     if (developer) {
       setActiveDeveloper(developer);
@@ -259,7 +264,7 @@ const ProjectPage = ({
   }
 
   async function onDragEnd(event: DragEndEvent) {
-    if (isDeveloperView) return;
+    if (isDeveloperView || isBdeView) return;
     setActiveDeveloper(null);
 
     const { active, over } = event;
@@ -294,7 +299,10 @@ const ProjectPage = ({
   }
 
   const handleDeveloperClick = (developer: any, projectId: string) => {
-    if (isDeveloperView && developer?.developer?.id !== currentUserId) {
+    if (
+      (isDeveloperView && developer?.developer?.id !== currentUserId) ||
+      isBdeView
+    ) {
       return;
     }
     setSelectedDeveloper(developer);
@@ -454,12 +462,14 @@ const ProjectPage = ({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <GlobalFilterSection filters={filters ?? []} />
-      </div>
+      {!isBdeView && (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <GlobalFilterSection filters={filters ?? []} />
+        </div>
+      )}
 
       <div
-        className={`${isDeveloperView ? "grid grid-cols-1 gap-4" : "grid grid-cols-1 gap-4 md:grid-cols-[1fr_320px] h-[75dvh]"}`}
+        className={`${isDeveloperView || isBdeView ? "grid grid-cols-1 gap-4" : "grid grid-cols-1 gap-4 md:grid-cols-[1fr_320px] h-[75dvh]"}`}
       >
         <DndContext
           sensors={sensors}
@@ -600,7 +610,7 @@ const ProjectPage = ({
             <div ref={loadMoreRef} className="h-2" />
           </div>
 
-          {!isDeveloperView && (
+          {!isDeveloperView && !isBdeView && (
             <aside className="top-4 !h-full">
               <Card
                 ref={availableDroppable.setNodeRef}
@@ -671,7 +681,10 @@ const ProjectPage = ({
                   {AllDevelopersLoading ? (
                     <div className="space-y-4">
                       {Array.from({ length: 6 }).map((_, i) => (
-                        <div key={i} className="flex items-center gap-3 p-2 border rounded-md">
+                        <div
+                          key={i}
+                          className="flex items-center gap-3 p-2 border rounded-md"
+                        >
                           <Skeleton className="h-10 w-10 rounded-full" />
                           <div className="flex-1 space-y-2">
                             <Skeleton className="h-4 w-3/4" />

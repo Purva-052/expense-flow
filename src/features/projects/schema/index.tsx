@@ -13,30 +13,16 @@ const projectFormSchemaBase = z.object({
     .array(z.number(), { invalid_type_error: "Technologies are required" })
     .nonempty("At least one technology is required"),
   projectTypeId: z.number({ message: "Project Type is required" }),
-  startDate: z.preprocess(
-    (val) => {
-      if (val instanceof Date) {
-        return val.toISOString().split("T")[0]; // convert Date -> "YYYY-MM-DD"
-      }
-      if (typeof val === "string") return val;
-      return "";
-    },
-    z.string().min(1, "Start date is required")
-  ),
-  expectedCompletionDate: z.preprocess(
-    (val) => {
-      if (!val) return undefined;
-      if (val instanceof Date) {
-        return val.toISOString().split("T")[0]; // YYYY-MM-DD
-      }
-      if (typeof val === "string") return val;
-      return undefined;
-    },
-    z
-      .string()
-      .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format")
-      .optional()
-  ),
+  startDate: z.coerce.date({
+    required_error: "Start date is required",
+    invalid_type_error: "Invalid date",
+  }),
+
+  expectedCompletionDate: z.coerce
+    .date({
+      invalid_type_error: "Invalid date",
+    })
+    .optional(),
 
   handlerId: z
     .union([z.number().min(1), z.undefined(), z.null()])
@@ -69,6 +55,8 @@ const projectFormSchemaBase = z.object({
       })
     )
     .optional(),
+  isVisibleToAllDevTeam: z.boolean(),
+  isVisibleToAllBdeTeam: z.boolean(),
 });
 
 // Main schema with date validation
@@ -79,6 +67,7 @@ export const projectFormSchema = projectFormSchemaBase.refine(
 
     const startDate = new Date(data.startDate);
     const expectedDate = new Date(data.expectedCompletionDate);
+    console.log("expectedDate from the schema: ", expectedDate);
 
     return expectedDate >= startDate;
   },

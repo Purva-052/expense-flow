@@ -50,7 +50,7 @@ export function DeveloperDialog({
   const userRole = String(
     user?.user?.role?.name || user?.user?.role || ""
   ).toLowerCase();
-  const isMyDialog = developer?.developer?.id === user?.user?.id;
+  // const isMyDialog = developer?.developer?.id === user?.user?.id;
 
   // A Project Manager/Admin can manage (remove/schedule) any developer.
   // A Developer should not be able to manage assignments.
@@ -60,9 +60,9 @@ export function DeveloperDialog({
     roles.TEAM_LEAD,
   ].includes(userRole);
 
-  // A developer can only change their 'Currently Working' status on their own dialog.
-  // PM/Admin can change anyone's status.
-  const canToggleStatus = canManage || isMyDialog;
+  // Both developers and managers can toggle the 'Currently Working' status
+  // since only the developer's own dialog can be opened
+  // const canToggleStatus = true;
 
   const [view, setView] = React.useState<"initial" | "schedule">("initial");
 
@@ -305,10 +305,8 @@ export function DeveloperDialog({
                         ) === Number(projectId)
                       }
                       onCheckedChange={handleStatusChange}
-                      // Disable if loading or if the user cannot toggle status
-                      disabled={
-                        updateCurrentWorkingProjectLoading || !canToggleStatus
-                      }
+                      // Only disable if loading
+                      disabled={updateCurrentWorkingProjectLoading}
                     />
                   </FormItem>
                 </Form>
