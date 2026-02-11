@@ -105,7 +105,6 @@ const ProjectPage = ({
         projectTypeId: undefined,
         status: isInactiveTab ? "inactive" : "active",
         technologyId: undefined,
-        isGlobal: isBdeView ? true : undefined,
       };
     const saved = localStorage.getItem(FILTER_STORAGE_KEY);
     return saved
@@ -117,7 +116,6 @@ const ProjectPage = ({
           handlerId:
             isCoordinatorView && !isInactiveTab ? currentUserId : undefined,
           technologyId: undefined,
-          isGlobal: isBdeView ? true : undefined,
           ...JSON.parse(saved),
         }
       : {
@@ -130,7 +128,6 @@ const ProjectPage = ({
           priority: isInactiveTab ? undefined : "high",
           projectTypeId: undefined,
           search: "",
-          isGlobal: isBdeView ? true : undefined,
         };
   };
 
@@ -148,10 +145,10 @@ const ProjectPage = ({
   }, [activeTab]);
 
   useEffect(() => {
-    const { clientId, managerId, priority, isPinned, isGlobal } = listParams;
+    const { clientId, managerId, priority, isPinned } = listParams;
     localStorage.setItem(
       FILTER_STORAGE_KEY,
-      JSON.stringify({ clientId, managerId, priority, isPinned, isGlobal })
+      JSON.stringify({ clientId, managerId, priority, isPinned })
     );
   }, [listParams, FILTER_STORAGE_KEY]);
 
@@ -684,7 +681,10 @@ const ProjectPage = ({
                   {AllDevelopersLoading ? (
                     <div className="space-y-4">
                       {Array.from({ length: 6 }).map((_, i) => (
-                        <div key={i} className="flex items-center gap-3 p-2 border rounded-md">
+                        <div
+                          key={i}
+                          className="flex items-center gap-3 p-2 border rounded-md"
+                        >
                           <Skeleton className="h-10 w-10 rounded-full" />
                           <div className="flex-1 space-y-2">
                             <Skeleton className="h-4 w-3/4" />

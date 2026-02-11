@@ -113,6 +113,7 @@ export const columns = (
         userRole === roleConstants.ADMIN ||
         userRole === roleConstants.PROJECT_MANAGER ||
         userRole === roleConstants.TEAM_LEAD ||
+        (userRole === roleConstants.BDE && isToday) ||
         (userRole === roleConstants.DEVELOPER && isToday);
 
       if (!canEditOrDelete) {

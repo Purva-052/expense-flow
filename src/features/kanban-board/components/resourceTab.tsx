@@ -182,7 +182,7 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
     {
       type: "select",
       key: "skillId",
-      placeholder: "Filter by Skills",
+      placeholder: "Filter by Strengths",
       options: skillsData?.data?.map((skill: any) => ({
         value: skill.id,
         label: skill.skillName,

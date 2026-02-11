@@ -25,7 +25,7 @@ const getDaysRemaining = (
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 };
 
-const getYearsOfExperience = (
+export const getYearsOfExperience = (
   startDate: string | null | undefined
 ): string | null => {
   if (!startDate) return null;
