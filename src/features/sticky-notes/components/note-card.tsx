@@ -1,4 +1,4 @@
-import { Trash2, Edit2, Lock } from "lucide-react";
+import { Trash2, Edit2, Lock, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -32,9 +32,16 @@ export const NoteCard = ({ note, onView, onEdit, onDelete }: NoteCardProps) => {
               </h4>
             )}
             {note.isPublic && (
-              <Badge variant="outline" className="h-5 px-1.5 text-[10px] font-bold bg-black/5 border-none text-gray-600 flex gap-1 items-center">
-                <Lock className="w-2.5 h-2.5" />
-                PRIVATE
+              <Badge
+                variant="outline"
+                className="h-5 px-1.5 text-[10px] font-bold bg-black/5 border-none text-gray-600 flex gap-1 items-center"
+              >
+                {note.isPublic ? (
+                  <Globe className="w-2.5 h-2.5" />
+                ) : (
+                  <Lock className="w-2.5 h-2.5" />
+                )}
+                {note.isPublic ? "PUBLIC" : "PRIVATE"}
               </Badge>
             )}
           </div>

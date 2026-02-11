@@ -280,7 +280,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
         {user?.role !== "admin" && user?.role !== "project_manager" && (
           <ProfileDetailRow
             icon={Sparkles}
-            label="Strengths"
+            label="Skills"
             value={
               <div className="w-full mt-1">
                 <CreatableSkillsSelect
@@ -290,7 +290,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                   onCreateSkill={handleCreateSkill}
                   loading={skillsLoading}
                   creating={isCreatingSkill}
-                  placeholder="Add strengths..."
+                  placeholder="Add skills..."
                   maxSelectedShow={5}
                 />
               </div>
