@@ -67,7 +67,6 @@ export const projectFormSchema = projectFormSchemaBase.refine(
 
     const startDate = new Date(data.startDate);
     const expectedDate = new Date(data.expectedCompletionDate);
-    console.log("expectedDate from the schema: ", expectedDate);
 
     return expectedDate >= startDate;
   },

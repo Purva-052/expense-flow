@@ -21,10 +21,22 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, Loader2 } from "lucide-react";
-import { useCreateManualMilestone, useUpdateMileStone } from "../../services";
-import { useEffect } from "react";
+import {
+  useCreateManualMilestone,
+  useUpdateMileStone,
+  useDeleteMilestone,
+} from "../../services";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import API from "@/config/api/api";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import {
   Select,
   SelectContent,
@@ -32,7 +44,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner";
 
 const taskSchema = z.object({
   taskId: z.number().optional(),
@@ -71,6 +82,9 @@ export function AddManualMilestone({
   onMilestoneCreated,
 }: AddManualMilestoneProps) {
   const queryClient = useQueryClient();
+  const [taskToDelete, setTaskToDelete] = useState<any>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   const { mutate: createMilestone, isPending: isCreating } =
     useCreateManualMilestone((response: any) => {
       onOpenChange(false);
@@ -85,6 +99,9 @@ export function AddManualMilestone({
 
   const { mutate: updateMilestone, isPending: isUpdating } =
     useUpdateMileStone();
+
+  const { mutate: deleteTaskFromAPI, isPending: isDeletingTask } =
+    useDeleteMilestone();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -129,6 +146,40 @@ export function AddManualMilestone({
     name: "tasks",
   });
 
+  const handleDeleteTask = (task: any, index: number) => {
+    // If task has an ID, it exists in the database, so delete via API
+    if (task.taskId) {
+      setTaskToDelete({ task, index, isFromDB: true });
+      setShowDeleteConfirm(true);
+    } else {
+      // If it's a new task (no ID), just remove it from the form
+      remove(index);
+    }
+  };
+
+  const confirmDeleteTask = () => {
+    if (!taskToDelete) return;
+
+    const { task, index, isFromDB } = taskToDelete;
+
+    if (isFromDB) {
+      deleteTaskFromAPI(
+        { id: initialData.id, taskId: task.taskId },
+        {
+          onSuccess: () => {
+            // Remove from form after successful deletion
+            remove(index);
+            queryClient.invalidateQueries({
+              queryKey: [`${API.projects.milestone_list}/${initialData.id}`],
+            });
+            setShowDeleteConfirm(false);
+            setTaskToDelete(null);
+          },
+        }
+      );
+    }
+  };
+
   const onSubmit = (values: FormValues) => {
     if (initialData) {
       const payload: any = {
@@ -165,12 +216,6 @@ export function AddManualMilestone({
             });
             onOpenChange(false);
             if (onSuccess) onSuccess();
-          },
-          onError: () => {
-            onOpenChange(false);
-            toast.error(
-              "Complete all tasks to mark the milestone as completed"
-            );
           },
         }
       );
@@ -336,21 +381,33 @@ export function AddManualMilestone({
                       />
                     </div>
 
-                    {!initialData ||
-                      (!initialData.tasks[index]?.status && (
-                        <div className="col-span-1 flex items-start pt-6">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => remove(index)}
-                            disabled={fields.length === 1}
-                            className="text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
+                    {(!initialData ||
+                      initialData?.tasks?.[index]?.status === "pending") && (
+                      <div className="col-span-1 flex items-start pt-6">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDeleteTask(item, index)}
+                                disabled={fields.length === 1 || isDeletingTask}
+                                className={cn(
+                                  "text-destructive",
+                                  isDeletingTask && "opacity-50"
+                                )}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Delete task</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -375,6 +432,18 @@ export function AddManualMilestone({
             </DialogFooter>
           </form>
         </Form>
+
+        <ConfirmDialog
+          open={showDeleteConfirm}
+          onOpenChange={setShowDeleteConfirm}
+          title="Delete Task"
+          desc="Are you sure you want to delete this task? This action cannot be undone."
+          cancelBtnText="Cancel"
+          confirmText="Delete"
+          destructive
+          isLoading={isDeletingTask}
+          handleConfirm={confirmDeleteTask}
+        />
       </DialogContent>
     </Dialog>
   );

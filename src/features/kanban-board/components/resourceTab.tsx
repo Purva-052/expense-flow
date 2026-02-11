@@ -54,12 +54,16 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
   const user = useAuthStore((state) => state.user);
   const userRole = user?.user?.role;
 
+  // Build API params - only include non-null filter values
   const apiParams = {
     pagination: false,
-    technologyId: listParams.technologyId,
-    skillId: listParams.skillId,
-    search: isProjectHandler ? projectHandlerSearch : resourceSearch,
+    ...(listParams.technologyId && { technologyId: listParams.technologyId }),
+    ...(listParams.skillId && { skillId: listParams.skillId }),
+    ...((isProjectHandler ? projectHandlerSearch : resourceSearch) && {
+      search: isProjectHandler ? projectHandlerSearch : resourceSearch,
+    }),
     status: "active",
+    includeSkills: true,
   };
 
   const {
@@ -182,7 +186,7 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
     {
       type: "select",
       key: "skillId",
-      placeholder: "Filter by Strengths",
+      placeholder: "Filter by Skills",
       options: skillsData?.data?.map((skill: any) => ({
         value: skill.id,
         label: skill.skillName,
