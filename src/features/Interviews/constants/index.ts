@@ -22,9 +22,8 @@ export const interviewRounds = [
 ];
 
 export const interviewStatuses = [
-  { value: "pending", label: "Pending" },
-  { value: "technical_completed", label: "Technical Completed" },
-  { value: "practical_completed", label: "Practical Completed" },
+  { value: "technical_scheduled", label: "Technical Scheduled" },
+  { value: "practical_scheduled", label: "Practical Scheduled" },
   { value: "hr_round", label: "HR Round" },
   { value: "joining", label: "Joining" },
   { value: "rejected", label: "Rejected" },
