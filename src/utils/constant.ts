@@ -166,3 +166,5 @@ export const CurrencyType = [
     color: "text-blue-600",
   },
 ];
+
+export const PROJECT_DETAILS_FILTER_STORAGE_KEY = "project_details_filters";

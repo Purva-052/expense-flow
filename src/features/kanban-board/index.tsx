@@ -1,8 +1,8 @@
 import { Main } from "@/components/layout/main";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuthStore } from "@/stores/use-auth-store";
-import { roles } from "@/utils/constant";
-import { useState, useEffect } from "react";
+import { PROJECT_DETAILS_FILTER_STORAGE_KEY, roles } from "@/utils/constant";
+import { useState, useEffect, useMemo } from "react";
 import { useGetProjectsData } from "../projects/services";
 import InquiryPage from "../Inquiry";
 import { useGetTechnologyDropdownList } from "../technology/services";
@@ -18,7 +18,6 @@ import { useGetClientsDropdownList } from "../clients/services";
 import TablePageHeader from "@/components/table/table-page-header";
 import { ActionFormModal } from "../projects/components/action";
 import { Badge } from "@/components/ui/badge";
-// import { Badge } from "@/components/ui/badge";
 
 const ProjectBoard = () => {
   const [activeTab, setActiveTab] = useState("project_details");
@@ -40,14 +39,43 @@ const ProjectBoard = () => {
   const { data: technologies, isPending: techLoading } =
     useGetTechnologyDropdownList(null, userRole !== roles.BDE);
 
-  // Fetch archive count on initial load
-  const { data: archiveProjectsData } = useGetProjectsData({
-    status: "inactive",
+  // Get initial filter for handlerId
+  const initialHandlerId = useMemo(() => {
+    if (userRole === roles.DEVELOPER || userRole === roles.BDE) return undefined;
+    const isCoordinatorView = userRole === roles.PROJECT_MANAGER || userRole === roles.TEAM_LEAD;
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(PROJECT_DETAILS_FILTER_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.handlerId !== undefined) return parsed.handlerId;
+      }
+    }
+    return isCoordinatorView ? userId : undefined;
+  }, [userRole, userId]);
+
+  // Fetch active projects count
+  const { data: activeProjectsData } = useGetProjectsData({
+    status: "active",
+    handlerId: initialHandlerId,
     page: 1,
     limit: 1,
   });
 
-  // Update archive count when data is fetched
+  // Fetch archive count
+  const { data: archiveProjectsData } = useGetProjectsData({
+    status: "inactive",
+    handlerId: initialHandlerId,
+    page: 1,
+    limit: 1,
+  });
+
+  // Update counts when data is fetched
+  useEffect(() => {
+    if (activeProjectsData?.pages?.[0]?.metadata?.totalCount !== undefined) {
+      setActiveProjectCount(activeProjectsData.pages[0].metadata.totalCount);
+    }
+  }, [activeProjectsData]);
+
   useEffect(() => {
     if (archiveProjectsData?.pages?.[0]?.metadata?.totalCount !== undefined) {
       setArchiveProjectCount(archiveProjectsData.pages[0].metadata.totalCount);
