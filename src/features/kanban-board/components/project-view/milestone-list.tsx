@@ -17,7 +17,6 @@ import {
   useUploadMilestoneFile,
   useGetProjectMilestonesList,
   useGetProjectHandlerProjectsAPI,
-  useGetMilestoneTasks,
 } from "@/features/kanban-board/services";
 import { ExcelImportPreview, ExcelPreviewData } from "./excel-import-preview";
 import { AddManualMilestone } from "./add-manual-milestone";
@@ -56,33 +55,12 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
   const { data: milestonesListResponse, isLoading: isFetchingMilestones } =
     useGetProjectMilestonesList(projectId);
 
-  const { data: handledProjectsResponse } = useGetProjectHandlerProjectsAPI({
+  const {
+    data: handledProjectsResponse,
+    isLoading: isFetchingHandledProjects,
+  } = useGetProjectHandlerProjectsAPI({
     enabled: !!user && !isDeveloperView,
   }) as any;
-
-  const { data: activeMilestoneDetail } = useGetMilestoneTasks(activeTab, {
-    enabled: !!activeTab,
-  });
-
-  const activeMilestone = activeMilestoneDetail?.data || activeMilestoneDetail;
-  const isExcelUploaded = activeMilestone?.isExcelUploaded === true;
-
-  const isCurrentUserProjectHandler = useMemo(() => {
-    const users = handledProjectsResponse?.data || [];
-
-    return users.some((user: any) => {
-      return user.handledProjects?.some((project: any) => {
-        const isMatch = String(project.id) === String(projectId);
-
-        return isMatch;
-      });
-    });
-  }, [handledProjectsResponse, projectId]);
-
-  const isAdmin = Role === roles.ADMIN;
-  const isProjectManager = Role === roles.PROJECT_MANAGER;
-  const canModifyMilestones =
-    isAdmin || isProjectManager || isCurrentUserProjectHandler;
 
   const milestones = useMemo<any[]>(() => {
     const rawData = milestonesListResponse?.data;
@@ -108,6 +86,40 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
     }
     return list;
   }, [milestonesListResponse]);
+
+  const firstMilestoneId = useMemo(() => {
+    return milestones.length > 0 ? String(milestones[0].id) : "";
+  }, [milestones]);
+
+  const currentTab = activeTab || firstMilestoneId;
+
+  const activeMilestoneFromList = useMemo(() => {
+    return milestones.find((m) => String(m.id) === currentTab);
+  }, [milestones, currentTab]);
+
+  const isExcelUploaded = activeMilestoneFromList?.isExcelUploaded === true;
+
+  const isCurrentUserProjectHandler = useMemo(() => {
+    const users = handledProjectsResponse?.data || [];
+
+    return users.some((user: any) => {
+      return user.handledProjects?.some((project: any) => {
+        const isMatch = String(project.id) === String(projectId);
+
+        return isMatch;
+      });
+    });
+  }, [handledProjectsResponse, projectId]);
+
+  const isAdmin = Role === roles.ADMIN;
+  const isProjectManager = Role === roles.PROJECT_MANAGER;
+  const canModifyMilestones =
+    isAdmin || isProjectManager || isCurrentUserProjectHandler;
+
+  const isInitialLoading =
+    isFetchingMilestones ||
+    (isFetchingHandledProjects && !isAdmin && !isProjectManager);
+
 
   useEffect(() => {
     if (milestones.length > 0) {
@@ -215,63 +227,65 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
 
   const tabTriggerClass =
     "group flex items-center gap-2 rounded-[50px] px-3 py-2 transition-all h-[35px] " +
-    "data-[state=active]:bg-black data-[state=active]:text-white";
+    "data-[state=active]:bg-black data-[state=active]:text-white whitespace-nowrap min-w-fit";
   return (
     <>
-      <div className="mb-4 flex items-center gap-2 overflow-x-auto pb-2">
-        <div className="flex items-center gap-2">
-          {canModifyMilestones && !isExcelUploaded && (
-            <>
+      {!isInitialLoading && (
+        <div className="mb-4 flex items-center gap-2 overflow-x-auto pb-2">
+          <div className="flex items-center gap-2">
+            {canModifyMilestones && !isExcelUploaded && (
+              <>
+                <Button
+                  onClick={downloadSample}
+                  disabled={isDownloading}
+                  variant="default"
+                  size="default"
+                >
+                  {isDownloading ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="mr-2 h-4 w-4" />
+                  )}
+                  Download Sample
+                </Button>
+                <input
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  onChange={handleFileUpload}
+                  disabled={isUploading}
+                  className="hidden"
+                  id="milestone-file-input"
+                />
+                <Button
+                  onClick={() =>
+                    document.getElementById("milestone-file-input")?.click()
+                  }
+                  disabled={isUploading || isParsingFile}
+                  variant="default"
+                  size="default"
+                >
+                  <FileDown className="mr-2 h-4 w-4" size={24} />
+                  Import Excel
+                </Button>
+              </>
+            )}
+          </div>
+          {canModifyMilestones && (
+            <div className="flex items-center gap-2">
               <Button
-                onClick={downloadSample}
-                disabled={isDownloading}
+                onClick={() => {
+                  setMilestoneToEdit(null);
+                  setOpenAddMilestone(true);
+                }}
                 variant="default"
                 size="default"
               >
-                {isDownloading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Download className="mr-2 h-4 w-4" />
-                )}
-                Download Sample
+                Add Milestone
               </Button>
-              <input
-                type="file"
-                accept=".xlsx,.xls,.csv"
-                onChange={handleFileUpload}
-                disabled={isUploading}
-                className="hidden"
-                id="milestone-file-input"
-              />
-              <Button
-                onClick={() =>
-                  document.getElementById("milestone-file-input")?.click()
-                }
-                disabled={isUploading || isParsingFile}
-                variant="default"
-                size="default"
-              >
-                <FileDown className="mr-2 h-4 w-4" size={24} />
-                Import Excel
-              </Button>
-            </>
+            </div>
           )}
         </div>
-        {canModifyMilestones && (
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={() => {
-                setMilestoneToEdit(null);
-                setOpenAddMilestone(true);
-              }}
-              variant="default"
-              size="default"
-            >
-              Add Milestone
-            </Button>
-          </div>
-        )}
-      </div>
+      )}
 
       {isFetchingMilestones ? (
         <div className="flex items-center justify-center p-12">
@@ -284,7 +298,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
           onValueChange={setActiveTab}
           className="w-full border-t-2 p-2"
         >
-          <div>
+          <div className="w-full overflow-x-auto scrollbar-hide pb-1">
             <TabsList
               className="
       mb-2
@@ -293,7 +307,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
       rounded-full
       inline-flex
       gap-1
-      max-w-full
+      w-max
     "
             >
               {milestones.map((m) => (
@@ -302,14 +316,16 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
                   value={String(m.id)}
                   className={`
           ${tabTriggerClass}
-          max-w-[400px]
+          max-w-[300px]
           flex
           items-center
           gap-1
         `}
                   title={m.name || m.milestoneName}
                 >
-                  <span className="truncate">{m.name || m.milestoneName}</span>
+                  <span className="truncate max-w-[200px] inline-block">
+                    {m.name || m.milestoneName}
+                  </span>
 
                   <Badge className="shrink-0">
                     {m.taskCount || m.tasks?.length || 0}

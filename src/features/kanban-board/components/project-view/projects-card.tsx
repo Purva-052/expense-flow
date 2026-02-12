@@ -43,25 +43,30 @@ const priorityColorMap: any = {
 //   low: "border-l-teal-500",
 // };
 
-const getStatusBadgeClasses = (status?: string) => {
-  const s = (status || "").toLowerCase();
-  switch (s) {
-    case "active-discovery":
-      return "bg-blue-100 text-blue-700";
-    case "running":
-      return "bg-green-100 text-green-700";
-    case "slow":
-      return "bg-amber-100 text-amber-700";
-    case "stop":
-      return "bg-red-100 text-red-700";
-    case "completed":
-      return "bg-emerald-100 text-emerald-700";
-    default:
-      return "bg-gray-100 text-gray-700";
-  }
-};
+// const getStatusBadgeClasses = (status?: string) => {
+//   const s = (status || "").toLowerCase();
+//   switch (s) {
+//     case "active-discovery":
+//       return "bg-blue-100 text-blue-700";
+//     case "running":
+//       return "bg-green-100 text-green-700";
+//     case "slow":
+//       return "bg-amber-100 text-amber-700";
+//     case "stop":
+//       return "bg-red-100 text-red-700";
+//     case "completed":
+//       return "bg-emerald-100 text-emerald-700";
+//     default:
+//       return "bg-gray-100 text-gray-700";
+//   }
+// };
 
-export function ProjectCard({ project, children, onStatusChanged }: any) {
+export function ProjectCard({
+  project,
+  children,
+  onStatusChanged,
+  isArchiveTab,
+}: any) {
   const { setOpen, setCurrentRow } = useProjectsStore();
   const [openDrawer, setOpenDrawer] = useState(false);
   const { setNodeRef, isOver } = useDroppable({ id: project?.id });
@@ -152,7 +157,7 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
 
   const title = project?.name || "N/A";
   const canDeleteProject = project?.percentageComplete === 0;
-  const currentStatus = project?.currentStatus || "N/A";
+  // const currentStatus = project?.currentStatus || "N/A";
   const deadline = project?.expectedCompletionDate
     ? new Date(project.expectedCompletionDate).toLocaleDateString("en-GB", {
         day: "2-digit",
@@ -164,13 +169,13 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
   const clientName = project?.client?.name || "N/A";
   const coordinatorName = project?.projectHandler?.fullName || "N/A";
   const coordinatorProfilePic = project?.projectHandler?.profilePicUrl || "";
-  const startDate = project?.startDate
-    ? new Date(project.startDate).toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      })
-    : deadline;
+  // const startDate = project?.startDate
+  //   ? new Date(project.startDate).toLocaleDateString("en-GB", { ytrq
+  //       day: "2-digit",
+  //       month: "short",
+  //       year: "numeric",
+  //     })
+  //   : deadline;
   const priority = project?.priority || "low";
 
   const isHandlerAssigned = !!project?.projectHandler?.id;
@@ -265,14 +270,16 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
                         >
                           Change Status
                         </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => {
-                            setCurrentRow(project);
-                            setOpen("edit");
-                          }}
-                        >
-                          Edit Project
-                        </DropdownMenuItem>
+                        {!isArchiveTab && (
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setCurrentRow(project);
+                              setOpen("edit");
+                            }}
+                          >
+                            Edit Project
+                          </DropdownMenuItem>
+                        )}
                         {canDeleteProject && (
                           <DropdownMenuItem onClick={handleDelete}>
                             Delete Project
@@ -300,8 +307,8 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
             </span>
           </div>
           <div className="flex flex-col gap-2">
-            <div className="mt-1">
-              <div
+            <div>
+              {/* <div
                 className={cn(
                   "inline-flex px-3 py-1 rounded-full text-xs font-medium capitalize",
                   getStatusBadgeClasses(currentStatus),
@@ -310,6 +317,20 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
                 onClick={() => canEditStatus && setStatusDialogOpen(true)}
               >
                 {currentStatus.replace(/-/g, " ")}
+              </div> */}
+              <div>
+                {/* <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">
+                  Priority
+                </p> */}
+                <span
+                  className={cn(
+                    "inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase",
+                    priorityColorMap[priority.toLowerCase()] ||
+                      "bg-gray-100 text-gray-600"
+                  )}
+                >
+                  {priority}
+                </span>
               </div>
             </div>
           </div>
@@ -363,28 +384,14 @@ export function ProjectCard({ project, children, onStatusChanged }: any) {
           </div>
 
           {/* Start Date */}
-          <div>
+          {/* <div>
             <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">
               Start Date
             </p>
             <p className="text-xs font-semibold text-gray-800">{startDate}</p>
-          </div>
+          </div> */}
 
           {/* Priority */}
-          <div>
-            <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">
-              Priority
-            </p>
-            <span
-              className={cn(
-                "inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase",
-                priorityColorMap[priority.toLowerCase()] ||
-                  "bg-gray-100 text-gray-600"
-              )}
-            >
-              {priority}
-            </span>
-          </div>
         </div>
       </div>
 
