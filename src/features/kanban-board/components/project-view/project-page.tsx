@@ -59,7 +59,7 @@ import { useGetProjectTypesDropdownList } from "@/features/Project-type/services
 import { useGetTechnologyDropdownList } from "@/features/technology/services";
 import { cn } from "@/lib/utils";
 import { capitalizeFirstLetter } from "@/utils/commonFunctions";
-import { roles } from "@/utils/constant";
+import { roles, PROJECT_DETAILS_FILTER_STORAGE_KEY } from "@/utils/constant";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CustomMultiSelect } from "@/components/shared/custom-multiselect";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -83,7 +83,7 @@ const ProjectPage = ({
   const isCoordinatorView =
     Role === roles.PROJECT_MANAGER || Role === roles.TEAM_LEAD;
   const currentUserId = user?.user?.id;
-  const FILTER_STORAGE_KEY = "project_details_filters";
+  const FILTER_STORAGE_KEY = PROJECT_DETAILS_FILTER_STORAGE_KEY;
   const [searchTech, setSearchTech] = useState<string>("");
   const debouncedSearchTech = useDebounce(searchTech, 500);
   const [activeTabResource, setActiveTabResource] =
@@ -113,8 +113,7 @@ const ProjectPage = ({
           pagination: true,
           status: isInactiveTab ? "inactive" : "active",
           projectTypeId: undefined,
-          handlerId:
-            isCoordinatorView && !isInactiveTab ? currentUserId : undefined,
+          handlerId: isCoordinatorView ? currentUserId : undefined,
           technologyId: undefined,
           ...JSON.parse(saved),
         }
@@ -122,8 +121,7 @@ const ProjectPage = ({
           pagination: true,
           clientId: null,
           status: isInactiveTab ? "inactive" : "active",
-          handlerId:
-            isCoordinatorView && !isInactiveTab ? currentUserId : undefined,
+          handlerId: isCoordinatorView ? currentUserId : undefined,
           technologyId: undefined,
           priority: isInactiveTab ? undefined : "high",
           projectTypeId: undefined,
@@ -202,8 +200,10 @@ const ProjectPage = ({
     0;
 
   useEffect(() => {
-    if (onTotalCountChange) onTotalCountChange(totalCount);
-  }, [totalCount, onTotalCountChange]);
+    if (!projectListLoading && onTotalCountChange) {
+      onTotalCountChange(totalCount);
+    }
+  }, [totalCount, projectListLoading, onTotalCountChange]);
 
   const projectList = useMemo(
     () => projectPages?.pages?.flatMap((page: any) => page.data) ?? [],
@@ -495,6 +495,7 @@ const ProjectPage = ({
                     key={p?.id}
                     project={p}
                     onStatusChanged={refetch}
+                    isArchiveTab={isInactiveTab}
                   >
                     {p?.developerAllocations?.length !== 0 && (
                       <SortableContext
