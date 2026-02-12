@@ -41,6 +41,21 @@ export const interviewFormSchema = z
         { message: "Invalid phone number length." }
       ),
     location: z.string().optional(),
+    // candidateLink: z
+    //   .string()
+    //   .optional()
+    //   .refine(
+    //     (val) => {
+    //       if (!val || val.trim() === "") return true; // Allow empty
+    //       try {
+    //         new URL(val);
+    //         return true;
+    //       } catch {
+    //         return false;
+    //       }
+    //     },
+    //     { message: "Must be a valid URL" }
+    //   ),
     notes: z.string().trim().optional(),
     experience: z.coerce
       .number()
@@ -90,14 +105,14 @@ export const interviewFormSchema = z
       }
     ),
     interviewUrl: z.string().optional(),
-    interviewRound: z.any().refine(
-      (val) => {
-        return val != null && val !== "" && String(val).trim().length > 0;
-      },
-      {
-        message: "Interview Round is required",
-      }
-    ),
+    // interviewRound: z.any().refine(
+    //   (val) => {
+    //     return val != null && val !== "" && String(val).trim().length > 0;
+    //   },
+    //   {
+    //     message: "Interview Round is required",
+    //   }
+    // ),
     interviewerComment: z.string().trim().optional(),
     interviewStatus: z.any().refine(
       (val) => {
