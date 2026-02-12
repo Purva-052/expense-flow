@@ -8,9 +8,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Form } from "@/components/ui/form";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import CustomButton from "@/components/shared/custom-button";
-import { TextInputField } from "@/components/shared/custom-input-field";
+// import { TextInputField } from "@/components/shared/custom-input-field";
 import {
   projectFormSchema,
   projectFormSchemaWithoutRefine,
@@ -20,6 +28,7 @@ import CustomDropDownSearchable from "@/components/shared/custome-searchable-dro
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
 
 interface Props {
   currentRow?: any;
@@ -133,108 +142,210 @@ export function ProjectActionForm({
             <form
               id="project-form"
               onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-6"
+              className="space-y-4"
             >
-              {/* Basic Info */}
-              <div className="space-y-4">
-                <TextInputField
-                  control={form.control}
-                  name="name"
-                  label="Project Name"
-                  placeholder="Enter project name"
-                />
-              </div>
+              {/* Project Name */}
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Project Name <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter project name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               {/* Status (only Add) */}
               {!isEdit && (
-                <CustomDropDownSearchable
-                  form={form}
+                <FormField
+                  control={form.control}
                   name="status"
-                  label="Project Status"
-                  options={[
-                    { value: "active-discovery", label: "Active Discovery" },
-                    { value: "running", label: "Running" },
-                    { value: "slow", label: "Slow" },
-                    { value: "stop", label: "Stopped" },
-                    { value: "completed", label: "Completed" },
-                  ]}
-                  searchEnabled={false}
-                  placeholder="Select status"
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>
+                        Project Status <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <CustomDropDownSearchable
+                        form={form}
+                        name="status"
+                        label=""
+                        options={[
+                          {
+                            value: "active-discovery",
+                            label: "Active Discovery",
+                          },
+                          { value: "running", label: "Running" },
+                          { value: "slow", label: "Slow" },
+                          { value: "stop", label: "Stopped" },
+                          { value: "completed", label: "Completed" },
+                        ]}
+                        searchEnabled={false}
+                        placeholder="Select status"
+                      />
+                    </FormItem>
+                  )}
                 />
               )}
 
               {/* Relations */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <CustomDropDownSearchable
-                  form={form}
+                <FormField
+                  control={form.control}
                   name="clientId"
-                  label="Client"
-                  options={clientsList?.map((c) => ({
-                    value: c.id,
-                    label: c.name,
-                  }))}
-                  isLoading={clientListLoading}
-                  placeholder="Select client"
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>
+                        Client <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <CustomDropDownSearchable
+                        form={form}
+                        name="clientId"
+                        label=""
+                        options={clientsList?.map((c) => ({
+                          value: c.id,
+                          label: c.name,
+                        }))}
+                        isLoading={clientListLoading}
+                        placeholder="Select client"
+                      />
+                    </FormItem>
+                  )}
                 />
 
-                <CustomDropDownSearchable
-                  form={form}
+                <FormField
+                  control={form.control}
                   name="projectTypeId"
-                  label="Project Type"
-                  options={projectTypes?.map((t: any) => ({
-                    value: t.id,
-                    label: t.name,
-                  }))}
-                  isLoading={projectTypesLoading}
-                  searchEnabled={false}
-                  placeholder="Select type"
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>
+                        Project Type <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <CustomDropDownSearchable
+                        form={form}
+                        name="projectTypeId"
+                        label=""
+                        options={projectTypes?.map((t: any) => ({
+                          value: t.id,
+                          label: t.name,
+                        }))}
+                        isLoading={projectTypesLoading}
+                        searchEnabled={false}
+                        placeholder="Select type"
+                      />
+                    </FormItem>
+                  )}
                 />
               </div>
 
-              <CustomDropDownSearchable
-                form={form}
+              <FormField
+                control={form.control}
                 name="technologyId"
-                label="Technologies"
-                options={technologyList?.data?.map((t: any) => ({
-                  value: t.id,
-                  label: t.name,
-                }))}
-                isLoading={technologyListLoading}
-                placeholder="Select technologies"
-                multiple
+                render={() => (
+                  <FormItem>
+                    <FormLabel>
+                      Technologies <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <CustomDropDownSearchable
+                      form={form}
+                      name="technologyId"
+                      label=""
+                      options={technologyList?.data?.map((t: any) => ({
+                        value: t.id,
+                        label: t.name,
+                      }))}
+                      isLoading={technologyListLoading}
+                      placeholder="Select technologies"
+                      multiple
+                    />
+                  </FormItem>
+                )}
               />
 
-              <CustomDropDownSearchable
-                form={form}
+              <FormField
+                control={form.control}
                 name="handlerId"
-                label="Project Coordinator"
-                options={projecthandler?.data?.map((h: any) => ({
-                  value: h.id,
-                  label: h.fullName,
-                }))}
-                isLoading={projecthandlerLoading}
-                placeholder="Select coordinator"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>
+                      Project Coordinator{" "}
+                      <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <CustomDropDownSearchable
+                      form={form}
+                      name="handlerId"
+                      label=""
+                      options={projecthandler?.data?.map((h: any) => ({
+                        value: h.id,
+                        label: h.fullName,
+                      }))}
+                      isLoading={projecthandlerLoading}
+                      placeholder="Select coordinator"
+                    />
+                  </FormItem>
+                )}
               />
 
-              <CustomDropDownSearchable
-                form={form}
+              <FormField
+                control={form.control}
                 name="priority"
-                label="Priority"
-                options={[
-                  { value: "low", label: "Low" },
-                  { value: "medium", label: "Medium" },
-                  { value: "high", label: "High" },
-                ]}
-                searchEnabled={false}
-                placeholder="Select priority"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>
+                      Priority <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <CustomDropDownSearchable
+                      form={form}
+                      name="priority"
+                      label=""
+                      options={[
+                        { value: "low", label: "Low" },
+                        { value: "medium", label: "Medium" },
+                        { value: "high", label: "High" },
+                      ]}
+                      searchEnabled={false}
+                      placeholder="Select priority"
+                    />
+                  </FormItem>
+                )}
               />
 
               {/* Dates */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <CustomDatePicker
+                {/* <CustomDatePicker
                   control={form.control}
                   name="startDate"
                   label="Start Date"
+                /> */}
+                <FormField
+                  control={form.control}
+                  name="startDate"
+                  render={({ fieldState }) => (
+                    <FormItem>
+                      <FormLabel
+                        className={cn(
+                          "flex items-center gap-1",
+                          fieldState.error && "text-red-500"
+                        )}
+                      >
+                        Start Date
+                        <span className="text-red-500">*</span>
+                      </FormLabel>
+
+                      <CustomDatePicker
+                        control={form.control}
+                        name="startDate"
+                        label=""
+                        placeholder="Select Meeting Date"
+                        // disabled={loading || isViewOnly}
+                      />
+                    </FormItem>
+                  )}
                 />
                 <CustomDatePicker
                   control={form.control}
@@ -244,18 +355,26 @@ export function ProjectActionForm({
                 />
               </div>
 
-              {/* Priority */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Description
-                </label>
-                <Textarea
-                  {...form.register("description")}
-                  placeholder="Brief project overview"
-                  rows={3}
-                  className="resize-none"
-                />
-              </div>
+              {/* Description */}
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Brief project overview"
+                        rows={3}
+                        className="resize-none"
+                        {...field}
+                        value={field.value ?? ""}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               {/* Global Switch */}
               <Controller

@@ -57,7 +57,7 @@ export function ActionFormModal({
       careerStartDate: values.careerStartDate,
       status: values.status ? "active" : "inactive",
       joining: values.joining ? "true" : "false",
-      currentWorkingProjectId: values.currentWorkingProjectId,
+      // currentWorkingProjectId: values.currentWorkingProjectId,
       profilePicS3Key: values.profilePicS3Key || "",
     };
     updateMutate(payload);
