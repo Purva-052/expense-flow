@@ -13,10 +13,23 @@ const projectFormSchemaBase = z.object({
     .array(z.number(), { invalid_type_error: "Technologies are required" })
     .nonempty("At least one technology is required"),
   projectTypeId: z.number({ message: "Project Type is required" }),
-  startDate: z.coerce.date({
-    required_error: "Start date is required",
-    invalid_type_error: "Invalid date",
-  }),
+  startDate: z.preprocess(
+    (val) => {
+      if (
+        val === "" ||
+        val === null ||
+        val === undefined ||
+        (val instanceof Date && isNaN(val.getTime()))
+      ) {
+        return undefined;
+      }
+      return val;
+    },
+    z.date({
+      required_error: "Start date is required",
+      invalid_type_error: "Start date is required",
+    })
+  ),
 
   expectedCompletionDate: z.coerce
     .date({
