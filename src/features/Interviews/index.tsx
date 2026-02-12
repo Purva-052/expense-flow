@@ -297,7 +297,7 @@ const InterviewsPage = () => {
         expectedCtc: Number(data.expectedCtc),
         noticePeriodInDays: noticePeriodInDays,
         interviewType: data.interviewType,
-        interviewRound: data.interviewRound,
+        // interviewRound: data.interviewRound,
         // interviewerComments: data.interviewerComment || "",
         status: data.interviewStatus,
         interviewerId: Number(data.interviewerName),
