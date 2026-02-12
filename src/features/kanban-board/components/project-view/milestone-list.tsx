@@ -215,7 +215,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
 
   const tabTriggerClass =
     "group flex items-center gap-2 rounded-[50px] px-3 py-2 transition-all h-[35px] " +
-    "data-[state=active]:bg-black data-[state=active]:text-white";
+    "data-[state=active]:bg-black data-[state=active]:text-white whitespace-nowrap min-w-fit";
   return (
     <>
       <div className="mb-4 flex items-center gap-2 overflow-x-auto pb-2">
@@ -284,7 +284,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
           onValueChange={setActiveTab}
           className="w-full border-t-2 p-2"
         >
-          <div>
+          <div className="w-full overflow-x-auto scrollbar-hide pb-1">
             <TabsList
               className="
       mb-2
@@ -293,7 +293,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
       rounded-full
       inline-flex
       gap-1
-      max-w-full
+      w-max
     "
             >
               {milestones.map((m) => (
@@ -302,14 +302,16 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
                   value={String(m.id)}
                   className={`
           ${tabTriggerClass}
-          max-w-[400px]
+          max-w-[300px]
           flex
           items-center
           gap-1
         `}
                   title={m.name || m.milestoneName}
                 >
-                  <span className="truncate">{m.name || m.milestoneName}</span>
+                  <span className="truncate max-w-[200px] inline-block">
+                    {m.name || m.milestoneName}
+                  </span>
 
                   <Badge className="shrink-0">
                     {m.taskCount || m.tasks?.length || 0}
