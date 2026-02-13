@@ -90,30 +90,45 @@ export const TaskActions = ({
         {Role !== roles.DEVELOPER && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => setUpdateStatusOpen(true)}
-                disabled={
-                  task.status === "pending" || task.status === "completed"
-                }
-              >
-                <Check
+              <span className="inline-flex">
+                <Button
+                  variant="outline"
+                  size="icon"
                   className={cn(
-                    "h-4 w-4",
-                    task.status === "completed"
-                      ? "text-muted-foreground"
-                      : "text-green-600 font-bold"
+                    "h-8 w-8",
+                    (task.status === "pending" ||
+                      task.status === "completed") &&
+                      "cursor-not-allowed opacity-50"
                   )}
-                />
-              </Button>
+                  onClick={() => {
+                    if (
+                      task.status === "pending" ||
+                      task.status === "completed"
+                    )
+                      return;
+
+                    setUpdateStatusOpen(true);
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "h-4 w-4",
+                      task.status === "completed"
+                        ? "text-muted-foreground"
+                        : "text-green-600 font-bold"
+                    )}
+                  />
+                </Button>
+              </span>
             </TooltipTrigger>
-            <TooltipContent>
+
+            <TooltipContent side="top">
               <p>
                 {task.status === "completed"
                   ? "Task Completed"
-                  : "Complete Task"}
+                  : task.status === "pending"
+                    ? "Task not started yet"
+                    : "Complete Task"}
               </p>
             </TooltipContent>
           </Tooltip>

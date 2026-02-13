@@ -1,8 +1,8 @@
 import { Main } from "@/components/layout/main";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuthStore } from "@/stores/use-auth-store";
-import { roles } from "@/utils/constant";
-import { useState, useEffect } from "react";
+import { PROJECT_DETAILS_FILTER_STORAGE_KEY, roles } from "@/utils/constant";
+import { useState, useEffect, useMemo } from "react";
 import { useGetProjectsData } from "../projects/services";
 import InquiryPage from "../Inquiry";
 import { useGetTechnologyDropdownList } from "../technology/services";
@@ -18,7 +18,6 @@ import { useGetClientsDropdownList } from "../clients/services";
 import TablePageHeader from "@/components/table/table-page-header";
 import { ActionFormModal } from "../projects/components/action";
 import { Badge } from "@/components/ui/badge";
-// import { Badge } from "@/components/ui/badge";
 
 const ProjectBoard = () => {
   const [activeTab, setActiveTab] = useState("project_details");
@@ -33,21 +32,50 @@ const ProjectBoard = () => {
   const userRole = user?.user?.role;
   const userId = user?.user?.id;
 
-  if (userRole === roles.BDE) {
-    return <InquiryPage />;
-  }
+  // if (userRole === roles.BDE) {
+  //   return <InquiryPage />;
+  // }
 
   const { data: technologies, isPending: techLoading } =
     useGetTechnologyDropdownList(null, userRole !== roles.BDE);
 
-  // Fetch archive count on initial load
-  const { data: archiveProjectsData } = useGetProjectsData({
-    status: "inactive",
+  // Get initial filter for handlerId
+  const initialHandlerId = useMemo(() => {
+    if (userRole === roles.DEVELOPER || userRole === roles.BDE) return undefined;
+    const isCoordinatorView = userRole === roles.PROJECT_MANAGER || userRole === roles.TEAM_LEAD;
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(PROJECT_DETAILS_FILTER_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.handlerId !== undefined) return parsed.handlerId;
+      }
+    }
+    return isCoordinatorView ? userId : undefined;
+  }, [userRole, userId]);
+
+  // Fetch active projects count
+  const { data: activeProjectsData } = useGetProjectsData({
+    status: "active",
+    handlerId: initialHandlerId,
     page: 1,
     limit: 1,
   });
 
-  // Update archive count when data is fetched
+  // Fetch archive count
+  const { data: archiveProjectsData } = useGetProjectsData({
+    status: "inactive",
+    handlerId: initialHandlerId,
+    page: 1,
+    limit: 1,
+  });
+
+  // Update counts when data is fetched
+  useEffect(() => {
+    if (activeProjectsData?.pages?.[0]?.metadata?.totalCount !== undefined) {
+      setActiveProjectCount(activeProjectsData.pages[0].metadata.totalCount);
+    }
+  }, [activeProjectsData]);
+
   useEffect(() => {
     if (archiveProjectsData?.pages?.[0]?.metadata?.totalCount !== undefined) {
       setArchiveProjectCount(archiveProjectsData.pages[0].metadata.totalCount);
@@ -76,57 +104,62 @@ const ProjectBoard = () => {
 
   return (
     <>
-      {userRole === roles.BDE ? (
+      {/* {userRole === roles.BDE ? (
         <InquiryPage />
-      ) : (
-        <Main className="h-screen overflow-auto  flex flex-col bg-[#f9fafb]">
-          <div className="flex gap-4">
-            {userRole === roles.DEVELOPER ? (
-              <Tabs
-                value={activeTab}
-                onValueChange={setActiveTab}
-                className="w-full"
-              >
-                <TabsContent value="project_details">
-                  <ProjectPage onTotalCountChange={setActiveProjectCount} />
-                </TabsContent>
-              </Tabs>
-            ) : (
-              // 🧭 Others see tabbed layout
-              <Tabs
-                value={activeTab}
-                onValueChange={setActiveTab}
-                className="w-full"
-              >
-                {/* Tab Headers */}
+      ) : ( */}
+      <Main className="h-screen overflow-auto  flex flex-col bg-[#f9fafb]">
+        <div className="flex gap-4">
+          {userRole === roles.DEVELOPER ? (
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="w-full"
+            >
+              <TabsContent value="project_details">
+                <ProjectPage onTotalCountChange={setActiveProjectCount} />
+              </TabsContent>
+            </Tabs>
+          ) : (
+            // 🧭 Others see tabbed layout
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="w-full"
+            >
+              {/* Tab Headers */}
 
-                <div className="flex items-center justify-between ">
-                  <TabsList className="flex flex-wrap bg-[#fdebef] rounded-full h-auto">
-                    <TabsTrigger
-                      value="project_details"
-                      className={tabTriggerClass}
-                    >
-                      Projects
-                      {activeProjectCount !== null && (
-                        <Badge className="ml-1">{activeProjectCount}</Badge>
-                      )}
-                    </TabsTrigger>
+              <div className="flex items-center justify-between ">
+                <TabsList className="flex flex-wrap bg-[#fdebef] rounded-full h-auto">
+                  <TabsTrigger
+                    value="project_details"
+                    className={tabTriggerClass}
+                  >
+                    {userRole === roles.BDE ? "Dashboard" : "Projects"}
+                    {activeProjectCount !== null && (
+                      <Badge className="ml-1">{activeProjectCount}</Badge>
+                    )}
+                  </TabsTrigger>
 
-                    {/* <TabsTrigger value="board">
+                  {/* <TabsTrigger value="board">
                       Projects{" "}
                       {projectCount !== null && (
                         <span className="ml-1">({projectCount})</span>
                       )}
                     </TabsTrigger> */}
+                  {userRole !== roles.BDE && (
                     <TabsTrigger value="resources" className={tabTriggerClass}>
                       Resources
                     </TabsTrigger>
+                  )}
+                  {userRole !== roles.BDE && (
                     <TabsTrigger
                       value="Project Coordinator"
                       className={tabTriggerClass}
                     >
                       Project Coordinator
                     </TabsTrigger>
+                  )}
+                  {userRole !== roles.BDE && (
                     <TabsTrigger
                       value="Archive Projects"
                       className={tabTriggerClass}
@@ -136,22 +169,23 @@ const ProjectBoard = () => {
                         <Badge className="ml-1">{archiveProjectCount}</Badge>
                       )}
                     </TabsTrigger>
-                    {userId === 1 && (
-                      <TabsTrigger value="inquiry" className={tabTriggerClass}>
-                        Inquiries
-                      </TabsTrigger>
-                    )}
-                    {userId === 1 && (
-                      <TabsTrigger
-                        value="Archive inquiry"
-                        className={tabTriggerClass}
-                      >
-                        Archive Inquiries
-                      </TabsTrigger>
-                    )}
-                  </TabsList>
+                  )}
+                  {(userId === 1 || userRole === roles.BDE) && (
+                    <TabsTrigger value="inquiry" className={tabTriggerClass}>
+                      Inquiries
+                    </TabsTrigger>
+                  )}
+                  {userId === 1 && (
+                    <TabsTrigger
+                      value="Archive inquiry"
+                      className={tabTriggerClass}
+                    >
+                      Archive Inquiries
+                    </TabsTrigger>
+                  )}
+                </TabsList>
 
-                  {activeTab === "project_details" && (
+                {activeTab === "project_details" && userRole !== roles.BDE && (
                     <TablePageHeader
                       // title="Projects"
                       buttonText="Add Project"
@@ -209,11 +243,11 @@ const ProjectBoard = () => {
                     onTotalCountChange={setArchiveProjectCount}
                   />
                 </TabsContent>
-                {userId === 1 && (
+                {userId === 1 || userRole === roles.BDE ? (
                   <TabsContent value="inquiry">
-                    <InquiryTab />
+                    {userRole === roles.BDE ? <InquiryPage /> : <InquiryTab />}
                   </TabsContent>
-                )}
+                ) : null}
                 {userId === 1 && (
                   <TabsContent value="Archive inquiry">
                     <InquiryTab activeTab={activeTab} />
@@ -223,7 +257,6 @@ const ProjectBoard = () => {
             )}
           </div>
         </Main>
-      )}
       <HistoryProjectModal />
     </>
   );

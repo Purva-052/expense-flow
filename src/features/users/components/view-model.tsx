@@ -52,7 +52,7 @@ export function ViewUserModal() {
           <div>
             <h3 className="text-sm font-medium">Role</h3>
             <p className="text-sm text-gray-600 capitalize">
-              {currentRow.role}
+              {currentRow.role?.replace(/_/g, " ")}
             </p>
           </div>
           <div className="flex items-center gap-2">

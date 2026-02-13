@@ -25,6 +25,46 @@ import {
 } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DeveloperDialog } from "../developer-dialog";
+import { useAuthStore } from "@/stores/use-auth-store";
+// import { getYearsOfExperience } from "../developer-chip";
+
+export const formatExperience = (
+  startDate: string | null | undefined
+): string | null => {
+  if (!startDate) return null;
+
+  const start = new Date(startDate);
+  const now = new Date();
+
+  let years = now.getFullYear() - start.getFullYear();
+  let months = now.getMonth() - start.getMonth();
+
+  // Adjust if current date is before start day
+  if (
+    now.getMonth() < start.getMonth() ||
+    (now.getMonth() === start.getMonth() && now.getDate() < start.getDate())
+  ) {
+    years--;
+    months += 12;
+  }
+
+  if (months < 0) months += 12;
+
+  // 🔹 Less than 1 year → show only months
+  if (years < 1) {
+    return `${months} month${months !== 1 ? "s" : ""}`;
+  }
+
+  // 🔹 1 year or more → show years + months
+  const yearLabel = `${years} Year${years !== 1 ? "s" : ""}`;
+
+  if (months === 0) {
+    return yearLabel;
+  }
+
+  const monthLabel = `${months} month${months !== 1 ? "s" : ""}`;
+  return `${yearLabel} ${monthLabel}`;
+};
 
 const priorityColorMap: any = {
   high: "bg-red-100 text-red-800",
@@ -47,10 +87,21 @@ const OverviewProject = ({ projectId }: { projectId?: any }) => {
     refetch: refetchProjectDetails,
   } = useGetProjectsDetailData(projectId?.toString());
 
+  const { user } = useAuthStore();
+  const userRole = String(
+    user?.user?.role?.name || user?.user?.role || ""
+  ).toLowerCase();
+  const isDeveloperView = userRole === "developer";
+  const currentUserId = user?.user?.id;
+
   const [selectedDeveloper, setSelectedDeveloper] = useState<any>(null);
   const [isDeveloperDialogOpen, setIsDeveloperDialogOpen] = useState(false);
 
   const handleDeveloperClick = (allocation: any) => {
+    // Prevent developers from opening other developers' dialogs
+    if (isDeveloperView && allocation?.developer?.id !== currentUserId) {
+      return;
+    }
     setSelectedDeveloper(allocation);
     setIsDeveloperDialogOpen(true);
   };
@@ -276,11 +327,20 @@ const OverviewProject = ({ projectId }: { projectId?: any }) => {
                 const isWorkingOnCurrentProject =
                   Number(allocation.developer?.currentWorkingProjectId) ===
                   Number(projectId);
+                const canClickDeveloper =
+                  !isDeveloperView ||
+                  allocation?.developer?.id === currentUserId;
+                const cursorClass = canClickDeveloper
+                  ? "cursor-pointer"
+                  : "cursor-not-allowed";
 
                 return (
                   <div
                     key={allocation.id}
-                    className="flex items-center gap-3 p-3 rounded-xl border bg-card hover:shadow-sm transition-shadow cursor-pointer"
+                    className={cn(
+                      "flex items-center gap-3 p-3 rounded-xl border bg-card hover:shadow-sm transition-shadow",
+                      cursorClass
+                    )}
                     onClick={() => handleDeveloperClick(allocation)}
                   >
                     <div className="relative shrink-0">
@@ -321,7 +381,10 @@ const OverviewProject = ({ projectId }: { projectId?: any }) => {
                         {allocation.developer?.fullName}
                       </p>
                       <p className="text-sm text-gray-500 truncate">
-                        Exp: {allocation.developer?.experienceInYears} years
+                        Exp:{" "}
+                        {formatExperience(
+                          allocation.developer?.careerStartDate
+                        )}{" "}
                       </p>
                       <TooltipProvider>
                         <Tooltip>

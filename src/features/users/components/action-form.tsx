@@ -43,8 +43,8 @@ export function UserActionForm({
   onOpenChange,
   onSubmit: onSubmitValues,
   loading,
-  projectListdata,
-  projectListLoading,
+  // projectListdata,
+  // projectListLoading,
   technologyListData,
   technologyListLoading,
   roleList,
@@ -65,7 +65,7 @@ export function UserActionForm({
             : "",
           status: currentRow?.status === "active",
           joining: currentRow?.joining ?? false, // ✅ FIXED
-          currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
+          // currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
           profilePicS3Key: currentRow?.profilePicUrl ?? "",
           file: null,
         }
@@ -105,7 +105,7 @@ export function UserActionForm({
           : "",
         status: currentRow?.status === "active",
         joining: currentRow?.joining ?? false,
-        currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
+        // currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
 
         // 🔥 IMPORTANT
         profilePicS3Key: currentRow?.profilePicUrl ?? "",
@@ -317,7 +317,7 @@ export function UserActionForm({
                 }
               />
 
-              {isEdit && (
+              {/* {isEdit && (
                 <CustomDropDownSearchable
                   form={form}
                   name="currentWorkingProjectId"
@@ -329,7 +329,7 @@ export function UserActionForm({
                   isLoading={projectListLoading}
                   placeholder="Select Project"
                 />
-              )}
+              )} */}
 
               <CustomDatePicker
                 control={form.control}

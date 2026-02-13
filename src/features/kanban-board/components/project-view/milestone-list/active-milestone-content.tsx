@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2, Pencil } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { GlobalTable } from "@/components/table/global-table";
@@ -123,7 +124,10 @@ export const ActiveMilestoneContent = ({
   const Role = user?.user?.role;
   const isAdmin = Role === roles.ADMIN;
   const isDeveloper = Role === roles.DEVELOPER;
+  const isProjectManager = Role === roles.PROJECT_MANAGER;
+  const isTeamLead = Role === roles.TEAM_LEAD;
   const isAuthorized = isAdmin || isDeveloper || isCurrentUserProjectHandler;
+  const canDeleteMilestoneRole = isAdmin || isProjectManager || isTeamLead;
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -132,6 +136,8 @@ export const ActiveMilestoneContent = ({
 
   const [itemToDelete, setItemToDelete] = useState<MilestoneTask | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDeleteMilestoneModal, setShowDeleteMilestoneModal] =
+    useState(false);
 
   const { data: taskDataResponse, isLoading } = useGetMilestoneTasks(
     milestoneId,
@@ -165,6 +171,17 @@ export const ActiveMilestoneContent = ({
     );
   };
 
+  const confirmDeleteMilestone = () => {
+    deleteMilestone(
+      { id: milestoneId },
+      {
+        onSuccess: () => {
+          setShowDeleteMilestoneModal(false);
+        },
+      }
+    );
+  };
+
   const milestone = taskDataResponse?.data || taskDataResponse;
   const metadata = taskDataResponse?.metadata;
 
@@ -186,9 +203,29 @@ export const ActiveMilestoneContent = ({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-12">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        <span className="ml-2">Loading tasks...</span>
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <Skeleton className="h-24 w-full rounded-xl" />
+          <Skeleton className="h-24 w-full rounded-xl" />
+        </div>
+        <div className="rounded-md border p-4 space-y-4">
+          <div className="flex items-center justify-between border-b pb-4">
+            <Skeleton className="h-8 w-48" />
+            <div className="flex gap-2">
+              <Skeleton className="h-9 w-32" />
+            </div>
+          </div>
+          <div className="space-y-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex gap-4">
+                <Skeleton className="h-10 flex-1" />
+                <Skeleton className="h-10 w-32" />
+                <Skeleton className="h-10 w-32" />
+                <Skeleton className="h-10 w-16" />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -223,14 +260,17 @@ export const ActiveMilestoneContent = ({
               <Pencil className="mr-2 h-4 w-4" />
               Edit Milestone
             </Button>
-            {/* <Button
-              variant="outline"
-              className="w-full justify-start"
-              onClick={() => onEditMilestone(actualMilestone)}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete Milestone
-            </Button> */}
+            {canDeleteMilestoneRole &&
+              actualMilestone?.status === "pending" && (
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => setShowDeleteMilestoneModal(true)}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Milestone
+                </Button>
+              )}
           </div>
         )}
       </div>
@@ -267,6 +307,14 @@ export const ActiveMilestoneContent = ({
         onClose={() => setShowDeleteModal(false)}
         onConfirm={confirmDeleteTask}
         itemName={itemToDelete?.taskName}
+        loading={isDeleting}
+      />
+
+      <DeleteModal
+        isOpen={showDeleteMilestoneModal}
+        onClose={() => setShowDeleteMilestoneModal(false)}
+        onConfirm={confirmDeleteMilestone}
+        itemName={actualMilestone?.name}
         loading={isDeleting}
       />
     </div>

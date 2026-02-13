@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -21,11 +22,7 @@ import { cn } from "@/lib/utils";
 
 // --- Import your custom components and constants ---
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
-import {
-  interviewTypes,
-  interviewRounds,
-  interviewStatuses,
-} from "../constants";
+import { interviewTypes, interviewStatuses } from "../constants";
 import {
   useCreateInterviewResumeLink,
   useCreateInterviewStatusLog,
@@ -65,6 +62,7 @@ const step1Fields: (keyof InterviewFormValues)[] = [
   "email",
   "phoneNumber",
   "location",
+  // "candidateLink",
   "experience",
   "currentCtc",
   "expectedCtc",
@@ -74,7 +72,7 @@ const step1Fields: (keyof InterviewFormValues)[] = [
 ];
 const step2Fields: (keyof InterviewFormValues)[] = [
   "interviewerName",
-  "interviewRound",
+  // "interviewRound",
   "startTime",
   "endTime",
   "interviewType",
@@ -117,10 +115,10 @@ export const InterviewForm = ({
 
   // Step 1: extract values for reuse
   const ADD_STATUSES = [
-    "pending",
-    "technical_completed",
-    "practical_completed",
+    "technical_scheduled",
+    "practical_scheduled",
     "hr_round",
+    "joining",
   ];
   const EDIT_STATUSES = [...ADD_STATUSES, "rejected"]; // add mode + rejected + joining
 
@@ -162,6 +160,7 @@ export const InterviewForm = ({
       email: "",
       phoneNumber: "",
       location: "",
+      // candidateLink: "",
       notes: "",
       experience: 0,
       currentCtc: 0,
@@ -172,9 +171,9 @@ export const InterviewForm = ({
       endTime: "11:00",
       interviewType: "on_site",
       interviewUrl: "",
-      interviewRound: "",
+      // interviewRound: "",
       // interviewerComment: "",
-      interviewStatus: "pending",
+      interviewStatus: "",
       resume: null,
       resumeS3Key: "",
       joiningDate: "",
@@ -191,6 +190,7 @@ export const InterviewForm = ({
         email: initialData.email || "",
         phoneNumber: initialData.phoneNumber || "",
         location: initialData.location || "",
+        // candidateLink: initialData.candidateLink || "",
         notes: initialData.notes || "",
         experience: Number(initialData.experienceInYears) || 0,
         currentCtc: Number(initialData.currentCtc) || 0,
@@ -201,7 +201,7 @@ export const InterviewForm = ({
         endTime: extractTime(initialData.interviewEnd),
         interviewType: initialData.interviewType || "on_site",
         interviewUrl: initialData.interviewUrl || "",
-        interviewRound: initialData.interviewRound || "",
+        // interviewRound: initialData.interviewRound || "",
         // interviewerComment: initialData.interviewerComments || "",
         interviewStatus: initialData.status || "pending",
         resume: null,
@@ -619,6 +619,19 @@ export const InterviewForm = ({
                       </FormItem>
                     )}
                   />
+                  {/* <FormField
+                    control={form.control}
+                    name="candidateLink"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Portfolio/GitHub Link</FormLabel>
+                        <FormControl>
+                          <Input placeholder="https://portfolio.com or https://github.com/username" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  /> */}
                   <FormField
                     control={form.control}
                     name="experience"
@@ -777,7 +790,7 @@ export const InterviewForm = ({
                       )}
                     />
                   </div>
-                  <div>
+                  {/* <div>
                     <FormField
                       control={form.control}
                       name="interviewRound"
@@ -804,7 +817,7 @@ export const InterviewForm = ({
                         </FormItem>
                       )}
                     />
-                  </div>
+                  </div> */}
                   <FormField
                     control={form.control}
                     name="startTime"

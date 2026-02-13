@@ -54,12 +54,16 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
   const user = useAuthStore((state) => state.user);
   const userRole = user?.user?.role;
 
+  // Build API params - only include non-null filter values
   const apiParams = {
     pagination: false,
-    technologyId: listParams.technologyId,
-    skillId: listParams.skillId,
-    search: isProjectHandler ? projectHandlerSearch : resourceSearch,
+    ...(listParams.technologyId && { technologyId: listParams.technologyId }),
+    ...(listParams.skillId && { skillId: listParams.skillId }),
+    ...((isProjectHandler ? projectHandlerSearch : resourceSearch) && {
+      search: isProjectHandler ? projectHandlerSearch : resourceSearch,
+    }),
     status: "active",
+    includeSkills: true,
   };
 
   const {
@@ -70,7 +74,7 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
     isFetchingNextPage,
   }: any = useGetProjectsData({
     pagination: false,
-    search: projectSearch,
+    search: projectSearch, // 👈 separate search for project list
   });
 
   const projectList = useMemo(
@@ -209,8 +213,6 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
   ];
 
   const projectFilters: FilterConfig[] = [
-    // ...(userRole !== roles.ADMIN && userRole !== roles.PROJECT_MANAGER
-    //   ? [
     {
       type: "search",
       placeholder: "Search by project name ...",
@@ -220,8 +222,6 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
       className: "w-[292px]",
     },
   ];
-  // : []),
-  // ];
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -282,18 +282,18 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
                 <Users className="h-10 w-10 text-muted-foreground/70" />
               </div>
               <h3 className="text-lg font-semibold text-muted-foreground">
-                Please select a technology, skill or search by name
+                Please select a technology
               </h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Choose a technology or skill from the dropdown or use the search
-                to view available resources.
+                Choose a technology from the dropdown to view available
+                resources.
               </p>
             </div>
           ) : filteredUserDetails?.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-[1fr_320px] gap-4">
               {/* Developer List */}
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 max-h-[72dvh] overflow-auto p-2 self-start">
-                {filteredUserDetails.map((dev: any) => (
+              <div className="space-y-4 max-h-[72dvh] overflow-auto p-2">
+                {userDetails.map((dev: any) => (
                   <ResourceCard
                     key={dev.id}
                     developer={dev}

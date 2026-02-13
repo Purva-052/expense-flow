@@ -59,9 +59,10 @@ import { useGetProjectTypesDropdownList } from "@/features/Project-type/services
 import { useGetTechnologyDropdownList } from "@/features/technology/services";
 import { cn } from "@/lib/utils";
 import { capitalizeFirstLetter } from "@/utils/commonFunctions";
-import { roles } from "@/utils/constant";
+import { roles, PROJECT_DETAILS_FILTER_STORAGE_KEY } from "@/utils/constant";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CustomMultiSelect } from "@/components/shared/custom-multiselect";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type GroupedDevelopers = {
   technologyName: string;
@@ -82,7 +83,7 @@ const ProjectPage = ({
   const isCoordinatorView =
     Role === roles.PROJECT_MANAGER || Role === roles.TEAM_LEAD;
   const currentUserId = user?.user?.id;
-  const FILTER_STORAGE_KEY = "project_details_filters";
+  const FILTER_STORAGE_KEY = PROJECT_DETAILS_FILTER_STORAGE_KEY;
   const [searchTech, setSearchTech] = useState<string>("");
   const debouncedSearchTech = useDebounce(searchTech, 500);
   const [activeTabResource, setActiveTabResource] =
@@ -90,6 +91,8 @@ const ProjectPage = ({
 
   const { data: ProjectType, isPending: LoadingProjectType }: any =
     useGetProjectTypesDropdownList();
+
+  const isBdeView = Role === roles.BDE;
 
   const getInitialFilters = () => {
     if (typeof window === "undefined")
@@ -110,8 +113,7 @@ const ProjectPage = ({
           pagination: true,
           status: isInactiveTab ? "inactive" : "active",
           projectTypeId: undefined,
-          handlerId:
-            isCoordinatorView && !isInactiveTab ? currentUserId : undefined,
+          handlerId: isCoordinatorView ? currentUserId : undefined,
           technologyId: undefined,
           ...JSON.parse(saved),
         }
@@ -119,8 +121,7 @@ const ProjectPage = ({
           pagination: true,
           clientId: null,
           status: isInactiveTab ? "inactive" : "active",
-          handlerId:
-            isCoordinatorView && !isInactiveTab ? currentUserId : undefined,
+          handlerId: isCoordinatorView ? currentUserId : undefined,
           technologyId: undefined,
           priority: isInactiveTab ? undefined : "high",
           projectTypeId: undefined,
@@ -186,7 +187,10 @@ const ProjectPage = ({
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  }: any = useGetProjectsData({ ...listParams, isPinned: true });
+  }: any = useGetProjectsData({
+    ...listParams,
+    isPinned: isBdeView ? undefined : true,
+  });
 
   // Extract total count from pagination metadata and notify parent when it changes
   const totalCount =
@@ -196,8 +200,10 @@ const ProjectPage = ({
     0;
 
   useEffect(() => {
-    if (onTotalCountChange) onTotalCountChange(totalCount);
-  }, [totalCount, onTotalCountChange]);
+    if (!projectListLoading && onTotalCountChange) {
+      onTotalCountChange(totalCount);
+    }
+  }, [totalCount, projectListLoading, onTotalCountChange]);
 
   const projectList = useMemo(
     () => projectPages?.pages?.flatMap((page: any) => page.data) ?? [],
@@ -250,7 +256,7 @@ const ProjectPage = ({
   const availableDroppable = useDroppable({ id: "available" });
 
   function onDragStart(event: DragStartEvent) {
-    if (isDeveloperView) return;
+    if (isDeveloperView || isBdeView) return;
     const developer = event.active.data.current?.developer as any;
     if (developer) {
       setActiveDeveloper(developer);
@@ -258,7 +264,7 @@ const ProjectPage = ({
   }
 
   async function onDragEnd(event: DragEndEvent) {
-    if (isDeveloperView) return;
+    if (isDeveloperView || isBdeView) return;
     setActiveDeveloper(null);
 
     const { active, over } = event;
@@ -293,7 +299,10 @@ const ProjectPage = ({
   }
 
   const handleDeveloperClick = (developer: any, projectId: string) => {
-    if (isDeveloperView && developer?.developer?.id !== currentUserId) {
+    if (
+      (isDeveloperView && developer?.developer?.id !== currentUserId) ||
+      isBdeView
+    ) {
       return;
     }
     setSelectedDeveloper(developer);
@@ -343,23 +352,23 @@ const ProjectPage = ({
     setListParams((prev: any) => ({ ...prev, search: search ?? "" }));
   };
 
-  useEffect(() => {
-    if (
-      !isInactiveTab &&
-      !listParams.projectTypeId &&
-      ProjectType?.data?.length
-    ) {
-      const fixedType = ProjectType.data.find(
-        (type: any) => type.name === "Fixed"
-      );
-      if (fixedType) {
-        setListParams((prev: any) => ({
-          ...prev,
-          projectTypeId: fixedType.id,
-        }));
-      }
-    }
-  }, [ProjectType]);
+  // useEffect(() => {
+  //   if (
+  //     !isInactiveTab &&
+  //     !listParams.projectTypeId &&
+  //     ProjectType?.data?.length
+  //   ) {
+  //     const fixedType = ProjectType.data.find(
+  //       (type: any) => type.name === "Fixed"
+  //     );
+  //     if (fixedType) {
+  //       setListParams((prev: any) => ({
+  //         ...prev,
+  //         projectTypeId: fixedType.id,
+  //       }));
+  //     }
+  //   }
+  // }, [ProjectType]);
 
   const { data: technologies, isPending: techLoading } =
     useGetTechnologyDropdownList(null, Role !== roles.BDE);
@@ -453,12 +462,14 @@ const ProjectPage = ({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <GlobalFilterSection filters={filters ?? []} />
-      </div>
+      {!isBdeView && (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <GlobalFilterSection filters={filters ?? []} />
+        </div>
+      )}
 
       <div
-        className={`${isDeveloperView ? "grid grid-cols-1 gap-4" : "grid grid-cols-1 gap-4 md:grid-cols-[1fr_320px] h-[75dvh]"}`}
+        className={`${isDeveloperView || isBdeView ? "grid grid-cols-1 gap-4" : "grid grid-cols-1 gap-4 md:grid-cols-[1fr_320px] h-[75dvh]"}`}
       >
         <DndContext
           sensors={sensors}
@@ -484,6 +495,7 @@ const ProjectPage = ({
                     key={p?.id}
                     project={p}
                     onStatusChanged={refetch}
+                    isArchiveTab={isInactiveTab}
                   >
                     {p?.developerAllocations?.length !== 0 && (
                       <SortableContext
@@ -599,7 +611,7 @@ const ProjectPage = ({
             <div ref={loadMoreRef} className="h-2" />
           </div>
 
-          {!isDeveloperView && (
+          {!isDeveloperView && !isBdeView && (
             <aside className="top-4 !h-full">
               <Card
                 ref={availableDroppable.setNodeRef}
@@ -668,11 +680,19 @@ const ProjectPage = ({
 
                 <CardContent className="h-[50dvh] overflow-y-auto [scrollbar-gutter:stable] pr-2">
                   {AllDevelopersLoading ? (
-                    <div className="flex flex-col justify-center items-center py-10 gap-3">
-                      <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
-                      <span className="text-sm text-muted-foreground">
-                        Loading developers...
-                      </span>
+                    <div className="space-y-4">
+                      {Array.from({ length: 6 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center gap-3 p-2 border rounded-md"
+                        >
+                          <Skeleton className="h-10 w-10 rounded-full" />
+                          <div className="flex-1 space-y-2">
+                            <Skeleton className="h-4 w-3/4" />
+                            <Skeleton className="h-3 w-1/2" />
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   ) : groupedDevelopers?.length > 0 ? (
                     <SortableContext

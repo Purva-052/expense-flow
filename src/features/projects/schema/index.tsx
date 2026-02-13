@@ -15,33 +15,33 @@ const projectFormSchemaBase = z.object({
   projectTypeId: z.number({ message: "Project Type is required" }),
   startDate: z.preprocess(
     (val) => {
-      if (val instanceof Date) {
-        return val.toISOString().split("T")[0]; // convert Date -> "YYYY-MM-DD"
+      if (
+        val === "" ||
+        val === null ||
+        val === undefined ||
+        (val instanceof Date && isNaN(val.getTime()))
+      ) {
+        return undefined;
       }
-      if (typeof val === "string") return val;
-      return "";
+      return val;
     },
-    z.string().min(1, "Start date is required")
-  ),
-  expectedCompletionDate: z.preprocess(
-    (val) => {
-      if (!val) return undefined;
-      if (val instanceof Date) {
-        return val.toISOString().split("T")[0]; // YYYY-MM-DD
-      }
-      if (typeof val === "string") return val;
-      return undefined;
-    },
-    z
-      .string()
-      .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format")
-      .optional()
+    z.date({
+      required_error: "Start date is required",
+      invalid_type_error: "Start date is required",
+    })
   ),
 
+  expectedCompletionDate: z.coerce
+    .date({
+      invalid_type_error: "Invalid date",
+    })
+    .optional(),
+
   handlerId: z
-    .number({ invalid_type_error: "Manager must be a number" })
-    .optional()
-    .nullable(),
+    .union([z.number().min(1), z.undefined(), z.null()])
+    .refine((val) => val !== null && val !== undefined && val >= 1, {
+      message: "Project Coordinator is required",
+    }),
 
   percentageComplete: z.preprocess(
     (val) => (val === "" || val == null ? 0 : Number(val)),
@@ -68,6 +68,8 @@ const projectFormSchemaBase = z.object({
       })
     )
     .optional(),
+  isVisibleToAllDevTeam: z.boolean(),
+  isVisibleToAllBdeTeam: z.boolean(),
 });
 
 // Main schema with date validation
@@ -92,19 +94,17 @@ export const projectFormSchemaWithoutRefine = projectFormSchemaBase;
 
 export type TProjectFormSchema = z.infer<typeof projectFormSchema>;
 
-export const singleDocSchema = z
-  .object({
-    documentName: z.string().min(1, "Document name is required"),
-    notes: z.string().optional(),
-    link: z
-      .string()
-      .url("Please enter a valid URL like https://example.com")
-      .or(z.literal(""))
-      .optional(),
-  })
-  .refine((data) => data.notes || data.link, {
-    message: "Either Notes or Link must be filled.",
-  });
+export const singleDocSchema = z.object({
+  documentName: z.string().trim().min(1, "Document name is required"),
+
+  notes: z.string().trim().optional(),
+
+  link: z
+    .string()
+    .trim()
+    .min(1, "Link is required")
+    .url("Please enter a valid URL like https://example.com"),
+});
 
 export const _documentListSchema = z.object({
   documents: z.array(singleDocSchema).min(1, "At least one document required"),

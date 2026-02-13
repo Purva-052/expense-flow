@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {
@@ -21,10 +21,22 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, Loader2 } from "lucide-react";
-import { useCreateManualMilestone, useUpdateMileStone } from "../../services";
-import { useEffect } from "react";
+import {
+  useCreateManualMilestone,
+  useUpdateMileStone,
+  useDeleteMilestone,
+} from "../../services";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import API from "@/config/api/api";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import {
   Select,
   SelectContent,
@@ -32,7 +44,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner";
 
 const taskSchema = z.object({
   taskId: z.number().optional(),
@@ -46,7 +57,7 @@ const formSchema = z.object({
     .nonempty("Milestone name is required")
     .min(2, "Milestone name must be at least 2 characters")
     .max(20, "Milestone name should be less than 20 characters"),
-  estimatedTime: z.string().optional(),
+  estimatedTime: z.string().min(0, "Estimated time is required"),
   status: z.string().min(1, "Status is required"),
   tasks: z.array(taskSchema).min(1, "At least one task is required"),
 });
@@ -71,14 +82,16 @@ export function AddManualMilestone({
   onMilestoneCreated,
 }: AddManualMilestoneProps) {
   const queryClient = useQueryClient();
+  const [taskToDelete, setTaskToDelete] = useState<any>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // --- API HOOKS ---
   const { mutate: createMilestone, isPending: isCreating } =
     useCreateManualMilestone((response: any) => {
       onOpenChange(false);
       form.reset();
-
       const createdMilestone =
         response?.data || response?.milestone || response;
-
       onMilestoneCreated?.(createdMilestone);
       onSuccess?.();
     });
@@ -86,8 +99,13 @@ export function AddManualMilestone({
   const { mutate: updateMilestone, isPending: isUpdating } =
     useUpdateMileStone();
 
+  const { mutate: deleteTaskFromAPI, isPending: isDeletingTask } =
+    useDeleteMilestone();
+
+  // --- FORM SETUP ---
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
+    mode: "onChange", // Ensures validation happens on change
     defaultValues: {
       name: "",
       estimatedTime: "",
@@ -96,6 +114,67 @@ export function AddManualMilestone({
     },
   });
 
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "tasks",
+  });
+
+  // --- REAL-TIME CALCULATION LOGIC (UPDATED) ---
+
+  // 1. USE USEWATCH: This is critical for real-time updates in Field Arrays
+  const watchedTasks = useWatch({
+    control: form.control,
+    name: "tasks",
+  });
+
+  // 2. Parsing Logic
+  const parseEstimatedTimeToHours = (val: string | number | undefined) => {
+    if (val === undefined || val === null) return 0;
+    const str = String(val).trim();
+    if (str === "") return 0;
+
+    // Check for purely numeric values (e.g. "1.5" or "2")
+    if (/^[0-9]+(\.[0-9]+)?$/.test(str)) return parseFloat(str) || 0;
+
+    // Check for "1h 30m" format
+    const hourMatch = str.match(/(\d+)h/);
+    const minMatch = str.match(/(\d+)m/);
+
+    const hours = hourMatch ? Number(hourMatch[1]) : 0;
+    const mins = minMatch ? Number(minMatch[1]) : 0;
+
+    return hours + mins / 60;
+  };
+
+  // 3. Effect: Calculate total immediately when watchedTasks changes
+  useEffect(() => {
+    // Safety check if tasks aren't loaded yet
+    const currentTasks = watchedTasks || [];
+
+    const totalHours = currentTasks.reduce((sum, task) => {
+      // Guard against undefined tasks in the array
+      if (!task) return sum;
+      return sum + parseEstimatedTimeToHours(task.estimatedTime);
+    }, 0);
+
+    // Format: "1.50" -> "1.5", "2.00" -> "2"
+    const formattedTotal =
+      totalHours > 0 ? parseFloat(totalHours.toFixed(2)).toString() : "";
+
+    // Update the field value.
+    // IMPORTANT: Check current value prevents infinite loops
+    const currentFieldValue = form.getValues("estimatedTime");
+
+    if (currentFieldValue !== formattedTotal) {
+      form.setValue("estimatedTime", formattedTotal, {
+        shouldValidate: true,
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+    }
+  }, [watchedTasks, form]); // Dependency array ensures this runs on every keystroke in tasks
+
+  // --- INITIAL DATA LOADING ---
   useEffect(() => {
     if (open) {
       if (initialData) {
@@ -124,18 +203,53 @@ export function AddManualMilestone({
     }
   }, [open, initialData, form]);
 
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "tasks",
-  });
+  const handleDeleteTask = (task: any, index: number) => {
+    if (task.taskId) {
+      setTaskToDelete({ task, index, isFromDB: true });
+      setShowDeleteConfirm(true);
+    } else {
+      remove(index);
+    }
+  };
+
+  const confirmDeleteTask = () => {
+    if (!taskToDelete) return;
+    const { task, index, isFromDB } = taskToDelete;
+
+    if (isFromDB) {
+      deleteTaskFromAPI(
+        { id: initialData.id, taskId: task.taskId },
+        {
+          onSuccess: () => {
+            remove(index);
+            queryClient.invalidateQueries({
+              queryKey: [`${API.projects.milestone_list}/${initialData.id}`],
+            });
+            setShowDeleteConfirm(false);
+            setTaskToDelete(null);
+          },
+        }
+      );
+    }
+  };
 
   const onSubmit = (values: FormValues) => {
+    const payloadProjectId = Number(projectId);
+
+    // Ensure estimatedTime is the calculated value (redundant safety)
+    const totalHours = values.tasks.reduce(
+      (sum, task) => sum + parseEstimatedTimeToHours(task.estimatedTime),
+      0
+    );
+    const finalEstimatedTime =
+      totalHours > 0 ? parseFloat(totalHours.toFixed(2)).toString() : "";
+
     if (initialData) {
       const payload: any = {
         name: values.name,
-        estimatedTime: values.estimatedTime,
+        estimatedTime: finalEstimatedTime, // Ensure we send the calculated string
         status: values.status,
-        projectId: Number(projectId),
+        projectId: payloadProjectId,
       };
 
       const initialTasks =
@@ -145,6 +259,7 @@ export function AddManualMilestone({
           estimatedTime: t.estimatedTime,
         })) || [];
 
+      // Simple dirty check
       const hasTasksChanged =
         JSON.stringify(values.tasks) !== JSON.stringify(initialTasks);
 
@@ -159,25 +274,19 @@ export function AddManualMilestone({
             queryClient.invalidateQueries({
               queryKey: [API.dropdown_api.milestones, { projectId }],
             });
-            // Also invalidate the specific milestone details
             queryClient.invalidateQueries({
               queryKey: [`${API.projects.milestone_list}/${initialData.id}`],
             });
             onOpenChange(false);
             if (onSuccess) onSuccess();
           },
-          onError: () => {
-            onOpenChange(false);
-            toast.error(
-              "Complete all tasks to mark the milestone as completed"
-            );
-          },
         }
       );
     } else {
       const payload = {
         ...values,
-        projectId: Number(projectId),
+        estimatedTime: finalEstimatedTime,
+        projectId: payloadProjectId,
       };
       createMilestone(payload);
     }
@@ -186,7 +295,6 @@ export function AddManualMilestone({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[550px] max-h-[95vh] flex flex-col p-0">
-        {/* 🔒 Header (fixed) */}
         <DialogHeader className="px-6 py-4 border-b shrink-0">
           <DialogTitle>
             {initialData ? "Edit Milestone" : "Add Milestone"}
@@ -198,7 +306,6 @@ export function AddManualMilestone({
             onSubmit={form.handleSubmit(onSubmit)}
             className="flex flex-col flex-1 min-h-0"
           >
-            {/* 🔽 Scrollable content only */}
             <div className="flex-1 overflow-y-auto px-6 py-4 min-h-0">
               <div className="grid grid-cols-2 gap-4 mb-6">
                 {/* Milestone Name */}
@@ -218,18 +325,26 @@ export function AddManualMilestone({
                   )}
                 />
 
-                {/* Estimated Time */}
+                {/* Estimated Time (Calculated) */}
                 <FormField
                   control={form.control}
                   name="estimatedTime"
                   render={({ field }: any) => (
                     <FormItem>
-                      <FormLabel>
-                        Total Estimated Time{" "}
-                        <span className="text-red-500">*</span>
-                      </FormLabel>
+                      <FormLabel>Total Estimated Time (Hours)</FormLabel>
                       <FormControl>
-                        <Input placeholder="1h10m" {...field} disabled={true} />
+                        {/* 
+                          We use readOnly here. 
+                          The value is controlled by the useEffect via form.setValue 
+                          But {...field} connects it to the form state.
+                        */}
+                        <Input
+                          placeholder="Auto-calculated"
+                          {...field}
+                          readOnly
+                          className="bg-slate-100 text-slate-700 focus-visible:ring-0 cursor-not-allowed"
+                          tabIndex={-1}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -280,82 +395,105 @@ export function AddManualMilestone({
                   </Button>
                 </div>
 
-                {fields.map((item: any, index: number) => (
-                  <div
-                    key={item.id}
-                    className="grid grid-cols-12 gap-3 p-3 border rounded-lg bg-slate-50"
-                  >
-                    <div className="col-span-7">
-                      <FormField
-                        control={form.control}
-                        name={`tasks.${index}.taskName`}
-                        render={({ field }: any) => (
-                          <FormItem>
-                            <FormLabel>
-                              Task Name <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="Task Name"
-                                {...field}
-                                disabled={
-                                  initialData?.tasks[index]?.status ===
-                                  "completed"
-                                }
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                {fields.map((item: any, index: number) => {
+                  const isExistingTask = !!item.taskId;
+                  const taskStatus = initialData?.tasks?.find(
+                    (t: any) => t.id === item.taskId
+                  )?.status;
 
-                    <div className="col-span-4">
-                      <FormField
-                        control={form.control}
-                        name={`tasks.${index}.estimatedTime`}
-                        render={({ field }: any) => (
-                          <FormItem>
-                            <FormLabel>
-                              Estimated Time{" "}
-                              <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="1h10m"
-                                {...field}
-                                disabled={
-                                  initialData?.tasks[index]?.status ===
-                                  "completed"
-                                }
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    {!initialData && (
-                      <div className="col-span-1 flex items-end">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => remove(index)}
-                          disabled={fields.length === 1}
-                          className="text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                  return (
+                    <div
+                      key={item.id}
+                      className="grid grid-cols-12 gap-3 p-3 border rounded-lg bg-slate-50"
+                    >
+                      <div className="col-span-7">
+                        <FormField
+                          control={form.control}
+                          name={`tasks.${index}.taskName`}
+                          render={({ field }: any) => (
+                            <FormItem>
+                              <FormLabel>
+                                Task Name{" "}
+                                <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="Task Name"
+                                  {...field}
+                                  disabled={
+                                    initialData?.tasks[index]?.status ===
+                                    "completed"
+                                  }
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </div>
-                    )}
-                  </div>
-                ))}
+
+                      <div className="col-span-4">
+                        <FormField
+                          control={form.control}
+                          name={`tasks.${index}.estimatedTime`}
+                          render={({ field }: any) => (
+                            <FormItem>
+                              <FormLabel>
+                                Est. Time{" "}
+                                <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="e.g. 1h 30m"
+                                  {...field}
+                                  disabled={
+                                    initialData?.tasks[index]?.status ===
+                                    "completed"
+                                  }
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      {(!initialData ||
+                        !isExistingTask ||
+                        taskStatus === "pending") && (
+                        <div className="col-span-1 flex items-start pt-8">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleDeleteTask(item, index)}
+                                  disabled={
+                                    fields.length === 1 || isDeletingTask
+                                  }
+                                  className={cn(
+                                    "text-destructive hover:text-destructive/90",
+                                    isDeletingTask && "opacity-50"
+                                  )}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Delete task</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
-            {/* 🔒 Footer (fixed) */}
             <DialogFooter className="px-6 py-4 border-t shrink-0 bg-slate-50">
               <Button
                 type="button"
@@ -374,6 +512,18 @@ export function AddManualMilestone({
             </DialogFooter>
           </form>
         </Form>
+
+        <ConfirmDialog
+          open={showDeleteConfirm}
+          onOpenChange={setShowDeleteConfirm}
+          title="Delete Task"
+          desc="Are you sure you want to delete this task? This action cannot be undone."
+          cancelBtnText="Cancel"
+          confirmText="Delete"
+          destructive
+          isLoading={isDeletingTask}
+          handleConfirm={confirmDeleteTask}
+        />
       </DialogContent>
     </Dialog>
   );
