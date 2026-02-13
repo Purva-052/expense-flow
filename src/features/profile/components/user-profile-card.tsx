@@ -646,7 +646,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                 {/* Want to Learn */}
                 <div>
                   <h3 className="flex items-center gap-2 font-semibold mb-3">
-                    🎯 Want to Learn
+                    🎯 Want to Learn / Learning in Progress
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {learningData.length > 0 ? (
