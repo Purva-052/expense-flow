@@ -130,7 +130,10 @@ const ProjectPage = ({
   };
 
   const [listParams, setListParams] = useState(getInitialFilters);
-  const [view, setView] = useState<"grid" | "list">("grid");
+  const [view, setView] = useState<"grid" | "list">(() => {
+    const storedView = localStorage.getItem("projectViewType") as "grid" | "list" | null;
+    return storedView || "grid";
+  });
   const [showAllDevelopers, setShowAllDevelopers] = useState(false);
   const [openTechnology, setOpenTechnology] = useState<string>("");
   const scrollContainerRef = React.useRef<HTMLDivElement | null>(null);
