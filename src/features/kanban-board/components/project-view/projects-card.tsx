@@ -218,7 +218,10 @@ export function ProjectCard({
       <div className="flex items-center justify-between">
         <div className="flex-1">
           <div className="flex flex-col gap-1 mb-1">
-            <h3 className="text-lg font-semibold text-gray-900 leading-tight pr-4">
+            <h3
+              className="text-lg font-semibold text-gray-900 leading-tight pr-4 cursor-pointer hover:text-primary transition-colors"
+              onClick={() => setOpenDrawer(true)}
+            >
               {title}
             </h3>
           </div>
@@ -388,7 +391,12 @@ export function ProjectCard({
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-bold text-gray-900 truncate">{title}</h3>
+          <h3
+            className="text-sm font-bold text-gray-900 truncate cursor-pointer hover:text-primary transition-colors"
+            onClick={() => setOpenDrawer(true)}
+          >
+            {title}
+          </h3>
           <Pin
             className={cn(
               "h-3.5 w-3.5 cursor-pointer transition-colors hover:text-primary",

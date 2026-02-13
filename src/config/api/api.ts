@@ -147,6 +147,14 @@ const API = {
   skills: {
     create: "/skills",
     list: "/skills",
+    learning: "/skill-reference",
+    delete: "/skills",
+  },
+  certificates: {
+    create: "/user-certificates",
+    list: "/user-certificates",
+    delete: "/user-certificates",
+    update: "/user-certificates",
   },
 };
 

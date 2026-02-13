@@ -36,8 +36,16 @@ export function ReportsStatsDialog({
   useEffect(() => {
     if (type) {
       setCurrentType(type);
+      // Reset filter params when type changes
+      setListParams({
+        pageSize: 10,
+        currentPage: 1,
+        search: "",
+        fromDate: reportingDate || undefined,
+        toDate: reportingDate || undefined,
+      });
     }
-  }, [type]);
+  }, [type, reportingDate]);
 
   const { data: listData, isPending: loading } = useGetReportDetails({
     type: currentType!,
