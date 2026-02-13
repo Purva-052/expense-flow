@@ -24,6 +24,7 @@ export interface InterviewApiResponse {
   email: string;
   phoneNumber: string;
   location: string;
+  link?: string;
   notes: string;
   experienceInYears: string;
   resumeLink: string;

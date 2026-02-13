@@ -21,6 +21,7 @@ import {
 import { InterviewDetailsDialog } from "./components/interview-details-dialog";
 import { InterviewForm } from "./components/interview-form";
 import { HistoryInterviewModal } from "./components/history-modal";
+import { ScheduleUpdateDialog } from "./components/schedule-update-dialog";
 
 import { useGetTechnologyDropdownList } from "../technology/services";
 import { useGetUsersList } from "../users/services";
@@ -28,11 +29,12 @@ import { ReactBigCalendar } from "./components/react-big-calendar";
 import { InterviewFormValues } from "./schema";
 import {
   useCreateInterview,
+  useCreateInterviewStatusLog,
   useDeleteInterview,
   useGetInterview,
   useUpdateInterview,
 } from "./services";
-import { InterviewApiResponse, InterviewEvent } from "./types";
+import { InterviewEvent } from "./types";
 import { FilterConfig } from "@/components/table/table-toolbar";
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import { roles } from "@/utils/constant";
@@ -51,6 +53,10 @@ const InterviewsPage = () => {
   const [eventToDelete, setEventToDelete] = useState<InterviewEvent | null>(
     null
   );
+  const [isScheduleUpdateDialogOpen, setIsScheduleUpdateDialogOpen] =
+    useState(false);
+  const [eventToUpdateSchedule, setEventToUpdateSchedule] =
+    useState<InterviewEvent | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [currentCalendarDate, setCurrentCalendarDate] = useState<Date>(
     new Date()
@@ -178,11 +184,19 @@ const InterviewsPage = () => {
     setEventToDelete(null);
   };
 
+  const onSuccessUpdateSchedule = () => {
+    setIsScheduleUpdateDialogOpen(false);
+    setEventToUpdateSchedule(null);
+  };
+
   const { mutateAsync: createInterview, isPending: isCreatingInterview } =
     useCreateInterview(onSuccessCreateInterview);
 
   const { mutateAsync: updateInterview, isPending: isUpdatingInterview } =
     useUpdateInterview(onSuccessUpdateInterview);
+
+  const { mutateAsync: createStatusLog, isPending: statusLogLoading } =
+    useCreateInterviewStatusLog();
 
   const { mutateAsync: deleteInterview, isPending: isDeletingInterview } =
     useDeleteInterview(onSuccessDeleteInterview);
@@ -192,14 +206,12 @@ const InterviewsPage = () => {
     if (!interviewsData?.data) return [];
 
     return interviewsData.data
-      .map((interview: InterviewApiResponse) => {
-        // console.log("interview: ", interview);
-        // Parse dates - handle both ISO strings and Date objects
-        const startDate = interview.interviewStart
-          ? new Date(interview.interviewStart)
+      .map((interview: any) => {
+        const startDate = interview?.latestStatusLog
+          ? new Date(interview?.latestStatusLog?.effectiveDate)
           : new Date();
-        const endDate = interview.interviewEnd
-          ? new Date(interview.interviewEnd)
+        const endDate = interview?.latestStatusLog
+          ? new Date(interview?.latestStatusLog?.effectiveDate)
           : new Date(startDate.getTime() + 60 * 60 * 1000); // Default 1 hour duration
 
         // Validate dates
@@ -248,6 +260,12 @@ const InterviewsPage = () => {
     setIsViewDialogOpen(false);
   };
 
+  const handleUpdateScheduleClick = (event: InterviewEvent) => {
+    setEventToUpdateSchedule(event);
+    setIsScheduleUpdateDialogOpen(true);
+    setIsViewDialogOpen(false);
+  };
+
   const handleDeleteConfirm = async () => {
     if (eventToDelete) {
       try {
@@ -284,12 +302,13 @@ const InterviewsPage = () => {
       const resumeKey = data.resumeS3Key || "";
 
       // Transform form data to match API body structure
-      const apiBody = {
+      const createApiBody = {
         candidateName: data.candidateName,
         technology: Number(data.technology),
         email: data.email,
         phoneNumber: data.phoneNumber,
         location: data.location,
+        link: data.link || "",
         notes: data.notes || "",
         experienceInYears: Number(data.experience),
         resumeS3Key: resumeKey,
@@ -309,17 +328,93 @@ const InterviewsPage = () => {
         }),
       };
 
+      const updateApiBody = {
+        candidateName: data.candidateName,
+        technology: Number(data.technology),
+        email: data.email,
+        phoneNumber: data.phoneNumber,
+        location: data.location,
+        link: data.link || "",
+        notes: data.notes || "",
+        experienceInYears: Number(data.experience),
+        resumeS3Key: resumeKey,
+        currentCtc: Number(data.currentCtc),
+        expectedCtc: Number(data.expectedCtc),
+        noticePeriodInDays: noticePeriodInDays,
+      };
+
       // Call the appropriate API
       if (eventToEdit) {
         await updateInterview({
           id: eventToEdit.extendedProps.id,
-          data: apiBody,
+          data: updateApiBody,
         });
       } else {
-        await createInterview(apiBody);
+        await createInterview(createApiBody);
       }
     } catch (error) {
       console.error("Error submitting interview:", error);
+    }
+  };
+
+  const handleScheduleUpdateSubmit = async (data: any) => {
+    if (!eventToUpdateSchedule) return;
+
+    try {
+      const dateToUse = new Date(
+        eventToUpdateSchedule.extendedProps.interviewStart
+      );
+
+      // Combine selectedDate with startTime and endTime
+      const [startHours, startMinutes] = data.startTime.split(":").map(Number);
+      const [endHours, endMinutes] = data.endTime.split(":").map(Number);
+
+      const interviewStart = new Date(dateToUse);
+      interviewStart.setHours(startHours, startMinutes, 0, 0);
+
+      const interviewEnd = new Date(dateToUse);
+      interviewEnd.setHours(endHours, endMinutes, 0, 0);
+      // Use existing candidate data, only update scheduling fields
+      // const apiBody = {
+      //   candidateName: eventToUpdateSchedule.extendedProps.candidateName,
+      //   technology: Number(eventToUpdateSchedule.extendedProps.technology.id),
+      //   email: eventToUpdateSchedule.extendedProps.email,
+      //   phoneNumber: eventToUpdateSchedule.extendedProps.phoneNumber,
+      //   location: eventToUpdateSchedule.extendedProps.location,
+      //   link: eventToUpdateSchedule.extendedProps.link || "",
+      //   notes: data.notes || "",
+      //   experienceInYears: Number(
+      //     eventToUpdateSchedule.extendedProps.experienceInYears
+      //   ),
+      //   resumeS3Key: eventToUpdateSchedule.extendedProps.resumeLink || "",
+      //   currentCtc: Number(eventToUpdateSchedule.extendedProps.currentCtc),
+      //   expectedCtc: Number(eventToUpdateSchedule.extendedProps.expectedCtc),
+      //   noticePeriodInDays:
+      //     eventToUpdateSchedule.extendedProps.noticePeriodInDays,
+      //   interviewType: data.interviewType,
+      //   status: data.interviewStatus,
+      //   interviewerId: Number(data.interviewerName),
+      //   interviewStart: interviewStart.toISOString(),
+      //   interviewEnd: interviewEnd.toISOString(),
+      //   ...(data.joiningDate && { joiningDate: data.joiningDate }),
+      //   ...(data.interviewType === "video_call" && {
+      //     interviewUrl: data.interviewUrl,
+      //   }),
+      // };
+      await createStatusLog({
+        interviewId: eventToUpdateSchedule.extendedProps.id,
+        status: data.interviewStatus,
+        notes: data.notes || "",
+        effectiveDate: data.statusChangedDate,
+        interviewType: data.interviewType,
+        interviewStart: interviewStart.toISOString(),
+        interviewEnd: interviewEnd.toISOString(),
+        interviewerId: Number(data.interviewerName),
+      });
+
+      onSuccessUpdateSchedule();
+    } catch (error) {
+      console.error("Error updating schedule:", error);
     }
   };
 
@@ -537,6 +632,7 @@ const InterviewsPage = () => {
             setIsEditDialogOpen(true);
             setIsViewDialogOpen(false);
           }}
+          onUpdateSchedule={handleUpdateScheduleClick}
           onDelete={(event) => {
             setEventToDelete(event);
             setIsDeleteDialogOpen(true);
@@ -572,6 +668,18 @@ const InterviewsPage = () => {
           destructive={true}
           handleConfirm={handleDeleteConfirm}
           isLoading={isDeletingInterview}
+        />
+      )}
+
+      {eventToUpdateSchedule && (
+        <ScheduleUpdateDialog
+          open={isScheduleUpdateDialogOpen}
+          onOpenChange={setIsScheduleUpdateDialogOpen}
+          initialData={eventToUpdateSchedule.extendedProps}
+          onSubmit={handleScheduleUpdateSubmit}
+          usersList={usersList}
+          usersListLoading={usersListLoading}
+          isSubmitting={statusLogLoading}
         />
       )}
 
