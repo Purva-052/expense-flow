@@ -7,6 +7,7 @@ const projectFormSchemaBase = z.object({
     .string()
     .min(2, "Project name must be at least 2 characters")
     .max(100),
+  isProduct: z.boolean().default(false),
   description: z.string().optional().nullable(),
   clientId: z.number({ invalid_type_error: "Client is required" }),
   technologyId: z

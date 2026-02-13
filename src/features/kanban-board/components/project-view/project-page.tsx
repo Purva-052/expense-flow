@@ -42,7 +42,7 @@ import {
   SortableContext,
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
-import { ChevronDown, Users } from "lucide-react";
+import { ChevronDown, Users, LayoutGrid, List } from "lucide-react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import {
@@ -130,6 +130,7 @@ const ProjectPage = ({
   };
 
   const [listParams, setListParams] = useState(getInitialFilters);
+  const [view, setView] = useState<"grid" | "list">("grid");
   const [showAllDevelopers, setShowAllDevelopers] = useState(false);
   const [openTechnology, setOpenTechnology] = useState<string>("");
   const scrollContainerRef = React.useRef<HTMLDivElement | null>(null);
@@ -465,6 +466,36 @@ const ProjectPage = ({
       {!isBdeView && (
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <GlobalFilterSection filters={filters ?? []} />
+          <Tabs
+            value={view}
+            onValueChange={(v: any) => setView(v)}
+            className="self-end sm:self-auto"
+          >
+            <TabsList className="bg-[#fdebef] rounded-full">
+              <TabsTrigger
+                value="grid"
+                className={cn(
+                  tabTriggerClass,
+                  "gap-2 px-3 h-8 text-xs font-medium transition-all",
+                  view === "grid" && "bg-white text-black shadow-sm"
+                )}
+              >
+                <LayoutGrid className="h-4 w-4" />
+                Grid
+              </TabsTrigger>
+              <TabsTrigger
+                value="list"
+                className={cn(
+                  tabTriggerClass,
+                  "gap-2 px-3 h-8 text-xs font-medium transition-all",
+                  view === "list" && "bg-white text-black shadow-sm"
+                )}
+              >
+                <List className="h-4 w-4" />
+                List
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
       )}
 
@@ -489,13 +520,33 @@ const ProjectPage = ({
                 </span>
               </div>
             ) : projectList?.length ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 2xl:grid-cols-3 gap-6">
+              <div
+                className={cn(
+                  view === "grid"
+                    ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 2xl:grid-cols-3 gap-6"
+                    : "flex flex-col gap-0 border rounded-lg bg-white overflow-hidden"
+                )}
+              >
+                {view === "list" && (
+                  <div className="flex items-center gap-6 px-6 py-3 bg-gray-50 border-b text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                    <div className="w-1 shrink-0" /> {/* Marker placeholder */}
+                    <div className="flex-1 min-w-0">Project</div>
+                    <div className="w-24 shrink-0 text-center">Status</div>
+                    <div className="w-28 shrink-0">Progress</div>
+                    <div className="w-32 shrink-0">Deadline</div>
+                    <div className="w-28 shrink-0">Team</div>
+                    <div className="w-[72px] shrink-0 text-right pr-4">
+                      Actions
+                    </div>
+                  </div>
+                )}
                 {projectList?.map((p: any) => (
                   <ProjectCard
                     key={p?.id}
                     project={p}
                     onStatusChanged={refetch}
                     isArchiveTab={isInactiveTab}
+                    view={view}
                   >
                     {p?.developerAllocations?.length !== 0 && (
                       <SortableContext
@@ -509,7 +560,7 @@ const ProjectPage = ({
                       >
                         <div className="flex -space-x-2 mb-2 items-center">
                           {p?.developerAllocations
-                            ?.slice(0, 6)
+                            ?.slice(0, view === "grid" ? 6 : 3)
                             .map((allocation: any) => {
                               const isMyChip =
                                 allocation.developer.id === currentUserId;
@@ -531,12 +582,15 @@ const ProjectPage = ({
                                 />
                               );
                             })}
-                          {p?.developerAllocations?.length > 6 && (
+                          {p?.developerAllocations?.length >
+                            (view === "grid" ? 6 : 3) && (
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <div className="flex items-center justify-center h-10 w-10 rounded-full border-2 border-white bg-gray-100 text-[10px] font-bold text-gray-600 relative z-10 cursor-default hover:bg-gray-200 transition-colors">
-                                    +{p.developerAllocations.length - 6}
+                                    +
+                                    {p.developerAllocations.length -
+                                      (view === "grid" ? 6 : 3)}
                                   </div>
                                 </TooltipTrigger>
                                 <TooltipContent>
@@ -545,7 +599,7 @@ const ProjectPage = ({
                                       Additional Team Members:
                                     </p>
                                     {p.developerAllocations
-                                      .slice(6)
+                                      .slice(view === "grid" ? 6 : 3)
                                       .map((allocation: any) => {
                                         const isMyChip =
                                           allocation.developer.id ===

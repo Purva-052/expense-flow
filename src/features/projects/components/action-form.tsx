@@ -102,6 +102,7 @@ export function ProjectActionForm({
           projectTypeId: currentRow.projectTypeId ?? undefined,
           isVisibleToAllDevTeam: currentRow.isVisibleToAllDevTeam ?? false,
           isVisibleToAllBdeTeam: currentRow.isVisibleToAllBdeTeam ?? false,
+          isProduct: currentRow.isProduct ?? false,
         }
       : {
           name: "",
@@ -117,6 +118,7 @@ export function ProjectActionForm({
           projectTypeId: undefined,
           isVisibleToAllDevTeam: false,
           isVisibleToAllBdeTeam: false,
+          isProduct: false,
         },
   });
 
@@ -162,36 +164,61 @@ export function ProjectActionForm({
               />
 
               {/* Status (only Add) */}
-              {!isEdit && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {!isEdit && (
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={() => (
+                      <FormItem>
+                        <FormLabel>
+                          Project Status <span className="text-red-500">*</span>
+                        </FormLabel>
+                        <CustomDropDownSearchable
+                          form={form}
+                          name="status"
+                          label=""
+                          options={[
+                            {
+                              value: "active-discovery",
+                              label: "Active Discovery",
+                            },
+                            { value: "running", label: "Running" },
+                            { value: "slow", label: "Slow" },
+                            { value: "stop", label: "Stopped" },
+                            { value: "completed", label: "Completed" },
+                          ]}
+                          searchEnabled={false}
+                          placeholder="Select status"
+                        />
+                      </FormItem>
+                    )}
+                  />
+                )}
                 <FormField
                   control={form.control}
-                  name="status"
+                  name="isProduct"
                   render={() => (
                     <FormItem>
                       <FormLabel>
-                        Project Status <span className="text-red-500">*</span>
+                        Project Nature <span className="text-red-500">*</span>
                       </FormLabel>
                       <CustomDropDownSearchable
                         form={form}
-                        name="status"
+                        name="isProduct"
                         label=""
+                        sortOptions={false}
                         options={[
-                          {
-                            value: "active-discovery",
-                            label: "Active Discovery",
-                          },
-                          { value: "running", label: "Running" },
-                          { value: "slow", label: "Slow" },
-                          { value: "stop", label: "Stopped" },
-                          { value: "completed", label: "Completed" },
+                          { value: false, label: "Project" },
+                          { value: true, label: "Product" },
                         ]}
                         searchEnabled={false}
-                        placeholder="Select status"
+                        placeholder="Select type"
                       />
                     </FormItem>
                   )}
                 />
-              )}
+              </div>
 
               {/* Relations */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
