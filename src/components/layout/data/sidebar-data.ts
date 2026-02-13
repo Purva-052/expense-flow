@@ -13,8 +13,9 @@ import {
   IconUsers,
   // IconUserScreen,
   IconReportAnalytics,
+  IconReport,
 } from "@tabler/icons-react";
-import { CalendarCheck, Command, Cpu, ScrollText } from "lucide-react";
+import {  CalendarCheck, Command, Cpu, ScrollText } from "lucide-react";
 import { type SidebarData } from "../types";
 import { useAuthStore } from "@/stores/use-auth-store";
 
@@ -79,6 +80,14 @@ export const sidebarData: SidebarData = {
             roles.PROJECT_MANAGER,
             roles.DEVELOPER,
             roles.BDE,
+          ],
+        },
+        {
+          title: "Extra Work Report",
+          url: "/extra-work-report",
+          icon: IconReport,
+          requiredRoles: [
+            roles.ADMIN,
           ],
         },
       ],

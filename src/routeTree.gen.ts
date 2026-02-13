@@ -32,6 +32,7 @@ import { Route as AuthenticatedLinodeServerDashboardIndexRouteImport } from './r
 import { Route as AuthenticatedInterviewsIndexRouteImport } from './routes/_authenticated/interviews/index'
 import { Route as AuthenticatedInquiryIndexRouteImport } from './routes/_authenticated/inquiry/index'
 import { Route as AuthenticatedInquiryTypeIndexRouteImport } from './routes/_authenticated/inquiry-type/index'
+import { Route as AuthenticatedExtraWorkReportIndexRouteImport } from './routes/_authenticated/extra-work-report/index'
 import { Route as AuthenticatedDailyReportIndexRouteImport } from './routes/_authenticated/daily-report/index'
 import { Route as AuthenticatedConferenceRoomBookingIndexRouteImport } from './routes/_authenticated/conference-room-booking/index'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
@@ -163,6 +164,12 @@ const AuthenticatedInquiryTypeIndexRoute =
     path: '/inquiry-type/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedExtraWorkReportIndexRoute =
+  AuthenticatedExtraWorkReportIndexRouteImport.update({
+    id: '/extra-work-report/',
+    path: '/extra-work-report/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDailyReportIndexRoute =
   AuthenticatedDailyReportIndexRouteImport.update({
     id: '/daily-report/',
@@ -208,6 +215,7 @@ export interface FileRoutesByFullPath {
   '/clients/': typeof AuthenticatedClientsIndexRoute
   '/conference-room-booking/': typeof AuthenticatedConferenceRoomBookingIndexRoute
   '/daily-report/': typeof AuthenticatedDailyReportIndexRoute
+  '/extra-work-report/': typeof AuthenticatedExtraWorkReportIndexRoute
   '/inquiry-type/': typeof AuthenticatedInquiryTypeIndexRoute
   '/inquiry/': typeof AuthenticatedInquiryIndexRoute
   '/interviews/': typeof AuthenticatedInterviewsIndexRoute
@@ -237,6 +245,7 @@ export interface FileRoutesByTo {
   '/clients': typeof AuthenticatedClientsIndexRoute
   '/conference-room-booking': typeof AuthenticatedConferenceRoomBookingIndexRoute
   '/daily-report': typeof AuthenticatedDailyReportIndexRoute
+  '/extra-work-report': typeof AuthenticatedExtraWorkReportIndexRoute
   '/inquiry-type': typeof AuthenticatedInquiryTypeIndexRoute
   '/inquiry': typeof AuthenticatedInquiryIndexRoute
   '/interviews': typeof AuthenticatedInterviewsIndexRoute
@@ -268,6 +277,7 @@ export interface FileRoutesById {
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
   '/_authenticated/conference-room-booking/': typeof AuthenticatedConferenceRoomBookingIndexRoute
   '/_authenticated/daily-report/': typeof AuthenticatedDailyReportIndexRoute
+  '/_authenticated/extra-work-report/': typeof AuthenticatedExtraWorkReportIndexRoute
   '/_authenticated/inquiry-type/': typeof AuthenticatedInquiryTypeIndexRoute
   '/_authenticated/inquiry/': typeof AuthenticatedInquiryIndexRoute
   '/_authenticated/interviews/': typeof AuthenticatedInterviewsIndexRoute
@@ -299,6 +309,7 @@ export interface FileRouteTypes {
     | '/clients/'
     | '/conference-room-booking/'
     | '/daily-report/'
+    | '/extra-work-report/'
     | '/inquiry-type/'
     | '/inquiry/'
     | '/interviews/'
@@ -328,6 +339,7 @@ export interface FileRouteTypes {
     | '/clients'
     | '/conference-room-booking'
     | '/daily-report'
+    | '/extra-work-report'
     | '/inquiry-type'
     | '/inquiry'
     | '/interviews'
@@ -358,6 +370,7 @@ export interface FileRouteTypes {
     | '/_authenticated/clients/'
     | '/_authenticated/conference-room-booking/'
     | '/_authenticated/daily-report/'
+    | '/_authenticated/extra-work-report/'
     | '/_authenticated/inquiry-type/'
     | '/_authenticated/inquiry/'
     | '/_authenticated/interviews/'
@@ -550,6 +563,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInquiryTypeIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/extra-work-report/': {
+      id: '/_authenticated/extra-work-report/'
+      path: '/extra-work-report'
+      fullPath: '/extra-work-report/'
+      preLoaderRoute: typeof AuthenticatedExtraWorkReportIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/daily-report/': {
       id: '/_authenticated/daily-report/'
       path: '/daily-report'
@@ -593,6 +613,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedClientsIndexRoute: typeof AuthenticatedClientsIndexRoute
   AuthenticatedConferenceRoomBookingIndexRoute: typeof AuthenticatedConferenceRoomBookingIndexRoute
   AuthenticatedDailyReportIndexRoute: typeof AuthenticatedDailyReportIndexRoute
+  AuthenticatedExtraWorkReportIndexRoute: typeof AuthenticatedExtraWorkReportIndexRoute
   AuthenticatedInquiryTypeIndexRoute: typeof AuthenticatedInquiryTypeIndexRoute
   AuthenticatedInquiryIndexRoute: typeof AuthenticatedInquiryIndexRoute
   AuthenticatedInterviewsIndexRoute: typeof AuthenticatedInterviewsIndexRoute
@@ -615,6 +636,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedConferenceRoomBookingIndexRoute:
     AuthenticatedConferenceRoomBookingIndexRoute,
   AuthenticatedDailyReportIndexRoute: AuthenticatedDailyReportIndexRoute,
+  AuthenticatedExtraWorkReportIndexRoute:
+    AuthenticatedExtraWorkReportIndexRoute,
   AuthenticatedInquiryTypeIndexRoute: AuthenticatedInquiryTypeIndexRoute,
   AuthenticatedInquiryIndexRoute: AuthenticatedInquiryIndexRoute,
   AuthenticatedInterviewsIndexRoute: AuthenticatedInterviewsIndexRoute,
