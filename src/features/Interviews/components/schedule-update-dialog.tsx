@@ -434,13 +434,16 @@ export const ScheduleUpdateDialog = ({
                   />
                 </div>
 
-                {initialData && interviewStatus !== initialData.status && (
-                  <CustomDatePicker
-                    control={form.control}
-                    name="statusChangedDate"
-                    label="Status Changed Date"
-                  />
-                )}
+                {initialData &&
+                  interviewStatus !== initialData.status &&
+                  interviewStatus !== "joining" &&
+                  interviewStatus !== "rejected" && (
+                    <CustomDatePicker
+                      control={form.control}
+                      name="statusChangedDate"
+                      label="Status Changed Date"
+                    />
+                  )}
 
                 {userRole === roles.ADMIN && interviewStatus === "joining" && (
                   <CustomDatePicker

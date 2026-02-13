@@ -405,7 +405,7 @@ const InterviewsPage = () => {
         interviewId: eventToUpdateSchedule.extendedProps.id,
         status: data.interviewStatus,
         notes: data.notes || "",
-        effectiveDate: data.statusChangedDate,
+        effectiveDate: data.statusChangedDate || dateToUse,
         interviewType: data.interviewType,
         interviewStart: interviewStart.toISOString(),
         interviewEnd: interviewEnd.toISOString(),
