@@ -146,9 +146,14 @@ const CustomDropDownSearchable = ({
       control={form?.control}
       name={name}
       render={({ field }: any) => {
+        // Preserve boolean false as a valid selected value for single select
         const valueArray = multiple
-          ? field.value || []
-          : [field.value].filter(Boolean);
+          ? Array.isArray(field.value)
+            ? field.value
+            : []
+          : field.value === null || field.value === undefined
+          ? []
+          : [field.value];
         return (
           <FormItem className={`flex flex-col ${className}`}>
             <FormLabel>{label}</FormLabel>
