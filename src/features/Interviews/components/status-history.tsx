@@ -28,17 +28,19 @@ const InterviewStatusHistoryComponent = ({
     useGetinterviewLogHistoryData(Id);
 
   const timelineData =
-    History?.data?.map((item: any) => ({
-      id: item?.id,
-      title:
-        item?.status && INTERVIEW_STATUS_LABEL?.[item?.status]
-          ? INTERVIEW_STATUS_LABEL?.[item?.status]
-          : "No Status",
-      description: item.notes,
-      time: item?.effectiveDate
-        ? format(new Date(item.effectiveDate), "do MMMM yyyy")
-        : "No Date",
-    })) ?? [];
+    History?.data?.map((item: any) => {
+      return {
+        id: item?.id,
+        title:
+          item?.status && INTERVIEW_STATUS_LABEL?.[item?.status]
+            ? INTERVIEW_STATUS_LABEL?.[item?.status]
+            : "No Status",
+        description: item.notes,
+        time: item?.effectiveDate
+          ? format(new Date(item.effectiveDate), "do MMMM yyyy")
+          : "No Date",
+      };
+    }) ?? [];
 
   return (
     <div className="rounded-xl p-2">
