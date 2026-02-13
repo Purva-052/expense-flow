@@ -132,6 +132,13 @@ const API = {
     report_details: "/daily-reports/reports-stats",
     report_analytics: "/daily-reports/reports-counts",
   },
+  extra_hours: {
+    create: "/extra-hours",
+    list: "/extra-hours",
+    update: "/extra-hours",
+    delete: "/extra-hours",
+  },
+
   client_meetings: {
     create: "/client-meetings/create",
     list: "/client-meetings",
