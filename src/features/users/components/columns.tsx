@@ -115,7 +115,8 @@ export const columns: ColumnDef<any>[] = [
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleView}>View User</DropdownMenuItem>
             {(UserRole === roles.ADMIN ||
-              UserRole === roles.PROJECT_MANAGER) && (
+              UserRole === roles.PROJECT_MANAGER ||
+              UserRole === roles.TEAM_LEAD) && (
               <>
                 <DropdownMenuItem onClick={handleEdit}>
                   Edit User

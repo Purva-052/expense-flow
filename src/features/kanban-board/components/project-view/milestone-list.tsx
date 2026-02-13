@@ -87,17 +87,9 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
     return list;
   }, [milestonesListResponse]);
 
-  const firstMilestoneId = useMemo(() => {
-    return milestones.length > 0 ? String(milestones[0].id) : "";
+  const hasAnyExcelUploaded = useMemo(() => {
+    return milestones.some((m) => m.isExcelUploaded === true);
   }, [milestones]);
-
-  const currentTab = activeTab || firstMilestoneId;
-
-  const activeMilestoneFromList = useMemo(() => {
-    return milestones.find((m) => String(m.id) === currentTab);
-  }, [milestones, currentTab]);
-
-  const isExcelUploaded = activeMilestoneFromList?.isExcelUploaded === true;
 
   const isCurrentUserProjectHandler = useMemo(() => {
     const users = handledProjectsResponse?.data || [];
@@ -233,7 +225,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
       {!isInitialLoading && (
         <div className="mb-4 flex items-center gap-2 overflow-x-auto pb-2">
           <div className="flex items-center gap-2">
-            {canModifyMilestones && !isExcelUploaded && (
+            {canModifyMilestones && !hasAnyExcelUploaded && (
               <>
                 <Button
                   onClick={downloadSample}
