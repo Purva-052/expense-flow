@@ -66,6 +66,7 @@ export function ProjectCard({
   children,
   onStatusChanged,
   isArchiveTab,
+  view = "grid",
 }: any) {
   const { setOpen, setCurrentRow } = useProjectsStore();
   const [openDrawer, setOpenDrawer] = useState(false);
@@ -186,214 +187,318 @@ export function ProjectCard({
     (!isHandlerAssigned && isProjectHandler) ||
     (isHandlerAssigned && isCurrentUserAssignedHandler);
 
-  return (
-    <>
-      <div
-        ref={setNodeRef}
-        className={cn(
-          "bg-white border-l-4 rounded-lg shadow-sm p-6 hover:shadow-md transition-all duration-300 relative border-l-gray-700",
-          isOver && "ring-2 ring-primary bg-primary/5"
-        )}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <div className="flex flex-col gap-1 mb-1">
-              <h3 className="text-lg font-semibold text-gray-900 leading-tight pr-4">
-                {title}
-              </h3>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            {/* Pin Icon */}
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  {project?.isPinned ? (
-                    <Pin
-                      className="h-5 w-5 cursor-pointer text-primary fill-primary transition-colors duration-200 hover:text-primary/80"
-                      onClick={handlePinToggle}
-                    />
-                  ) : (
-                    <Pin
-                      className="h-5 w-5 cursor-pointer text-muted-foreground transition-colors duration-200 hover:text-primary"
-                      onClick={handlePinToggle}
-                    />
-                  )}
-                </TooltipTrigger>
-                <TooltipContent side="top" className="text-sm">
-                  {project?.isPinned ? "Unpin Project" : "Pin Project"}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+  const getStatusBadgeClasses = (status?: string) => {
+    const s = (status || "").toLowerCase();
+    switch (s) {
+      case "active-discovery":
+      case "planning":
+        return "bg-blue-100 text-blue-700";
+      case "running":
+      case "in-progress":
+        return "bg-amber-100 text-amber-700";
+      case "completed":
+        return "bg-green-100 text-green-700";
+      case "stop":
+      case "on-hold":
+        return "bg-gray-100 text-gray-700";
+      default:
+        return "bg-gray-100 text-gray-700";
+    }
+  };
 
-            {/* Dropdown Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="p-1 rounded-full hover:bg-gray-200"
-                >
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              {isDeveloperView ? (
-                <DropdownMenuContent side="bottom" align="end">
-                  <DropdownMenuGroup>
-                    <DropdownMenuItem onClick={() => setOpenDrawer(true)}>
-                      View Details
-                    </DropdownMenuItem>
-                    {/* <DropdownMenuItem onClick={handleViewTimeline}>
+  const renderGridView = () => (
+    <div
+      ref={setNodeRef}
+      className={cn(
+        "bg-white border-l-4 rounded-lg shadow-sm p-6 hover:shadow-md transition-all duration-300 relative border-l-gray-700",
+        isOver && "ring-2 ring-primary bg-primary/5"
+      )}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <div className="flex flex-col gap-1 mb-1">
+            <h3
+              className="text-lg font-semibold text-gray-900 leading-tight pr-4 cursor-pointer hover:text-primary transition-colors"
+              onClick={() => setOpenDrawer(true)}
+            >
+              {title}
+            </h3>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          {/* Pin Icon */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                {project?.isPinned ? (
+                  <Pin
+                    className="h-5 w-5 cursor-pointer text-primary fill-primary transition-colors duration-200 hover:text-primary/80"
+                    onClick={handlePinToggle}
+                  />
+                ) : (
+                  <Pin
+                    className="h-5 w-5 cursor-pointer text-muted-foreground transition-colors duration-200 hover:text-primary"
+                    onClick={handlePinToggle}
+                  />
+                )}
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-sm">
+                {project?.isPinned ? "Unpin Project" : "Pin Project"}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          {/* Dropdown Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="p-1 rounded-full hover:bg-gray-200"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            {isDeveloperView ? (
+              <DropdownMenuContent side="bottom" align="end">
+                <DropdownMenuGroup>
+                  <DropdownMenuItem onClick={() => setOpenDrawer(true)}>
+                    View Details
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            ) : (
+              <DropdownMenuContent side="bottom" align="end">
+                <DropdownMenuGroup>
+                  <DropdownMenuItem onClick={() => setOpenDrawer(true)}>
+                    View Details
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleViewTimeline}>
                     View Timeline
                   </DropdownMenuItem>
                   {canEditStatus && (
-                    <DropdownMenuItem onClick={() => setStatusDialogOpen(true)}>
-                      Change Status
-                    </DropdownMenuItem>
-                  )} */}
-                  </DropdownMenuGroup>
-                </DropdownMenuContent>
-              ) : (
-                <DropdownMenuContent side="bottom" align="end">
-                  <DropdownMenuGroup>
-                    <DropdownMenuItem onClick={() => setOpenDrawer(true)}>
-                      View Details
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleViewTimeline}>
-                      View Timeline
-                    </DropdownMenuItem>
-                    {canEditStatus && (
-                      <>
+                    <>
+                      <DropdownMenuItem
+                        onClick={() => setStatusDialogOpen(true)}
+                      >
+                        Change Status
+                      </DropdownMenuItem>
+                      {!isArchiveTab && (
                         <DropdownMenuItem
-                          onClick={() => setStatusDialogOpen(true)}
+                          onClick={() => {
+                            setCurrentRow(project);
+                            setOpen("edit");
+                          }}
                         >
-                          Change Status
+                          Edit Project
                         </DropdownMenuItem>
-                        {!isArchiveTab && (
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setCurrentRow(project);
-                              setOpen("edit");
-                            }}
-                          >
-                            Edit Project
-                          </DropdownMenuItem>
-                        )}
-                        {canDeleteProject && (
-                          <DropdownMenuItem onClick={handleDelete}>
-                            Delete Project
-                          </DropdownMenuItem>
-                        )}
-                      </>
-                    )}
-                  </DropdownMenuGroup>
-                </DropdownMenuContent>
-              )}
-            </DropdownMenu>
-
-            {/* Removed triggerless DropdownMenu */}
-          </div>
-        </div>
-
-        {/* Coordinator and Client Info */}
-
-        {/* Deadline and Progress */}
-        <div className="flex items-center justify-between mb-3 mt-2">
-          <div className="flex items-center gap-2 text-gray-600">
-            <Calendar className="h-4 w-4" />
-            <span className="text-xs text-muted-foreground">
-              Deadline: {deadline}
-            </span>
-          </div>
-          <div className="flex flex-col gap-2">
-            <div>
-              {/* <div
-                className={cn(
-                  "inline-flex px-3 py-1 rounded-full text-xs font-medium capitalize",
-                  getStatusBadgeClasses(currentStatus),
-                  canEditStatus && "cursor-pointer hover:bg-gray-200"
-                )}
-                onClick={() => canEditStatus && setStatusDialogOpen(true)}
-              >
-                {currentStatus.replace(/-/g, " ")}
-              </div> */}
-              <div>
-                {/* <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">
-                  Priority
-                </p> */}
-                <span
-                  className={cn(
-                    "inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase",
-                    priorityColorMap[priority.toLowerCase()] ||
-                      "bg-gray-100 text-gray-600"
+                      )}
+                      {!isArchiveTab && canDeleteProject && (
+                        <DropdownMenuItem onClick={handleDelete}>
+                          Delete Project
+                        </DropdownMenuItem>
+                      )}
+                    </>
                   )}
-                >
-                  {priority}
-                </span>
-              </div>
-            </div>
-          </div>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            )}
+          </DropdownMenu>
         </div>
-        <div className="flex justify-between">
-          <span className="text-xs text-muted-foreground mb-1">Progress</span>
-          <span className="text-xs font-bold text-gray-900">{progress}%</span>
+      </div>
+
+      {/* Deadline and Progress */}
+      <div className="flex items-center justify-between mb-3 mt-2">
+        <div className="flex items-center gap-2 text-gray-600">
+          <Calendar className="h-4 w-4" />
+          <span className="text-xs text-muted-foreground">
+            Deadline: {deadline}
+          </span>
+        </div>
+        <div>
+          <span
+            className={cn(
+              "inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase",
+              priorityColorMap[priority.toLowerCase()] ||
+                "bg-gray-100 text-gray-600"
+            )}
+          >
+            {priority}
+          </span>
+        </div>
+      </div>
+      <div className="flex justify-between">
+        <span className="text-xs text-muted-foreground mb-1">Progress</span>
+        <span className="text-xs font-bold text-gray-900">{progress}%</span>
+      </div>
+
+      {/* Progress Bar */}
+      <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+        <div
+          className="h-2 rounded-full transition-all bg-gray-800"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      {/* Team Allocation Area (Children) */}
+      <div className="mb-4 min-h-[40px]">{children}</div>
+
+      {/* Details Grid */}
+      <div className="grid grid-cols-2 gap-x-8 gap-y-4 border-t border-gray-100 pt-4 mt-3">
+        {/* Client */}
+        <div>
+          <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">
+            Client
+          </p>
+          <p className="text-xs font-semibold text-gray-800 truncate">
+            {clientName}
+          </p>
         </div>
 
-        {/* Progress Bar */}
-        <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+        {/* Coordinator */}
+        <div>
+          <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">
+            Project Coordinator
+          </p>
+
+          <div className="flex items-center gap-2">
+            <Avatar className="h-6 w-6">
+              <AvatarImage src={coordinatorProfilePic} />
+              <AvatarFallback className="text-black text-[10px] font-semibold">
+                {coordinatorName?.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+
+            <p className="text-xs font-semibold text-gray-800 leading-none">
+              {coordinatorName}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderListView = () => (
+    <div
+      ref={setNodeRef}
+      className={cn(
+        "bg-white border-b hover:bg-gray-50 transition-colors py-4 px-6 relative group flex items-center gap-6",
+        isOver && "bg-primary/5"
+      )}
+    >
+      <div className="w-1 bg-gray-700 rounded-full h-8 shrink-0" />
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <h3
+            className="text-sm font-bold text-gray-900 truncate cursor-pointer hover:text-primary transition-colors"
+            onClick={() => setOpenDrawer(true)}
+          >
+            {title}
+          </h3>
+          <Pin
+            className={cn(
+              "h-3.5 w-3.5 cursor-pointer transition-colors hover:text-primary",
+              project?.isPinned
+                ? "fill-primary text-primary"
+                : "text-muted-foreground"
+            )}
+            onClick={handlePinToggle}
+          />
+        </div>
+        <p className="text-[11px] text-muted-foreground truncate font-medium">
+          Client : {clientName}
+        </p>
+      </div>
+
+      <div className="w-24 shrink-0 text-center">
+        <div
+          className={cn(
+            "px-2.5 py-0.5 rounded-full text-[10px] font-semibold inline-block",
+            getStatusBadgeClasses(project?.currentStatus)
+          )}
+        >
+          {capitalizeFirstLetter(project?.currentStatus || "Planning").replace(
+            /-/g,
+            " "
+          )}
+        </div>
+      </div>
+
+      <div className="w-28 shrink-0 space-y-1.5">
+        <div className="flex justify-between items-center text-[10px] font-medium">
+          <span>Progress</span>
+          <span>{progress}%</span>
+        </div>
+        <div className="w-full bg-gray-100 rounded-full h-1.5">
           <div
-            className="h-2 rounded-full transition-all bg-gray-800"
+            className="h-1.5 rounded-full bg-black"
             style={{ width: `${progress}%` }}
           />
         </div>
-
-        {/* Team Allocation Area (Children) */}
-        <div className="mb-4 min-h-[40px]">{children}</div>
-
-        {/* Details Grid */}
-        <div className="grid grid-cols-2 gap-x-8 gap-y-4 border-t border-gray-100 pt-4 mt-3">
-          {/* Client */}
-          <div>
-            <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">
-              Client
-            </p>
-            <p className="text-xs font-semibold text-gray-800 truncate">
-              {clientName}
-            </p>
-          </div>
-
-          {/* Coordinator */}
-          <div>
-            <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">
-              Project Coordinator
-            </p>
-
-            <div className="flex items-center gap-2">
-              <Avatar className="h-6 w-6">
-                <AvatarImage src={coordinatorProfilePic} />
-                <AvatarFallback className="text-black text-[10px] font-semibold">
-                  {coordinatorName?.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-
-              <p className="text-xs font-semibold text-gray-800 leading-none">
-                {coordinatorName}
-              </p>
-            </div>
-          </div>
-
-          {/* Start Date */}
-          {/* <div>
-            <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">
-              Start Date
-            </p>
-            <p className="text-xs font-semibold text-gray-800">{startDate}</p>
-          </div> */}
-
-          {/* Priority */}
-        </div>
       </div>
+
+      <div className="w-32 shrink-0 flex items-center gap-2 text-[11px] text-muted-foreground">
+        <Calendar className="h-3.5 w-3.5" />
+        <span>{deadline}</span>
+      </div>
+
+      <div className="w-28 shrink-0 flex -space-x-1.5">{children}</div>
+
+      <div className="w-[72px] shrink-0 flex items-center justify-end pr-4 gap-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuGroup>
+              <DropdownMenuItem onClick={() => setOpenDrawer(true)}>
+                View Details
+              </DropdownMenuItem>
+              {!isDeveloperView && (
+                <>
+                  <DropdownMenuItem onClick={handleViewTimeline}>
+                    View Timeline
+                  </DropdownMenuItem>
+                  {canEditStatus && (
+                    <>
+                      <DropdownMenuItem
+                        onClick={() => setStatusDialogOpen(true)}
+                      >
+                        Change Status
+                      </DropdownMenuItem>
+                      {!isArchiveTab && (
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setCurrentRow(project);
+                            setOpen("edit");
+                          }}
+                        >
+                          Edit Project
+                        </DropdownMenuItem>
+                      )}
+                    </>
+                  )}
+                </>
+              )}
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
+  );
+
+  function capitalizeFirstLetter(string: string) {
+    if (!string) return "";
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+
+  return (
+    <>
+      {view === "grid" ? renderGridView() : renderListView()}
 
       <Drawer open={openDrawer} onOpenChange={setOpenDrawer} direction="right">
         {openDrawer && <ProjectDetails projectId={project?.id} />}

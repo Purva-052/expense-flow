@@ -69,9 +69,8 @@ export const INQUIRY_STATUS_LABEL: any = {
 };
 
 export const INTERVIEW_STATUS_LABEL: any = {
-  pending: "Pending",
-  technical_completed: "Technical Completed",
-  practical_completed: "Practical Completed",
+  technical_round: "Technical Round",
+  practical_round: "Practical Round",
   hr_round: "HR Round",
   joining: "Joining",
   rejected: "Rejected",

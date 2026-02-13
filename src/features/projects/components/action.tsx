@@ -32,6 +32,7 @@ export function ActionFormModal({
   const handleCreate = (values: TProjectFormSchema) => {
     const payload = {
       name: values.name,
+      isProduct: values.isProduct,
       description: values.description,
       clientId: values.clientId,
       startDate: values.startDate
@@ -55,6 +56,7 @@ export function ActionFormModal({
   const handleEdit = (values: TProjectFormSchema) => {
     const payload = {
       name: values.name,
+      isProduct: values.isProduct,
       description: values.description,
       clientId: values.clientId,
       startDate: values.startDate,
