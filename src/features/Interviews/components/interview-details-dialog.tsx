@@ -20,6 +20,7 @@ import {
   Link,
   SquareArrowOutUpRight,
   History,
+  RefreshCcw,
   // ShieldCheck,
 } from "lucide-react";
 import {
@@ -48,7 +49,7 @@ import { InterviewEvent } from "../types";
 import { interviewStatuses, interviewTypes } from "../constants";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
-import { capitalizeFirstLetter } from "@/utils/commonFunctions";
+// import { capitalizeFirstLetter } from "@/utils/commonFunctions";
 import { useInterviewStore } from "../store/useInterviewStore";
 // import { useUpdateInterview } from "../services";
 // import { useAuthStore } from "@/stores/use-auth-store";
@@ -60,6 +61,7 @@ interface InterviewDetailsDialogProps {
   onOpenChange: (open: boolean) => void;
   onEdit?: (event: InterviewEvent) => void;
   onDelete?: (event: InterviewEvent) => void;
+  onUpdateSchedule?: (event: InterviewEvent) => void;
   onStatusUpdate?: (eventId: string, newStatus: string) => void;
 }
 
@@ -69,13 +71,14 @@ export const InterviewDetailsDialog = ({
   onOpenChange,
   onEdit,
   onDelete,
+  onUpdateSchedule,
   // onStatusUpdate,
 }: InterviewDetailsDialogProps) => {
-  if (!event) return null;
-
   const user = useAuthStore((state) => state.user);
   const userRole = user?.user?.role;
   const { setOpen: setInterviewStoreOpen, setCurrentRow } = useInterviewStore();
+
+  if (!event) return null;
   // const baseStatuses = interviewStatuses;
 
   // Step 1: extract values for reuse
@@ -130,6 +133,13 @@ export const InterviewDetailsDialog = ({
     setInterviewStoreOpen("history");
     setCurrentRow(details);
     onOpenChange(false);
+  };
+
+  const handleUpdateSchedule = () => {
+    if (onUpdateSchedule) {
+      onUpdateSchedule(event);
+      onOpenChange(false);
+    }
   };
   // const handleStatusChange = (newStatus: string) => {
   //   if (event.id) {
@@ -271,7 +281,26 @@ export const InterviewDetailsDialog = ({
                     </TooltipTrigger>
                     <TooltipContent>View Interview History</TooltipContent>
                   </Tooltip>
-                  {onEdit && (
+                  {onUpdateSchedule && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={handleUpdateSchedule}
+                          className="h-9 w-9 rounded-full border-border/80 shadow-sm 
+                                  hover:border-primary/40 hover:bg-primary/5"
+                        >
+                          <RefreshCcw className="h-4 w-4 " aria-hidden="true" />
+
+                          <span className="sr-only">Reschedule Interview</span>
+                        </Button>
+                      </TooltipTrigger>
+
+                      <TooltipContent>Reschedule Interview</TooltipContent>
+                    </Tooltip>
+                  )}
+                  {onEdit && userRole === roles.ADMIN && (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
@@ -425,28 +454,32 @@ export const InterviewDetailsDialog = ({
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                    <DollarSign className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
-                        Current CTC
-                      </p>
-                      <p className="text-sm font-medium">
-                        {details.currentCtc} LPA
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                    <DollarSign className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
-                        Expected CTC
-                      </p>
-                      <p className="text-sm font-medium">
-                        {details.expectedCtc} LPA
-                      </p>
-                    </div>
-                  </div>
+                  {userRole === roles.ADMIN && (
+                    <>
+                      <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                        <DollarSign className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+                            Current CTC
+                          </p>
+                          <p className="text-sm font-medium">
+                            {details.currentCtc} LPA
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                        <DollarSign className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+                            Expected CTC
+                          </p>
+                          <p className="text-sm font-medium">
+                            {details.expectedCtc} LPA
+                          </p>
+                        </div>
+                      </div>
+                    </>
+                  )}
                   <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                     <Clock className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                     <div className="flex-1 min-w-0">
@@ -458,6 +491,25 @@ export const InterviewDetailsDialog = ({
                       </p>
                     </div>
                   </div>
+                  {details.link && (
+                    <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                      <Link className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+                          Link
+                        </p>
+                        <a
+                          href={details.link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-sm font-medium text-primary hover:underline inline-flex items-center gap-1 break-all"
+                        >
+                          {details.link}
+                          <SquareArrowOutUpRight className="h-3 w-3 shrink-0" />
+                        </a>
+                      </div>
+                    </div>
+                  )}
                   {details.resumeLink && (
                     <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                       <FileCheck className="h-5 w-5 text-primary mt-0.5 shrink-0" />
@@ -522,7 +574,7 @@ export const InterviewDetailsDialog = ({
                       )}
                     </div>
                   </div>
-                  <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                  {/* <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                     <Tag className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
@@ -532,7 +584,7 @@ export const InterviewDetailsDialog = ({
                         {capitalizeFirstLetter(details.interviewRound)}
                       </p>
                     </div>
-                  </div>
+                  </div> */}
                   <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                     <CalendarIcon className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                     <div className="flex-1 min-w-0">
