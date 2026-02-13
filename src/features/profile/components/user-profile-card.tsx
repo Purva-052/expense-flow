@@ -265,18 +265,20 @@ export const UserProfileCard = ({ user }: { user: any }) => {
           label="Career Start Date"
           value={formatDate(user?.careerStartDate)}
         />
-        <ProfileDetailRow
-          icon={Code}
-          label="Primary Technology"
-          value={
-            <Badge
-              className="text-white"
-              style={{ backgroundColor: user?.technology?.color || "#333" }}
-            >
-              {user?.technology?.name || "-"}
-            </Badge>
-          }
-        />
+        {user?.role !== "admin" && user?.role !== "project_manager" && (
+          <ProfileDetailRow
+            icon={Code}
+            label="Primary Technology"
+            value={
+              <Badge
+                className="text-white"
+                style={{ backgroundColor: user?.technology?.color || "#333" }}
+              >
+                {user?.technology?.name || "-"}
+              </Badge>
+            }
+          />
+        )}
         {user?.role !== "admin" && user?.role !== "project_manager" && (
           <ProfileDetailRow
             icon={Sparkles}
