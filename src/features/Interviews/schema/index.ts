@@ -12,23 +12,25 @@ export const interviewFormSchema = z
     ),
     email: z.string().min(1, "Email is required").email("Invalid email address"),
     phoneNumber: z
-      .string()
-      .optional()
-      .refine(
-        (val) => {
-          if (!val) return true; // optional
-          return /^[+0-9()\-\s]+$/.test(val);
-        },
-        { message: "Phone number contains invalid characters." }
-      )
-      .refine(
-        (val) => {
-          if (!val) return true;
-          const digits = val.replace(/\D/g, "");
-          return digits.length >= 7 && digits.length <= 15;
-        },
-        { message: "Invalid phone number length." }
-      ),
+  .string()
+  .optional()
+  .refine(
+    (val) => {
+      if (!val || val.trim() === "") return true;
+
+      // Allowed characters only
+      if (!/^[+0-9()\-\s]+$/.test(val)) return false;
+
+      const digits = val.replace(/\D/g, "");
+
+      // International-safe range
+      return digits.length >= 7 && digits.length <= 15;
+    },
+    {
+      message:
+        "Phone number must contain 7–15 digits and valid characters only",
+    }
+  ),
     location: z.string().optional(),
     link: z
       .string()
@@ -65,8 +67,19 @@ export const interviewFormSchema = z
         return file.size <= maxSize;
       }, "Resume must be a PDF, DOC, or DOCX file and not exceed 5MB"),
     resumeS3Key: z.string().optional(),
-    currentCtc: z.coerce.number().min(0, "CTC must be a positive number"),
-    expectedCtc: z.coerce.number().min(0, "CTC must be a positive number"),
+    currentCtc: z.coerce
+  .number({
+    required_error: "Current CTC is required",
+    invalid_type_error: "Current CTC is required",
+  })
+  .gt(0, "Current CTC must be greater than 0"),
+
+expectedCtc: z.coerce
+  .number({
+    required_error: "Expected CTC is required",
+    invalid_type_error: "Expected CTC is required",
+  })
+  .gt(0, "Expected CTC must be greater than 0"),
     noticePeriod: z.string().optional(),
 
     // Interviewer Details
