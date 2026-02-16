@@ -9,7 +9,7 @@ import { Briefcase, Zap } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // ✅ Helper: Calculate years of experience
-const getYearsOfExperience = (
+export const formatExperience = (
   startDate: string | null | undefined
 ): string | null => {
   if (!startDate) return null;
@@ -17,15 +17,34 @@ const getYearsOfExperience = (
   const start = new Date(startDate);
   const now = new Date();
 
-  const diffInMs = now.getTime() - start.getTime();
-  const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
-  const diffInYears = diffInDays / 365.25;
+  let years = now.getFullYear() - start.getFullYear();
+  let months = now.getMonth() - start.getMonth();
 
-  // Always show experience in years with one decimal place
-  const formattedYears =
-    diffInYears < 10 ? diffInYears.toFixed(1) : Math.round(diffInYears);
+  // Adjust if current date is before start day
+  if (
+    now.getMonth() < start.getMonth() ||
+    (now.getMonth() === start.getMonth() && now.getDate() < start.getDate())
+  ) {
+    years--;
+    months += 12;
+  }
 
-  return `${formattedYears} Year`;
+  if (months < 0) months += 12;
+
+  // 🔹 Less than 1 year → show only months
+  if (years < 1) {
+    return `${months} month${months !== 1 ? "s" : ""}`;
+  }
+
+  // 🔹 1 year or more → show years + months
+  const yearLabel = `${years} Year${years !== 1 ? "s" : ""}`;
+
+  if (months === 0) {
+    return yearLabel;
+  }
+
+  const monthLabel = `${months} month${months !== 1 ? "s" : ""}`;
+  return `${yearLabel} ${monthLabel}`;
 };
 
 export const ResourceCard = ({
@@ -43,7 +62,7 @@ export const ResourceCard = ({
   });
 
   // ✅ Calculate developer experience
-  const experience = getYearsOfExperience(developer?.careerStartDate);
+  const experience = formatExperience(developer?.careerStartDate);
   const profilePic = developer.profilePicUrl || developer.avatarUrl;
 
   // const joinDate = developer?.careerStartDate

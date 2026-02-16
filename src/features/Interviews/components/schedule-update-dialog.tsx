@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
@@ -64,19 +65,19 @@ const scheduleUpdateSchema = z
         message: "Interview Status is required",
       }
     ),
-    joiningDate: z
-      .union([z.date(), z.string()])
-      .optional()
-      .refine(
-        (val) => {
-          if (!val) return true;
-          if (val instanceof Date) return true;
-          return !isNaN(Date.parse(val));
-        },
-        {
-          message: "Invalid date format.",
-        }
-      ),
+    // joiningDate: z
+    //   .union([z.date(), z.string()])
+    //   .optional()
+    //   .refine(
+    //     (val) => {
+    //       if (!val) return true;
+    //       if (val instanceof Date) return true;
+    //       return !isNaN(Date.parse(val));
+    //     },
+    //     {
+    //       message: "Invalid date format.",
+    //     }
+    //   ),
     statusChangedDate: z
       .union([z.date(), z.string()])
       .optional()
@@ -186,20 +187,20 @@ export const ScheduleUpdateDialog = ({
 
   // Adjust schema based on role and status
   let activeSchema = scheduleUpdateSchema;
-  if (userRole === roles.ADMIN) {
-    activeSchema = scheduleUpdateSchema.refine(
-      (data) => {
-        if (data.interviewStatus !== "joining") return true;
-        const val = data.joiningDate;
-        if (val instanceof Date) return true;
-        return !!val && typeof val === "string" && val.trim().length > 0;
-      },
-      {
-        message: "Joining Date is required when status is Joining",
-        path: ["joiningDate"],
-      }
-    ) as any;
-  }
+  // if (userRole === roles.ADMIN) {
+  //   activeSchema = scheduleUpdateSchema.refine(
+  //     (data) => {
+  //       if (data.interviewStatus !== "joining") return true;
+  //       const val = data.joiningDate;
+  //       if (val instanceof Date) return true;
+  //       return !!val && typeof val === "string" && val.trim().length > 0;
+  //     },
+  //     {
+  //       message: "Joining Date is required when status is Joining",
+  //       path: ["joiningDate"],
+  //     }
+  //   ) as any;
+  // }
 
   const form = useForm<ScheduleUpdateFormValues>({
     resolver: zodResolver(activeSchema),
@@ -213,7 +214,6 @@ export const ScheduleUpdateDialog = ({
       interviewUrl: "",
       notes: "",
       interviewStatus: "",
-      joiningDate: "",
       statusChangedDate: "",
     },
   });
@@ -228,7 +228,6 @@ export const ScheduleUpdateDialog = ({
         interviewUrl: initialData.interviewUrl || "",
         notes: initialData.notes || "",
         interviewStatus: initialData.status || "",
-        joiningDate: initialData.joiningDate || "",
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -436,22 +435,33 @@ export const ScheduleUpdateDialog = ({
 
                 {initialData &&
                   interviewStatus !== initialData.status &&
-                  interviewStatus !== "joining" &&
                   interviewStatus !== "rejected" && (
                     <CustomDatePicker
                       control={form.control}
                       name="statusChangedDate"
-                      label="Status Changed Date"
+                      label={
+                        interviewStatus !== "joining"
+                          ? "Status Changed Date"
+                          : "Joining Date"
+                      }
+                      disabledDays={(date: Date) => {
+                        const today = new Date();
+
+                        // Remove time part
+                        today.setHours(0, 0, 0, 0);
+
+                        return date < today; // disable past only
+                      }}
                     />
                   )}
 
-                {userRole === roles.ADMIN && interviewStatus === "joining" && (
+                {/* {userRole === roles.ADMIN && interviewStatus === "joining" && (
                   <CustomDatePicker
                     control={form.control}
                     name="joiningDate"
                     label="Joining Date"
                   />
-                )}
+                )} */}
 
                 <FormField
                   control={form.control}
@@ -484,11 +494,9 @@ export const ScheduleUpdateDialog = ({
               <Button
                 type="submit"
                 className="w-full sm:w-auto"
-                disabled={isSubmitting || isSubmittingForm}
+                disabled={isSubmitting}
               >
-                {isSubmitting || isSubmittingForm
-                  ? "Updating..."
-                  : "Update Schedule"}
+                {isSubmitting ? "Updating..." : "Update Schedule"}
               </Button>
             </div>
           </form>

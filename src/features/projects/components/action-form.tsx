@@ -368,13 +368,14 @@ export function ProjectActionForm({
                         control={form.control}
                         name="startDate"
                         label=""
-                        placeholder="Select Meeting Date"
+                        placeholder="Select Start Date"
                         // disabled={loading || isViewOnly}
                       />
                     </FormItem>
                   )}
                 />
                 <CustomDatePicker
+                  placeholder="Select End Date"
                   control={form.control}
                   name="expectedCompletionDate"
                   label="Expected Completion Date"

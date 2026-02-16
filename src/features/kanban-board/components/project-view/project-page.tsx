@@ -105,6 +105,7 @@ const ProjectPage = ({
         projectTypeId: undefined,
         status: isInactiveTab ? "inactive" : "active",
         technologyId: undefined,
+        isProduct: undefined,
       };
     const saved = localStorage.getItem(FILTER_STORAGE_KEY);
     return saved
@@ -131,7 +132,10 @@ const ProjectPage = ({
 
   const [listParams, setListParams] = useState(getInitialFilters);
   const [view, setView] = useState<"grid" | "list">(() => {
-    const storedView = localStorage.getItem("projectViewType") as "grid" | "list" | null;
+    const storedView = localStorage.getItem("projectViewType") as
+      | "grid"
+      | "list"
+      | null;
     return storedView || "grid";
   });
   const [showAllDevelopers, setShowAllDevelopers] = useState(false);
@@ -355,6 +359,19 @@ const ProjectPage = ({
   const handleSearch = (search: string | undefined) => {
     setListParams((prev: any) => ({ ...prev, search: search ?? "" }));
   };
+  const handleIsProductChange = (value: any) => {
+    let isProduct: boolean | undefined;
+    if (typeof value === "boolean") {
+      isProduct = value;
+    } else if (value === "true") {
+      isProduct = true;
+    } else if (value === "false") {
+      isProduct = false;
+    } else {
+      isProduct = undefined;
+    }
+    setListParams((prev: any) => ({ ...prev, isProduct }));
+  };
 
   // useEffect(() => {
   //   if (
@@ -453,6 +470,18 @@ const ProjectPage = ({
       onChange: handleProjectTypeChange,
       isLoading: LoadingProjectType,
     },
+    {
+      type: "select",
+      key: "isProduct",
+      placeholder: "Filter by Project Nature",
+      options: [
+        { value: false, label: "Project" },
+        { value: true, label: "Product" },
+      ],
+      value: listParams.isProduct,
+      onChange: handleIsProductChange,
+      isLoading: LoadingProjectType,
+    },
   ];
 
   const techOptions = useMemo(() => {
@@ -531,14 +560,17 @@ const ProjectPage = ({
                 )}
               >
                 {view === "list" && (
-                  <div className="flex items-center gap-6 px-6 py-3 bg-gray-50 border-b text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                    <div className="w-1 shrink-0" /> {/* Marker placeholder */}
+                  <div className="flex items-center gap-4 px-6 py-3 bg-gray-50 border-b text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                    <div className="w-1 shrink-0" />
                     <div className="flex-1 min-w-0">Project</div>
-                    <div className="w-24 shrink-0 text-center">Status</div>
-                    <div className="w-28 shrink-0">Progress</div>
-                    <div className="w-32 shrink-0">Deadline</div>
-                    <div className="w-28 shrink-0">Team</div>
-                    <div className="w-[72px] shrink-0 text-right pr-4">
+
+                    <div className="w-14 shrink-0 text-center">Status</div>
+
+                    <div className="w-64 shrink-0">Progress</div>
+
+                    <div className="w-28 shrink-0">Deadline</div>
+                    <div className="w-24 shrink-0">Team</div>
+                    <div className="w-[64px] shrink-0 text-right pr-4">
                       Actions
                     </div>
                   </div>
