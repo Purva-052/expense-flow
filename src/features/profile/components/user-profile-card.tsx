@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { DialogTrigger } from "@/components/ui/dialog";
+import { DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -23,6 +23,15 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { FileUpload } from "@/components/shared/custome-file-upload";
 import { formatRole } from "@/utils/commonFunctions";
+import { Cropper } from "react-cropper";
+import "cropperjs/dist/cropper.css";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Briefcase,
   Calendar,
@@ -37,7 +46,7 @@ import {
   Check,
   Mail,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import instance from "@/config/instance/instance";
 import API from "@/config/api/api";
@@ -132,6 +141,9 @@ export const UserProfileCard = ({ user }: { user: any }) => {
   const [projectViewType, setProjectViewType] = useState<"grid" | "list">(
     "grid"
   );
+  const [image, setImage] = useState<string | null>(null);
+  const [showCropDialog, setShowCropDialog] = useState(false);
+  const cropperRef = useRef<any>(null);
 
   const { mutateAsync: uploadFile } = useUploadTransactionFile();
   const { mutateAsync: updateProfile, isPending: isUpdating } =
@@ -229,31 +241,88 @@ export const UserProfileCard = ({ user }: { user: any }) => {
   const handleFileSelect = async (file: File) => {
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("folder", "profile-picture");
+    // Check file size (2MB limit)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("File size exceeds 2MB limit", {
+        position: "top-right",
+      });
+      return;
+    }
 
-    setLocalIsUploading(true);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImage(reader.result as string);
+      setShowCropDialog(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCrop = async () => {
+    const cropper = cropperRef.current?.cropper;
+    if (!cropper) {
+      toast.error("Cropper not initialized");
+      return;
+    }
+
     try {
-      const response: any = await uploadFile(formData);
-      if (response?.url) {
-        const payload = {
-          fullName: user.fullName,
-          email: user.email,
-          role: user.role,
-          technologyId: user.technology?.id,
-          careerStartDate: user.careerStartDate,
-          status: user.status,
-          joining: user.joining ? "true" : "false",
-          currentWorkingProjectId: user.currentProject?.id,
-          profilePicS3Key: response.key,
-        };
-        await updateProfile(payload);
-        setPreviewUrl(response.url);
+      const croppedCanvas = cropper.getCroppedCanvas({
+        width: 400,
+        height: 400,
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: "high",
+      });
+      if (!croppedCanvas) {
+        toast.error("Failed to get cropped canvas");
+        return;
       }
-    } catch (error) {
-      console.error("Upload failed", error);
-    } finally {
+
+      setLocalIsUploading(true);
+      setShowCropDialog(false);
+
+      croppedCanvas.toBlob(async (blob: Blob | null) => {
+        if (!blob) {
+          setLocalIsUploading(false);
+          toast.error("Failed to generate image blob");
+          return;
+        }
+
+        const file = new File([blob], "profile-picture.jpg", {
+          type: "image/jpeg",
+        });
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("folder", "profile-picture");
+
+        try {
+          const response: any = await uploadFile(formData);
+          if (response?.url) {
+            const payload = {
+              fullName: user.fullName,
+              email: user.email,
+              role: user.role,
+              technologyId: user.technology?.id,
+              careerStartDate: user.careerStartDate,
+              status: user.status,
+              joining: user.joining ? "true" : "false",
+              currentWorkingProjectId: user.currentProject?.id,
+              profilePicS3Key: response.key,
+            };
+            await updateProfile(payload);
+            setPreviewUrl(response.url);
+            toast.success("Profile picture updated successfully");
+          } else {
+            toast.error("Upload failed: No URL returned");
+          }
+        } catch (error) {
+          console.error("Upload failed", error);
+          toast.error("Failed to upload cropped image");
+        } finally {
+          setLocalIsUploading(false);
+        }
+      }, "image/jpeg");
+    } catch (err) {
+      console.error("Cropping failed", err);
+      toast.error("An error occurred while cropping");
       setLocalIsUploading(false);
     }
   };
@@ -445,8 +514,8 @@ export const UserProfileCard = ({ user }: { user: any }) => {
           </FormProvider>
           <div>
             <h1 className="text-3xl font-bold">{user?.fullName}</h1>
-            {/* <p className="text-gray-100">
-              {user?.role && formatRole(user.role)}
+            {/* <p className="text-xs text-white/80 mt-1 uppercase tracking-wider font-medium">
+              Max Size: 2 MB
             </p> */}
           </div>
         </div>
@@ -816,6 +885,42 @@ export const UserProfileCard = ({ user }: { user: any }) => {
           </CardFooter>
         </Card>
       </div>
+
+      <Dialog open={showCropDialog} onOpenChange={setShowCropDialog}>
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Crop Profile Picture</DialogTitle>
+            <DialogDescription>
+              Max file size : 2MB. Please crop your image to a square aspect
+              ratio for best results.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4">
+            {image && (
+              <Cropper
+                src={image}
+                style={{ height: 400, width: "100%" }}
+                initialAspectRatio={1}
+                aspectRatio={1}
+                guides={true}
+                ref={cropperRef}
+                viewMode={1}
+                dragMode="move"
+                background={false}
+                responsive={true}
+                autoCropArea={1}
+                checkOrientation={false}
+              />
+            )}
+          </div>
+          <DialogFooter className="mt-6">
+            <Button variant="outline" onClick={() => setShowCropDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleCrop}>Crop & Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
