@@ -2,7 +2,6 @@
 import API from "@/config/api/api";
 import useDeleteData from "@/hooks/use-delete-data";
 import useFetchData from "@/hooks/use-fetch-data";
-import usePatchData from "@/hooks/use-patch-data";
 import usePostData from "@/hooks/use-post-data";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import instance from "@/config/instance/instance";
@@ -65,10 +64,21 @@ export const useCreateCertificate = (userId: string, onSuccess?: any) => {
 };
 
 export const useUpdateCertificate = (userId: string, onSuccess?: any) => {
-  return usePatchData<any, { id: number; name: string }>({
-    url: API.certificates.update,
-    refetchQueries: [`${API.users.list}/${userId}`],
-    onSuccess,
+  const queryClient = useQueryClient();
+  return useMutation<any, Error, { id: number | string; name: string }>({
+    mutationFn: async ({ id, name }) => {
+      const response = await instance.patch({
+        url: `${API.certificates.update}/${id}`,
+        data: { name },
+      });
+      return response.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: [`${API.users.list}/${userId}`],
+      });
+      if (onSuccess) onSuccess(data);
+    },
   });
 };
 

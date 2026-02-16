@@ -212,7 +212,7 @@ export function ProjectCard({
         )}
       >
         <CardContent className="p-0">
-          <div className="grid grid-cols-1 items-start lg:grid-cols-[230px_1fr]">
+          <div className="grid grid-cols-1 items-start lg:grid-cols-[180px_1fr]">
             {/* Left Side: Project Details */}
             <div
               className={cn(
@@ -329,7 +329,7 @@ export function ProjectCard({
             {children && (
               <div
                 className={cn(
-                  "p-4 h-full transition-colors duration-300 relative",
+                  "p-4 h-full transition-colors duration-300 relative flex flex-col gap-3",
                   isOver ? "bg-primary/10" : "bg-transparent"
                 )}
               >

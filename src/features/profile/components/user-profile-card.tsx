@@ -46,10 +46,7 @@ import {
   Check,
   Mail,
 } from "lucide-react";
-import { useEffect, useState, useRef } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import instance from "@/config/instance/instance";
-import API from "@/config/api/api";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { toast } from "sonner";
 import { FormProvider, useForm } from "react-hook-form";
 // import { toast } from "sonner";
@@ -158,42 +155,6 @@ export const UserProfileCard = ({ user }: { user: any }) => {
   const { mutateAsync: updateCertificate, isPending: isUpdatingCertificate } =
     useUpdateCertificate(user?.id);
   const { mutateAsync: deleteCertificate } = useDeleteCertificate(user?.id);
-  const queryClient = useQueryClient();
-
-  const deleteSkillMutation = useMutation<any, Error, string | number>({
-    mutationFn: async (skillId: string | number) => {
-      const response = await instance.delete({
-        url: `${API.skills.delete}/${skillId}`,
-      });
-
-      if (
-        response?.statusCode === 200 ||
-        response?.statusCode === 202 ||
-        response?.statusCode === 201
-      ) {
-        toast.success("Skill deleted successfully", {
-          duration: 3000,
-          position: "top-right",
-        });
-        return response.data;
-      }
-
-      const errorMessage = response?.message || "Failed to delete skill";
-      throw new Error(errorMessage);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [`${API.users.list}/${user?.id}`],
-      });
-      queryClient.invalidateQueries({ queryKey: [API.skills.list] });
-    },
-    onError: (error: any) => {
-      toast.error(error?.message || "Failed to delete skill", {
-        duration: 3000,
-        position: "top-right",
-      });
-    },
-  });
 
   const methods = useForm({
     defaultValues: {
@@ -309,7 +270,6 @@ export const UserProfileCard = ({ user }: { user: any }) => {
             };
             await updateProfile(payload);
             setPreviewUrl(response.url);
-            toast.success("Profile picture updated successfully");
           } else {
             toast.error("Upload failed: No URL returned");
           }
@@ -368,9 +328,6 @@ export const UserProfileCard = ({ user }: { user: any }) => {
       } else {
         setLearningData([...learningData, newItem]);
       }
-
-      // Clear selection
-      setSelectedSkills([]);
     } catch (error) {
       console.error("Failed to add skill with type", error);
     }
@@ -425,7 +382,11 @@ export const UserProfileCard = ({ user }: { user: any }) => {
     type: "skill" | "learning"
   ) => {
     try {
-      await deleteSkillMutation.mutateAsync(skillId);
+      // Send only the removed skill ID in array
+      await updateProfile({
+        skillIds: [Number(skillId)],
+      });
+
       if (type === "skill") {
         setSkillsData((prev) =>
           prev.filter((item) => String(item?.skill?.id) !== String(skillId))
@@ -468,6 +429,20 @@ export const UserProfileCard = ({ user }: { user: any }) => {
       day: "numeric",
     });
   };
+
+  // Filter out already-added skills based on skillType
+  const filteredSkillOptions = useMemo(() => {
+    if (!skillsList?.data) return [];
+
+    const addedSkillIds =
+      skillType === "skill"
+        ? skillsData.map((s: any) => s?.skill?.id)
+        : learningData.map((l: any) => l?.skill?.id);
+
+    return skillsList.data.filter(
+      (skill: any) => !addedSkillIds.includes(skill.id)
+    );
+  }, [skillsList?.data, skillType, skillsData, learningData]);
 
   if (!user) {
     return <ProfileSkeleton />;
@@ -753,7 +728,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
               <div className="border-t pt-6 flex gap-3 items-end">
                 <div className="flex-1">
                   <CreatableSkillsSelect
-                    options={skillsList?.data || []}
+                    options={filteredSkillOptions}
                     selected={selectedSkills}
                     onChange={setSelectedSkills}
                     onCreateSkill={handleCreateSkill}
@@ -778,9 +753,15 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                   </SelectContent>
                 </Select>
                 <Button
-                  onClick={() => {
+                  onClick={async () => {
                     if (selectedSkills.length > 0) {
-                      handleAddSkillWithType(selectedSkills[0]);
+                      await Promise.all(
+                        selectedSkills.map((skill) =>
+                          handleAddSkillWithType(skill)
+                        )
+                      );
+                      // Clear selection after all skills are added
+                      setSelectedSkills([]);
                     }
                   }}
                   disabled={selectedSkills.length === 0 || isAddingSkill}

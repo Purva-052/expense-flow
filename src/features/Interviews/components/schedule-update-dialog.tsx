@@ -482,11 +482,9 @@ export const ScheduleUpdateDialog = ({
               <Button
                 type="submit"
                 className="w-full sm:w-auto"
-                disabled={isSubmitting || isSubmittingForm}
+                disabled={isSubmitting}
               >
-                {isSubmitting || isSubmittingForm
-                  ? "Updating..."
-                  : "Update Schedule"}
+                {isSubmitting ? "Updating..." : "Update Schedule"}
               </Button>
             </div>
           </form>
