@@ -227,7 +227,6 @@ export function UserActionForm({
 
         form.setValue("file", croppedFile, { shouldValidate: true });
         setShowCropDialog(false);
-        toast.success("Image cropped");
       }, "image/jpeg");
     } catch (err) {
       console.error("Cropping failed", err);

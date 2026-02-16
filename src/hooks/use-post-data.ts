@@ -42,10 +42,12 @@ const usePostData = <TData = unknown, TVariables = unknown>({
         headers,
       });
       if (response?.statusCode === 200 || response?.statusCode === 201) {
-        toast.success(response?.message, {
-          duration: 3000,
-          position: "top-right",
-        });
+        if (response?.message) {
+          toast.success(response.message, {
+            duration: 3000,
+            position: "top-right",
+          });
+        }
         return response.data;
       }
 

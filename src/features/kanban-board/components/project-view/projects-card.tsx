@@ -329,8 +329,8 @@ export function ProjectCard({
         </div>
       </div>
       <div className="flex justify-between">
-        <span className="text-xs text-muted-foreground mb-1">Progress</span>
-        <span className="text-xs font-bold text-gray-900">{progress}%</span>
+        <span className="text-sm text-muted-foreground mb-1">Progress</span>
+        <span className="text-sm font-bold text-gray-900">{progress}%</span>
       </div>
 
       {/* Progress Bar */}
@@ -383,7 +383,7 @@ export function ProjectCard({
     <div
       ref={setNodeRef}
       className={cn(
-        "bg-white border-b hover:bg-gray-50 transition-colors py-4 px-6 relative group flex items-center gap-6",
+        "bg-white border-b hover:bg-gray-50 transition-colors py-4 px-6 relative group flex items-center gap-4",
         isOver && "bg-primary/5"
       )}
     >
@@ -412,7 +412,7 @@ export function ProjectCard({
         </p>
       </div>
 
-      <div className="w-24 shrink-0 text-center">
+      <div className="w-14 shrink-0 text-center">
         <div
           className={cn(
             "px-2.5 py-0.5 rounded-full text-[10px] font-semibold inline-block",
@@ -426,8 +426,8 @@ export function ProjectCard({
         </div>
       </div>
 
-      <div className="w-28 shrink-0 space-y-1.5">
-        <div className="flex justify-between items-center text-[10px] font-medium">
+      <div className="w-64 shrink-0 space-y-1.5">
+        <div className="flex justify-between items-center text-[12px] font-medium">
           <span>Progress</span>
           <span>{progress}%</span>
         </div>
@@ -439,14 +439,14 @@ export function ProjectCard({
         </div>
       </div>
 
-      <div className="w-32 shrink-0 flex items-center gap-2 text-[11px] text-muted-foreground">
+      <div className="w-28 shrink-0 flex items-center gap-2 text-[11px] text-muted-foreground">
         <Calendar className="h-3.5 w-3.5" />
         <span>{deadline}</span>
       </div>
 
-      <div className="w-28 shrink-0 flex -space-x-1.5">{children}</div>
+      <div className="w-24 shrink-0 flex -space-x-1.5">{children}</div>
 
-      <div className="w-[72px] shrink-0 flex items-center justify-end pr-4 gap-2">
+      <div className="w-[64px] shrink-0 flex items-center justify-end pr-4 gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="h-8 w-8">

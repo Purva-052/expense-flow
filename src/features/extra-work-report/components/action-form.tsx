@@ -124,7 +124,7 @@ export function ExtraWorkActionForm({
         const rawM = parts[1] || "0";
         // Convert fractional part to literal minutes (e.g., "20" -> 20, "05" -> 5)
         let minutesValue = parseInt(rawM.slice(0, 2), 10);
-        
+
         // Normalize to nearest 5-minute increment to match dropdown options
         minutesValue = Math.round(minutesValue / 5) * 5;
 
@@ -347,7 +347,18 @@ export function ExtraWorkActionForm({
               <FormField
                 control={form.control}
                 name="timeSpent"
-                render={() => <FormMessage className="-mt-2" />}
+                render={({ fieldState, formState }) => {
+                  const showError =
+                    formState.submitCount > 0 && fieldState.error;
+
+                  return (
+                    <div className="-mt-2">
+                      {showError && (
+                        <FormMessage>{fieldState.error?.message}</FormMessage>
+                      )}
+                    </div>
+                  );
+                }}
               />
 
               {/* Remark */}

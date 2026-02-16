@@ -124,7 +124,7 @@ export function CreatableSkillsSelect({
   return (
     <Command
       onKeyDown={handleKeyDown}
-      className={cn("overflow-visible bg-transparent", className)}
+      className={cn("overflow-visible bg-transparent relative", className)}
     >
       <div
         onClick={() => setOpen((prev) => !prev)}
@@ -189,11 +189,11 @@ export function CreatableSkillsSelect({
 
       {/* Dropdown */}
       {open && (
-        <div className="relative mt-2 w-full">
+        <div className="absolute top-full left-0 z-50 mt-1 w-full rounded-md border bg-popover text-popover-foreground shadow-md outline-none animate-in">
           <CommandList>
             <div
               style={{ maxHeight: `${maxHeight}px` }}
-              className="absolute top-0 left-0 z-10 w-full rounded-md border bg-popover text-popover-foreground shadow-md outline-none animate-in"
+              className="flex flex-col overflow-y-auto"
             >
               <CommandInput
                 ref={inputRef}
@@ -202,6 +202,7 @@ export function CreatableSkillsSelect({
                 onBlur={() => setOpen(false)}
                 placeholder={placeholder}
                 autoFocus
+                className="border-none focus:ring-0"
               />
               {(loading || creating) && (
                 <div className="flex flex-col justify-center items-center py-10 gap-3">
@@ -242,10 +243,7 @@ export function CreatableSkillsSelect({
                   )}
 
                   {selectables.length > 0 && (
-                    <CommandGroup
-                      className="overflow-y-auto"
-                      style={{ maxHeight: maxHeight - 40 }}
-                    >
+                    <CommandGroup className="overflow-y-auto">
                       {selectables.map((option) => (
                         <CommandItem
                           key={option.id}
