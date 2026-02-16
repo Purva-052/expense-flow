@@ -25,7 +25,13 @@ const getDaysRemaining = (
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 };
 
-export const getYearsOfExperience = (
+const truncateName = (name: string, maxLength: number = 8): string => {
+  if (!name) return "";
+  if (name.length <= maxLength) return name;
+  return name.slice(0, maxLength) + "...";
+};
+
+export const formatExperience = (
   startDate: string | null | undefined
 ): string | null => {
   if (!startDate) return null;
@@ -33,15 +39,34 @@ export const getYearsOfExperience = (
   const start = new Date(startDate);
   const now = new Date();
 
-  const diffInMs = now.getTime() - start.getTime();
-  const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
-  const diffInYears = diffInDays / 365.25;
+  let years = now.getFullYear() - start.getFullYear();
+  let months = now.getMonth() - start.getMonth();
 
-  // Always show experience in years with one decimal place
-  const formattedYears =
-    diffInYears < 10 ? diffInYears.toFixed(1) : Math.round(diffInYears);
+  // Adjust if current date is before start day
+  if (
+    now.getMonth() < start.getMonth() ||
+    (now.getMonth() === start.getMonth() && now.getDate() < start.getDate())
+  ) {
+    years--;
+    months += 12;
+  }
 
-  return `${formattedYears} Year`;
+  if (months < 0) months += 12;
+
+  // 🔹 Less than 1 year → show only months
+  if (years < 1) {
+    return `${months} month${months !== 1 ? "s" : ""}`;
+  }
+
+  // 🔹 1 year or more → show years + months
+  const yearLabel = `${years} Year${years !== 1 ? "s" : ""}`;
+
+  if (months === 0) {
+    return yearLabel;
+  }
+
+  const monthLabel = `${months} month${months !== 1 ? "s" : ""}`;
+  return `${yearLabel} ${monthLabel}`;
 };
 
 export function DeveloperChip({
@@ -78,7 +103,7 @@ export function DeveloperChip({
   };
 
   const techColor = developer?.technology?.color || "#e2e8f0";
-  const experience = getYearsOfExperience(developer?.careerStartDate);
+  const experience = formatExperience(developer?.careerStartDate);
 
   const activeProjects: string[] = developer?.activeProjects || [];
 
@@ -159,7 +184,7 @@ export function DeveloperChip({
             )}
           >
             <div className="flex items-start gap-3 justify-between">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
                 <Avatar className="h-8 w-8">
                   <AvatarImage
                     src={
@@ -173,7 +198,7 @@ export function DeveloperChip({
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col gap-0.5 truncate">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     {developer.isCurrentProject && (
                       <span
                         className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse shrink-0"
@@ -182,7 +207,7 @@ export function DeveloperChip({
                     )}
                     {/* 👇 3. Wrap the developer's name with the Tooltip components */}
                     <span className="truncate font-bold text-card-foreground">
-                      {developer.fullName}
+                      {truncateName(developer.fullName, 10)}
                     </span>
 
                     {showReleaseWarning && (
@@ -214,31 +239,44 @@ export function DeveloperChip({
         </TooltipTrigger>
         <TooltipContent className="max-w-xs">
           {activeProjects.length > 0 ? (
-            <div className="space-y-1">
-              <p className="font-semibold text-sm">Assigned Projects:</p>
-              <ul className="list-disc list-inside text-xs text-muted-foreground">
-                {activeProjects.map((project: any) => (
-                  <li key={project.id}>
-                    <span className="font-medium">{project.name}</span>
-                    {project.isCurrentProject && (
-                      <span className="text-green-600 ml-1">(Current)</span>
-                    )}
-                    {/* {typeof project.percentageComplete === "number" && (
-                      <span className="ml-1 text-[10px] text-gray-500">
-                        {project.percentageComplete}%
-                      </span>
-                    )} */}
-                    {project.workingHours && (
-                      <span className="ml-1 text-[10px] text-blue-600">
-                        • {project.workingHours} hrs
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ul>
+            <div className="space-y-2">
+              <div>
+                <p className="font-semibold text-sm">{developer.fullName}</p>
+                <p className="text-xs text-muted-foreground">
+                  {developer?.technology?.name}
+                </p>
+              </div>
+              <div className="border-t pt-1">
+                <p className="font-semibold text-sm mb-1">Assigned Projects:</p>
+                <ul className="list-disc list-inside text-xs text-muted-foreground">
+                  {activeProjects.map((project: any) => (
+                    <li key={project.id}>
+                      <span className="font-medium">{project.name}</span>
+                      {project.isCurrentProject && (
+                        <span className="text-green-600 ml-1">(Current)</span>
+                      )}
+                      {/* {typeof project.percentageComplete === "number" && (
+                        <span className="ml-1 text-[10px] text-gray-500">
+                          {project.percentageComplete}%
+                        </span>
+                      )} */}
+                      {project.workingHours && (
+                        <span className="ml-1 text-[10px] text-blue-600">
+                          • {project.workingHours} hrs
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           ) : (
-            <p>{developer.fullName}</p>
+            <div className="space-y-1">
+              <p className="font-semibold text-sm">{developer.fullName}</p>
+              <p className="text-xs text-muted-foreground">
+                {developer?.technology?.name}
+              </p>
+            </div>
           )}
         </TooltipContent>
       </Tooltip>
