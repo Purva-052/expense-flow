@@ -146,14 +146,23 @@ const CustomDropDownSearchable = ({
       control={form?.control}
       name={name}
       render={({ field }: any) => {
-        // Preserve boolean false as a valid selected value for single select
-        const valueArray = multiple
-          ? Array.isArray(field.value)
-            ? field.value
-            : []
-          : field.value === null || field.value === undefined
-          ? []
-          : [field.value];
+        // Preserve boolean false and numeric 0 as valid selected values for single select
+        // Treat empty string as no selection so placeholder shows correctly
+        // Handle multiple and single select separately to respect empty arrays
+        let valueArray: any[] = [];
+        if (multiple) {
+          valueArray =
+            Array.isArray(field.value) && field.value.length > 0
+              ? field.value
+              : [];
+        } else {
+          const isEmptyString =
+            typeof field.value === "string" && field.value.trim() === "";
+          valueArray =
+            field.value === null || field.value === undefined || isEmptyString
+              ? []
+              : [field.value];
+        }
         return (
           <FormItem className={`flex flex-col ${className}`}>
             <FormLabel>{label}</FormLabel>
