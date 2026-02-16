@@ -426,7 +426,20 @@ export const InterviewForm = ({
                       <FormItem>
                         <FormLabel>Phone Number</FormLabel>
                         <FormControl>
-                          <Input placeholder="+1234567890" {...field} />
+                          <Input
+                            {...field}
+                            type="tel"
+                            placeholder="1234567890"
+                            maxLength={10} // ✅ works
+                            inputMode="tel"
+                            onChange={(e) => {
+                              // Allow only valid characters while typing
+                              const value = e.target.value;
+                              if (/^[+0-9()\-\s]*$/.test(value)) {
+                                field.onChange(value);
+                              }
+                            }}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -485,6 +498,8 @@ export const InterviewForm = ({
                             <FormControl>
                               <Input
                                 type="number"
+                                min={1}
+                                step="0.01"
                                 placeholder="100000"
                                 {...field}
                               />
@@ -502,7 +517,9 @@ export const InterviewForm = ({
                             <FormControl>
                               <Input
                                 type="number"
-                                placeholder="120000"
+                                min={1}
+                                step="0.01"
+                                placeholder="100000"
                                 {...field}
                               />
                             </FormControl>

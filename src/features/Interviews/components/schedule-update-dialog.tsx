@@ -439,7 +439,19 @@ export const ScheduleUpdateDialog = ({
                     <CustomDatePicker
                       control={form.control}
                       name="statusChangedDate"
-                      label="Status Changed Date"
+                      label={
+                        interviewStatus !== "joining"
+                          ? "Status Changed Date"
+                          : "Joining Date"
+                      }
+                      disabledDays={(date: Date) => {
+                        const today = new Date();
+
+                        // Remove time part
+                        today.setHours(0, 0, 0, 0);
+
+                        return date < today; // disable past only
+                      }}
                     />
                   )}
 
