@@ -55,6 +55,7 @@ export const ReactBigCalendar = ({
     if (!events) return [];
 
     return events.map((event) => {
+      // console.log("event: ", event);
       const techColor =
         (event as any)?.extendedProps?.technology?.color ||
         (event as any)?.extendedProps?.technology?.colour ||
@@ -64,7 +65,9 @@ export const ReactBigCalendar = ({
         ...event,
         interViewer: event.interViewer || "Untitled",
         start: new Date(event.start),
-        end: event.end ? new Date(event.end) : new Date(event.start),
+        end: event.extendedProps.interviewEnd
+          ? new Date(event.extendedProps.interviewEnd)
+          : new Date(event.start),
         title: event.title || "Untitled",
         backgroundColor: techColor,
         borderColor: techColor,
