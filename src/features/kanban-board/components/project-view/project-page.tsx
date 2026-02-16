@@ -564,9 +564,9 @@ const ProjectPage = ({
                     <div className="w-1 shrink-0" />
                     <div className="flex-1 min-w-0">Project</div>
 
-                    <div className="w-14 shrink-0 text-center">Status</div>
+                    <div className="w-32 shrink-0 text-center">Status</div>
 
-                    <div className="w-64 shrink-0">Progress</div>
+                    <div className="w-48 shrink-0">Progress</div>
 
                     <div className="w-28 shrink-0">Deadline</div>
                     <div className="w-24 shrink-0">Team</div>
