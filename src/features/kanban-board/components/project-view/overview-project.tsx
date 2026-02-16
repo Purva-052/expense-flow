@@ -26,6 +26,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DeveloperDialog } from "../developer-dialog";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { Badge } from "@/components/ui/badge";
 // import { getYearsOfExperience } from "../developer-chip";
 
 export const formatExperience = (
@@ -127,6 +128,8 @@ const OverviewProject = ({ projectId }: { projectId?: any }) => {
       </div>
     );
   }
+
+  const developerAllocationsCount = project.developerAllocations?.length || 0;
 
   return (
     <div className="space-y-4 pb-12">
@@ -319,6 +322,7 @@ const OverviewProject = ({ projectId }: { projectId?: any }) => {
             <Users size={16} />
             <h3 className="ml-2 text-lg font-bold text-gray-900">
               Assigned Developers
+              <Badge className="ml-2">{developerAllocationsCount}</Badge>
             </h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
