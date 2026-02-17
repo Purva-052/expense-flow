@@ -179,7 +179,12 @@ function Sidebar({
 
   if (isMobile) {
     return (
-      <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
+      <Sheet
+        open={openMobile}
+        onOpenChange={setOpenMobile}
+        {...props}
+        modal={false}
+      >
         <SheetContent
           data-sidebar="sidebar"
           data-slot="sidebar"

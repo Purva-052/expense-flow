@@ -522,7 +522,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
         </div>
 
         {/* ================= CERTIFICATES ================= */}
-        {user.role !== "admin" && user.role !== "project_manager" && (
+        {user.role !== "admin" && (
           <Card className="shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>

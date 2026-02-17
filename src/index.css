@@ -183,9 +183,18 @@
   }
   html {
     @apply overflow-x-hidden;
+    scrollbar-gutter: stable;
   }
   body {
     @apply bg-background text-foreground min-h-svh w-full;
+    scrollbar-gutter: stable;
+  }
+
+  /* Hide main body scrollbar while drawer is open (vaul drawer uses data-slot attrs) */
+  body:has([data-slot="drawer-overlay"][data-state="open"]),
+  body:has([data-slot="drawer-content"][data-state="open"]) {
+    overflow: hidden !important;
+    height: 100vh !important;
   }
 
   button:not(:disabled),
@@ -437,4 +446,13 @@
 
 .ck-editor-lg .ck-editor__editable {
   min-height: 150px;
+}
+
+body {
+  overflow-y: auto !important;
+  padding-right: 0 !important;
+}
+
+body[data-scroll-locked] {
+  overflow: hidden !important;
 }
