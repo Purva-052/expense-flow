@@ -54,20 +54,25 @@ export const ReactBigCalendar = ({
   const calendarEvents = useMemo(() => {
     if (!events) return [];
 
-    return events.map((event) => {
-      // console.log("event: ", event);
+    return events.map((event: any) => {
       const techColor =
-        (event as any)?.extendedProps?.technology?.color ||
-        (event as any)?.extendedProps?.technology?.colour ||
+        event?.extendedProps?.technology?.color ||
+        event?.extendedProps?.technology?.colour ||
         "#039be5";
+
+      // ✅ Start time from effectiveDate
+      const startDate = new Date(
+        event.extendedProps.latestStatusLog.effectiveDate
+      );
+
+      // ✅ End time = start + 30 minutes
+      const endDate = new Date(startDate.getTime() + 30 * 60 * 1000);
 
       return {
         ...event,
         interViewer: event.interViewer || "Untitled",
-        start: new Date(event.start),
-        end: event.extendedProps.interviewEnd
-          ? new Date(event.extendedProps.interviewEnd)
-          : new Date(event.start),
+        start: startDate,
+        end: endDate, // 🔥 auto calculated
         title: event.title || "Untitled",
         backgroundColor: techColor,
         borderColor: techColor,
