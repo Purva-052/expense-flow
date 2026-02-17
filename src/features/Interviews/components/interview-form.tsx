@@ -407,8 +407,8 @@ export const InterviewForm = ({
                           <Input
                             {...field}
                             type="tel"
-                            placeholder="1234567890"
-                            maxLength={10} // ✅ works
+                            placeholder="+91 1234567890"
+                            maxLength={15} // ✅ works
                             inputMode="tel"
                             onChange={(e) => {
                               // Allow only valid characters while typing
@@ -746,7 +746,30 @@ export const InterviewForm = ({
                 onClick={async () => {
                   form.setValue("step", 2, { shouldValidate: false });
 
-                  const isValid = await form.trigger();
+                  let isValid = false;
+
+                  if (isEditMode) {
+                    // ✅ Validate ONLY fields present in Edit form
+                    isValid = await form.trigger([
+                      "candidateName",
+                      "technology",
+                      "email",
+                      "phoneNumber",
+                      "location",
+                      "experience",
+                      "currentCtc",
+                      "expectedCtc",
+                      "noticePeriod",
+                      "interviewerName",
+                      "interviewType",
+                      "interviewStatus",
+                      "joiningDate",
+                      "notes",
+                    ]);
+                  } else {
+                    // ✅ Create mode → validate all
+                    isValid = await form.trigger();
+                  }
 
                   if (isValid) {
                     handleFormSubmit(form.getValues());

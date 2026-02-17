@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { format } from "date-fns";
@@ -99,9 +100,10 @@ export const InterviewDetailsDialog = ({
   //     ? baseStatuses // admin on add → all statuses
   //     : baseStatuses.filter((s) => ADD_STATUSES.includes(s.value));
 
-  const details = event.extendedProps;
-  const interviewStart = new Date(details.interviewStart);
-  const interviewEnd = new Date(details.interviewEnd);
+  const details: any = event.extendedProps;
+
+  const interviewStart = new Date(details.latestStatusLog.effectiveDate);
+  const interviewEnd = new Date(interviewStart.getTime() + 30 * 60 * 1000);
   const techColor = details.technology?.color || "#10B981";
   // const updateInterviewMutation = useUpdateInterview(() => {
   //   // This callback runs after successful update
