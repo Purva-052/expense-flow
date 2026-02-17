@@ -35,6 +35,8 @@ import {
 // import { useAuthStore } from "@/stores/use-auth-store";
 // import { roles } from "@/utils/constant";
 import { StickyNotesTab } from "@/features/sticky-notes/components/sticky-notes-tab";
+import { useHoursLogStore } from "../../stores/useHoursLogStore";
+import { AddHoursLogDialog } from "./milestone-list/add-hours-log-dialog";
 
 export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
   // const { user } = useAuthStore();
@@ -46,6 +48,7 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
   const project = (projectDetailsResponse as any)?.data;
   const [activeMainTab, setActiveMainTab] = useState("overview");
   const [isChangingTab, setIsChangingTab] = useState(false);
+  const hoursLogStore = useHoursLogStore();
 
   useEffect(() => {
     setIsChangingTab(true);
@@ -172,6 +175,16 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
             )}
           </div>
         </Tabs>
+        {hoursLogStore.isOpen && hoursLogStore.props && (
+          <AddHoursLogDialog
+            {...hoursLogStore.props}
+            open={hoursLogStore.isOpen}
+            onOpenChange={(open) => {
+              if (!open) hoursLogStore.closeDialog();
+            }}
+            hideTrigger
+          />
+        )}
       </DrawerHeader>
     </DrawerContent>
   );
