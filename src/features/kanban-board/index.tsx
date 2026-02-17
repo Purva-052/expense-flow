@@ -10,6 +10,7 @@ import Board from "./components/Board";
 import InquiryTab from "./components/inquiryTab";
 import ProjectPage from "./components/project-view/project-page";
 import ResourceTab from "./components/resourceTab";
+import CertificateTab from "./components/certificateTab";
 import { HistoryProjectModal } from "../projects/components/history-modal";
 import { useProjectsStore } from "../projects/stores/useProjectsStore";
 import { useGetProjectTypesDropdownList } from "../Project-type/services";
@@ -28,6 +29,7 @@ const ProjectBoard = () => {
   const [archiveProjectCount, setArchiveProjectCount] = useState<number | null>(
     null
   );
+  const [certificateCount, _] = useState<number | null>(null);
   const user = useAuthStore((state) => state.user);
   const userRole = user?.user?.role;
   const userId = user?.user?.id;
@@ -41,8 +43,10 @@ const ProjectBoard = () => {
 
   // Get initial filter for handlerId
   const initialHandlerId = useMemo(() => {
-    if (userRole === roles.DEVELOPER || userRole === roles.BDE) return undefined;
-    const isCoordinatorView = userRole === roles.PROJECT_MANAGER || userRole === roles.TEAM_LEAD;
+    if (userRole === roles.DEVELOPER || userRole === roles.BDE)
+      return undefined;
+    const isCoordinatorView =
+      userRole === roles.PROJECT_MANAGER || userRole === roles.TEAM_LEAD;
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem(PROJECT_DETAILS_FILTER_STORAGE_KEY);
       if (saved) {
@@ -107,7 +111,7 @@ const ProjectBoard = () => {
       {/* {userRole === roles.BDE ? (
         <InquiryPage />
       ) : ( */}
-      <Main className="h-screen overflow-auto  flex flex-col bg-[#f9fafb]">
+      <Main className="h-screen overflow-hidden  flex flex-col bg-[#f9fafb]">
         <div className="flex gap-4">
           {userRole === roles.DEVELOPER ? (
             <Tabs
@@ -170,6 +174,17 @@ const ProjectBoard = () => {
                       )}
                     </TabsTrigger>
                   )}
+                  {userRole !== roles.BDE && (
+                    <TabsTrigger
+                      value="Certificates"
+                      className={tabTriggerClass}
+                    >
+                      Certificates
+                      {certificateCount !== null && (
+                        <Badge className="ml-1">{certificateCount}</Badge>
+                      )}
+                    </TabsTrigger>
+                  )}
                   {(userId === 1 || userRole === roles.BDE) && (
                     <TabsTrigger value="inquiry" className={tabTriggerClass}>
                       Inquiries
@@ -186,77 +201,80 @@ const ProjectBoard = () => {
                 </TabsList>
 
                 {activeTab === "project_details" && userRole !== roles.BDE && (
-                    <TablePageHeader
-                      // title="Projects"
-                      buttonText="Add Project"
-                      onButtonClick={handleAdd}
-                    >
-                      {open && (
-                        <ActionFormModal
-                          clientsList={clientsList}
-                          clientListLoading={clientListLoading}
-                          projectTypes={ProjectType?.data}
-                          projectTypesLoading={LoadingProjectType}
-                          projecthandler={projecthandler}
-                          projecthandlerLoading={projecthandlerLoading}
-                          technologyList={technologyList}
-                          technologyListLoading={technologyListLoading}
-                        />
-                      )}
-                    </TablePageHeader>
-                  )}
-                </div>
-
-                {/* Board Tab */}
-                <TabsContent value="project_details">
-                  <ProjectPage onTotalCountChange={setActiveProjectCount} />
-                </TabsContent>
-                <TabsContent value="board">
-                  <Board
-                    technologies={technologies}
-                    techLoading={techLoading}
-                    activeTab={activeTab}
-                    onTotalCountChange={setActiveProjectCount}
-                  />
-                </TabsContent>
-
-                {/* Resources Tab */}
-                <TabsContent value="resources">
-                  <ResourceTab
-                    technologies={technologies}
-                    techLoading={techLoading}
-                    activeTab={activeTab}
-                  />
-                </TabsContent>
-
-                <TabsContent value="Project Coordinator">
-                  <ResourceTab
-                    technologies={technologies}
-                    techLoading={techLoading}
-                    activeTab={activeTab}
-                  />
-                </TabsContent>
-
-                <TabsContent value="Archive Projects">
-                  <ProjectPage
-                    activeTab="Archive Projects"
-                    onTotalCountChange={setArchiveProjectCount}
-                  />
-                </TabsContent>
-                {userId === 1 || userRole === roles.BDE ? (
-                  <TabsContent value="inquiry">
-                    {userRole === roles.BDE ? <InquiryPage /> : <InquiryTab />}
-                  </TabsContent>
-                ) : null}
-                {userId === 1 && (
-                  <TabsContent value="Archive inquiry">
-                    <InquiryTab activeTab={activeTab} />
-                  </TabsContent>
+                  <TablePageHeader
+                    // title="Projects"
+                    buttonText="Add Project"
+                    onButtonClick={handleAdd}
+                  >
+                    {open && (
+                      <ActionFormModal
+                        clientsList={clientsList}
+                        clientListLoading={clientListLoading}
+                        projectTypes={ProjectType?.data}
+                        projectTypesLoading={LoadingProjectType}
+                        projecthandler={projecthandler}
+                        projecthandlerLoading={projecthandlerLoading}
+                        technologyList={technologyList}
+                        technologyListLoading={technologyListLoading}
+                      />
+                    )}
+                  </TablePageHeader>
                 )}
-              </Tabs>
-            )}
-          </div>
-        </Main>
+              </div>
+
+              {/* Board Tab */}
+              <TabsContent value="project_details">
+                <ProjectPage onTotalCountChange={setActiveProjectCount} />
+              </TabsContent>
+              <TabsContent value="board">
+                <Board
+                  technologies={technologies}
+                  techLoading={techLoading}
+                  activeTab={activeTab}
+                  onTotalCountChange={setActiveProjectCount}
+                />
+              </TabsContent>
+
+              {/* Resources Tab */}
+              <TabsContent value="resources">
+                <ResourceTab
+                  technologies={technologies}
+                  techLoading={techLoading}
+                  activeTab={activeTab}
+                />
+              </TabsContent>
+
+              <TabsContent value="Project Coordinator">
+                <ResourceTab
+                  technologies={technologies}
+                  techLoading={techLoading}
+                  activeTab={activeTab}
+                />
+              </TabsContent>
+
+              <TabsContent value="Archive Projects">
+                <ProjectPage
+                  activeTab="Archive Projects"
+                  onTotalCountChange={setArchiveProjectCount}
+                />
+              </TabsContent>
+              <TabsContent value="Certificates">
+                <CertificateTab />
+              </TabsContent>
+              {userId === 1 || userRole === roles.BDE ? (
+                <TabsContent value="inquiry">
+                  {userRole === roles.BDE ? <InquiryPage /> : <InquiryTab />}
+                </TabsContent>
+              ) : null}
+              {userId === 1 && (
+                <TabsContent value="Archive inquiry">
+                  <InquiryTab activeTab={activeTab} />
+                </TabsContent>
+              )}
+            </Tabs>
+          )}
+        </div>
+      </Main>
       <HistoryProjectModal />
     </>
   );

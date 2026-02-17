@@ -191,7 +191,7 @@ const ProjectDetailsDialog = ({
           </TabsContent>
 
           {/* --- TAB 2: Project History --- */}
-          <TabsContent value="history" className="flex-1 mt-2 overflow-y-auto">
+          <TabsContent value="history" className="flex-1 mt-2 overflow-y-auto [scrollbar-gutter:stable]">
             <div className="rounded-xl p-2">
               <DialogHeader className="border-b pb-3 mb-4">
                 <DialogTitle className="text-lg font-semibold flex items-center gap-2">
@@ -236,7 +236,7 @@ const ProjectDetailsDialog = ({
                 </div>
               ) : timelineData?.length > 0 ? (
                 <div className="ml-10">
-                  <Timeline className="mt-3  overflow-y-auto max-h-[55dvh] h-full pb-14 px-2">
+                  <Timeline className="mt-3  overflow-y-auto [scrollbar-gutter:stable] max-h-[55dvh] h-full pb-14 px-2">
                     {timelineData?.map((item: any) => (
                       <TimelineItem key={item.id}>
                         <TimelineHeader>
