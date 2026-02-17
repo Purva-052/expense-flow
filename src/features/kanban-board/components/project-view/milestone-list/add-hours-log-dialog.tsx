@@ -41,7 +41,6 @@ import {
 const parseTime = (time: string | null) => {
   if (!time) return { hours: "0", minutes: "0" };
 
-  // Handle "2.15" decimal format
   if (time.includes(".")) {
     const [h, m] = time.split(".");
     return {
@@ -50,7 +49,6 @@ const parseTime = (time: string | null) => {
     };
   }
 
-  // Handle "2h15m" format
   const timeMatch = time.match(/(\d+)h(\d+)m/);
   if (timeMatch) {
     return {
@@ -59,19 +57,16 @@ const parseTime = (time: string | null) => {
     };
   }
 
-  // Handle "2h" format
   const hourMatch = time.match(/(\d+)h/);
   if (hourMatch) {
     return { hours: String(parseInt(hourMatch[1])), minutes: "0" };
   }
 
-  // Handle "15m" format
   const minMatch = time.match(/(\d+)m/);
   if (minMatch) {
     return { hours: "0", minutes: String(parseInt(minMatch[1])) };
   }
 
-  // Default to whole number as hours
   return { hours: String(parseInt(time)), minutes: "0" };
 };
 
@@ -132,6 +127,10 @@ export const AddHoursLogDialog = ({
     }
   }, [open, initialData]);
 
+  // --- REMOVED THE USEEFFECT BLUR HANDLER HERE ---
+  // The logic inside DialogContent > onFocusOutside is sufficient
+  // and prevents the tab-switching conflict.
+
   const { mutate: updateReport, isPending: isUpdating } = useUpdateDailyReport(
     reportId?.toString() || "",
     () => {
@@ -164,8 +163,6 @@ export const AddHoursLogDialog = ({
       updateReport({
         taskDescription: description,
         timeSpent: `${hours}h${minutes}m`,
-        // Update reportingDate if necessary, usually it's not editable in some systems but let's assume it is if needed.
-        // The service usually only takes these two based on previous observation.
       });
     } else {
       const payload = {
@@ -182,7 +179,10 @@ export const AddHoursLogDialog = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+    >
       {!hideTrigger && (
         <TooltipProvider>
           <Tooltip>
@@ -205,7 +205,17 @@ export const AddHoursLogDialog = ({
         </TooltipProvider>
       )}
 
-      <DialogContent className="max-w-2xl">
+      <DialogContent
+        className="max-w-2xl"
+        // These 3 props are critical for CKEditor/Iframes inside Radix Dialogs
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+        onFocusOutside={(e) => {
+          // Prevents the dialog from closing when focus moves to the iframe
+          // or when returning from a different browser tab
+          e.preventDefault();
+        }}
+      >
         <DialogHeader>
           <DialogTitle>
             {reportId ? "Edit" : "Add"} Hour Log{" "}
@@ -231,12 +241,8 @@ export const AddHoursLogDialog = ({
                   <Calendar
                     disabled={(date) => {
                       const today = new Date();
-
-                      // remove time part
                       today.setHours(0, 0, 0, 0);
-
-                      const day = date.getDay(); // 0 = Sunday, 6 = Saturday
-
+                      const day = date.getDay();
                       return date > today || day === 0 || day === 6;
                     }}
                     mode="single"

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Eye, Trash2 } from "lucide-react";
+import { Check, Eye, Trash2, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
@@ -12,7 +12,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { AddHoursLogDialog } from "./add-hours-log-dialog";
+import { useHoursLogStore } from "../../../stores/useHoursLogStore";
 import { UpdateTaskStatusDialog } from "./update-task-status-dialog";
 import { MilestoneTask } from "./types";
 
@@ -39,7 +39,7 @@ export const TaskActions = ({
 }: TaskActionsProps) => {
   const { user } = useAuthStore();
   const Role = user?.user?.role;
-  const [addLogOpen, setAddLogOpen] = useState(false);
+  const hoursLogStore = useHoursLogStore();
   const [updateStatusOpen, setUpdateStatusOpen] = useState(false);
   const isAdmin = Role === roles.ADMIN;
   const isDeveloper = Role === roles.DEVELOPER;
@@ -50,17 +50,33 @@ export const TaskActions = ({
 
   return (
     <div className="flex items-center gap-2">
-      <AddHoursLogDialog
-        open={addLogOpen}
-        onOpenChange={setAddLogOpen}
-        projectId={projectId}
-        milestoneId={milestoneId}
-        taskId={task.id || ""}
-        taskName={task.taskName}
-        taskStatus={task.status}
-        onSuccess={onAddLogSuccess}
-        milestoneStatus={milestoneStatus}
-      />
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              disabled={task.status === "completed"}
+              className="p-2 rounded-md hover:bg-[#fee2e2] disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => {
+                hoursLogStore.openDialog({
+                  projectId,
+                  milestoneId,
+                  taskId: task.id || "",
+                  taskName: task.taskName,
+                  taskStatus: task.status,
+                  onSuccess: onAddLogSuccess,
+                  milestoneStatus: milestoneStatus,
+                });
+              }}
+            >
+              <Clock className="h-5 w-5 text-[#e11d48]" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            <p>Add Hours Log</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
       <UpdateTaskStatusDialog
         open={updateStatusOpen}
