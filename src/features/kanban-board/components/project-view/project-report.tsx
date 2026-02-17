@@ -206,6 +206,10 @@ const ProjectReportTable = ({ projectId }: { projectId?: string | number }) => {
       // {
       //   id: "actions",
       //   header: "Actions",
+      // ...reportColumns.slice(3),
+      // {
+      //   id: "actions",
+      //   header: "Actions",
       //   cell: ({ row }) => {
       //     const isCurrentUser = row.original.employee?.id === user?.user?.id;
       //     if (!isCurrentUser) return null;

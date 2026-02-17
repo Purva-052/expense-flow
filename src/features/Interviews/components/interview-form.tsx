@@ -1,6 +1,7 @@
+/* eslint-disable prefer-const */
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserCircle2, CalendarClock, Check } from "lucide-react";
@@ -66,16 +67,6 @@ const step1Fields: (keyof InterviewFormValues)[] = [
   "resumeS3Key",
 ];
 
-// const step2Fields: (keyof InterviewFormValues)[] = [
-//   "interviewerName",
-//   "startTime",
-//   "endTime",
-//   "interviewType",
-//   "interviewUrl",
-//   "interviewStatus",
-//   "joiningDate",
-// ];
-
 export const InterviewForm = ({
   onSubmit,
   onClose,
@@ -116,28 +107,30 @@ export const InterviewForm = ({
       ? baseStatuses.filter((s) => s.value !== "joining")
       : baseStatuses.filter((s) => ADD_STATUSES.includes(s.value));
 
-  let activeSchema = interviewFormSchema;
-  if (isEditMode && userRole === roles.ADMIN) {
-    activeSchema = interviewFormSchema.refine(
-      (data) => {
-        if (data.interviewStatus !== "joining") return true;
-        const val = data.joiningDate;
-        if (val instanceof Date) return true;
-        return !!val && typeof val === "string" && val.trim().length > 0;
-      },
-      {
-        message: "Joining Date is required when status is Joining",
-        path: ["joiningDate"],
-      }
-    ) as any;
-  }
+  const activeSchema = useMemo(() => {
+    let schema = interviewFormSchema;
+    if (isEditMode && userRole === roles.ADMIN) {
+      return schema.refine(
+        (data) => {
+          if (data.interviewStatus !== "joining") return true;
+          return !!data.joiningDate;
+        },
+        {
+          message: "Joining Date is required when status is Joining",
+          path: ["joiningDate"],
+        }
+      );
+    }
+    return schema;
+  }, [isEditMode, userRole]);
 
   const form = useForm<InterviewFormValues>({
-    resolver: zodResolver(activeSchema),
-    mode: "onBlur",
+    resolver: zodResolver(activeSchema as any),
+    mode: "onSubmit",
     reValidateMode: "onChange",
     defaultValues: isEditMode
       ? {
+          step: 2,
           candidateName: initialData.candidateName || "",
           technology: initialData.technology?.id?.toString() || "",
           email: initialData.email || "",
@@ -160,6 +153,7 @@ export const InterviewForm = ({
           joiningDate: initialData.joiningDate || "",
         }
       : {
+          step: 1,
           candidateName: "",
           technology: "",
           email: "",
@@ -193,7 +187,6 @@ export const InterviewForm = ({
 
   const hasActualChanges = (): boolean => {
     if (!isEditMode || !form.formState.isDirty) return false;
-    // isDirty from RHF is efficient for checking changes from defaultValues
     return true;
   };
 
@@ -212,25 +205,22 @@ export const InterviewForm = ({
   }, [startTime, form]);
 
   useEffect(() => {
-    if (interviewType) {
+    if (interviewType && currentStep === 2) {
       form.trigger("interviewUrl");
     }
-  }, [interviewType, form]);
+  }, [interviewType, currentStep, form]);
+  useEffect(() => {
+    if (interviewType && currentStep === 2) {
+      form.trigger("interviewUrl");
+    }
+  }, [interviewType, currentStep, form]);
 
   const handleNextStep = async () => {
-    const isValid = await trigger(step1Fields, { shouldFocus: true });
-    const resumeFile = form.getValues("resume");
-    const resumeKey = form.getValues("resumeS3Key");
-
-    if (!resumeFile && !resumeKey) {
-      form.setError("resume", {
-        type: "manual",
-        message: "Resume is required",
-      });
-      return;
-    }
+    // Validate only Step 1 fields
+    const isValid = await trigger(step1Fields);
 
     if (isValid) {
+      // ONLY change the UI state, do NOT set form value 'step' to 2 yet
       setCurrentStep(2);
     }
   };
@@ -257,20 +247,6 @@ export const InterviewForm = ({
         }
       }
 
-      // if (isEditMode && initialData?.id) {
-      //   const statusChanged = initialData.status !== data.interviewStatus;
-      //   const notesChanged =
-      //     (initialData.notes ?? "").trim() !== (data.notes ?? "").trim();
-      //   if (statusChanged || notesChanged) {
-      //     await createStatusLog({
-      //       interviewId: initialData.id,
-      //       status: data.interviewStatus,
-      //       notes: data.notes || "",
-      //       effectiveDate: new Date().toISOString(),
-      //     });
-      //   }
-      // }
-
       const submissionData = {
         ...data,
         resumeS3Key: finalResumeKey,
@@ -290,7 +266,9 @@ export const InterviewForm = ({
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(handleFormSubmit)}
+        onSubmit={form.handleSubmit((data) =>
+          handleFormSubmit({ ...data, step: 2 })
+        )}
         className="space-y-4"
       >
         {!isEditMode && (
@@ -429,8 +407,8 @@ export const InterviewForm = ({
                           <Input
                             {...field}
                             type="tel"
-                            placeholder="1234567890"
-                            maxLength={10} // ✅ works
+                            placeholder="+91 1234567890"
+                            maxLength={15} // ✅ works
                             inputMode="tel"
                             onChange={(e) => {
                               // Allow only valid characters while typing
@@ -757,13 +735,48 @@ export const InterviewForm = ({
               </Button>
             ) : (
               <Button
-                type="submit"
+                // type="submit"
+                type="button"
                 className="flex-1 sm:flex-initial"
                 disabled={
                   isSubmitting ||
                   isSubmittingForm ||
                   (isEditMode && !hasActualChanges())
                 }
+                onClick={async () => {
+                  form.setValue("step", 2, { shouldValidate: false });
+
+                  let isValid = false;
+
+                  if (isEditMode) {
+                    // ✅ Validate ONLY fields present in Edit form
+                    isValid = await form.trigger([
+                      "candidateName",
+                      "technology",
+                      "email",
+                      "phoneNumber",
+                      "location",
+                      "experience",
+                      "currentCtc",
+                      "expectedCtc",
+                      "noticePeriod",
+                      "interviewerName",
+                      "interviewType",
+                      "interviewStatus",
+                      "joiningDate",
+                      "notes",
+                    ]);
+                  } else {
+                    // ✅ Create mode → validate all
+                    isValid = await form.trigger();
+                  }
+
+                  if (isValid) {
+                    handleFormSubmit(form.getValues());
+                  } else {
+                    console.log("Validation Failed:", form.formState.errors);
+                  }
+                }}
               >
                 {isEditMode
                   ? isSubmitting || isSubmittingForm

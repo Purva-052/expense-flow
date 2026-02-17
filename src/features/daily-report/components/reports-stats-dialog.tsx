@@ -164,6 +164,14 @@ export function ReportsStatsDialog({
             },
           ];
 
+  // Each row is ~53px tall, header ~45px, pagination ~52px
+  // Pre-reserve space for pageSize rows so height never jumps between pages
+  const ROW_HEIGHT = 53;
+  const HEADER_HEIGHT = 45;
+  const PAGINATION_HEIGHT = 52;
+  const tableMinHeight =
+    HEADER_HEIGHT + ROW_HEIGHT * listParams.pageSize + PAGINATION_HEIGHT;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[60vw] max-w-none max-h-[90vh] flex flex-col sm:max-w-none">
@@ -177,17 +185,19 @@ export function ReportsStatsDialog({
 
         <div className="space-y-4 pt-4">
           <GlobalFilterSection filters={filters} className="mb-4" />
-          <GlobalTable<any>
-            pageSize={listParams.pageSize}
-            currentPage={listParams.currentPage}
-            totalCount={totalCount ?? 0}
-            data={(listData as any)?.data ?? []}
-            onPaginationChange={handlePaginationChange}
-            columns={columns}
-            loading={loading}
-            isPaginationEnabled
-            scrollY="45dvh"
-          />
+          {/* Min height locked to pageSize rows — no jump on page change */}
+          <div style={{ minHeight: tableMinHeight }}>
+            <GlobalTable<any>
+              pageSize={listParams.pageSize}
+              currentPage={listParams.currentPage}
+              totalCount={totalCount ?? 0}
+              data={(listData as any)?.data ?? []}
+              onPaginationChange={handlePaginationChange}
+              columns={columns}
+              loading={loading}
+              isPaginationEnabled
+            />
+          </div>
         </div>
       </DialogContent>
     </Dialog>

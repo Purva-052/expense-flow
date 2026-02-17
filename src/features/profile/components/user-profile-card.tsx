@@ -74,12 +74,19 @@ const InfoCard = ({
   value: string;
 }) => {
   return (
-    <Card className="shadow-sm">
-      <CardContent className="flex items-center gap-4 p-4">
-        <Icon className="h-5 w-5 text-blue-500" />
-        <div>
+    <Card className="shadow-sm overflow-hidden">
+      <CardContent className="flex items-start gap-4 p-4">
+        <Icon className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
+
+        <div className="min-w-0">
           <p className="text-xs text-muted-foreground">{label}</p>
-          <p className="font-semibold">{value}</p>
+
+          <p
+            className="font-semibold text-sm sm:text-base truncate break-all"
+            title={value}
+          >
+            {value || "-"}
+          </p>
         </div>
       </CardContent>
     </Card>
@@ -382,19 +389,37 @@ export const UserProfileCard = ({ user }: { user: any }) => {
     type: "skill" | "learning"
   ) => {
     try {
-      // Send only the removed skill ID in array
+      // Calculate remaining skills after deletion
+      const updatedSkills =
+        type === "skill"
+          ? skillsData.filter(
+              (item) => String(item?.skill?.id) !== String(skillId)
+            )
+          : skillsData;
+
+      const updatedLearning =
+        type === "learning"
+          ? learningData.filter(
+              (item) => String(item?.skill?.id) !== String(skillId)
+            )
+          : learningData;
+
+      // Combine remaining skill IDs from both types
+      const remainingSkillIds = [
+        ...updatedSkills.map((item) => Number(item?.skill?.id)),
+        ...updatedLearning.map((item) => Number(item?.skill?.id)),
+      ];
+
+      // Send all remaining skill IDs
       await updateProfile({
-        skillIds: [Number(skillId)],
+        skillIds: remainingSkillIds,
       });
 
+      // Update local state
       if (type === "skill") {
-        setSkillsData((prev) =>
-          prev.filter((item) => String(item?.skill?.id) !== String(skillId))
-        );
+        setSkillsData(updatedSkills);
       } else {
-        setLearningData((prev) =>
-          prev.filter((item) => String(item?.skill?.id) !== String(skillId))
-        );
+        setLearningData(updatedLearning);
       }
     } catch (error) {
       console.error("Failed to delete skill", error);
@@ -497,7 +522,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
       </div>
 
       {/* ================= CONTENT ================= */}
-      <div className="max-w-6xl mx-auto px-6 -mt-8 space-y-8 pb-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 -mt-6 sm:-mt-8 space-y-6 sm:space-y-8 pb-6 sm:pb-8">
         {/* ===== INFO CARDS ===== */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <InfoCard icon={Mail} label="Email" value={user?.email || "-"} />
@@ -515,7 +540,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
         </div>
 
         {/* ================= CERTIFICATES ================= */}
-        {user.role !== "admin" && user.role !== "project_manager" && (
+        {user.role !== "admin" && (
           <Card className="shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>

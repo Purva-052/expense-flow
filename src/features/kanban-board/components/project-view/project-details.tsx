@@ -35,6 +35,8 @@ import {
 // import { useAuthStore } from "@/stores/use-auth-store";
 // import { roles } from "@/utils/constant";
 import { StickyNotesTab } from "@/features/sticky-notes/components/sticky-notes-tab";
+import { useHoursLogStore } from "../../stores/useHoursLogStore";
+import { AddHoursLogDialog } from "./milestone-list/add-hours-log-dialog";
 
 export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
   // const { user } = useAuthStore();
@@ -46,6 +48,7 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
   const project = (projectDetailsResponse as any)?.data;
   const [activeMainTab, setActiveMainTab] = useState("overview");
   const [isChangingTab, setIsChangingTab] = useState(false);
+  const hoursLogStore = useHoursLogStore();
 
   useEffect(() => {
     setIsChangingTab(true);
@@ -80,7 +83,7 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
     "data-[state=active]:bg-black data-[state=active]:text-white";
 
   return (
-    <DrawerContent className="h-full w-full !max-w-[1100px] ml-auto">
+    <DrawerContent className="h-full w-full !max-w-[1100px] overflow-y-auto overflow-x-hidden ml-auto">
       <DrawerHeader>
         <div className="flex items-center justify-between mb-4 px-1">
           <div className="flex items-center gap-3">
@@ -105,7 +108,20 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
           onValueChange={setActiveMainTab}
           className="w-full "
         >
-          <TabsList className="mb-4 flex flex-wrap h-auto gap-2 bg-[#fdebef] rounded-full">
+          <TabsList
+            className="
+      flex gap-2
+      bg-[#fdebef]
+      rounded-full
+      px-2 py-1
+      w-full sm:w-max
+      max-w-full
+      overflow-x-auto
+      no-scrollbar
+      justify-start
+      flex-nowrap
+    "
+          >
             <TabsTrigger value="overview" className={tabTriggerClass}>
               <FileSpreadsheet className="w-4 h-4" /> Overview
             </TabsTrigger>
@@ -132,7 +148,7 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
             </TabsTrigger>
           </TabsList>
 
-          <div className="overflow-y-auto h-[calc(100vh-131px)] pr-2">
+          <div className="overflow-y-auto h-[calc(100vh-160px)] sm:h-[calc(100vh-131px)] pr-2">
             {isChangingTab ? (
               <TabContentSkeleton />
             ) : (
@@ -172,6 +188,16 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
             )}
           </div>
         </Tabs>
+        {hoursLogStore.isOpen && hoursLogStore.props && (
+          <AddHoursLogDialog
+            {...hoursLogStore.props}
+            open={hoursLogStore.isOpen}
+            onOpenChange={(open) => {
+              if (!open) hoursLogStore.closeDialog();
+            }}
+            hideTrigger
+          />
+        )}
       </DrawerHeader>
     </DrawerContent>
   );

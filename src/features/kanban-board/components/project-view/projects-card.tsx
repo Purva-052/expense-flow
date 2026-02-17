@@ -412,7 +412,7 @@ export function ProjectCard({
         </p>
       </div>
 
-      <div className="w-14 shrink-0 text-center">
+      <div className="w-32 shrink-0 text-center">
         <div
           className={cn(
             "px-2.5 py-0.5 rounded-full text-[10px] font-semibold inline-block",
@@ -426,7 +426,7 @@ export function ProjectCard({
         </div>
       </div>
 
-      <div className="w-64 shrink-0 space-y-1.5">
+      <div className="w-48 shrink-0 space-y-1.5">
         <div className="flex justify-between items-center text-[12px] font-medium">
           <span>Progress</span>
           <span>{progress}%</span>
@@ -500,7 +500,12 @@ export function ProjectCard({
     <>
       {view === "grid" ? renderGridView() : renderListView()}
 
-      <Drawer open={openDrawer} onOpenChange={setOpenDrawer} direction="right">
+      <Drawer
+        open={openDrawer}
+        onOpenChange={setOpenDrawer}
+        direction="right"
+        modal
+      >
         {openDrawer && <ProjectDetails projectId={project?.id} />}
       </Drawer>
 
