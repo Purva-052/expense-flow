@@ -389,19 +389,37 @@ export const UserProfileCard = ({ user }: { user: any }) => {
     type: "skill" | "learning"
   ) => {
     try {
-      // Send only the removed skill ID in array
+      // Calculate remaining skills after deletion
+      const updatedSkills =
+        type === "skill"
+          ? skillsData.filter(
+              (item) => String(item?.skill?.id) !== String(skillId)
+            )
+          : skillsData;
+
+      const updatedLearning =
+        type === "learning"
+          ? learningData.filter(
+              (item) => String(item?.skill?.id) !== String(skillId)
+            )
+          : learningData;
+
+      // Combine remaining skill IDs from both types
+      const remainingSkillIds = [
+        ...updatedSkills.map((item) => Number(item?.skill?.id)),
+        ...updatedLearning.map((item) => Number(item?.skill?.id)),
+      ];
+
+      // Send all remaining skill IDs
       await updateProfile({
-        skillIds: [Number(skillId)],
+        skillIds: remainingSkillIds,
       });
 
+      // Update local state
       if (type === "skill") {
-        setSkillsData((prev) =>
-          prev.filter((item) => String(item?.skill?.id) !== String(skillId))
-        );
+        setSkillsData(updatedSkills);
       } else {
-        setLearningData((prev) =>
-          prev.filter((item) => String(item?.skill?.id) !== String(skillId))
-        );
+        setLearningData(updatedLearning);
       }
     } catch (error) {
       console.error("Failed to delete skill", error);
