@@ -500,7 +500,12 @@ export function ProjectCard({
     <>
       {view === "grid" ? renderGridView() : renderListView()}
 
-      <Drawer open={openDrawer} onOpenChange={setOpenDrawer} direction="right">
+      <Drawer
+        open={openDrawer}
+        onOpenChange={setOpenDrawer}
+        direction="right"
+        modal
+      >
         {openDrawer && <ProjectDetails projectId={project?.id} />}
       </Drawer>
 

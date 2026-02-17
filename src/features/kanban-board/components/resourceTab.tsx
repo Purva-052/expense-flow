@@ -293,7 +293,7 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
           ) : filteredUserDetails?.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-[1fr_320px] gap-4">
               {/* Developer List */}
-              <div className="space-y-4 max-h-[72dvh] overflow-auto p-2">
+              <div className="space-y-4 max-h-[72dvh] overflow-auto [scrollbar-gutter:stable] p-2">
                 {userDetails.map((dev: any) => (
                   <ResourceCard
                     key={dev.id}
@@ -313,7 +313,7 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
                     </CardTitle>
                     <GlobalFilterSection filters={projectFilters} />
                   </CardHeader>
-                  <CardContent className="max-h-[62dvh] overflow-auto p-2 space-y-2">
+                  <CardContent className="max-h-[62dvh] overflow-auto [scrollbar-gutter:stable] p-2 space-y-2">
                     {projectListLoading ? (
                       <div className="flex flex-col justify-center items-center py-10 gap-3">
                         <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
