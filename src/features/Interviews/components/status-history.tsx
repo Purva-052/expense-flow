@@ -87,23 +87,22 @@ const InterviewStatusHistoryComponent = ({
               <span>{Details?.interviewer?.name ?? "-"}</span>
             </div>
           </div>
-          <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
+          {/* <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex flex-col">
               <span className="font-medium text-foreground">
                 Interview Round:
               </span>{" "}
               <span>{Details?.interviewRound ?? "-"}</span>
             </div>
-          </div>
+          </div> */}
           <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex flex-col">
               <span className="font-medium text-foreground">
                 Interview Type:
-              </span>{" "}
+              </span>
               <span>
-                {interviewTypes.find(
-                  (t) => t.value === Details?.interviewType || "-"
-                )?.label || Details?.interviewType}
+                {interviewTypes.find((t) => t.value === Details?.interviewType)
+                  ?.label || "-"}
               </span>
             </div>
           </div>

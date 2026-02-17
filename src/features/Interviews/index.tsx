@@ -290,12 +290,17 @@ const InterviewsPage = () => {
         : 0;
 
       // Combine selectedDate with startTime and endTime to create ISO datetime strings
-      const [startHours, startMinutes] = (data.startTime ?? "00:00")
-        .split(":")
-        .map(Number);
-      const [endHours, endMinutes] = (data.endTime ?? "00:00")
-        .split(":")
-        .map(Number);
+      const safeStartTime =
+        data.startTime && data.startTime.includes(":")
+          ? data.startTime
+          : "00:00";
+
+      const safeEndTime =
+        data.endTime && data.endTime.includes(":") ? data.endTime : "00:00";
+
+      const [startHours, startMinutes] = safeStartTime.split(":").map(Number);
+
+      const [endHours, endMinutes] = safeEndTime.split(":").map(Number);
 
       const interviewStart = new Date(dateToUse);
       interviewStart.setHours(startHours, startMinutes, 0, 0);
