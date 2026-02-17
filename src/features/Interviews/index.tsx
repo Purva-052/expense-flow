@@ -290,8 +290,12 @@ const InterviewsPage = () => {
         : 0;
 
       // Combine selectedDate with startTime and endTime to create ISO datetime strings
-      const [startHours, startMinutes] = data.startTime.split(":").map(Number);
-      const [endHours, endMinutes] = data.endTime.split(":").map(Number);
+      const [startHours, startMinutes] = (data.startTime ?? "00:00")
+        .split(":")
+        .map(Number);
+      const [endHours, endMinutes] = (data.endTime ?? "00:00")
+        .split(":")
+        .map(Number);
 
       const interviewStart = new Date(dateToUse);
       interviewStart.setHours(startHours, startMinutes, 0, 0);
@@ -364,51 +368,27 @@ const InterviewsPage = () => {
       const dateToUse = new Date(
         eventToUpdateSchedule.extendedProps.interviewStart
       );
+      let effectiveDate: string | null = null;
 
-      // Combine selectedDate with startTime and endTime
-      const [startHours, startMinutes] = data.startTime.split(":").map(Number);
-      const [endHours, endMinutes] = data.endTime.split(":").map(Number);
+      if (data.statusChangedDate && data.startTime) {
+        const dateObj =
+          data.statusChangedDate instanceof Date
+            ? data.statusChangedDate
+            : new Date(data.statusChangedDate);
 
-      const interviewStart = new Date(dateToUse);
-      interviewStart.setHours(startHours, startMinutes, 0, 0);
+        const [hours, minutes] = data.startTime.split(":").map(Number);
 
-      const interviewEnd = new Date(dateToUse);
-      interviewEnd.setHours(endHours, endMinutes, 0, 0);
-      // Use existing candidate data, only update scheduling fields
-      // const apiBody = {
-      //   candidateName: eventToUpdateSchedule.extendedProps.candidateName,
-      //   technology: Number(eventToUpdateSchedule.extendedProps.technology.id),
-      //   email: eventToUpdateSchedule.extendedProps.email,
-      //   phoneNumber: eventToUpdateSchedule.extendedProps.phoneNumber,
-      //   location: eventToUpdateSchedule.extendedProps.location,
-      //   link: eventToUpdateSchedule.extendedProps.link || "",
-      //   notes: data.notes || "",
-      //   experienceInYears: Number(
-      //     eventToUpdateSchedule.extendedProps.experienceInYears
-      //   ),
-      //   resumeS3Key: eventToUpdateSchedule.extendedProps.resumeLink || "",
-      //   currentCtc: Number(eventToUpdateSchedule.extendedProps.currentCtc),
-      //   expectedCtc: Number(eventToUpdateSchedule.extendedProps.expectedCtc),
-      //   noticePeriodInDays:
-      //     eventToUpdateSchedule.extendedProps.noticePeriodInDays,
-      //   interviewType: data.interviewType,
-      //   status: data.interviewStatus,
-      //   interviewerId: Number(data.interviewerName),
-      //   interviewStart: interviewStart.toISOString(),
-      //   interviewEnd: interviewEnd.toISOString(),
-      //   ...(data.joiningDate && { joiningDate: data.joiningDate }),
-      //   ...(data.interviewType === "video_call" && {
-      //     interviewUrl: data.interviewUrl,
-      //   }),
-      // };
+        dateObj.setHours(hours, minutes, 0, 0);
+
+        // Convert to ISO string (API friendly)
+        effectiveDate = dateObj.toISOString();
+      }
       await createStatusLog({
         interviewId: eventToUpdateSchedule.extendedProps.id,
         status: data.interviewStatus,
         notes: data.notes || "",
-        effectiveDate: data.statusChangedDate || dateToUse,
+        effectiveDate: effectiveDate || dateToUse,
         interviewType: data.interviewType,
-        interviewStart: interviewStart.toISOString(),
-        interviewEnd: interviewEnd.toISOString(),
         interviewerId: Number(data.interviewerName),
       });
 
