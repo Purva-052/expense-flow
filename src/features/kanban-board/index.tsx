@@ -112,14 +112,14 @@ const ProjectBoard = () => {
         <InquiryPage />
       ) : ( */}
       <Main className="h-screen overflow-hidden  flex flex-col bg-[#f9fafb]">
-        <div className="flex gap-4">
+        <div className="flex-1 min-h-0 flex flex-col gap-4">
           {userRole === roles.DEVELOPER ? (
             <Tabs
               value={activeTab}
               onValueChange={setActiveTab}
-              className="w-full"
+              className="flex-1 min-h-0 "
             >
-              <TabsContent value="project_details">
+              <TabsContent value="project_details" className="flex-1 min-h-0 flex flex-col">
                 <ProjectPage onTotalCountChange={setActiveProjectCount} />
               </TabsContent>
             </Tabs>
@@ -128,7 +128,7 @@ const ProjectBoard = () => {
             <Tabs
               value={activeTab}
               onValueChange={setActiveTab}
-              className="w-full"
+              className="flex-1 min-h-0"
             >
               {/* Tab Headers */}
 
@@ -223,7 +223,7 @@ const ProjectBoard = () => {
               </div>
 
               {/* Board Tab */}
-              <TabsContent value="project_details">
+              <TabsContent value="project_details" className="flex-1 min-h-0 flex flex-col">
                 <ProjectPage onTotalCountChange={setActiveProjectCount} />
               </TabsContent>
               <TabsContent value="board">
@@ -252,7 +252,7 @@ const ProjectBoard = () => {
                 />
               </TabsContent>
 
-              <TabsContent value="Archive Projects">
+              <TabsContent value="Archive Projects" className="flex-1 min-h-0 flex flex-col">
                 <ProjectPage
                   activeTab="Archive Projects"
                   onTotalCountChange={setArchiveProjectCount}
