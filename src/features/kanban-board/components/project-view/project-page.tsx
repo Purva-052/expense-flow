@@ -494,7 +494,7 @@ const ProjectPage = ({
   }, [technologies]);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex-1 min-h-0 flex flex-col gap-4">
       {!isBdeView && (
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <GlobalFilterSection filters={filters ?? []} />
@@ -532,7 +532,7 @@ const ProjectPage = ({
       )}
 
       <div
-        className={`${isDeveloperView || isBdeView ? "grid grid-cols-1 gap-4" : "grid grid-cols-1 gap-4 md:grid-cols-[1fr_320px] h-[75dvh]"}`}
+        className={`${isDeveloperView || isBdeView ? "flex-1 min-h-0 flex flex-col gap-4" : "flex-1 min-h-0 grid grid-cols-1 gap-4 md:grid-cols-[1fr_320px]"}`}
       >
         <DndContext
           sensors={sensors}
