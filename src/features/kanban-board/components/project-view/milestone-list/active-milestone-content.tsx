@@ -30,6 +30,7 @@ interface ActiveMilestoneContentProps {
   onViewTaskLog: (task: MilestoneTask) => void;
   onEditMilestone: (data: any) => void;
   isCurrentUserProjectHandler: boolean;
+  tasksFromParent?: MilestoneTask[];
 }
 
 const getReportColumns = (
@@ -88,6 +89,15 @@ const getReportColumns = (
         </span>
       ),
     },
+    {
+      accessorKey: "weightedHours",
+      header: "Weightage Hours (hrs)",
+      cell: ({ row }) => (
+        <span className="font-semibold text-blue-600">
+          {row.original.weightedHours || "0"}
+        </span>
+      ),
+    },
   ];
 
   if (isAuthorized) {
@@ -118,6 +128,7 @@ export const ActiveMilestoneContent = ({
   onViewTaskLog,
   onEditMilestone,
   isCurrentUserProjectHandler,
+  tasksFromParent = [],
 }: ActiveMilestoneContentProps) => {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
@@ -186,11 +197,25 @@ export const ActiveMilestoneContent = ({
   const metadata = taskDataResponse?.metadata;
 
   const tasks = useMemo<MilestoneTask[]>(() => {
-    if (Array.isArray(milestone?.tasks)) return milestone.tasks;
-    if (Array.isArray(milestone?.data?.tasks)) return milestone.data.tasks;
-    if (Array.isArray(milestone)) return milestone;
-    return [];
-  }, [milestone]);
+    let baseTasks: MilestoneTask[] = [];
+    if (Array.isArray(milestone?.tasks)) baseTasks = milestone.tasks;
+    else if (Array.isArray(milestone?.data?.tasks))
+      baseTasks = milestone.data.tasks;
+    else if (Array.isArray(milestone)) baseTasks = milestone;
+
+    // Merge weightedHours from parent tasks if not present in baseTasks
+    return baseTasks.map((task) => {
+      if (task.weightedHours && task.weightedHours !== "0.00") return task;
+
+      const parentTask = tasksFromParent.find(
+        (pt) => String(pt.id) === String(task.id)
+      );
+      if (parentTask?.weightedHours) {
+        return { ...task, weightedHours: parentTask.weightedHours };
+      }
+      return task;
+    });
+  }, [milestone, tasksFromParent]);
 
   const actualMilestone = useMemo<any>(() => {
     let base: any = {};
@@ -198,8 +223,72 @@ export const ActiveMilestoneContent = ({
     else if (milestone?.data?.tasks) base = milestone.data;
     else base = milestone || {};
 
-    return { ...base, id: milestoneId };
-  }, [milestone, milestoneId]);
+    // Robust parsing function to handle numbers and "Xh Ym" formats
+    const parseTimeValue = (value: any): number => {
+      if (value === null || value === undefined || value === "") return 0;
+      const str = String(value).trim();
+
+      // Handle "1h 30m" or "2h" or "45m" formats
+      const hourMatch = str.match(/(\d+)\s*h/i);
+      const minMatch = str.match(/(\d+)\s*m/i);
+
+      if (hourMatch || minMatch) {
+        const hours = hourMatch ? parseInt(hourMatch[1], 10) : 0;
+        const mins = minMatch ? parseInt(minMatch[1], 10) : 0;
+        return hours + mins / 60;
+      }
+
+      // Default to standard float parsing
+      const parsed = parseFloat(str);
+      return isNaN(parsed) ? 0 : parsed;
+    };
+
+    // Use a unique key that avoids collisions, especially if IDs are missing
+    const getTaskKey = (t: any) => {
+      const id = t.id ?? t.taskId;
+      if (id) return `id-${id}`;
+      // Fallback to a combination of name and index as a last resort
+      return `name-${t.taskName || "unknown"}`;
+    };
+
+    const mergedTasksMap = new Map<string, any>();
+    // First, add tasks from parent (the full list)
+    tasksFromParent.forEach((t) => {
+      if (!t) return;
+      mergedTasksMap.set(getTaskKey(t), t);
+    });
+
+    // Then, override/add with tasks from the detailed call (which has actualTime/weightedHours)
+    tasks.forEach((t) => {
+      if (!t) return;
+      const key = getTaskKey(t);
+      const existing = mergedTasksMap.get(key);
+      mergedTasksMap.set(key, { ...existing, ...t });
+    });
+
+    const allTasks = Array.from(mergedTasksMap.values());
+
+    // Calculate totals from the merged list
+    const calculatedWeightedHours = allTasks
+      .reduce((acc, t) => acc + parseTimeValue(t.weightedHours), 0)
+      .toFixed(2);
+
+    const calculatedActualHours = allTasks
+      .reduce((acc, t) => acc + parseTimeValue(t.actualTime), 0)
+      .toFixed(2);
+
+    const calculatedEstimatedHours = allTasks
+      .reduce((acc, t) => acc + parseTimeValue(t.estimatedTime), 0)
+      .toFixed(2);
+
+    return {
+      ...base,
+      id: milestoneId,
+      estimatedTime: calculatedEstimatedHours,
+      actualTime: calculatedActualHours,
+      weightedHours: calculatedWeightedHours,
+    };
+  }, [milestone, milestoneId, tasks, tasksFromParent]);
 
   if (isLoading) {
     return (
@@ -246,6 +335,14 @@ export const ActiveMilestoneContent = ({
             <p className="text-sm text-muted-foreground">Total Actual Hours</p>
             <p className="text-3xl font-bold">
               {actualMilestone?.actualTime || "0"}
+            </p>
+          </div>
+          <div className="rounded-xl border p-3 bg-card text-card-foreground shadow-sm">
+            <p className="text-sm text-muted-foreground">
+              Total Weightage Hours
+            </p>
+            <p className="text-3xl font-bold">
+              {actualMilestone?.weightedHours || "0"}
             </p>
           </div>
         </div>

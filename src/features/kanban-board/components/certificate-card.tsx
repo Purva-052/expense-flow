@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+// import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Award, Briefcase } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -88,22 +88,43 @@ export const CertificateCard = ({ user }: { user: any }) => {
             </div>
           </div>
 
-          {/* Right Side: Certificates as Badges */}
-          <div className="p-4 flex flex-col min-h-[70px] bg-transparent justify-center">
+          {/* Right Side: Certificates */}
+          <div className="p-4 bg-transparent">
             {certificates?.length > 0 ? (
               <div className="flex flex-wrap gap-2">
                 {certificates.map((cert: any) => (
-                  <Badge
+                  <div
                     key={cert.id}
-                    className="text-xs bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-300 border px-3 py-1.5 font-semibold transition-colors duration-200"
+                    className="flex items-center justify-between gap-3 rounded-full border px-3 py-1.5 shadow-sm bg-background
+                     max-w-[320px] min-w-[220px]"
                   >
-                    <Award className="h-6 w-6 text-blue-500" />
-                    {cert.name}
-                  </Badge>
+                    {/* Certificate name */}
+                    <div className="flex items-center gap-2 min-w-0 max-w-[200px]">
+                      <Award className="h-4 w-4 text-blue-500 shrink-0" />
+                      <span
+                        className="text-xs font-semibold truncate"
+                        title={cert.name}
+                      >
+                        {cert.name}
+                      </span>
+                    </div>
+
+                    {/* Status */}
+                    <span
+                      className={cn(
+                        "text-[11px] px-2 py-0.5 rounded-full font-medium capitalize shrink-0",
+                        cert.status === "in_progress"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-green-100 text-green-700"
+                      )}
+                    >
+                      {cert.status.replace("_", " ")}
+                    </span>
+                  </div>
                 ))}
               </div>
             ) : (
-              <div className="flex items-center justify-center text-sm text-muted-foreground h-full min-h-[80px]">
+              <div className="flex items-center justify-center text-sm text-muted-foreground min-h-[80px]">
                 <p>No certificates yet.</p>
               </div>
             )}

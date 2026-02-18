@@ -232,7 +232,6 @@ export const ScheduleUpdateDialog = ({
 
   useEffect(() => {
     if (initialData && open) {
-      console.log("Populating form with initial data:", initialData);
       form.reset({
         interviewerName: initialData.interviewer?.id?.toString() || "",
         statusChangedDate: initialData?.latestStatusLog?.effectiveDate
@@ -269,7 +268,6 @@ export const ScheduleUpdateDialog = ({
       form.setValue("endTime", calculatedEndTime, { shouldValidate: false });
     }
   }, [startTime, form]);
-
 
   // Reset submission state on unmount
   useEffect(() => {
