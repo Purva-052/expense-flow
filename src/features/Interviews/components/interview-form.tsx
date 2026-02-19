@@ -126,7 +126,8 @@ export const InterviewForm = ({
 
   const form = useForm<InterviewFormValues>({
     resolver: zodResolver(activeSchema as any),
-    mode: "onSubmit",
+    // Validate on change so errors clear immediately after fixing input values
+    mode: "onChange",
     reValidateMode: "onChange",
     defaultValues: isEditMode
       ? {
@@ -204,11 +205,6 @@ export const InterviewForm = ({
     }
   }, [startTime, form]);
 
-  useEffect(() => {
-    if (interviewType && currentStep === 2) {
-      form.trigger("interviewUrl");
-    }
-  }, [interviewType, currentStep, form]);
   useEffect(() => {
     if (interviewType && currentStep === 2) {
       form.trigger("interviewUrl");
@@ -342,40 +338,26 @@ export const InterviewForm = ({
                         <FormControl>
                           <Input placeholder="John Doe" {...field} />
                         </FormControl>
-                        <FormMessage />
+                        <div className="min-h-5">
+                          <FormMessage />
+                        </div>
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={form.control}
+                  <CustomDropDownSearchable
+                    form={form}
                     name="technology"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <FormLabel
-                          className={cn(
-                            "flex items-center gap-1",
-                            fieldState.error && "text-red-500"
-                          )}
-                        >
-                          Technology <span className="text-red-500">*</span>
-                        </FormLabel>
-                        <FormControl>
-                          <CustomDropDownSearchable
-                            form={form}
-                            label=""
-                            name={field.name}
-                            options={technologyList?.data?.map(
-                              (technology: any) => ({
-                                value: technology.id,
-                                label: technology.name,
-                              })
-                            )}
-                            placeholder="Select technology"
-                            isLoading={technologyListLoading}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
+                    label={
+                      <span className="flex items-center gap-1">
+                        Technology <span className="text-red-500">*</span>
+                      </span>
+                    }
+                    options={technologyList?.data?.map((technology: any) => ({
+                      value: technology.id,
+                      label: technology.name,
+                    }))}
+                    placeholder="Select technology"
+                    isLoading={technologyListLoading}
                   />
                   <FormField
                     control={form.control}
@@ -393,7 +375,9 @@ export const InterviewForm = ({
                         <FormControl>
                           <Input placeholder="candidate@email.com" {...field} />
                         </FormControl>
-                        <FormMessage />
+                        <div className="min-h-5">
+                          <FormMessage />
+                        </div>
                       </FormItem>
                     )}
                   />
@@ -419,7 +403,9 @@ export const InterviewForm = ({
                             }}
                           />
                         </FormControl>
-                        <FormMessage />
+                        <div className="min-h-5">
+                          <FormMessage />
+                        </div>
                       </FormItem>
                     )}
                   />
@@ -432,7 +418,9 @@ export const InterviewForm = ({
                         <FormControl>
                           <Input placeholder="City, Country" {...field} />
                         </FormControl>
-                        <FormMessage />
+                        <div className="min-h-5">
+                          <FormMessage />
+                        </div>
                       </FormItem>
                     )}
                   />
@@ -448,7 +436,9 @@ export const InterviewForm = ({
                             {...field}
                           />
                         </FormControl>
-                        <FormMessage />
+                        <div className="min-h-5">
+                          <FormMessage />
+                        </div>
                       </FormItem>
                     )}
                   />
@@ -459,14 +449,37 @@ export const InterviewForm = ({
                       <FormItem>
                         <FormLabel>Experience (Years)</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="5" {...field} />
+                          <Input
+                            type="number"
+                            placeholder="5"
+                            {...field}
+                            min={0}
+                            // 1. Block invalid keys (e, E, +, -)
+                            onKeyDown={(e) => {
+                              if (["e", "E", "+", "-"].includes(e.key)) {
+                                e.preventDefault();
+                              }
+                            }}
+                            // 2. Strict Length Limit (Max 2 digits)
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (value.length <= 2) {
+                                field.onChange(value ? Number(value) : "");
+                              }
+                            }}
+                          />
                         </FormControl>
-                        <FormMessage />
+                        {/* Prevents Layout Shift */}
+                        <div className="min-h-[20px] mt-1">
+                          <FormMessage />
+                        </div>
                       </FormItem>
                     )}
                   />
+
                   {userRole === roles.ADMIN && (
                     <>
+                      {/* --- CURRENT CTC FIELD --- */}
                       <FormField
                         control={form.control}
                         name="currentCtc"
@@ -478,14 +491,30 @@ export const InterviewForm = ({
                                 type="number"
                                 min={1}
                                 step="0.01"
-                                placeholder="100000"
+                                placeholder="10"
                                 {...field}
+                                onKeyDown={(e) => {
+                                  if (["e", "E", "+", "-"].includes(e.key)) {
+                                    e.preventDefault();
+                                  }
+                                }}
+                                // 3. Strict Length Limit (Max 10 digits)
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  if (value.length <= 3) {
+                                    field.onChange(value ? Number(value) : "");
+                                  }
+                                }}
                               />
                             </FormControl>
-                            <FormMessage />
+                            <div className="min-h-[20px] mt-1">
+                              <FormMessage />
+                            </div>
                           </FormItem>
                         )}
                       />
+
+                      {/* --- EXPECTED CTC FIELD --- */}
                       <FormField
                         control={form.control}
                         name="expectedCtc"
@@ -497,16 +526,32 @@ export const InterviewForm = ({
                                 type="number"
                                 min={1}
                                 step="0.01"
-                                placeholder="100000"
+                                placeholder="10"
                                 {...field}
+                                onKeyDown={(e) => {
+                                  if (["e", "E", "+", "-"].includes(e.key)) {
+                                    e.preventDefault();
+                                  }
+                                }}
+                                // 3. Strict Length Limit (Max 10 digits)
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  if (value.length <= 3) {
+                                    field.onChange(value ? Number(value) : "");
+                                  }
+                                }}
                               />
                             </FormControl>
-                            <FormMessage />
+                            <div className="min-h-[20px] mt-1">
+                              <FormMessage />
+                            </div>
                           </FormItem>
                         )}
                       />
                     </>
                   )}
+
+                  {/* --- NOTICE PERIOD FIELD --- */}
                   <FormField
                     control={form.control}
                     name="noticePeriod"
@@ -514,9 +559,26 @@ export const InterviewForm = ({
                       <FormItem>
                         <FormLabel>Notice Period</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., 30 Days" {...field} />
+                          <Input
+                            placeholder="e.g., 30 Days"
+                            maxLength={20} // 4. Native Max Length
+                            {...field}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              // 5. Allow only alphanumeric + space, Max 20 chars
+                              if (value.length <= 20) {
+                                const cleanValue = value.replace(
+                                  /[^a-zA-Z0-9\s]/g,
+                                  ""
+                                );
+                                field.onChange(cleanValue);
+                              }
+                            }}
+                          />
                         </FormControl>
-                        <FormMessage />
+                        <div className="min-h-[20px] mt-1">
+                          <FormMessage />
+                        </div>
                       </FormItem>
                     )}
                   />
@@ -556,33 +618,20 @@ export const InterviewForm = ({
                   Interviewer Details
                 </h3>
                 <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-                  <FormField
-                    control={form.control}
+                  <CustomDropDownSearchable
+                    form={form}
                     name="interviewerName"
-                    render={({ fieldState }) => (
-                      <FormItem>
-                        <FormLabel
-                          className={cn(
-                            "flex items-center gap-1",
-                            fieldState.error && "text-red-500"
-                          )}
-                        >
-                          Interviewer Name{" "}
-                          <span className="text-red-500">*</span>
-                        </FormLabel>
-                        <CustomDropDownSearchable
-                          form={form}
-                          name="interviewerName"
-                          label=""
-                          options={usersList?.data?.map((user: any) => ({
-                            value: user.id,
-                            label: user.fullName,
-                          }))}
-                          placeholder="Select interviewer"
-                          isLoading={usersListLoading}
-                        />
-                      </FormItem>
-                    )}
+                    label={
+                      <span className="flex items-center gap-1">
+                        Interviewer Name <span className="text-red-500">*</span>
+                      </span>
+                    }
+                    options={usersList?.data?.map((user: any) => ({
+                      value: user.id,
+                      label: user.fullName,
+                    }))}
+                    placeholder="Select interviewer"
+                    isLoading={usersListLoading}
                   />
                   <FormField
                     control={form.control}
@@ -597,33 +646,23 @@ export const InterviewForm = ({
                             placeholder="Select start time"
                           />
                         </FormControl>
-                        <FormMessage />
+                        <div className="min-h-5">
+                          <FormMessage />
+                        </div>
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={form.control}
+                  <CustomDropDownSearchable
+                    form={form}
                     name="interviewType"
-                    render={({ fieldState }) => (
-                      <FormItem>
-                        <FormLabel
-                          className={cn(
-                            "flex items-center gap-1",
-                            fieldState.error && "text-red-500"
-                          )}
-                        >
-                          Interview Type <span className="text-red-500">*</span>
-                        </FormLabel>
-                        <CustomDropDownSearchable
-                          form={form}
-                          name="interviewType"
-                          label=""
-                          options={interviewTypes}
-                          placeholder="Select type"
-                          searchEnabled={false}
-                        />
-                      </FormItem>
-                    )}
+                    label={
+                      <span className="flex items-center gap-1">
+                        Interview Type <span className="text-red-500">*</span>
+                      </span>
+                    }
+                    options={interviewTypes}
+                    placeholder="Select type"
+                    searchEnabled={false}
                   />
                   {interviewType === "video_call" && (
                     <FormField
@@ -643,36 +682,25 @@ export const InterviewForm = ({
                               {...field}
                             />
                           </FormControl>
-                          <FormMessage />
+                          <div className="min-h-5">
+                            <FormMessage />
+                          </div>
                         </FormItem>
                       )}
                     />
                   )}
-                  <FormField
-                    control={form.control}
+                  <CustomDropDownSearchable
+                    form={form}
                     name="interviewStatus"
-                    render={({ fieldState }) => (
-                      <FormItem>
-                        <FormLabel
-                          className={cn(
-                            "flex items-center gap-1",
-                            fieldState.error && "text-red-500"
-                          )}
-                        >
-                          Interview Status{" "}
-                          <span className="text-red-500">*</span>
-                        </FormLabel>
-                        <CustomDropDownSearchable
-                          form={form}
-                          name="interviewStatus"
-                          label=""
-                          options={filteredStatuses}
-                          placeholder="Select status"
-                          searchEnabled={false}
-                          sortOptions={false}
-                        />
-                      </FormItem>
-                    )}
+                    label={
+                      <span className="flex items-center gap-1">
+                        Interview Status <span className="text-red-500">*</span>
+                      </span>
+                    }
+                    options={filteredStatuses}
+                    placeholder="Select status"
+                    searchEnabled={false}
+                    sortOptions={false}
                   />
                   {isEditMode &&
                     userRole === roles.ADMIN &&
@@ -689,13 +717,25 @@ export const InterviewForm = ({
                     render={({ field }) => (
                       <FormItem className="md:col-span-2">
                         <FormLabel>Interviewer Comment</FormLabel>
+
                         <FormControl>
-                          <Textarea
-                            placeholder="Instructions or notes for the interviewer..."
-                            {...field}
-                          />
+                          <div className="relative">
+                            <Textarea
+                              placeholder="Instructions or notes for the interviewer..."
+                              maxLength={100}
+                              className="w-full max-w-full resize-none break-all whitespace-pre-wrap overflow-y-auto overflow-x-hidden pr-14 pb-6 leading-relaxed"
+                              {...field}
+                            />
+
+                            <span className="absolute bottom-2 right-3 text-xs text-gray-400 pointer-events-none">
+                              {field.value?.length || 0}/100
+                            </span>
+                          </div>
                         </FormControl>
-                        <FormMessage />
+
+                        <div className="min-h-5">
+                          <FormMessage />
+                        </div>
                       </FormItem>
                     )}
                   />
