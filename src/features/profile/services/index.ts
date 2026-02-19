@@ -56,7 +56,7 @@ export const useGetCertificatesList = (params?: any) => {
 };
 
 export const useCreateCertificate = (userId: string, onSuccess?: any) => {
-  return usePostData<Certificate, { name: string }>({
+  return usePostData<Certificate, { name: string; status: string }>({
     url: API.certificates.create,
     refetchQueries: [`${API.users.list}/${userId}`],
     onSuccess,
@@ -65,11 +65,15 @@ export const useCreateCertificate = (userId: string, onSuccess?: any) => {
 
 export const useUpdateCertificate = (userId: string, onSuccess?: any) => {
   const queryClient = useQueryClient();
-  return useMutation<any, Error, { id: number | string; name: string }>({
-    mutationFn: async ({ id, name }) => {
+  return useMutation<
+    any,
+    Error,
+    { id: number | string; name: string; status: string }
+  >({
+    mutationFn: async ({ id, name, status }) => {
       const response = await instance.patch({
         url: `${API.certificates.update}/${id}`,
-        data: { name },
+        data: { name, status },
       });
       return response.data;
     },

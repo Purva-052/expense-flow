@@ -80,8 +80,8 @@ const ProjectPage = ({
   const { user } = useAuthStore();
   const Role = user?.user?.role;
   const isDeveloperView = Role === roles.DEVELOPER;
-  const isCoordinatorView =
-    Role === roles.PROJECT_MANAGER || Role === roles.TEAM_LEAD;
+  // const isCoordinatorView =
+  //   Role === roles.PROJECT_MANAGER || Role === roles.TEAM_LEAD;
   const currentUserId = user?.user?.id;
   const FILTER_STORAGE_KEY = PROJECT_DETAILS_FILTER_STORAGE_KEY;
   const [searchTech, setSearchTech] = useState<string>("");
@@ -114,7 +114,7 @@ const ProjectPage = ({
           pagination: true,
           status: isInactiveTab ? "inactive" : "active",
           projectTypeId: undefined,
-          handlerId: isCoordinatorView ? currentUserId : undefined,
+          handlerId: undefined,
           technologyId: undefined,
           ...JSON.parse(saved),
         }
@@ -122,7 +122,7 @@ const ProjectPage = ({
           pagination: true,
           clientId: null,
           status: isInactiveTab ? "inactive" : "active",
-          handlerId: isCoordinatorView ? currentUserId : undefined,
+          handlerId: undefined,
           technologyId: undefined,
           priority: isInactiveTab ? undefined : "high",
           projectTypeId: undefined,
@@ -700,16 +700,19 @@ const ProjectPage = ({
             <div ref={loadMoreRef} className="h-2" />
           </div>
 
-          {!isDeveloperView && !isBdeView && (
-            <aside className="top-4 !h-full">
+          {!isDeveloperView && (
+            <aside className="top-4 !h-full flex flex-col">
               <Card
                 ref={availableDroppable.setNodeRef}
                 className={cn(
-                  "!h-full !gap-2 py-2",
+                  // CHANGE 1: Added 'flex flex-col' so children stack properly
+                  // CHANGE 2: Kept '!h-full' to fill the parent grid cell
+                  "!h-full flex flex-col !gap-2 py-2",
                   availableDroppable.isOver && "ring-2 ring-pink-500"
                 )}
               >
-                <CardHeader className="flex flex-col gap-2">
+                {/* Header stays mostly the same, it will grow as needed based on Zoom */}
+                <CardHeader className="flex flex-col gap-2 shrink-0">
                   <Tabs
                     value={activeTabResource}
                     onValueChange={setActiveTabResource}
@@ -755,7 +758,7 @@ const ProjectPage = ({
                     value={searchTech}
                     onChange={(e) => setSearchTech(e.target.value)}
                     placeholder="Search developers..."
-                    className="w-full h-10"
+                    className="w-full h-16"
                   />
                   <CustomMultiSelect
                     options={techOptions}
@@ -767,7 +770,8 @@ const ProjectPage = ({
                   />
                 </CardHeader>
 
-                <CardContent className="h-[50dvh] overflow-y-auto [scrollbar-gutter:stable] pr-2">
+                {/* CHANGE 3: Removed 'h-[50dvh]'. Added 'flex-1 min-h-0' */}
+                <CardContent className="flex-1 min-h-0 overflow-y-auto [scrollbar-gutter:stable] pr-2">
                   {AllDevelopersLoading ? (
                     <div className="space-y-4">
                       {Array.from({ length: 6 }).map((_, i) => (
@@ -789,6 +793,7 @@ const ProjectPage = ({
                       strategy={rectSortingStrategy}
                     >
                       <div className="space-y-2">
+                        {/* Render the filtered list of developers */}
                         {groupedDevelopers?.map((group) => (
                           <Collapsible
                             key={group.technologyName}
