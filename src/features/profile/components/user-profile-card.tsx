@@ -733,7 +733,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                 {/* Skills */}
                 <div>
                   <h3 className="flex items-center gap-2 font-semibold mb-3">
-                    💡 Skills
+                    💡 Special Skills
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {skillsData.length > 0 ? (

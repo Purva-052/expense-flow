@@ -75,8 +75,8 @@ const Board = ({
   const { user } = useAuthStore();
   const Role = user?.user?.role;
   const isDeveloperView = Role === roles.DEVELOPER;
-  const isCoordinatorView =
-    Role === roles.PROJECT_MANAGER || Role === roles.TEAM_LEAD;
+  // const isCoordinatorView =
+  //   Role === roles.PROJECT_MANAGER || Role === roles.TEAM_LEAD;
   const currentUserId = user?.user?.id;
   const FILTER_STORAGE_KEY = "board_filters";
   const [searchTech, setSearchTech] = useState<string>("");
@@ -106,7 +106,7 @@ const Board = ({
           pagination: true,
           status: isInactiveTab ? "inactive" : "active",
           projectTypeId: undefined,
-          handlerId: isCoordinatorView ? currentUserId : undefined,
+          handlerId: undefined,
           technologyId: undefined,
           ...JSON.parse(saved),
         }
@@ -114,7 +114,7 @@ const Board = ({
           pagination: true,
           clientId: null,
           status: isInactiveTab ? "inactive" : "active",
-          handlerId: isCoordinatorView ? currentUserId : undefined,
+          handlerId: undefined,
           technologyId: undefined,
           priority: "high",
           projectTypeId: undefined,

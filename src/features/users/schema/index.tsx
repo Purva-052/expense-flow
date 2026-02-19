@@ -21,6 +21,7 @@ const baseUserSchema = z.object({
     .number({ invalid_type_error: "Technology is required." })
     .min(1, { message: "Please select a technology." })
     .optional(),
+  reportLogAccessIds: z.array(z.number()).optional(),
   careerStartDate: z.any().refine((val) => !isNaN(Date.parse(val)), {
     message: "Invalid date format.",
   }),
