@@ -373,28 +373,7 @@ export const InterviewDetailsDialog = ({
                   (s) => s.value === details.status
                 );
 
-                // badge variant choose dynamically
-                // const variant =
-                //   details.status === "selected"
-                //     ? "default"
-                //     : details.status === "pending"
-                //       ? "secondary"
-                //       : "outline";
-
-                return (
-                  <Badge
-                    variant={
-                      details.status === "selected"
-                        ? "default"
-                        : details.status === "pending"
-                          ? "secondary"
-                          : "outline"
-                    }
-                    className="mt-1"
-                  >
-                    {statusItem?.label ?? details.status ?? "NA"}
-                  </Badge>
-                );
+                return statusItem?.label ?? details.status ?? "NA";
               })()}
             </div>
           </div>

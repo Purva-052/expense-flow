@@ -33,6 +33,12 @@ import { roles } from "@/utils/constant";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 
+// --- STYLING CONSTANTS FOR LAYOUT STABILITY ---
+// Reserves space at bottom for error message so layout doesn't jump
+const formItemClass = "relative pb-6 space-y-1";
+// Floats the error message in the reserved space
+const formMessageClass = "absolute bottom-1 left-0 text-xs font-medium";
+
 // Schema for schedule update (only step 2 fields)
 const scheduleUpdateSchema = z
   .object({
@@ -64,19 +70,6 @@ const scheduleUpdateSchema = z
         message: "Interview Status is required",
       }
     ),
-    // joiningDate: z
-    //   .union([z.date(), z.string()])
-    //   .optional()
-    //   .refine(
-    //     (val) => {
-    //       if (!val) return true;
-    //       if (val instanceof Date) return true;
-    //       return !isNaN(Date.parse(val));
-    //     },
-    //     {
-    //       message: "Invalid date format.",
-    //     }
-    //   ),
     statusChangedDate: z
       .union([z.date(), z.string()])
       .optional()
@@ -197,25 +190,8 @@ export const ScheduleUpdateDialog = ({
       ? baseStatuses
       : baseStatuses.filter((s) => EDIT_STATUSES.includes(s.value));
 
-  // Adjust schema based on role and status
-  let activeSchema = scheduleUpdateSchema;
-  // if (userRole === roles.ADMIN) {
-  //   activeSchema = scheduleUpdateSchema.refine(
-  //     (data) => {
-  //       if (data.interviewStatus !== "joining") return true;
-  //       const val = data.joiningDate;
-  //       if (val instanceof Date) return true;
-  //       return !!val && typeof val === "string" && val.trim().length > 0;
-  //     },
-  //     {
-  //       message: "Joining Date is required when status is Joining",
-  //       path: ["joiningDate"],
-  //     }
-  //   ) as any;
-  // }
-
   const form = useForm<ScheduleUpdateFormValues>({
-    resolver: zodResolver(activeSchema),
+    resolver: zodResolver(scheduleUpdateSchema),
     mode: "onSubmit",
     reValidateMode: "onSubmit",
     defaultValues: {
@@ -232,7 +208,6 @@ export const ScheduleUpdateDialog = ({
 
   useEffect(() => {
     if (initialData && open) {
-      console.log("Populating form with initial data:", initialData);
       form.reset({
         interviewerName: initialData.interviewer?.id?.toString() || "",
         statusChangedDate: initialData?.latestStatusLog?.effectiveDate
@@ -242,12 +217,11 @@ export const ScheduleUpdateDialog = ({
         endTime: extractTime(initialData.interviewEnd),
         interviewType: initialData.interviewType || "on_site",
         interviewUrl: initialData.interviewUrl || "",
-        // notes: initialData.notes || "",
         interviewStatus: initialData.status || "",
+        notes: initialData.notes || "",
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialData, open]);
+  }, [initialData, open, form]);
 
   const interviewType = form.watch("interviewType");
   const interviewStatus = form.watch("interviewStatus");
@@ -270,8 +244,6 @@ export const ScheduleUpdateDialog = ({
     }
   }, [startTime, form]);
 
-
-  // Reset submission state on unmount
   useEffect(() => {
     return () => {
       setIsSubmittingForm(false);
@@ -296,13 +268,10 @@ export const ScheduleUpdateDialog = ({
 
     const prevStatus = previousStatusRef.current;
 
-    // Run only when user actually changes status
     if (prevStatus && prevStatus !== interviewStatus) {
-      // If new status is rejected → clear but optional
       if (interviewStatus === "rejected") {
         form.setValue("statusChangedDate", "");
       } else {
-        // Other statuses → clear + required
         form.setValue("statusChangedDate", "", {
           shouldDirty: true,
         });
@@ -335,7 +304,10 @@ export const ScheduleUpdateDialog = ({
               <h3 className="text-base sm:text-lg font-medium">
                 Scheduling Details
               </h3>
-              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+
+              {/* --- GRID SYSTEM: Fixed gap and top alignment --- */}
+              <div className="grid grid-cols-1 gap-x-4 gap-y-2 md:grid-cols-2 items-start">
+                {/* 1. Interviewer Name (Col 1) */}
                 <CustomDropDownSearchable
                   form={form}
                   name="interviewerName"
@@ -347,11 +319,13 @@ export const ScheduleUpdateDialog = ({
                   placeholder="Select interviewer"
                   isLoading={usersListLoading}
                 />
+
+                {/* 2. Interview Time (Col 2) */}
                 <FormField
                   control={form.control}
                   name="startTime"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className={formItemClass}>
                       <FormLabel>Interview Time</FormLabel>
                       <FormControl>
                         <TimePicker
@@ -360,10 +334,12 @@ export const ScheduleUpdateDialog = ({
                           placeholder="Select start time"
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className={formMessageClass} />
                     </FormItem>
                   )}
                 />
+
+                {/* 3. Interview Type (Col 1) */}
                 <CustomDropDownSearchable
                   form={form}
                   name="interviewType"
@@ -372,31 +348,36 @@ export const ScheduleUpdateDialog = ({
                   placeholder="Select type"
                   searchEnabled={false}
                 />
-                {interviewType === "video_call" && (
-                  <>
-                    <FormField
-                      control={form.control}
-                      name="interviewUrl"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Interview URL
-                            <RequiredIndicator
-                              error={!!form.formState.errors.interviewUrl}
-                            />
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="https://meet.google.com/..."
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </>
+
+                {/* 4. Interview URL (Col 2) OR Spacer */}
+                {interviewType === "video_call" ? (
+                  <FormField
+                    control={form.control}
+                    name="interviewUrl"
+                    render={({ field }) => (
+                      <FormItem className={formItemClass}>
+                        <FormLabel>
+                          Interview URL
+                          <RequiredIndicator
+                            error={!!form.formState.errors.interviewUrl}
+                          />
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="https://meet.google.com/..."
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage className={formMessageClass} />
+                      </FormItem>
+                    )}
+                  />
+                ) : (
+                  // SPACER: Keeps "Interview Status" on Row 3, Col 1 always
+                  <div className="hidden md:block" aria-hidden="true" />
                 )}
+
+                {/* 5. Interview Status (Col 1) */}
                 <CustomDropDownSearchable
                   form={form}
                   name="interviewStatus"
@@ -407,6 +388,7 @@ export const ScheduleUpdateDialog = ({
                   sortOptions={false}
                 />
 
+                {/* 6. Date (Col 2) */}
                 {interviewStatus !== "rejected" && (
                   <CustomDatePicker
                     control={form.control}
@@ -418,28 +400,18 @@ export const ScheduleUpdateDialog = ({
                     }
                     disabledDays={(date: Date) => {
                       const today = new Date();
-
-                      // Remove time part
                       today.setHours(0, 0, 0, 0);
-
-                      return date < today; // disable past only
+                      return date < today;
                     }}
                   />
                 )}
 
-                {/* {userRole === roles.ADMIN && interviewStatus === "joining" && (
-                  <CustomDatePicker
-                    control={form.control}
-                    name="joiningDate"
-                    label="Joining Date"
-                  />
-                )} */}
-
+                {/* 7. Notes (Col Span 2) */}
                 <FormField
                   control={form.control}
                   name="notes"
                   render={({ field }) => (
-                    <FormItem className="md:col-span-2">
+                    <FormItem className={cn("md:col-span-2", formItemClass)}>
                       <FormLabel>Interviewer Comment</FormLabel>
                       <FormControl>
                         <Textarea
@@ -447,7 +419,7 @@ export const ScheduleUpdateDialog = ({
                           {...field}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className={formMessageClass} />
                     </FormItem>
                   )}
                 />
