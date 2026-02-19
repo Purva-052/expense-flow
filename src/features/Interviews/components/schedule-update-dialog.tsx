@@ -244,6 +244,7 @@ export const ScheduleUpdateDialog = ({
     }
   }, [startTime, form]);
 
+  // Reset submission state on unmount
   useEffect(() => {
     return () => {
       setIsSubmittingForm(false);
