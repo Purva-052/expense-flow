@@ -243,8 +243,6 @@ const InterviewsPage = () => {
       date.getMonth(),
       date.getDate()
     );
-    console.log("🚀 ~ handleDateClick ~ original date:", date);
-    console.log("🚀 ~ handleDateClick ~ normalized date:", normalizedDate);
 
     setSelectedDate(normalizedDate);
     setIsAddDialogOpen(true);
