@@ -26,13 +26,6 @@ import { Input } from "@/components/ui/input";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 interface Props {
   currentRow?: any;
@@ -80,13 +73,11 @@ export function LeaveActionForm({
     if (currentRow && open) {
       form.reset({
         employeeId: currentRow.employeeId ?? currentRow.employee?.id,
-        leaveDate: currentRow.leaveDate
-          ? new Date(currentRow.leaveDate)
+        fromDate: currentRow.fromDate
+          ? new Date(currentRow.fromDate)
           : undefined,
         reason: currentRow.reason,
         description: currentRow.description || "",
-        dayType: currentRow.dayType || "full",
-        halfType: currentRow.halfType,
       });
     } else if (!open) {
       form.reset({
@@ -205,230 +196,229 @@ export function LeaveActionForm({
               </div>
 
               {/* --- CREATE MODE: Table Layout --- */}
-              {!isEdit && (
-                <div className="space-y-4">
-                  {/* Date Range Selectors */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormItem>
-                      <FormLabel>
-                        From Date <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <CustomDatePicker
-                        control={form.control}
-                        name="fromDate"
-                        label=""
-                      />
-                    </FormItem>
-                    <FormItem>
-                      <FormLabel>
-                        To Date <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <CustomDatePicker
-                        control={form.control}
-                        name="toDate"
-                        label=""
-                      />
-                    </FormItem>
-                  </div>
 
-                  {/* The Dynamic Table */}
-                  {fields.length > 0 && (
-                    <div className="border rounded-md mt-4 overflow-y-auto max-h-[330px] relative">
-                      <table className="w-full text-sm text-left">
-                        <thead className="bg-gray-50 text-gray-700 font-medium border-b sticky top-0 z-10 shadow-sm">
-                          <tr>
-                            <th className="p-3 w-[120px]">Leave Date</th>
-                            <th className="p-3 w-[100px]">Day</th>
-                            <th className="p-3">Description</th>
-                            <th className="p-3 w-[160px]">Half/Full day</th>
-                            <th className="p-3 w-[180px]">1st/2nd Half</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y">
-                          {fields.map((field, index) => {
-                            const currentDayType = watchDays?.[index]?.dayType;
-                            const isWeekend =
-                              field.dayName === "Saturday" ||
-                              field.dayName === "Sunday";
-
-                            // Format the date from YYYY-MM-DD to DD-MM-YYYY for display
-                            const displayDate = field.date
-                              .split("-")
-                              .reverse()
-                              .join("-");
-
-                            return (
-                              <tr key={field.id} className="hover:bg-gray-50">
-                                {/* Date Display */}
-                                <td className="p-3 align-middle whitespace-nowrap">
-                                  {displayDate}
-                                </td>
-
-                                {/* Day Name */}
-                                <td className="p-3 align-middle text-gray-500">
-                                  {field.dayName}
-                                </td>
-
-                                {/* Description Input OR Holiday Text */}
-                                <td className="p-3 align-middle">
-                                  {isWeekend ? (
-                                    <span className="text-gray-600 font-medium">
-                                      Weekly Off
-                                    </span>
-                                  ) : (
-                                    <FormField
-                                      control={form.control}
-                                      name={`days.${index}.description`}
-                                      render={({ field: inputField }) => (
-                                        <Input
-                                          {...inputField}
-                                          placeholder="Description..."
-                                          className="h-8 text-xs"
-                                        />
-                                      )}
-                                    />
-                                  )}
-                                </td>
-
-                                {/* Full/Half Radio - DISABLED IF WEEKEND */}
-                                <td className="p-3 align-middle">
-                                  <FormField
-                                    control={form.control}
-                                    name={`days.${index}.dayType`}
-                                    render={({ field: radioField }) => (
-                                      <RadioGroup
-                                        onValueChange={(val) => {
-                                          radioField.onChange(val);
-                                          if (val === "full") {
-                                            form.setValue(
-                                              `days.${index}.halfType`,
-                                              undefined
-                                            );
-                                          }
-                                        }}
-                                        defaultValue={radioField.value}
-                                        disabled={isWeekend}
-                                        className={`flex items-center space-x-3 ${
-                                          isWeekend
-                                            ? "opacity-50 cursor-not-allowed"
-                                            : ""
-                                        }`}
-                                      >
-                                        <div className="flex items-center space-x-1">
-                                          <RadioGroupItem
-                                            value="half"
-                                            id={`half-${index}`}
-                                          />
-                                          <Label
-                                            htmlFor={`half-${index}`}
-                                            className="text-xs font-normal cursor-pointer"
-                                          >
-                                            Half
-                                          </Label>
-                                        </div>
-                                        <div className="flex items-center space-x-1">
-                                          <RadioGroupItem
-                                            value="full"
-                                            id={`full-${index}`}
-                                          />
-                                          <Label
-                                            htmlFor={`full-${index}`}
-                                            className="text-xs font-normal cursor-pointer"
-                                          >
-                                            Full
-                                          </Label>
-                                        </div>
-                                      </RadioGroup>
-                                    )}
-                                  />
-                                </td>
-
-                                {/* Session Radio (1st/2nd) - DISABLED IF WEEKEND OR FULL DAY */}
-                                <td className="p-3 align-middle">
-                                  <FormField
-                                    control={form.control}
-                                    name={`days.${index}.halfType`}
-                                    render={({ field: sessionField }) => (
-                                      <RadioGroup
-                                        onValueChange={sessionField.onChange}
-                                        value={sessionField.value}
-                                        disabled={
-                                          currentDayType === "full" || isWeekend
-                                        }
-                                        className={`flex items-center space-x-3 ${
-                                          currentDayType === "full" || isWeekend
-                                            ? "opacity-30 cursor-not-allowed"
-                                            : ""
-                                        }`}
-                                      >
-                                        <div className="flex items-center space-x-1">
-                                          <RadioGroupItem
-                                            value="first_half"
-                                            id={`1st-${index}`}
-                                          />
-                                          <Label
-                                            htmlFor={`1st-${index}`}
-                                            className="text-xs font-normal cursor-pointer"
-                                          >
-                                            1st
-                                          </Label>
-                                        </div>
-                                        <div className="flex items-center space-x-1">
-                                          <RadioGroupItem
-                                            value="second_half"
-                                            id={`2nd-${index}`}
-                                          />
-                                          <Label
-                                            htmlFor={`2nd-${index}`}
-                                            className="text-xs font-normal cursor-pointer"
-                                          >
-                                            2nd
-                                          </Label>
-                                        </div>
-                                      </RadioGroup>
-                                    )}
-                                  />
-                                  {!isWeekend &&
-                                    form.formState.errors.days?.[index]
-                                      ?.halfType && (
-                                      <span className="text-[10px] text-red-500 block mt-1">
-                                        Required
-                                      </span>
-                                    )}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-
-                  {/* General Reason */}
-                  <FormField
-                    control={form.control}
-                    name="reason"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          General Reason <span className="text-red-500">*</span>
-                        </FormLabel>
-                        <FormControl>
-                          <Textarea
-                            {...field}
-                            placeholder="Reason for leave..."
-                            className="min-h-[60px]"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+              <div className="space-y-4">
+                {/* Date Range Selectors */}
+                <div className="grid grid-cols-2 gap-4">
+                  <FormItem>
+                    <FormLabel>
+                      From Date <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <CustomDatePicker
+                      control={form.control}
+                      name="fromDate"
+                      label=""
+                    />
+                  </FormItem>
+                  <FormItem>
+                    <FormLabel>
+                      To Date <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <CustomDatePicker
+                      control={form.control}
+                      name="toDate"
+                      label=""
+                    />
+                  </FormItem>
                 </div>
-              )}
+
+                {/* The Dynamic Table */}
+                {fields.length > 0 && (
+                  <div className="border rounded-md mt-4 overflow-y-auto max-h-[330px] relative">
+                    <table className="w-full text-sm text-left">
+                      <thead className="bg-gray-50 text-gray-700 font-medium border-b sticky top-0 z-10 shadow-sm">
+                        <tr>
+                          <th className="p-3 w-[120px]">Leave Date</th>
+                          <th className="p-3 w-[100px]">Day</th>
+                          <th className="p-3">Description</th>
+                          <th className="p-3 w-[160px]">Half/Full day</th>
+                          <th className="p-3 w-[180px]">1st/2nd Half</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {fields.map((field, index) => {
+                          const currentDayType = watchDays?.[index]?.dayType;
+                          const isWeekend =
+                            field.dayName === "Saturday" ||
+                            field.dayName === "Sunday";
+
+                          // Format the date from YYYY-MM-DD to DD-MM-YYYY for display
+                          const displayDate = field.date
+                            .split("-")
+                            .reverse()
+                            .join("-");
+
+                          return (
+                            <tr key={field.id} className="hover:bg-gray-50">
+                              {/* Date Display */}
+                              <td className="p-3 align-middle whitespace-nowrap">
+                                {displayDate}
+                              </td>
+
+                              {/* Day Name */}
+                              <td className="p-3 align-middle text-gray-500">
+                                {field.dayName}
+                              </td>
+
+                              {/* Description Input OR Holiday Text */}
+                              <td className="p-3 align-middle">
+                                {isWeekend ? (
+                                  <span className="text-gray-600 font-medium">
+                                    Weekly Off
+                                  </span>
+                                ) : (
+                                  <FormField
+                                    control={form.control}
+                                    name={`days.${index}.description`}
+                                    render={({ field: inputField }) => (
+                                      <Input
+                                        {...inputField}
+                                        placeholder="Description..."
+                                        className="h-8 text-xs"
+                                      />
+                                    )}
+                                  />
+                                )}
+                              </td>
+
+                              {/* Full/Half Radio - DISABLED IF WEEKEND */}
+                              <td className="p-3 align-middle">
+                                <FormField
+                                  control={form.control}
+                                  name={`days.${index}.dayType`}
+                                  render={({ field: radioField }) => (
+                                    <RadioGroup
+                                      onValueChange={(val) => {
+                                        radioField.onChange(val);
+                                        if (val === "full") {
+                                          form.setValue(
+                                            `days.${index}.halfType`,
+                                            undefined
+                                          );
+                                        }
+                                      }}
+                                      defaultValue={radioField.value}
+                                      disabled={isWeekend}
+                                      className={`flex items-center space-x-3 ${
+                                        isWeekend
+                                          ? "opacity-50 cursor-not-allowed"
+                                          : ""
+                                      }`}
+                                    >
+                                      <div className="flex items-center space-x-1">
+                                        <RadioGroupItem
+                                          value="half"
+                                          id={`half-${index}`}
+                                        />
+                                        <Label
+                                          htmlFor={`half-${index}`}
+                                          className="text-xs font-normal cursor-pointer"
+                                        >
+                                          Half
+                                        </Label>
+                                      </div>
+                                      <div className="flex items-center space-x-1">
+                                        <RadioGroupItem
+                                          value="full"
+                                          id={`full-${index}`}
+                                        />
+                                        <Label
+                                          htmlFor={`full-${index}`}
+                                          className="text-xs font-normal cursor-pointer"
+                                        >
+                                          Full
+                                        </Label>
+                                      </div>
+                                    </RadioGroup>
+                                  )}
+                                />
+                              </td>
+
+                              {/* Session Radio (1st/2nd) - DISABLED IF WEEKEND OR FULL DAY */}
+                              <td className="p-3 align-middle">
+                                <FormField
+                                  control={form.control}
+                                  name={`days.${index}.halfType`}
+                                  render={({ field: sessionField }) => (
+                                    <RadioGroup
+                                      onValueChange={sessionField.onChange}
+                                      value={sessionField.value}
+                                      disabled={
+                                        currentDayType === "full" || isWeekend
+                                      }
+                                      className={`flex items-center space-x-3 ${
+                                        currentDayType === "full" || isWeekend
+                                          ? "opacity-30 cursor-not-allowed"
+                                          : ""
+                                      }`}
+                                    >
+                                      <div className="flex items-center space-x-1">
+                                        <RadioGroupItem
+                                          value="first_half"
+                                          id={`1st-${index}`}
+                                        />
+                                        <Label
+                                          htmlFor={`1st-${index}`}
+                                          className="text-xs font-normal cursor-pointer"
+                                        >
+                                          1st
+                                        </Label>
+                                      </div>
+                                      <div className="flex items-center space-x-1">
+                                        <RadioGroupItem
+                                          value="second_half"
+                                          id={`2nd-${index}`}
+                                        />
+                                        <Label
+                                          htmlFor={`2nd-${index}`}
+                                          className="text-xs font-normal cursor-pointer"
+                                        >
+                                          2nd
+                                        </Label>
+                                      </div>
+                                    </RadioGroup>
+                                  )}
+                                />
+                                {!isWeekend &&
+                                  form.formState.errors.days?.[index]
+                                    ?.halfType && (
+                                    <span className="text-[10px] text-red-500 block mt-1">
+                                      Required
+                                    </span>
+                                  )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {/* General Reason */}
+                <FormField
+                  control={form.control}
+                  name="reason"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        General Reason <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Textarea
+                          {...field}
+                          placeholder="Reason for leave..."
+                          className="min-h-[60px]"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               {/* --- EDIT MODE: Single Day Form --- */}
-              {isEdit && (
+              {/* {isEdit && (
                 <div className="grid grid-cols-1 gap-4">
                   <FormItem>
                     <FormLabel>Leave Date</FormLabel>
@@ -543,7 +533,7 @@ export function LeaveActionForm({
                     )}
                   />
                 </div>
-              )}
+              )} */}
             </form>
           </Form>
         </div>

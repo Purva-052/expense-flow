@@ -11,25 +11,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useLeaveStore } from "../stores";
-import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
 
 export const columns: ColumnDef<any>[] = [
+  // ✅ Employee Name
   {
     accessorKey: "employee.fullName",
     header: "Employee",
     cell: ({ row }) => {
       const employeeName = row.original.employee?.fullName;
-      return (
-        <span className="text-sm font-medium">
-          {employeeName ? employeeName : "-"}
-        </span>
-      );
+      return <span className="text-sm font-medium">{employeeName || "-"}</span>;
     },
   },
+
+  // ✅ From Date
   {
-    accessorKey: "leaveDate",
+    accessorKey: "fromDate",
     header: ({ column }) => {
       const sorted = column.getIsSorted();
 
@@ -39,7 +37,7 @@ export const columns: ColumnDef<any>[] = [
           onClick={() => column.toggleSorting(sorted === "asc")}
           className="flex items-center gap-1 text-left text-sm font-medium hover:text-primary"
         >
-          Leave Date
+          From Date
           {sorted === "asc" && <ArrowUp className="h-4 w-4" />}
           {sorted === "desc" && <ArrowDown className="h-4 w-4" />}
           {!sorted && <ArrowUpDown className="h-4 w-4 opacity-50" />}
@@ -47,10 +45,10 @@ export const columns: ColumnDef<any>[] = [
       );
     },
     cell: ({ row }) => {
-      const leaveDate = row.original.leaveDate;
-      if (!leaveDate) return <span className="text-sm">-</span>;
+      const fromDate = row.original.fromDate;
+      if (!fromDate) return <span className="text-sm">-</span>;
 
-      const date = new Date(leaveDate);
+      const date = new Date(fromDate);
       return (
         <span className="text-sm">
           {date.toLocaleDateString("en-IN", {
@@ -63,37 +61,55 @@ export const columns: ColumnDef<any>[] = [
     },
     enableSorting: true,
   },
+
+  // ✅ To Date
   {
-    accessorKey: "dayType",
-    header: "Day Type",
-    cell: ({ row }) => {
-      const type = row.original.dayType; // 'full' or 'half'
+    accessorKey: "toDate",
+    header: ({ column }) => {
+      const sorted = column.getIsSorted();
+
       return (
-        <Badge variant={type === "full" ? "default" : "secondary"}>
-          {type === "full" ? "Full Day" : "Half Day"}
-        </Badge>
+        <button
+          type="button"
+          onClick={() => column.toggleSorting(sorted === "asc")}
+          className="flex items-center gap-1 text-left text-sm font-medium hover:text-primary"
+        >
+          To Date
+          {sorted === "asc" && <ArrowUp className="h-4 w-4" />}
+          {sorted === "desc" && <ArrowDown className="h-4 w-4" />}
+          {!sorted && <ArrowUpDown className="h-4 w-4 opacity-50" />}
+        </button>
       );
     },
-  },
-  {
-    accessorKey: "halfType",
-    header: "Session",
     cell: ({ row }) => {
-      const type = row.original.halfType; // 'first_half', 'second_half' or null
-      if (!type) return <span className="text-xs text-gray-400">-</span>;
+      const toDate = row.original.toDate;
+      if (!toDate) return <span className="text-sm">-</span>;
+
+      const date = new Date(toDate);
       return (
-        <span className="text-sm capitalize">{type.replace("_", " ")}</span>
+        <span className="text-sm">
+          {date.toLocaleDateString("en-IN", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          })}
+        </span>
       );
     },
+    enableSorting: true,
   },
+
+  // ✅ Reason
   {
     accessorKey: "reason",
     header: "Reason",
     cell: ({ row }) => {
       const reason = row.original.reason;
       if (!reason) return <span className="text-sm">-</span>;
+
       const truncated =
-        reason.length > 40 ? `${reason.slice(0, 40)}...` : reason;
+        reason.length > 50 ? `${reason.slice(0, 50)}...` : reason;
+
       return (
         <span className="text-sm" title={reason}>
           {truncated}
@@ -101,6 +117,8 @@ export const columns: ColumnDef<any>[] = [
       );
     },
   },
+
+  // ✅ Actions
   {
     id: "actions",
     header: "Actions",
@@ -111,6 +129,7 @@ export const columns: ColumnDef<any>[] = [
       const user = useAuthStore((state) => state.user);
       const userRole = user?.role || user?.user?.role;
       const currentUserId = user?.user.id;
+
       const isAdmin = userRole === roles.ADMIN;
       const employeeId = row.original.employeeId;
       const isOwner = String(employeeId) === String(currentUserId);
@@ -136,24 +155,27 @@ export const columns: ColumnDef<any>[] = [
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
+
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
+
             <DropdownMenuItem onClick={handleView}>
               View Details
             </DropdownMenuItem>
+
             {canEditDelete && (
               <DropdownMenuItem onClick={handleEdit}>
                 Edit Details
               </DropdownMenuItem>
             )}
+
             {canEditDelete && (
               <DropdownMenuItem
-                className="text-red-600 focus:bg-red-50 focus:text-red-600"
+                className="text-red-600 focus:bg-red-50"
                 onClick={handleDelete}
               >
                 Delete Details
