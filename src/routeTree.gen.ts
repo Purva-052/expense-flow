@@ -29,6 +29,7 @@ import { Route as AuthenticatedProjectTypeIndexRouteImport } from './routes/_aut
 import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authenticated/profile/index'
 import { Route as AuthenticatedNewJoineesIndexRouteImport } from './routes/_authenticated/new-joinees/index'
 import { Route as AuthenticatedLinodeServerDashboardIndexRouteImport } from './routes/_authenticated/linode-server-dashboard/index'
+import { Route as AuthenticatedLeaveManagementIndexRouteImport } from './routes/_authenticated/leave-management/index'
 import { Route as AuthenticatedInterviewsIndexRouteImport } from './routes/_authenticated/interviews/index'
 import { Route as AuthenticatedInquiryIndexRouteImport } from './routes/_authenticated/inquiry/index'
 import { Route as AuthenticatedInquiryTypeIndexRouteImport } from './routes/_authenticated/inquiry-type/index'
@@ -146,6 +147,12 @@ const AuthenticatedLinodeServerDashboardIndexRoute =
     path: '/linode-server-dashboard/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedLeaveManagementIndexRoute =
+  AuthenticatedLeaveManagementIndexRouteImport.update({
+    id: '/leave-management/',
+    path: '/leave-management/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedInterviewsIndexRoute =
   AuthenticatedInterviewsIndexRouteImport.update({
     id: '/interviews/',
@@ -219,6 +226,7 @@ export interface FileRoutesByFullPath {
   '/inquiry-type/': typeof AuthenticatedInquiryTypeIndexRoute
   '/inquiry/': typeof AuthenticatedInquiryIndexRoute
   '/interviews/': typeof AuthenticatedInterviewsIndexRoute
+  '/leave-management/': typeof AuthenticatedLeaveManagementIndexRoute
   '/linode-server-dashboard/': typeof AuthenticatedLinodeServerDashboardIndexRoute
   '/new-joinees/': typeof AuthenticatedNewJoineesIndexRoute
   '/profile/': typeof AuthenticatedProfileIndexRoute
@@ -249,6 +257,7 @@ export interface FileRoutesByTo {
   '/inquiry-type': typeof AuthenticatedInquiryTypeIndexRoute
   '/inquiry': typeof AuthenticatedInquiryIndexRoute
   '/interviews': typeof AuthenticatedInterviewsIndexRoute
+  '/leave-management': typeof AuthenticatedLeaveManagementIndexRoute
   '/linode-server-dashboard': typeof AuthenticatedLinodeServerDashboardIndexRoute
   '/new-joinees': typeof AuthenticatedNewJoineesIndexRoute
   '/profile': typeof AuthenticatedProfileIndexRoute
@@ -281,6 +290,7 @@ export interface FileRoutesById {
   '/_authenticated/inquiry-type/': typeof AuthenticatedInquiryTypeIndexRoute
   '/_authenticated/inquiry/': typeof AuthenticatedInquiryIndexRoute
   '/_authenticated/interviews/': typeof AuthenticatedInterviewsIndexRoute
+  '/_authenticated/leave-management/': typeof AuthenticatedLeaveManagementIndexRoute
   '/_authenticated/linode-server-dashboard/': typeof AuthenticatedLinodeServerDashboardIndexRoute
   '/_authenticated/new-joinees/': typeof AuthenticatedNewJoineesIndexRoute
   '/_authenticated/profile/': typeof AuthenticatedProfileIndexRoute
@@ -313,6 +323,7 @@ export interface FileRouteTypes {
     | '/inquiry-type/'
     | '/inquiry/'
     | '/interviews/'
+    | '/leave-management/'
     | '/linode-server-dashboard/'
     | '/new-joinees/'
     | '/profile/'
@@ -343,6 +354,7 @@ export interface FileRouteTypes {
     | '/inquiry-type'
     | '/inquiry'
     | '/interviews'
+    | '/leave-management'
     | '/linode-server-dashboard'
     | '/new-joinees'
     | '/profile'
@@ -374,6 +386,7 @@ export interface FileRouteTypes {
     | '/_authenticated/inquiry-type/'
     | '/_authenticated/inquiry/'
     | '/_authenticated/interviews/'
+    | '/_authenticated/leave-management/'
     | '/_authenticated/linode-server-dashboard/'
     | '/_authenticated/new-joinees/'
     | '/_authenticated/profile/'
@@ -542,6 +555,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLinodeServerDashboardIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/leave-management/': {
+      id: '/_authenticated/leave-management/'
+      path: '/leave-management'
+      fullPath: '/leave-management/'
+      preLoaderRoute: typeof AuthenticatedLeaveManagementIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/interviews/': {
       id: '/_authenticated/interviews/'
       path: '/interviews'
@@ -617,6 +637,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInquiryTypeIndexRoute: typeof AuthenticatedInquiryTypeIndexRoute
   AuthenticatedInquiryIndexRoute: typeof AuthenticatedInquiryIndexRoute
   AuthenticatedInterviewsIndexRoute: typeof AuthenticatedInterviewsIndexRoute
+  AuthenticatedLeaveManagementIndexRoute: typeof AuthenticatedLeaveManagementIndexRoute
   AuthenticatedLinodeServerDashboardIndexRoute: typeof AuthenticatedLinodeServerDashboardIndexRoute
   AuthenticatedNewJoineesIndexRoute: typeof AuthenticatedNewJoineesIndexRoute
   AuthenticatedProfileIndexRoute: typeof AuthenticatedProfileIndexRoute
@@ -641,6 +662,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInquiryTypeIndexRoute: AuthenticatedInquiryTypeIndexRoute,
   AuthenticatedInquiryIndexRoute: AuthenticatedInquiryIndexRoute,
   AuthenticatedInterviewsIndexRoute: AuthenticatedInterviewsIndexRoute,
+  AuthenticatedLeaveManagementIndexRoute:
+    AuthenticatedLeaveManagementIndexRoute,
   AuthenticatedLinodeServerDashboardIndexRoute:
     AuthenticatedLinodeServerDashboardIndexRoute,
   AuthenticatedNewJoineesIndexRoute: AuthenticatedNewJoineesIndexRoute,

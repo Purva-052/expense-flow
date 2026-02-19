@@ -14,6 +14,7 @@ import {
   // IconUserScreen,
   IconReportAnalytics,
   IconReport,
+  IconClipboardCheck,
 } from "@tabler/icons-react";
 import {  CalendarCheck, Command, Cpu, ScrollText } from "lucide-react";
 import { type SidebarData } from "../types";
@@ -88,6 +89,16 @@ export const sidebarData: SidebarData = {
           icon: IconReport,
           requiredRoles: [
             roles.ADMIN,
+          ],
+        },
+        {
+          title: "Leave Management",
+          url: "/leave-management",
+          icon: IconClipboardCheck,
+          requiredRoles: [
+            roles.ADMIN,
+            roles.TEAM_LEAD,
+            roles.PROJECT_MANAGER,
           ],
         },
       ],
