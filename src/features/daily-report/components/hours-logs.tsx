@@ -27,6 +27,27 @@ const stripHtml = (html: string) => {
   return tmp.textContent || tmp.innerText || "";
 };
 
+// Convert time string (HH:MM or H:MM) to decimal hours
+const convertTimeToDecimal = (timeStr: string): number => {
+  if (!timeStr) return 0;
+
+  // If it's already a number, return it as is
+  const numValue = Number(timeStr);
+  if (!isNaN(numValue) && !timeStr.includes(":")) {
+    return numValue;
+  }
+
+  // Handle HH:MM or H:MM format
+  if (typeof timeStr === "string" && timeStr.includes(":")) {
+    const parts = timeStr.split(":");
+    const hours = parseInt(parts[0], 10) || 0;
+    const minutes = parseInt(parts[1], 10) || 0;
+    return hours + minutes / 60;
+  }
+
+  return 0;
+};
+
 interface HoursLogsProps {
   projectId?: string | number;
   milestoneId?: string | number;
@@ -97,7 +118,14 @@ const HoursLogs = ({
 
   const metadata = logsResponse?.metadata;
 
-  const totalHours = Number(logsResponse?.data?.totalHours) || 0;
+  // Calculate total hours by converting each timeSpent value from HH:MM to decimal
+  const totalHours = useMemo(() => {
+    if (!logs || logs.length === 0) return 0;
+    return logs.reduce((sum: any, log: any) => {
+      const decimalHours = convertTimeToDecimal(log.timeSpent);
+      return sum + decimalHours;
+    }, 0);
+  }, [logs]);
 
   useMemo(() => {
     onTotalHoursChange?.(totalHours);
@@ -155,15 +183,24 @@ const HoursLogs = ({
       },
       {
         accessorKey: "timeSpent",
-        header: "Hours",
+        header: "Logged Hours",
         cell: ({ row }) => (
           <span className="font-semibold text-green-600">
-            {row.original.timeSpent}
+            {convertTimeToDecimal(row.original.timeSpent).toFixed(2)}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "weightageHours",
+        header: "Weightage Hours",
+        cell: ({ row }) => (
+          <span className="font-semibold text-green-600">
+            {convertTimeToDecimal(row.original.weightageHours).toFixed(2)}
           </span>
         ),
       },
     ],
-    []
+    [logs]
   );
 
   return (

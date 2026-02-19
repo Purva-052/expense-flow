@@ -112,7 +112,6 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
     isFetchingMilestones ||
     (isFetchingHandledProjects && !isAdmin && !isProjectManager);
 
-
   useEffect(() => {
     if (milestones.length > 0) {
       const isPresent = milestones.some((m) => String(m.id) === activeTab);
@@ -223,7 +222,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
   return (
     <>
       {!isInitialLoading && (
-        <div className="mb-4 flex items-center gap-2 overflow-x-auto pb-2">
+        <div className="mb-4 flex items-center gap-2 overflow-x-auto pb-2 py-4">
           <div className="flex items-center gap-2">
             {canModifyMilestones && !hasAnyExcelUploaded && (
               <>
@@ -335,6 +334,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
                 onViewTaskLog={handleViewTaskLog}
                 onEditMilestone={(data) => handleEditMilestone(data)}
                 isCurrentUserProjectHandler={isCurrentUserProjectHandler}
+                tasksFromParent={m.tasks}
               />
             </TabsContent>
           ))}
@@ -417,6 +417,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
           }}
           projectId={projectId}
           initialData={milestoneToEdit}
+          milestonesCount={milestones.length}
           onMilestoneCreated={(milestone) => {
             if (milestone?.id) {
               justCreatedMilestoneIdRef.current = String(milestone.id);

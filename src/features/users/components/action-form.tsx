@@ -63,6 +63,8 @@ export function UserActionForm({
           email: currentRow?.email ?? "",
           role: currentRow?.role ?? "",
           technologyId: currentRow?.technology?.id ?? undefined,
+          reportLogAccessIds:
+            currentRow?.reportLogAccess?.map((tech: any) => tech.id) ?? [],
           careerStartDate: currentRow?.careerStartDate
             ? currentRow.careerStartDate.slice(0, 10)
             : "",
@@ -77,6 +79,7 @@ export function UserActionForm({
           email: "",
           role: "",
           technologyId: undefined,
+          reportLogAccessIds: [],
           careerStartDate: "",
           status: true,
           joining: false,
@@ -107,6 +110,8 @@ export function UserActionForm({
         email: currentRow?.email ?? "",
         role: currentRow?.role ?? "",
         technologyId: currentRow?.technology?.id ?? undefined,
+        reportLogAccessIds:
+          currentRow?.reportLogAccess?.map((tech: any) => tech.id) ?? [],
         careerStartDate: currentRow?.careerStartDate
           ? currentRow.careerStartDate.slice(0, 10)
           : "",
@@ -362,21 +367,37 @@ export function UserActionForm({
                 />
 
                 {/* Technology Dropdown (disabled for project_manager) */}
-                <CustomDropDownSearchable
-                  form={form}
-                  name="technologyId"
-                  label="Technology"
-                  options={technologyListData?.map((technology) => ({
-                    value: technology.id,
-                    label: technology.name,
-                  }))}
-                  isLoading={technologyListLoading}
-                  placeholder="Select Technology"
-                  disabled={
-                    selectedRole === roles.PROJECT_MANAGER ||
-                    selectedRole === roles.ADMIN
-                  }
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <CustomDropDownSearchable
+                    form={form}
+                    name="technologyId"
+                    label="Technology"
+                    options={technologyListData?.map((technology) => ({
+                      value: technology.id,
+                      label: technology.name,
+                    }))}
+                    isLoading={technologyListLoading}
+                    placeholder="Select Technology"
+                    disabled={
+                      selectedRole === roles.PROJECT_MANAGER ||
+                      selectedRole === roles.ADMIN
+                    }
+                  />
+
+                  <CustomDropDownSearchable
+                    form={form}
+                    name="reportLogAccessIds"
+                    label="Report Log Access"
+                    multiple
+                    options={technologyListData?.map((technology) => ({
+                      value: technology.id,
+                      label: technology.name,
+                    }))}
+                    placeholder="Select Report Log Access"
+                    searchEnabled={true}
+                    isLoading={technologyListLoading}
+                  />
+                </div>
 
                 <CustomDatePicker
                   control={form.control}
