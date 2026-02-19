@@ -89,6 +89,10 @@ export const columns = (
     accessorKey: "timeSpent",
     header: "Hours",
   },
+  {
+    accessorKey: "weightageHours",
+    header: "Weightage Hours",
+  },
   // {
   //   accessorKey: "remark",
   //   header: "Remarks",
