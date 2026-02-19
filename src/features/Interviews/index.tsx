@@ -237,7 +237,16 @@ const InterviewsPage = () => {
   }, [interviewsData]);
 
   const handleDateClick = (date: Date) => {
-    setSelectedDate(date);
+    // Normalize the date to ensure we get the correct date without timezone shifts
+    const normalizedDate = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    );
+    console.log("🚀 ~ handleDateClick ~ original date:", date);
+    console.log("🚀 ~ handleDateClick ~ normalized date:", normalizedDate);
+
+    setSelectedDate(normalizedDate);
     setIsAddDialogOpen(true);
   };
 
@@ -391,6 +400,7 @@ const InterviewsPage = () => {
       await createStatusLog({
         interviewId: eventToUpdateSchedule.extendedProps.id,
         status: data.interviewStatus,
+        interviewUrl: data.interviewUrl || "",
         notes: data.notes || "",
         effectiveDate: effectiveDate || dateToUse,
         interviewType: data.interviewType,
@@ -483,7 +493,7 @@ const InterviewsPage = () => {
 
   return (
     <Main>
-      <div className="p-4">
+      <div className="p-0">
         <div className="mb-4 space-y-3">
           {/* Year Navigation */}
           <div className="mb-4 flex flex-wrap items-center gap-4">
