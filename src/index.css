@@ -461,3 +461,16 @@
 body[data-scroll-locked] {
   overflow: hidden !important;
 } */
+
+/* Only Report Log Access dropdown */
+.report-log-access-dropdown button {
+  overflow: hidden;
+}
+
+.report-log-access-dropdown button > span {
+  max-width: 85%;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
