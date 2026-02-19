@@ -22,7 +22,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 
 interface CustomDropDownProps {
   options: any;
-  label: string;
+  label?: React.ReactNode;
   form: any;
   name: string;
   placeholder?: string;
@@ -122,17 +122,25 @@ const CustomDropDownSearchable = ({
     try {
       setIsCreating(true);
       const result = await onCreateOption(searchValue.trim());
-      const createdValue = result?.value ?? searchValue.trim();
+      const createdValue = String(result?.value ?? searchValue.trim());
       if (multiple) {
-        const current = form.getValues(name) || [];
-        form.setValue(name, [...current, createdValue], {
-          shouldDirty: true,
-          shouldTouch: true,
-        });
+        const current = Array.isArray(form.getValues(name))
+          ? form.getValues(name)
+          : [];
+        form.setValue(
+          name,
+          [...current.map((v: any) => String(v)), createdValue],
+          {
+            shouldDirty: true,
+            shouldTouch: true,
+            shouldValidate: true,
+          }
+        );
       } else {
         form.setValue(name, createdValue, {
           shouldDirty: true,
           shouldTouch: true,
+          shouldValidate: true,
         });
       }
       setOpen(false);
@@ -153,7 +161,7 @@ const CustomDropDownSearchable = ({
         if (multiple) {
           valueArray =
             Array.isArray(field.value) && field.value.length > 0
-              ? field.value
+              ? field.value.map((v: any) => String(v))
               : [];
         } else {
           const isEmptyString =
@@ -161,11 +169,11 @@ const CustomDropDownSearchable = ({
           valueArray =
             field.value === null || field.value === undefined || isEmptyString
               ? []
-              : [field.value];
+              : [String(field.value)];
         }
         return (
           <FormItem className={`flex flex-col ${className}`}>
-            <FormLabel>{label}</FormLabel>
+            {!!label && <FormLabel>{label}</FormLabel>}
             <div className="relative">
               <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
@@ -275,20 +283,19 @@ const CustomDropDownSearchable = ({
                                   value={item.label}
                                   key={item.value}
                                   onSelect={() => {
+                                    const normalized = String(item.value);
                                     if (multiple) {
-                                      const exists = valueArray.includes(
-                                        item.value
-                                      );
+                                      const exists = valueArray.includes(normalized);
                                       const newValue = exists
                                         ? valueArray.filter(
-                                            (v: any) => v !== item.value
+                                            (v: any) => v !== normalized
                                           )
-                                        : [...valueArray, item.value];
+                                        : [...valueArray, normalized];
                                       field.onChange(newValue);
                                       onChangeValue?.(newValue);
                                     } else {
-                                      field.onChange(item.value);
-                                      onChangeValue?.(item.value);
+                                      field.onChange(normalized);
+                                      onChangeValue?.(normalized);
                                       setOpen(false);
                                     }
                                     field.onBlur();
@@ -297,7 +304,7 @@ const CustomDropDownSearchable = ({
                                   <Check
                                     className={cn(
                                       "mr-2 h-4 w-4",
-                                      valueArray.includes(item.value)
+                                      valueArray.includes(String(item.value))
                                         ? "opacity-100"
                                         : "opacity-0"
                                     )}
@@ -347,16 +354,18 @@ const CustomDropDownSearchable = ({
                 <X
                   className="absolute top-1/2 right-9 h-4 w-4 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-red-500"
                   onClick={() => {
-                    form.setValue(name, multiple ? [] : null, {
+                    form.setValue(name, multiple ? [] : "", {
                       shouldDirty: true,
                       shouldTouch: true,
+                      shouldValidate: true,
                     });
                   }}
                 />
               )}
             </div>
-            <div className="relative">
-              <FormMessage className="absolute !mt-[-0.25rem]" />
+            {/* Reserve space so the grid doesn't jump when an error appears */}
+            <div className="min-h-5">
+              <FormMessage />
             </div>
           </FormItem>
         );

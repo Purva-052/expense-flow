@@ -43,8 +43,8 @@ const InterviewStatusHistoryComponent = ({
     }) ?? [];
 
   return (
-    <div className="rounded-xl p-2">
-      <DialogHeader className="border-b pb-3 mb-4">
+    <div className="flex flex-col h-full max-h-[90vh]">
+      <DialogHeader className="border-b pb-3 mb-2 px-6 pt-6 shrink-0">
         <DialogTitle className="text-lg font-semibold flex items-center gap-2">
           Interview History
         </DialogTitle>
@@ -123,7 +123,7 @@ const InterviewStatusHistoryComponent = ({
           </span>
         </div>
       ) : timelineData?.length > 0 ? (
-        <Timeline className="mt-3 overflow-y-auto max-h-[55dvh] px-2">
+        <Timeline className="flex-1 overflow-y-auto px-6 pb-6 mt-2 min-h-0">
           {timelineData.map((item: any) => (
             <TimelineItem key={item.id}>
               <TimelineHeader>

@@ -10,7 +10,7 @@ export function HistoryInterviewModal() {
 
   return (
     <Dialog open={open === "history"} onOpenChange={() => setOpen(null)}>
-      <DialogContent className="!max-w-2xl rounded-xl shadow-lg border border-border bg-card p-6">
+      <DialogContent className="!max-w-2xl w-[95vw] sm:w-full max-h-[90vh] overflow-hidden rounded-xl shadow-lg border border-border bg-card p-0 flex flex-col">
         <InterviewStatusHistoryComponent
           Id={currentRow?.id}
           Details={currentRow}
