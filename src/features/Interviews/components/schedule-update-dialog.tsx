@@ -192,8 +192,8 @@ export const ScheduleUpdateDialog = ({
 
   const form = useForm<ScheduleUpdateFormValues>({
     resolver: zodResolver(scheduleUpdateSchema),
-    mode: "onSubmit",
-    reValidateMode: "onSubmit",
+    mode: "onChange",
+    reValidateMode: "onChange",
     defaultValues: {
       interviewerName: "",
       startTime: "10:00",
@@ -413,13 +413,27 @@ export const ScheduleUpdateDialog = ({
                   render={({ field }) => (
                     <FormItem className={cn("md:col-span-2", formItemClass)}>
                       <FormLabel>Interviewer Comment</FormLabel>
+
                       <FormControl>
-                        <Textarea
-                          placeholder="Instructions or notes for the interviewer..."
-                          {...field}
-                        />
+                        <div className="relative">
+                          <Textarea
+                            placeholder="Instructions or notes for the interviewer..."
+                            maxLength={100}
+                            className="w-full max-w-full resize-none break-all whitespace-pre-wrap overflow-y-auto overflow-x-hidden pr-14 pb-6 leading-relaxed"
+                            {...field}
+                          />
+
+                          {/* Character Counter */}
+                          <span className="absolute bottom-2 right-3 text-xs text-gray-400 pointer-events-none">
+                            {field.value?.length || 0}/100
+                          </span>
+                        </div>
                       </FormControl>
-                      <FormMessage className={formMessageClass} />
+
+                      {/* Error Message Space Reserved */}
+                      <div className="min-h-5">
+                        <FormMessage className={formMessageClass} />
+                      </div>
                     </FormItem>
                   )}
                 />

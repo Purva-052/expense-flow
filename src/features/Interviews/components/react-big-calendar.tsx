@@ -405,6 +405,7 @@ export const ReactBigCalendar = ({
       margin-top: 2px;
   }
 
+
   /* Event Styling */
   .rbc-event {
     background: none !important;
@@ -438,7 +439,7 @@ export const ReactBigCalendar = ({
   }
 
   .rbc-date-cell:hover .rbc-button-link {
-    color: #1a73e8;
+    // color: #1a73e8;
     text-decoration: underline;
   }
 

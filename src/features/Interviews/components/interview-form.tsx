@@ -1,7 +1,7 @@
 /* eslint-disable prefer-const */
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserCircle2, CalendarClock, Check } from "lucide-react";
@@ -94,7 +94,7 @@ export const InterviewForm = ({
   const formatNoticePeriod = (days: number): string => {
     return `${days} Days`;
   };
-
+  const nameInputRef = useRef<HTMLInputElement>(null); // <-- ADD THIS LINE
   const baseStatuses = interviewStatuses;
   const ADD_STATUSES = ["technical_round", "practical_round", "hr_round"];
   const EDIT_STATUSES = [...ADD_STATUSES, "rejected", "joining"];
@@ -259,6 +259,19 @@ export const InterviewForm = ({
     }
   };
 
+  useEffect(() => {
+    if (isEditMode && nameInputRef.current) {
+      setTimeout(() => {
+        if (nameInputRef.current) {
+          const input = nameInputRef.current;
+          const valueLength = input.value.length;
+          input.selectionStart = valueLength;
+          input.selectionEnd = valueLength;
+        }
+      }, 0);
+    }
+  }, [isEditMode]);
+
   return (
     <Form {...form}>
       <form
@@ -336,7 +349,11 @@ export const InterviewForm = ({
                           Name <span className="text-red-500">*</span>
                         </FormLabel>
                         <FormControl>
-                          <Input placeholder="John Doe" {...field} />
+                          <Input
+                            placeholder="John Doe"
+                            {...field}
+                            ref={nameInputRef}
+                          />
                         </FormControl>
                         <div className="min-h-5">
                           <FormMessage />
