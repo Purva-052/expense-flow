@@ -62,7 +62,7 @@ import { capitalizeFirstLetter } from "@/utils/commonFunctions";
 import { roles, PROJECT_DETAILS_FILTER_STORAGE_KEY } from "@/utils/constant";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CustomMultiSelect } from "@/components/shared/custom-multiselect";
-import { Skeleton } from "@/components/ui/skeleton";
+// import { Skeleton } from "@/components/ui/skeleton";
 
 type GroupedDevelopers = {
   technologyName: string;
@@ -701,22 +701,21 @@ const ProjectPage = ({
           </div>
 
           {!isDeveloperView && (
-            <aside className="top-4 !h-full flex flex-col">
+            <aside className="top-4 h-full overflow-hidden">
               <Card
                 ref={availableDroppable.setNodeRef}
                 className={cn(
-                  // CHANGE 1: Added 'flex flex-col' so children stack properly
-                  // CHANGE 2: Kept '!h-full' to fill the parent grid cell
-                  "!h-full flex flex-col !gap-2 py-2",
+                  // FIX 1: 'flex flex-col h-full' forces the card to fill the parent and stack children
+                  "flex flex-col h-full py-2 gap-2 overflow-hidden",
                   availableDroppable.isOver && "ring-2 ring-pink-500"
                 )}
               >
-                {/* Header stays mostly the same, it will grow as needed based on Zoom */}
-                <CardHeader className="flex flex-col gap-2 shrink-0">
+                {/* FIX 2: 'flex-none' ensures the header never shrinks or gets cut off */}
+                <CardHeader className="flex-none flex flex-col gap-2 pb-2">
                   <Tabs
                     value={activeTabResource}
                     onValueChange={setActiveTabResource}
-                    className="!w-full my-1"
+                    className="w-full my-1"
                   >
                     <TabsList className="flex flex-wrap bg-[#fdebef] rounded-full h-auto">
                       <TabsTrigger
@@ -733,14 +732,15 @@ const ProjectPage = ({
                       </TabsTrigger>
                     </TabsList>
                   </Tabs>
-                  <CardTitle className="w-full text-balance flex items-center justify-between">
+
+                  <CardTitle className="w-full flex items-center justify-between">
                     {activeTabResource === "available" ? (
-                      <span className="flex gap-2 justify-between w-full">
+                      <span className="flex gap-2 justify-between w-full items-center">
                         {showAllDevelopers
                           ? "All Developers"
                           : "Available Resources"}
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-muted-foreground">
+                          <span className="text-sm text-muted-foreground font-normal">
                             All
                           </span>
                           <Switch
@@ -750,16 +750,18 @@ const ProjectPage = ({
                         </div>
                       </span>
                     ) : (
-                      <span>Become Available Resources</span>
+                      <span>Become Available</span>
                     )}
                   </CardTitle>
 
+                  {/* FIX 3: Changed 'h-16' to 'h-10'. h-16 is too tall (64px) and eats up space at 150% zoom */}
                   <Input
                     value={searchTech}
                     onChange={(e) => setSearchTech(e.target.value)}
                     placeholder="Search developers..."
-                    className="w-full h-16"
+                    className="w-full h-10"
                   />
+
                   <CustomMultiSelect
                     options={techOptions}
                     selected={selectedTech}
@@ -770,22 +772,14 @@ const ProjectPage = ({
                   />
                 </CardHeader>
 
-                {/* CHANGE 3: Removed 'h-[50dvh]'. Added 'flex-1 min-h-0' */}
-                <CardContent className="flex-1 min-h-0 overflow-y-auto [scrollbar-gutter:stable] pr-2">
+                {/* FIX 4: 'flex-1' fills remaining space. 'min-h-0' is REQUIRED for scrolling in nested flex. Removed fixed 'h-[50dvh]' */}
+                <CardContent className="flex-1 min-h-0 overflow-y-auto pr-2 [scrollbar-gutter:stable]">
                   {AllDevelopersLoading ? (
-                    <div className="space-y-4">
-                      {Array.from({ length: 6 }).map((_, i) => (
-                        <div
-                          key={i}
-                          className="flex items-center gap-3 p-2 border rounded-md"
-                        >
-                          <Skeleton className="h-10 w-10 rounded-full" />
-                          <div className="flex-1 space-y-2">
-                            <Skeleton className="h-4 w-3/4" />
-                            <Skeleton className="h-3 w-1/2" />
-                          </div>
-                        </div>
-                      ))}
+                    <div className="flex flex-col justify-center items-center py-10 gap-3">
+                      <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
+                      <span className="text-sm text-muted-foreground">
+                        Loading...
+                      </span>
                     </div>
                   ) : groupedDevelopers?.length > 0 ? (
                     <SortableContext
@@ -793,7 +787,6 @@ const ProjectPage = ({
                       strategy={rectSortingStrategy}
                     >
                       <div className="space-y-2">
-                        {/* Render the filtered list of developers */}
                         {groupedDevelopers?.map((group) => (
                           <Collapsible
                             key={group.technologyName}
@@ -854,10 +847,10 @@ const ProjectPage = ({
                         <Users className="h-8 w-8 text-muted-foreground/70" />
                       </div>
                       <h3 className="text-lg font-semibold text-muted-foreground">
-                        No developers found
+                        No developers
                       </h3>
                       <p className="text-sm text-muted-foreground/70 mt-1">
-                        Try adjusting your filters or check again later.
+                        Check filters.
                       </p>
                     </div>
                   )}
