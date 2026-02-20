@@ -7,7 +7,6 @@ import TablePageHeader from "@/components/table/table-page-header";
 import { FilterConfig } from "@/components/table/table-toolbar";
 import { ActionFormModal } from "./components/action";
 import { columns } from "./components/columns";
-import { ViewTransactionModal } from "./components/view-model";
 import { useLeaveStore } from "./stores";
 import { useGetLeaveData } from "./services";
 import { useGetUserDropdownList } from "../users/services";
@@ -142,7 +141,6 @@ const LeaveManagementPage = () => {
         isPaginationEnabled
       />
       {open && <ActionFormModal />}
-      <ViewTransactionModal />
     </PageLayout>
   );
 };

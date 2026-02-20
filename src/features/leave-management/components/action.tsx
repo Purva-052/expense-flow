@@ -72,6 +72,16 @@ export function ActionFormModal() {
             employeesList={employeesList}
             employeesListLoading={employeesListLoading}
           />
+          <LeaveActionForm
+            key={`leave-view-${currentRow.id}`}
+            open={open === "view"}
+            onOpenChange={handleCloseDialog}
+            currentRow={currentRow}
+            employeesList={employeesList}
+            employeesListLoading={employeesListLoading}
+            onSubmit={() => {}}
+            isViewOnly
+          />
           <DeleteModal
             onConfirm={handleDelete}
             key={`leave-delete-${currentRow.id}`}
