@@ -54,7 +54,8 @@ export const ReactBigCalendar = ({
 }: ReactBigCalendarProps) => {
   const [hoveredEvent, setHoveredEvent] = useState<string | null>(null);
   const user = useAuthStore((state) => state.user);
-  const userRole = user?.user?.role;
+  const isAdmin = user?.user?.role === roles.ADMIN;
+  console.log("isAdmin", isAdmin);  
   const now = useMemo(() => new Date(), []);
 
   const calendarEvents = useMemo(() => {
@@ -204,10 +205,14 @@ export const ReactBigCalendar = ({
     const isToday = moment(value).isSame(moment(now), "day");
     return (
       <div
-        onClick={() => onDateClick(value)}
-        className={`h-full w-full cursor-pointer border border-black/6 z-1 ${
+        onClick={() => {
+          if (isAdmin) {
+            onDateClick(value);
+          }
+        }}
+        className={`h-full w-full border border-black/6 z-1 ${
           isToday ? "bg-[#e8f0fe]" : "bg-transparent"
-        }`}
+        } ${isAdmin ? "cursor-pointer" : "cursor-default"}`}
       >
         {children}
       </div>
@@ -227,15 +232,17 @@ export const ReactBigCalendar = ({
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-100">
         <div className="flex items-center gap-6">
-          <Button
-            className="hidden lg:flex items-center gap-2 pl-3 pr-5 h-12 rounded-full shadow-sm bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-all hover:shadow-md"
-            onClick={() => onDateClick(new Date())}
-          >
-            <div className="p-1">
-              <Plus className="h-6 w-6 text-blue-600" />
-            </div>
-            <span className="font-medium text-base">Create</span>
-          </Button>
+          {isAdmin && (
+            <Button
+              className="hidden lg:flex items-center gap-2 pl-3 pr-5 h-12 rounded-full shadow-sm bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-all hover:shadow-md"
+              onClick={() => onDateClick(new Date())}
+            >
+              <div className="p-1">
+                <Plus className="h-6 w-6 text-blue-600" />
+              </div>
+              <span className="font-medium text-base">Create</span>
+            </Button>
+          )}
 
           <div className="flex items-center gap-4">
             <Button
@@ -310,7 +317,7 @@ export const ReactBigCalendar = ({
             onNavigate={handleNavigate}
             onSelectEvent={(event: any) => onEventClick(event)}
             eventPropGetter={eventPropGetter}
-            selectable={userRole === roles.ADMIN}
+            selectable={isAdmin}
             formats={formats as any}
             // ✅ CRITICAL: This enables the popup instead of drilldown on clicking "+2 more"
             onDrillDown={handleDrillDown}
@@ -320,7 +327,7 @@ export const ReactBigCalendar = ({
               event: CustomEvent,
               dateCellWrapper: DateCellWrapper, // ✅ Restored for empty cell clicks
             }}
-            className="google-calendar"
+            className={`google-calendar ${isAdmin ? "is-admin" : "is-not-admin"}`}
           />
         </div>
       </div>
@@ -381,12 +388,26 @@ export const ReactBigCalendar = ({
     font-weight: 500;
     color: #334155;
     pointer-events: auto;
+  }
+
+  .is-admin .rbc-date-cell {
     cursor: pointer;
+  }
+
+  .is-not-admin .rbc-date-cell {
+    cursor: default;
   }
   
   .rbc-date-cell .rbc-button-link {
     pointer-events: auto;
+  }
+
+  .is-admin .rbc-date-cell .rbc-button-link {
     cursor: pointer;
+  }
+
+  .is-not-admin .rbc-date-cell .rbc-button-link {
+    cursor: default;
   }
 
 
@@ -404,6 +425,7 @@ export const ReactBigCalendar = ({
       align-items: center;
       margin-top: 2px;
   }
+
 
   /* Event Styling */
   .rbc-event {
@@ -438,7 +460,7 @@ export const ReactBigCalendar = ({
   }
 
   .rbc-date-cell:hover .rbc-button-link {
-    color: #1a73e8;
+    // color: #1a73e8;
     text-decoration: underline;
   }
 

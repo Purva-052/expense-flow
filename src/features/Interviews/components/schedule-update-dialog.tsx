@@ -33,13 +33,9 @@ import { roles } from "@/utils/constant";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 
-// --- STYLING CONSTANTS FOR LAYOUT STABILITY ---
-// Reserves space at bottom for error message so layout doesn't jump
-const formItemClass = "relative pb-6 space-y-1";
-// Floats the error message in the reserved space
-const formMessageClass = "absolute bottom-1 left-0 text-xs font-medium";
+const formItemClass = " w-full";
+const formMessageClass = "text-xs font-medium text-red-500";
 
-// Schema for schedule update (only step 2 fields)
 const scheduleUpdateSchema = z
   .object({
     interviewerName: z.any().refine(
@@ -116,10 +112,8 @@ const scheduleUpdateSchema = z
   .superRefine((data, ctx) => {
     const { interviewStatus, statusChangedDate } = data;
 
-    // 1️⃣ Rejected → Optional (no error)
     if (interviewStatus === "rejected") return;
 
-    // 2️⃣ Joining → Required with custom message
     if (interviewStatus === "joining" && !statusChangedDate) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -129,7 +123,6 @@ const scheduleUpdateSchema = z
       return;
     }
 
-    // 3️⃣ Other statuses → Required with default message
     if (!statusChangedDate) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -192,8 +185,8 @@ export const ScheduleUpdateDialog = ({
 
   const form = useForm<ScheduleUpdateFormValues>({
     resolver: zodResolver(scheduleUpdateSchema),
-    mode: "onSubmit",
-    reValidateMode: "onSubmit",
+    mode: "onChange",
+    reValidateMode: "onChange",
     defaultValues: {
       interviewerName: "",
       startTime: "10:00",
@@ -227,7 +220,6 @@ export const ScheduleUpdateDialog = ({
   const interviewStatus = form.watch("interviewStatus");
   const startTime = form.watch("startTime");
 
-  // Automatically set endTime to startTime + 30 minutes
   useEffect(() => {
     if (startTime) {
       const [hours, minutes] = startTime.split(":").map(Number);
@@ -244,7 +236,6 @@ export const ScheduleUpdateDialog = ({
     }
   }, [startTime, form]);
 
-  // Reset submission state on unmount
   useEffect(() => {
     return () => {
       setIsSubmittingForm(false);
@@ -306,9 +297,8 @@ export const ScheduleUpdateDialog = ({
                 Scheduling Details
               </h3>
 
-              {/* --- GRID SYSTEM: Fixed gap and top alignment --- */}
-              <div className="grid grid-cols-1 gap-x-4 gap-y-2 md:grid-cols-2 items-start">
-                {/* 1. Interviewer Name (Col 1) */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 items-start">
+                {/* 1. Interviewer Name */}
                 <CustomDropDownSearchable
                   form={form}
                   name="interviewerName"
@@ -321,7 +311,7 @@ export const ScheduleUpdateDialog = ({
                   isLoading={usersListLoading}
                 />
 
-                {/* 2. Interview Time (Col 2) */}
+                {/* 2. Interview Time */}
                 <FormField
                   control={form.control}
                   name="startTime"
@@ -333,6 +323,7 @@ export const ScheduleUpdateDialog = ({
                           value={field.value}
                           onChange={field.onChange}
                           placeholder="Select start time"
+                          className="h-10"
                         />
                       </FormControl>
                       <FormMessage className={formMessageClass} />
@@ -340,9 +331,10 @@ export const ScheduleUpdateDialog = ({
                   )}
                 />
 
-                {/* 3. Interview Type (Col 1) */}
+                {/* 3. Interview Type */}
                 <CustomDropDownSearchable
                   form={form}
+                  triggerClassName="h-10"
                   name="interviewType"
                   label="Interview Type"
                   options={interviewTypes}
@@ -350,8 +342,8 @@ export const ScheduleUpdateDialog = ({
                   searchEnabled={false}
                 />
 
-                {/* 4. Interview URL (Col 2) OR Spacer */}
-                {interviewType === "video_call" ? (
+                {/* 4. Interview URL */}
+                {interviewType === "video_call" && (
                   <FormField
                     control={form.control}
                     name="interviewUrl"
@@ -367,18 +359,16 @@ export const ScheduleUpdateDialog = ({
                           <Input
                             placeholder="https://meet.google.com/..."
                             {...field}
+                            className="h-10"
                           />
                         </FormControl>
                         <FormMessage className={formMessageClass} />
                       </FormItem>
                     )}
                   />
-                ) : (
-                  // SPACER: Keeps "Interview Status" on Row 3, Col 1 always
-                  <div className="hidden md:block" aria-hidden="true" />
                 )}
 
-                {/* 5. Interview Status (Col 1) */}
+                {/* 5. Interview Status */}
                 <CustomDropDownSearchable
                   form={form}
                   name="interviewStatus"
@@ -389,7 +379,7 @@ export const ScheduleUpdateDialog = ({
                   sortOptions={false}
                 />
 
-                {/* 6. Date (Col 2) */}
+                {/* 6. Date */}
                 {interviewStatus !== "rejected" && (
                   <CustomDatePicker
                     control={form.control}
@@ -399,6 +389,7 @@ export const ScheduleUpdateDialog = ({
                         ? "Status Changed Date"
                         : "Joining Date"
                     }
+                    triggerClassName="h-10"
                     disabledDays={(date: Date) => {
                       const today = new Date();
                       today.setHours(0, 0, 0, 0);
@@ -407,23 +398,34 @@ export const ScheduleUpdateDialog = ({
                   />
                 )}
 
-                {/* 7. Notes (Col Span 2) */}
-                <FormField
-                  control={form.control}
-                  name="notes"
-                  render={({ field }) => (
-                    <FormItem className={cn("md:col-span-2", formItemClass)}>
-                      <FormLabel>Interviewer Comment</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Instructions or notes for the interviewer..."
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage className={formMessageClass} />
-                    </FormItem>
-                  )}
-                />
+                {/* 7. Notes (Full Width) */}
+                <div className="col-span-1 md:col-span-2">
+                  <FormField
+                    control={form.control}
+                    name="notes"
+                    render={({ field }) => (
+                      <FormItem className={formItemClass}>
+                        <FormLabel>Interviewer Comment</FormLabel>
+
+                        <FormControl>
+                          <div className="relative">
+                            <Textarea
+                              placeholder="Instructions or notes for the interviewer..."
+                              maxLength={100}
+                              className="w-full max-w-full resize-none break-all whitespace-pre-wrap overflow-y-auto overflow-x-hidden pr-14 pb-2 min-h-[80px]"
+                              {...field}
+                            />
+                            {/* Counter positioned inside the text area */}
+                            <span className="absolute bottom-2 right-3 text-xs text-gray-400 pointer-events-none">
+                              {field.value?.length || 0}/100
+                            </span>
+                          </div>
+                        </FormControl>
+                        <FormMessage className={formMessageClass} />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
             </div>
 
