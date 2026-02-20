@@ -4,6 +4,7 @@ import useDebounce from "@/hooks/use-debaunce";
 import SimpleDropDownSearchable from "../shared/custome-simple-dropdown";
 import { Input } from "../ui/input";
 import DateRangeFilter from "./custome-dateRange";
+import { SingleDateFilter } from "./custom-single-datepicker";
 
 // type FilterType = "select" | "search" | "dateRange";
 
@@ -83,6 +84,19 @@ export function DataTableToolbarCompact({
             <DateRangeFilter
               key={filter.key}
               placeholder={filter.placeholder ?? "Pick a date range"}
+              onChange={filter.onChange}
+              disabled={filter.disable}
+              className={filter.className}
+            />
+          );
+        }
+
+        if (filter.type === "date") {
+          return (
+            <SingleDateFilter
+              key={filter.key}
+              placeholder={filter.placeholder ?? "Pick a date"}
+              value={filter.value}
               onChange={filter.onChange}
               disabled={filter.disable}
               className={filter.className}
