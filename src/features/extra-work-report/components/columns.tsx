@@ -121,7 +121,7 @@ export const columns: ColumnDef<any>[] = [
       const status = row.original.inCashOrLeave;
       return (
         <Badge variant={status === 0 ? "default" : "secondary"}>
-          {status === 0 ? "In Cash" : "In Leave"}
+          {status === 0 ? "Cash" : "Leave"}
         </Badge>
       );
     },
