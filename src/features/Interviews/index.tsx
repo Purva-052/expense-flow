@@ -39,9 +39,11 @@ import { FilterConfig } from "@/components/table/table-toolbar";
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import { roles } from "@/utils/constant";
 import { getDateRange } from "@/utils/commonFunctions";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 // --- MAIN PAGE COMPONENT ---
 const InterviewsPage = () => {
+  const { user } = useAuthStore();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -237,6 +239,9 @@ const InterviewsPage = () => {
   }, [interviewsData]);
 
   const handleDateClick = (date: Date) => {
+    if (user?.user?.role !== roles.ADMIN) {
+      return;
+    }
     // Normalize the date to ensure we get the correct date without timezone shifts
     const normalizedDate = new Date(
       date.getFullYear(),

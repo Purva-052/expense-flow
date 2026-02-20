@@ -1,7 +1,7 @@
 /* eslint-disable prefer-const */
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserCircle2, CalendarClock, Check } from "lucide-react";
@@ -16,14 +16,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import { interviewTypes, interviewStatuses } from "../constants";
-import {
-  useCreateInterviewResumeLink,
-  // useCreateInterviewStatusLog,
-} from "../services";
+import { useCreateInterviewResumeLink } from "../services";
 import { FileUpload } from "@/components/shared/custome-file-upload";
 import TimePicker from "@/components/shared/custome-timepicker";
 import { roles } from "@/utils/constant";
@@ -32,7 +28,9 @@ import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 import { interviewFormSchema, InterviewFormValues } from "../schema";
 
 const RequiredIndicator = ({ error }: { error?: boolean }) => (
-  <span className={cn("ml-1", error ? "text-red-500" : "text-red-500")}>*</span>
+  <span className={cn("ml-0.5", error ? "text-red-500" : "text-red-500")}>
+    *
+  </span>
 );
 
 interface InterviewFormProps {
@@ -94,7 +92,7 @@ export const InterviewForm = ({
   const formatNoticePeriod = (days: number): string => {
     return `${days} Days`;
   };
-
+  const nameInputRef = useRef<HTMLInputElement>(null);
   const baseStatuses = interviewStatuses;
   const ADD_STATUSES = ["technical_round", "practical_round", "hr_round"];
   const EDIT_STATUSES = [...ADD_STATUSES, "rejected", "joining"];
@@ -126,7 +124,6 @@ export const InterviewForm = ({
 
   const form = useForm<InterviewFormValues>({
     resolver: zodResolver(activeSchema as any),
-    // Validate on change so errors clear immediately after fixing input values
     mode: "onChange",
     reValidateMode: "onChange",
     defaultValues: isEditMode
@@ -184,7 +181,6 @@ export const InterviewForm = ({
   const interviewStatus = form.watch("interviewStatus");
   const startTime = form.watch("startTime");
   const { mutateAsync: uploadResume } = useCreateInterviewResumeLink();
-  // const { mutateAsync: createStatusLog } = useCreateInterviewStatusLog();
 
   const hasActualChanges = (): boolean => {
     if (!isEditMode || !form.formState.isDirty) return false;
@@ -212,11 +208,8 @@ export const InterviewForm = ({
   }, [interviewType, currentStep, form]);
 
   const handleNextStep = async () => {
-    // Validate only Step 1 fields
     const isValid = await trigger(step1Fields);
-
     if (isValid) {
-      // ONLY change the UI state, do NOT set form value 'step' to 2 yet
       setCurrentStep(2);
     }
   };
@@ -265,10 +258,10 @@ export const InterviewForm = ({
         onSubmit={form.handleSubmit((data) =>
           handleFormSubmit({ ...data, step: 2 })
         )}
-        className="space-y-4"
+        className="flex flex-col h-full"
       >
         {!isEditMode && (
-          <nav className="flex items-center justify-center mb-4 sm:mb-6 px-2">
+          <nav className="flex items-center justify-center mb-4 px-2 shrink-0">
             {steps.map((step, index) => (
               <div
                 key={step.id}
@@ -277,25 +270,25 @@ export const InterviewForm = ({
                 <div className="flex flex-col items-center w-full sm:w-auto">
                   <div
                     className={cn(
-                      "w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold transition-all text-xs sm:text-sm",
+                      "w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-bold transition-all text-xs",
                       currentStep > step.id
                         ? "bg-primary text-primary-foreground"
                         : currentStep === step.id
-                          ? "bg-primary/90 text-primary-foreground border-2 border-primary-foreground shadow-lg"
+                          ? "bg-primary/90 text-primary-foreground border-2 border-primary-foreground shadow-md"
                           : "bg-muted text-muted-foreground"
                     )}
                   >
                     {currentStep > step.id ? (
-                      <Check className="h-4 w-4 sm:h-5 sm:w-5" />
+                      <Check className="h-4 w-4" />
                     ) : (
-                      <step.icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                      <step.icon className="h-4 w-4" />
                     )}
                   </div>
                   <p
                     className={cn(
-                      "mt-1 sm:mt-2 text-xs sm:text-sm text-center px-1",
+                      "mt-1 text-sm text-center px-1 font-medium",
                       currentStep >= step.id
-                        ? "text-primary font-medium"
+                        ? "text-primary"
                         : "text-muted-foreground"
                     )}
                   >
@@ -306,461 +299,517 @@ export const InterviewForm = ({
                   </p>
                 </div>
                 {index < steps.length - 1 && (
-                  <div className="flex-auto border-t-2 mx-2 sm:mx-4 transition-all hidden sm:block" />
+                  <div className="flex-auto border-t-2 mx-2 sm:mx-4 transition-all hidden sm:block opacity-30" />
                 )}
               </div>
             ))}
           </nav>
         )}
 
-        <Card className="border-none shadow-none max-h-[50vh] sm:max-h-[60vh] overflow-y-auto p-1">
+        <div className="flex-1 px-1 overflow-y-auto max-h-[65vh] pr-2">
           {/* --- Step 1 / Candidate Details --- */}
           {(currentStep === 1 || isEditMode) && (
-            <CardContent className="p-2 sm:p-4">
-              <div className="space-y-4 rounded-md border p-3 sm:p-4">
-                <h3 className="text-base sm:text-lg font-medium">
-                  Candidate Details
-                </h3>
-                <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-                  <FormField
-                    control={form.control}
-                    name="candidateName"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <FormLabel
-                          className={cn(
-                            "flex items-center gap-1",
-                            fieldState.error && "text-red-500"
-                          )}
-                        >
-                          Name <span className="text-red-500">*</span>
-                        </FormLabel>
-                        <FormControl>
-                          <Input placeholder="John Doe" {...field} />
-                        </FormControl>
-                        <div className="min-h-5">
-                          <FormMessage />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                  <CustomDropDownSearchable
-                    form={form}
-                    name="technology"
-                    label={
-                      <span className="flex items-center gap-1">
-                        Technology <span className="text-red-500">*</span>
-                      </span>
-                    }
-                    options={technologyList?.data?.map((technology: any) => ({
-                      value: technology.id,
-                      label: technology.name,
-                    }))}
-                    placeholder="Select technology"
-                    isLoading={technologyListLoading}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <FormLabel
-                          className={cn(
-                            "flex items-center gap-1",
-                            fieldState.error && "text-red-500"
-                          )}
-                        >
-                          Email <span className="text-red-500">*</span>
-                        </FormLabel>
-                        <FormControl>
-                          <Input placeholder="candidate@email.com" {...field} />
-                        </FormControl>
-                        <div className="min-h-5">
-                          <FormMessage />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="phoneNumber"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Phone Number</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            type="tel"
-                            placeholder="+91 1234567890"
-                            maxLength={15} // ✅ works
-                            inputMode="tel"
-                            onChange={(e) => {
-                              // Allow only valid characters while typing
-                              const value = e.target.value;
-                              if (/^[+0-9()\-\s]*$/.test(value)) {
-                                field.onChange(value);
-                              }
-                            }}
-                          />
-                        </FormControl>
-                        <div className="min-h-5">
-                          <FormMessage />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="location"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Location</FormLabel>
-                        <FormControl>
-                          <Input placeholder="City, Country" {...field} />
-                        </FormControl>
-                        <div className="min-h-5">
-                          <FormMessage />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="link"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Link</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="https://portfolio.com"
-                            {...field}
-                          />
-                        </FormControl>
-                        <div className="min-h-5">
-                          <FormMessage />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="experience"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Experience (Years)</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            placeholder="5"
-                            {...field}
-                            min={0}
-                            // 1. Block invalid keys (e, E, +, -)
-                            onKeyDown={(e) => {
-                              if (["e", "E", "+", "-"].includes(e.key)) {
-                                e.preventDefault();
-                              }
-                            }}
-                            // 2. Strict Length Limit (Max 2 digits)
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              if (value.length <= 2) {
-                                field.onChange(value ? Number(value) : "");
-                              }
-                            }}
-                          />
-                        </FormControl>
-                        {/* Prevents Layout Shift */}
-                        <div className="min-h-[20px] mt-1">
-                          <FormMessage />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-
-                  {userRole === roles.ADMIN && (
-                    <>
-                      {/* --- CURRENT CTC FIELD --- */}
-                      <FormField
-                        control={form.control}
-                        name="currentCtc"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Current CTC</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                min={1}
-                                step="0.01"
-                                placeholder="10"
-                                {...field}
-                                onKeyDown={(e) => {
-                                  if (["e", "E", "+", "-"].includes(e.key)) {
-                                    e.preventDefault();
-                                  }
-                                }}
-                                // 3. Strict Length Limit (Max 10 digits)
-                                onChange={(e) => {
-                                  const value = e.target.value;
-                                  if (value.length <= 3) {
-                                    field.onChange(value ? Number(value) : "");
-                                  }
-                                }}
-                              />
-                            </FormControl>
-                            <div className="min-h-[20px] mt-1">
-                              <FormMessage />
-                            </div>
-                          </FormItem>
-                        )}
-                      />
-
-                      {/* --- EXPECTED CTC FIELD --- */}
-                      <FormField
-                        control={form.control}
-                        name="expectedCtc"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Expected CTC</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                min={1}
-                                step="0.01"
-                                placeholder="10"
-                                {...field}
-                                onKeyDown={(e) => {
-                                  if (["e", "E", "+", "-"].includes(e.key)) {
-                                    e.preventDefault();
-                                  }
-                                }}
-                                // 3. Strict Length Limit (Max 10 digits)
-                                onChange={(e) => {
-                                  const value = e.target.value;
-                                  if (value.length <= 3) {
-                                    field.onChange(value ? Number(value) : "");
-                                  }
-                                }}
-                              />
-                            </FormControl>
-                            <div className="min-h-[20px] mt-1">
-                              <FormMessage />
-                            </div>
-                          </FormItem>
-                        )}
-                      />
-                    </>
+            <div className="grid grid-cols-12 gap-x-4 gap-y-3">
+              {/* Name & Tech */}
+              <div className="col-span-12 md:col-span-6 gap-y-0 ">
+                <FormField
+                  control={form.control}
+                  name="candidateName"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm ">
+                        Name <RequiredIndicator error={!!fieldState.error} />
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="John Doe"
+                          {...field}
+                          ref={nameInputRef}
+                          className="h-10"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
+                />
+              </div>
 
-                  {/* --- NOTICE PERIOD FIELD --- */}
-                  <FormField
-                    control={form.control}
-                    name="noticePeriod"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Notice Period</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="e.g., 30 Days"
-                            maxLength={20} // 4. Native Max Length
-                            {...field}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              // 5. Allow only alphanumeric + space, Max 20 chars
-                              if (value.length <= 20) {
-                                const cleanValue = value.replace(
-                                  /[^a-zA-Z0-9\s]/g,
-                                  ""
-                                );
-                                field.onChange(cleanValue);
-                              }
-                            }}
-                          />
-                        </FormControl>
-                        <div className="min-h-[20px] mt-1">
+              <div className="col-span-12 md:col-span-6 min-h-0 gap-0">
+                <CustomDropDownSearchable
+                  form={form}
+                  name="technology"
+                  label={
+                    <span className="text-sm ">
+                      Technology <RequiredIndicator />
+                    </span>
+                  }
+                  options={technologyList?.data?.map((technology: any) => ({
+                    value: technology.id,
+                    label: technology.name,
+                  }))}
+                  placeholder="Select technology"
+                  isLoading={technologyListLoading}
+                  // className="min-h-0 gap-0"
+                />
+              </div>
+
+              {/* Email & Phone */}
+              <div className="col-span-12 md:col-span-6">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm">
+                        Email <RequiredIndicator error={!!fieldState.error} />
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="candidate@email.com"
+                          {...field}
+                          className="h-10"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="col-span-12 md:col-span-6">
+                <FormField
+                  control={form.control}
+                  name="phoneNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm">Phone Number</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="tel"
+                          placeholder="+91 1234567890"
+                          maxLength={15}
+                          className="h-10"
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[+0-9()\-\s]*$/.test(value)) {
+                              field.onChange(value);
+                            }
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Location & Link */}
+              <div className="col-span-12 md:col-span-6">
+                <FormField
+                  control={form.control}
+                  name="location"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm">Location</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="City, Country"
+                          {...field}
+                          className="h-10"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="col-span-12 md:col-span-6">
+                <FormField
+                  control={form.control}
+                  name="link"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm">Link</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="https://portfolio.com"
+                          {...field}
+                          className="h-10"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              {/* Admin Only CTC Fields */}
+              {userRole === roles.ADMIN && (
+                <>
+                  <div className="col-span-12 md:col-span-6">
+                    <FormField
+                      control={form.control}
+                      name="currentCtc"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm ">
+                            Current CTC
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min={1}
+                              step="0.01"
+                              placeholder="10"
+                              value={field.value ?? ""}
+                              className="h-10"
+                              onKeyDown={(e) => {
+                                if (["e", "E", "+", "-"].includes(e.key))
+                                  e.preventDefault();
+                              }}
+                              onChange={(e) => {
+                                let value = e.target.value;
+
+                                // Remove leading zeros (but allow 0.xx)
+                                if (
+                                  value.length > 1 &&
+                                  value.startsWith("0") &&
+                                  !value.startsWith("0.")
+                                ) {
+                                  value = value.replace(/^0+/, "");
+                                }
+
+                                // Allow only up to 3 digits before decimal & 2 after decimal
+                                const regex =
+                                  /^(?:[1-9]\d{0,2}|0)?(?:\.\d{0,2})?$/;
+
+                                if (regex.test(value)) {
+                                  field.onChange(value);
+                                }
+                              }}
+                            />
+                          </FormControl>
                           <FormMessage />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                  <div className="md:col-span-2">
-                    <FormLabel
-                      className={cn(
-                        "flex items-center gap-1 mb-2",
-                        formState.errors.resume && "text-red-500"
+                        </FormItem>
                       )}
-                    >
-                      Resume (CV) <span className="text-red-500">*</span>
-                    </FormLabel>
-                    <FileUpload
-                      name="resume"
-                      label=""
-                      fileLabel="PDF,DOC,DOCX (Max 5MB)"
-                      existingFileUrl={initialData?.resumeLink}
-                      existingFileName={`${initialData?.candidateName || "Candidate"} Resume`}
-                      acceptedFormats={{
-                        "application/pdf": [".pdf"],
-                        "application/msword": [".doc"],
-                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-                          [".docx"],
-                      }}
                     />
                   </div>
-                </div>
+
+                  <div className="col-span-12 md:col-span-6">
+                    <FormField
+                      control={form.control}
+                      name="expectedCtc"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm">
+                            Expected CTC
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min={1}
+                              step="0.01"
+                              placeholder="10"
+                              value={field.value ?? ""}
+                              className="h-10"
+                              onKeyDown={(e) => {
+                                if (["e", "E", "+", "-"].includes(e.key))
+                                  e.preventDefault();
+                              }}
+                              onChange={(e) => {
+                                let value = e.target.value;
+
+                                // Remove leading zeros (but allow 0.xx)
+                                if (
+                                  value.length > 1 &&
+                                  value.startsWith("0") &&
+                                  !value.startsWith("0.")
+                                ) {
+                                  value = value.replace(/^0+/, "");
+                                }
+
+                                // Allow only up to 3 digits before decimal & 2 after decimal
+                                const regex =
+                                  /^(?:[1-9]\d{0,2}|0)?(?:\.\d{0,2})?$/;
+
+                                if (regex.test(value)) {
+                                  field.onChange(value);
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Stats Row: Experience, Notice Period (CTC if Admin) */}
+              <div className="col-span-12 md:col-span-6">
+                <FormField
+                  control={form.control}
+                  name="experience"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm">
+                        Experience (Yrs)
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="5"
+                          min={0}
+                          step="0.1"
+                          value={field.value ?? ""}
+                          className="h-10"
+                          onKeyDown={(e) => {
+                            if (["e", "E", "+", "-"].includes(e.key))
+                              e.preventDefault();
+                          }}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^\d{0,2}(\.\d{0,2})?$/.test(value))
+                              field.onChange(value);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
-            </CardContent>
+
+              <div className="col-span-12 md:col-span-6">
+                <FormField
+                  control={form.control}
+                  name="noticePeriod"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm">
+                        Notice Period (Days)
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min={1}
+                          max={365}
+                          placeholder="Enter days (e.g., 30)"
+                          value={field.value ?? ""}
+                          className="h-10"
+                          onKeyDown={(e) => {
+                            if (["e", "E", "+", "-", "."].includes(e.key)) {
+                              e.preventDefault();
+                            }
+                          }}
+                          onChange={(e) => {
+                            let value = e.target.value;
+
+                            // Remove leading zeros
+                            if (value.length > 1 && value.startsWith("0")) {
+                              value = value.replace(/^0+/, "");
+                            }
+
+                            // Allow max 3 digits only (0–365 safe range)
+                            if (/^\d{0,3}$/.test(value)) {
+                              field.onChange(value);
+                            }
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Resume Upload - Full Width */}
+              <div className="col-span-12">
+                <FormLabel
+                  className={cn(
+                    "text-sm flex items-center gap-1 mb-1.5",
+                    formState.errors.resume && "text-red-500"
+                  )}
+                >
+                  Resume (CV) <RequiredIndicator />
+                </FormLabel>
+                <FileUpload
+                  name="resume"
+                  label=""
+                  fileLabel="PDF, DOC, DOCX (Max 5MB)"
+                  existingFileUrl={initialData?.resumeLink}
+                  existingFileName={`${initialData?.candidateName || "Candidate"} Resume`}
+                  acceptedFormats={{
+                    "application/pdf": [".pdf"],
+                    "application/msword": [".doc"],
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+                      [".docx"],
+                  }}
+                />
+              </div>
+            </div>
           )}
 
           {/* --- Step 2 / Interviewer Details --- */}
           {currentStep === 2 && !isEditMode && (
-            <CardContent className="p-2 sm:p-4">
-              <div className="space-y-4 rounded-md border p-3 sm:p-4">
-                <h3 className="text-base sm:text-lg font-medium">
-                  Interviewer Details
-                </h3>
-                <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-                  <CustomDropDownSearchable
-                    form={form}
-                    name="interviewerName"
-                    label={
-                      <span className="flex items-center gap-1">
-                        Interviewer Name <span className="text-red-500">*</span>
-                      </span>
-                    }
-                    options={usersList?.data?.map((user: any) => ({
-                      value: user.id,
-                      label: user.fullName,
-                    }))}
-                    placeholder="Select interviewer"
-                    isLoading={usersListLoading}
-                  />
+            <div className="grid grid-cols-12 gap-4 ">
+              <div className="col-span-12 md:col-span-6">
+                <CustomDropDownSearchable
+                  form={form}
+                  name="interviewerName"
+                  label={
+                    <span className="text-sm">
+                      Interviewer Name <RequiredIndicator />
+                    </span>
+                  }
+                  options={usersList?.data?.map((user: any) => ({
+                    value: user.id,
+                    label: user.fullName,
+                  }))}
+                  placeholder="Select interviewer"
+                  isLoading={usersListLoading}
+                />
+              </div>
+
+              <div className="col-span-12 md:col-span-6">
+                <FormField
+                  control={form.control}
+                  name="startTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm">Interview Time</FormLabel>
+                      <FormControl>
+                        <TimePicker
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="Select start time"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="col-span-12 md:col-span-6">
+                <CustomDropDownSearchable
+                  form={form}
+                  name="interviewType"
+                  label={
+                    <span className="text-sm">
+                      Interview Type <RequiredIndicator />
+                    </span>
+                  }
+                  options={interviewTypes}
+                  placeholder="Select type"
+                  searchEnabled={false}
+                />
+              </div>
+
+              {interviewType === "video_call" && (
+                <div className="col-span-12 md:col-span-6">
                   <FormField
                     control={form.control}
-                    name="startTime"
+                    name="interviewUrl"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Interview Time</FormLabel>
+                        <FormLabel className="text-sm">
+                          Interview URL{" "}
+                          <RequiredIndicator
+                            error={!!formState.errors.interviewUrl}
+                          />
+                        </FormLabel>
                         <FormControl>
-                          <TimePicker
-                            value={field.value}
-                            onChange={field.onChange}
-                            placeholder="Select start time"
+                          <Input
+                            placeholder="https://meet.google.com/..."
+                            {...field}
+                            className="h-10"
                           />
                         </FormControl>
-                        <div className="min-h-5">
-                          <FormMessage />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                  <CustomDropDownSearchable
-                    form={form}
-                    name="interviewType"
-                    label={
-                      <span className="flex items-center gap-1">
-                        Interview Type <span className="text-red-500">*</span>
-                      </span>
-                    }
-                    options={interviewTypes}
-                    placeholder="Select type"
-                    searchEnabled={false}
-                  />
-                  {interviewType === "video_call" && (
-                    <FormField
-                      control={form.control}
-                      name="interviewUrl"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Interview URL{" "}
-                            <RequiredIndicator
-                              error={!!formState.errors.interviewUrl}
-                            />
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="https://meet.google.com/..."
-                              {...field}
-                            />
-                          </FormControl>
-                          <div className="min-h-5">
-                            <FormMessage />
-                          </div>
-                        </FormItem>
-                      )}
-                    />
-                  )}
-                  <CustomDropDownSearchable
-                    form={form}
-                    name="interviewStatus"
-                    label={
-                      <span className="flex items-center gap-1">
-                        Interview Status <span className="text-red-500">*</span>
-                      </span>
-                    }
-                    options={filteredStatuses}
-                    placeholder="Select status"
-                    searchEnabled={false}
-                    sortOptions={false}
-                  />
-                  {isEditMode &&
-                    userRole === roles.ADMIN &&
-                    interviewStatus === "joining" && (
-                      <CustomDatePicker
-                        control={form.control}
-                        name="joiningDate"
-                        label="Joining Date"
-                      />
-                    )}
-                  <FormField
-                    control={form.control}
-                    name="notes"
-                    render={({ field }) => (
-                      <FormItem className="md:col-span-2">
-                        <FormLabel>Interviewer Comment</FormLabel>
-
-                        <FormControl>
-                          <div className="relative">
-                            <Textarea
-                              placeholder="Instructions or notes for the interviewer..."
-                              maxLength={100}
-                              className="w-full max-w-full resize-none break-all whitespace-pre-wrap overflow-y-auto overflow-x-hidden pr-14 pb-6 leading-relaxed"
-                              {...field}
-                            />
-
-                            <span className="absolute bottom-2 right-3 text-xs text-gray-400 pointer-events-none">
-                              {field.value?.length || 0}/100
-                            </span>
-                          </div>
-                        </FormControl>
-
-                        <div className="min-h-5">
-                          <FormMessage />
-                        </div>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-              </div>
-            </CardContent>
-          )}
-        </Card>
+              )}
 
-        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-2 pt-4 border-t">
+              <div className="col-span-12 md:col-span-6">
+                <CustomDropDownSearchable
+                  form={form}
+                  name="interviewStatus"
+                  label={
+                    <span className="text-sm">
+                      Interview Status <RequiredIndicator />
+                    </span>
+                  }
+                  options={filteredStatuses}
+                  placeholder="Select status"
+                  searchEnabled={false}
+                  sortOptions={false}
+                />
+              </div>
+
+              {isEditMode &&
+                userRole === roles.ADMIN &&
+                interviewStatus === "joining" && (
+                  <div className="col-span-12 md:col-span-6">
+                    <CustomDatePicker
+                      control={form.control}
+                      name="joiningDate"
+                      label="Joining Date"
+                    />
+                  </div>
+                )}
+
+              <div className="col-span-12">
+                <FormField
+                  control={form.control}
+                  name="notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm">
+                        Interviewer Comment
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Textarea
+                            placeholder="Instructions or notes for the interviewer..."
+                            maxLength={100}
+                            className="w-full max-w-full resize-none break-all whitespace-pre-wrap overflow-y-auto overflow-x-hidden pr-14 pb-6 leading-relaxed min-h-80px"
+                            {...field}
+                          />
+                          <span className="absolute bottom-2 right-3 text-[10px] text-gray-400 pointer-events-none">
+                            {field.value?.length || 0}/100
+                          </span>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 mt-auto border-t shrink-0">
           <Button
             type="button"
             variant="ghost"
             onClick={onClose}
-            className="w-full sm:w-auto order-2 sm:order-1"
+            className="w-full sm:w-auto order-2 sm:order-1 h-9"
           >
             Cancel
           </Button>
-          <div className="flex gap-2 w-full sm:w-auto order-1 sm:order-2">
+          <div className="flex gap-3 w-full sm:w-auto order-1 sm:order-2">
             {currentStep > 1 && !isEditMode && (
               <Button
                 type="button"
                 variant="outline"
                 onClick={goToPrevStep}
-                className="flex-1 sm:flex-initial"
+                className="flex-1 sm:flex-initial h-9"
               >
                 Back
               </Button>
@@ -769,15 +818,14 @@ export const InterviewForm = ({
               <Button
                 type="button"
                 onClick={handleNextStep}
-                className="flex-1 sm:flex-initial"
+                className="flex-1 sm:flex-initial h-9"
               >
                 Next
               </Button>
             ) : (
               <Button
-                // type="submit"
                 type="button"
-                className="flex-1 sm:flex-initial"
+                className="flex-1 sm:flex-initial h-9"
                 disabled={
                   isSubmitting ||
                   isSubmittingForm ||
@@ -789,7 +837,6 @@ export const InterviewForm = ({
                   let isValid = false;
 
                   if (isEditMode) {
-                    // ✅ Validate ONLY fields present in Edit form
                     isValid = await form.trigger([
                       "candidateName",
                       "technology",
@@ -807,7 +854,6 @@ export const InterviewForm = ({
                       "notes",
                     ]);
                   } else {
-                    // ✅ Create mode → validate all
                     isValid = await form.trigger();
                   }
 
