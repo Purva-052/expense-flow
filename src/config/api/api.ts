@@ -164,6 +164,7 @@ const API = {
     update: "/user-certificates",
   },
   leave_management: {
+    employee:"/leave-management/employees",
     create: "/leave-management",
     list: "/leave-management",
     update: "/leave-management",

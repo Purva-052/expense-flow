@@ -11,11 +11,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useLeaveStore } from "../stores";
-import { useAuthStore } from "@/stores/use-auth-store";
-import { roles } from "@/utils/constant";
 
 export const columns: ColumnDef<any>[] = [
-  // ✅ Employee Name
   {
     accessorKey: "employee.fullName",
     header: "Employee",
@@ -126,16 +123,6 @@ export const columns: ColumnDef<any>[] = [
       const data = row.original;
       const { setOpen, setCurrentRow } = useLeaveStore();
 
-      const user = useAuthStore((state) => state.user);
-      const userRole = user?.role || user?.user?.role;
-      const currentUserId = user?.user.id;
-
-      const isAdmin = userRole === roles.ADMIN;
-      const employeeId = row.original.employeeId;
-      const isOwner = String(employeeId) === String(currentUserId);
-
-      const canEditDelete = isAdmin || isOwner;
-
       const handleEdit = () => {
         setOpen("edit");
         setCurrentRow(data);
@@ -167,20 +154,16 @@ export const columns: ColumnDef<any>[] = [
               View Details
             </DropdownMenuItem>
 
-            {canEditDelete && (
-              <DropdownMenuItem onClick={handleEdit}>
-                Edit Details
-              </DropdownMenuItem>
-            )}
+            <DropdownMenuItem onClick={handleEdit}>
+              Edit Details
+            </DropdownMenuItem>
 
-            {canEditDelete && (
-              <DropdownMenuItem
-                className="text-red-600 focus:bg-red-50"
-                onClick={handleDelete}
-              >
-                Delete Details
-              </DropdownMenuItem>
-            )}
+            <DropdownMenuItem
+              className="text-red-600 focus:bg-red-50"
+              onClick={handleDelete}
+            >
+              Delete Details
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

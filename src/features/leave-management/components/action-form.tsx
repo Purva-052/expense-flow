@@ -22,7 +22,6 @@ import CustomButton from "@/components/shared/custom-button";
 import { leaveSchema, TLeaveFormSchema } from "../schema";
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -54,7 +53,7 @@ export function LeaveActionForm({
     resolver: zodResolver(leaveSchema) as any,
     mode: "onSubmit",
     defaultValues: {
-      days: [], // Initialize empty array
+      leaveDays: [],
       dayType: "full",
       reason: "",
     },
@@ -62,17 +61,15 @@ export function LeaveActionForm({
 
   const { fields, replace } = useFieldArray({
     control: form.control,
-    name: "days",
+    name: "leaveDays",
   });
 
   const watchFromDate = form.watch("fromDate");
   const watchToDate = form.watch("toDate");
-  const watchDays = form.watch("days");
+  const watchDays = form.watch("leaveDays");
 
-  // --- 1. Handle Edit and Create Mode Initialization ---
   useEffect(() => {
     if (currentRow && open) {
-      // --- EDIT / VIEW MODE ---
       form.reset({
         employeeId: currentRow.employeeId ?? currentRow.employee?.id,
         fromDate: currentRow.fromDate
@@ -80,7 +77,6 @@ export function LeaveActionForm({
           : undefined,
         toDate: currentRow.toDate ? new Date(currentRow.toDate) : undefined,
         reason: currentRow.reason,
-        description: currentRow.description || "",
       });
 
       if (currentRow.leaveDays && Array.isArray(currentRow.leaveDays)) {
@@ -89,69 +85,75 @@ export function LeaveActionForm({
           dayName: format(new Date(day.date), "EEEE"),
           dayType: day.dayType || "full",
           halfType: day.halfType,
-          description: day.description || "",
         }));
         replace(daysToPopulate);
       }
-      // --- FIX ENDS HERE ---
     } else if (!open) {
-      // --- RESET ON CLOSE ---
       form.reset({
         employeeId: undefined,
         fromDate: undefined,
         toDate: undefined,
         reason: "",
-        description: "",
-        days: [], // Explicitly clear days array
+        leaveDays: [],
         dayType: "full",
       });
-      replace([]); // Also clear the field array state
+      replace([]);
     }
   }, [currentRow, open, form, replace]);
 
-  // --- 2. Handle Create Mode: Date Range to Table Generation ---
   useEffect(() => {
-    if (!isEdit && open) {
-      if (watchFromDate && watchToDate) {
-        const start = new Date(watchFromDate);
-        const end = new Date(watchToDate);
+    if (open && watchFromDate && watchToDate) {
+      const start = new Date(watchFromDate);
+      const end = new Date(watchToDate);
 
-        if (start <= end) {
-          const newDays = [];
-          const current = new Date(start);
+      if (start <= end) {
+        const currentFormDays = form.getValues("leaveDays") || [];
+        const newDays = [];
+        const current = new Date(start);
 
-          while (current <= end) {
-            const dayIndex = current.getDay();
-            const isWeekend = dayIndex === 0 || dayIndex === 6;
+        while (current <= end) {
+          const dateStr = format(current, "yyyy-MM-dd");
+          const existingDay = currentFormDays.find((d) => d.date === dateStr);
 
+          if (existingDay) {
+            const { description, ...rest } = existingDay as any;
+            newDays.push(rest);
+          } else {
             newDays.push({
-              date: format(current, "yyyy-MM-dd"),
+              date: dateStr,
               dayName: format(current, "EEEE"),
               dayType: "full" as const,
               halfType: undefined,
-              description: isWeekend ? "Weekly Off" : "",
             });
-            current.setDate(current.getDate() + 1);
           }
+          current.setDate(current.getDate() + 1);
+        }
+
+        const currentDatesStr = currentFormDays.map((d) => d.date).join(",");
+        const newDatesStr = newDays.map((d) => d.date).join(",");
+
+        if (currentDatesStr !== newDatesStr) {
           replace(newDays);
-        } else {
-          replace([]);
         }
       } else {
         replace([]);
       }
     }
-  }, [watchFromDate, watchToDate, isEdit, open, replace]);
+  }, [watchFromDate, watchToDate, open, replace, form]);
 
   const onSubmit: SubmitHandler<TLeaveFormSchema> = async (values) => {
-    // This onSubmit logic remains unchanged
+    const formatLeaveDays = (days: any[]) => {
+      return days?.map((day) => ({
+        date: day.date,
+        dayType: day.dayType,
+        halfType: day.dayType === "half" ? day.halfType : undefined,
+      }));
+    };
+
     if (isEdit) {
-      // Note: In your original code, the edit submission doesn't send the 'days'.
-      // This logic assumes you are editing the top-level details and not the individual days.
-      // If you need to edit individual days, this part would need adjustment.
       onSubmitValues({
         ...values,
-        id: currentRow.id, // Pass the ID for update
+        id: currentRow.id,
         leaveDate: values.leaveDate
           ? format(values.leaveDate, "yyyy-MM-dd")
           : undefined,
@@ -159,12 +161,7 @@ export function LeaveActionForm({
           ? format(values.fromDate, "yyyy-MM-dd")
           : undefined,
         toDate: values.toDate ? format(values.toDate, "yyyy-MM-dd") : undefined,
-        days: values.days?.map((day) => ({
-          date: day.date,
-          dayType: day.dayType,
-          halfType: day.dayType === "half" ? day.halfType : undefined,
-          description: day.description,
-        })),
+        leaveDays: formatLeaveDays(values.leaveDays || []),
       });
     } else {
       const payload = {
@@ -172,12 +169,7 @@ export function LeaveActionForm({
         fromDate: format(values.fromDate!, "yyyy-MM-dd"),
         toDate: format(values.toDate!, "yyyy-MM-dd"),
         reason: values.reason,
-        days: values.days?.map((day) => ({
-          date: day.date,
-          dayType: day.dayType,
-          halfType: day.dayType === "half" ? day.halfType : undefined,
-          description: day.description,
-        })),
+        leaveDays: formatLeaveDays(values.leaveDays || []),
       };
       onSubmitValues(payload);
     }
@@ -226,8 +218,6 @@ export function LeaveActionForm({
                 />
               </div>
 
-              {/* --- CREATE & EDIT MODE: Table Layout --- */}
-
               <div className="space-y-4">
                 {/* Date Range Selectors */}
                 <div className="grid grid-cols-2 gap-4">
@@ -239,7 +229,7 @@ export function LeaveActionForm({
                       control={form.control}
                       name="fromDate"
                       label=""
-                      disabled={isViewOnly || isEdit}
+                      disabled={isViewOnly}
                     />
                   </FormItem>
                   <FormItem>
@@ -250,7 +240,7 @@ export function LeaveActionForm({
                       control={form.control}
                       name="toDate"
                       label=""
-                      disabled={isViewOnly || isEdit}
+                      disabled={isViewOnly}
                     />
                   </FormItem>
                 </div>
@@ -263,7 +253,7 @@ export function LeaveActionForm({
                         <tr>
                           <th className="p-3 w-[120px]">Leave Date</th>
                           <th className="p-3 w-[100px]">Day</th>
-                          <th className="p-3">Description</th>
+                          {/* Description Header Removed */}
                           <th className="p-3 w-[160px]">Half/Full day</th>
                           <th className="p-3 w-[180px]">1st/2nd Half</th>
                         </tr>
@@ -287,38 +277,25 @@ export function LeaveActionForm({
                               </td>
                               <td className="p-3 align-middle text-gray-500">
                                 {field.dayName}
-                              </td>
-                              <td className="p-3 align-middle">
-                                {isWeekend ? (
-                                  <span className="text-gray-600 font-medium">
-                                    Weekly Off
+                                {isWeekend && (
+                                  <span className="block text-xs text-red-400 font-medium">
+                                    (Weekly Off)
                                   </span>
-                                ) : (
-                                  <FormField
-                                    control={form.control}
-                                    name={`days.${index}.description`}
-                                    render={({ field: inputField }) => (
-                                      <Input
-                                        {...inputField}
-                                        placeholder="Description..."
-                                        className="h-8 text-xs"
-                                        disabled={isViewOnly}
-                                      />
-                                    )}
-                                  />
                                 )}
                               </td>
+                              {/* Description Input Cell Removed */}
+
                               <td className="p-3 align-middle">
                                 <FormField
                                   control={form.control}
-                                  name={`days.${index}.dayType`}
+                                  name={`leaveDays.${index}.dayType`}
                                   render={({ field: radioField }) => (
                                     <RadioGroup
                                       onValueChange={(val) => {
                                         radioField.onChange(val);
                                         if (val === "full") {
                                           form.setValue(
-                                            `days.${index}.halfType`,
+                                            `leaveDays.${index}.halfType`,
                                             undefined
                                           );
                                         }
@@ -362,7 +339,7 @@ export function LeaveActionForm({
                               <td className="p-3 align-middle">
                                 <FormField
                                   control={form.control}
-                                  name={`days.${index}.halfType`}
+                                  name={`leaveDays.${index}.halfType`}
                                   render={({ field: sessionField }) => (
                                     <RadioGroup
                                       onValueChange={sessionField.onChange}
@@ -406,7 +383,7 @@ export function LeaveActionForm({
                                   )}
                                 />
                                 {!isWeekend &&
-                                  form.formState.errors.days?.[index]
+                                  form.formState.errors.leaveDays?.[index]
                                     ?.halfType && (
                                     <span className="text-[10px] text-red-500 block mt-1">
                                       Required

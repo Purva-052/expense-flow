@@ -8,6 +8,7 @@ import { useLeaveStore } from "../stores";
 
 // Assuming your API structure has a leaves endpoint
 const GET_API_URL = API.leave_management.list; // Update this in your API config
+const GET_EMPLOYEES_API_URL = API.leave_management.employee; // Update this in your API config
 
 export const useCreateLeaveData = () => {
   const { setOpen } = useLeaveStore();
@@ -31,6 +32,10 @@ export const useUpdateLeaveData = (id: string) => {
 
 export const useGetLeaveData = (params?: any) => {
   return useFetchData({ url: GET_API_URL, params });
+};
+
+export const useGeEmployeeData = (params?: any) => {
+  return useFetchData({ url: GET_EMPLOYEES_API_URL, params });
 };
 
 export const useDeleteLeaveData = (id: string) => {

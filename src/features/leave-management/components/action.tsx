@@ -3,10 +3,10 @@ import { DeleteModal } from "@/components/model/delete-model";
 import {
   useCreateLeaveData,
   useDeleteLeaveData,
+  useGeEmployeeData,
   useUpdateLeaveData,
 } from "../services";
 import { useLeaveStore } from "../stores";
-import { useGetUserDropdownList } from "@/features/users/services";
 import { LeaveActionForm } from "./action-form";
 
 export function ActionFormModal() {
@@ -14,9 +14,7 @@ export function ActionFormModal() {
 
   // Project List removed as it is not in the Leave payload
   const { data: employeesList, isPending: employeesListLoading }: any =
-    useGetUserDropdownList({
-      status: "active",
-    });
+    useGeEmployeeData();
 
   const { mutateAsync: createMutate, isPending: isCreateLoading } =
     useCreateLeaveData();

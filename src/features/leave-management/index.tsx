@@ -8,9 +8,7 @@ import { FilterConfig } from "@/components/table/table-toolbar";
 import { ActionFormModal } from "./components/action";
 import { columns } from "./components/columns";
 import { useLeaveStore } from "./stores";
-import { useGetLeaveData } from "./services";
-import { useGetUserDropdownList } from "../users/services";
-import { roles } from "@/utils/constant";
+import { useGeEmployeeData, useGetLeaveData } from "./services";
 
 const LeaveManagementPage = () => {
   const { open, setOpen } = useLeaveStore();
@@ -43,16 +41,8 @@ const LeaveManagementPage = () => {
 
   const { data: listData, isPending: loading } = useGetLeaveData(apiParams);
 
-  const { data: usersList, isPending: usersListLoading }: any =
-    useGetUserDropdownList({
-      role: [
-        roles.TEAM_LEAD,
-        roles.ADMIN,
-        roles.PROJECT_MANAGER,
-        roles.DEVELOPER,
-      ],
-      status: "active",
-    });
+  const { data: employeesList, isPending: employeesListLoading }: any =
+    useGeEmployeeData();
 
   const totalCount = (listData as any)?.metadata?.totalCount;
 
@@ -100,7 +90,7 @@ const LeaveManagementPage = () => {
       type: "select",
       key: "employeeId",
       placeholder: "Filter by employee",
-      options: usersList?.data?.map((user: any) => ({
+      options: employeesList?.data?.map((user: any) => ({
         value: user.id,
         label: user.fullName,
       })),
@@ -112,7 +102,7 @@ const LeaveManagementPage = () => {
           currentPage: 1,
         });
       },
-      isLoading: usersListLoading,
+      isLoading: employeesListLoading,
     },
   ];
 

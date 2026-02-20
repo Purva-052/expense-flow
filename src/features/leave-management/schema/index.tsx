@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as z from "zod";
 
 const numberField = (fieldName: string) =>
@@ -17,20 +18,23 @@ const numberField = (fieldName: string) =>
 const dayRowSchema = z
   .object({
     date: z.string(),
-    dayName: z.string().optional(), // For UI display (Monday, Tuesday...)
+    dayName: z.string().optional(),
     dayType: z.enum(["full", "half"]),
-    halfType: z.enum(["first_half", "second_half"]).optional(),
+    halfType: z.enum(["first_half", "second_half"]).nullable().optional(),
     description: z.string().optional(),
   })
-  .superRefine((data, ctx) => {
-    if (data.dayType === "half" && !data.halfType) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Session required",
-        path: ["halfType"],
-      });
+  .refine(
+    (data) => {
+      if (data.dayType === "half") {
+        return !!data.halfType;
+      }
+      return true;
+    },
+    {
+      message: "Session required",
+      path: ["halfType"],
     }
-  });
+  );
 
 export const leaveSchema = z
   .object({
@@ -42,7 +46,7 @@ export const leaveSchema = z
     toDate: z.date().optional(),
 
     // The array of days for the table
-    days: z.array(dayRowSchema).optional(),
+    leaveDays: z.array(dayRowSchema).optional(),
 
     // Edit Mode Fields (Single day)
     leaveDate: z.date().optional(),
@@ -77,14 +81,14 @@ export const leaveSchema = z
       }
       // Ensure days array is populated in Create Mode
       if (
-        (!data.days || data.days.length === 0) &&
+        (!data.leaveDays || data.leaveDays.length === 0) &&
         data.fromDate &&
         data.toDate
       ) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Please configure leave days",
-          path: ["days"],
+          path: ["leaveDays"],
         });
       }
     } else {
