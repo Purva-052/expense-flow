@@ -38,6 +38,7 @@ interface CustomDropDownProps {
   searchEnabled?: boolean; // ✅ new prop
   showClearButton?: boolean;
   sortOptions?: boolean;
+  triggerClassName?: string;
 }
 
 const CustomDropDownSearchable = ({
@@ -49,6 +50,7 @@ const CustomDropDownSearchable = ({
   className,
   disabled = false,
   maxHeight = 200,
+  triggerClassName,
   allowCreate = false,
   onCreateOption,
   showClearButton = true,
@@ -183,7 +185,8 @@ const CustomDropDownSearchable = ({
                       variant="outline"
                       className={cn(
                         "m-0 h-10 w-full justify-between pr-8",
-                        valueArray.length === 0 && "text-muted-foreground"
+                        valueArray.length === 0 && "text-muted-foreground",
+                        triggerClassName
                       )}
                       disabled={disabled || isLoading}
                     >
@@ -285,7 +288,8 @@ const CustomDropDownSearchable = ({
                                   onSelect={() => {
                                     const normalized = String(item.value);
                                     if (multiple) {
-                                      const exists = valueArray.includes(normalized);
+                                      const exists =
+                                        valueArray.includes(normalized);
                                       const newValue = exists
                                         ? valueArray.filter(
                                             (v: any) => v !== normalized
@@ -364,9 +368,9 @@ const CustomDropDownSearchable = ({
               )}
             </div>
             {/* Reserve space so the grid doesn't jump when an error appears */}
-            <div className="min-h-5">
-              <FormMessage />
-            </div>
+            {/* <div className="min-h-5"> */}
+            <FormMessage />
+            {/* </div> */}
           </FormItem>
         );
       }}

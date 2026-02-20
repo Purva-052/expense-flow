@@ -30,6 +30,7 @@ interface CustomDatePickerProps {
   disabledDays?: (day: Date) => boolean;
   defaultMonth?: Date;
   minDate?: Date | string;
+  triggerClassName?: string;
 }
 
 export function CustomDatePicker({
@@ -40,6 +41,7 @@ export function CustomDatePicker({
   disabled = false,
   dateFormat = "PPP",
   disabledDays,
+  triggerClassName,
   defaultMonth,
   minDate,
 }: Readonly<CustomDatePickerProps>) {
@@ -74,7 +76,8 @@ export function CustomDatePicker({
                   disabled={disabled}
                   className={cn(
                     "w-full justify-start text-left font-normal",
-                    !field.value && "text-muted-foreground"
+                    !field.value && "text-muted-foreground",
+                    triggerClassName
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
