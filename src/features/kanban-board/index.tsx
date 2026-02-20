@@ -132,7 +132,7 @@ const ProjectBoard = () => {
             >
               {/* Tab Headers */}
 
-              <div className="flex items-center justify-between ">
+              <div className="flex flex-wrap items-start justify-between gap-3">
                 <TabsList className="flex flex-wrap bg-[#fdebef] rounded-full h-auto">
                   <TabsTrigger
                     value="project_details"

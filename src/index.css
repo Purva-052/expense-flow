@@ -187,19 +187,36 @@
   }
   body {
     @apply bg-background text-foreground min-h-svh w-full;
+    /* scrollbar-gutter:stable already reserves space for the scrollbar,
+       so padding-right injected by Radix/Vaul is never needed and only
+       causes a horizontal width-jump. Zero it out unconditionally. */
     scrollbar-gutter: stable !important;
+    padding-right: 0 !important;
+    overflow-x: hidden !important;
   }
 
   /* Prevent layout jumps when scroll is locked by Radix (Dropdowns, Modals) or Vaul (Drawers) */
   body[data-scroll-locked],
   body[style*="padding-right"] {
     padding-right: 0 !important;
+    margin-right: 0 !important;
   }
 
   /* Hide main body scrollbar while drawer is open */
   body:has([data-slot="drawer-overlay"][data-state="open"]),
   body:has([data-slot="drawer-content"][data-state="open"]) {
     overflow: hidden !important;
+  }
+
+  /* Prevent Radix Select/DropdownMenu/Dialog from causing layout width jump.
+     Radix sets overflow:hidden + padding-right on body when a Select or Dialog
+     is open. Since scrollbar-gutter:stable already handles the gutter, we
+     cancel the padding-right while keeping overflow:hidden (to stop body scroll). */
+  body:has([data-radix-popper-content-wrapper]),
+  body:has([role="dialog"]),
+  body:has([data-radix-select-viewport]) {
+    padding-right: 0 !important;
+    margin-right: 0 !important;
   }
 
   button:not(:disabled),

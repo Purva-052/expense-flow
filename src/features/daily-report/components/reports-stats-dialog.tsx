@@ -161,6 +161,14 @@ export function ReportsStatsDialog({
             {
               accessorKey: "workingHours",
               header: "Working Hours",
+              // cell:
+              cell: ({ row }: any) => {
+                const val = row.original.workingHours;
+                if (!val) return "0:00";
+                return String(val).includes(":")
+                  ? val
+                  : parseFloat(String(val)).toFixed(2).replace(".", ":");
+              },
             },
           ];
 

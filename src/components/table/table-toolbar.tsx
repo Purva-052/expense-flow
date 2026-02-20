@@ -45,55 +45,53 @@ export function DataTableToolbarCompact({
   }, [debouncedSearch]);
 
   return (
-    <div className={`flex items-center justify-between gap-4 ${className}`}>
-      <div className="flex flex-wrap items-center gap-2">
-        {filters.map((filter: any) => {
-          if (filter.type === "search") {
-            return (
-              <Input
-                key={filter.key}
-                type="search"
-                placeholder={filter.placeholder ?? "Search..."}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className={
-                  filter.className ??
-                  "w-[150px] lg:w-[350px] rounded-full bg-white"
-                }
-              />
-            );
-          }
+    <div className={`flex flex-wrap items-center gap-2 w-full ${className}`}>
+      {filters.map((filter: any) => {
+        if (filter.type === "search") {
+          return (
+            <Input
+              key={filter.key}
+              type="search"
+              placeholder={filter.placeholder ?? "Search..."}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className={
+                filter.className ??
+                "w-full sm:w-[200px] lg:w-[280px] min-w-0 rounded-full bg-white"
+              }
+            />
+          );
+        }
 
-          if (filter.type === "select") {
-            return (
-              <SimpleDropDownSearchable
-                key={filter.key}
-                options={filter.options ?? []}
-                value={filter.value}
-                placeholder={filter.placeholder ?? "Select..."}
-                onChange={(val: any) => filter.onChange?.(val ?? undefined)}
-                multiple={filter.multiple}
-                className="w-[200px] "
-                disabled={filter.disable}
-              />
-            );
-          }
+        if (filter.type === "select") {
+          return (
+            <SimpleDropDownSearchable
+              key={filter.key}
+              options={filter.options ?? []}
+              value={filter.value}
+              placeholder={filter.placeholder ?? "Select..."}
+              onChange={(val: any) => filter.onChange?.(val ?? undefined)}
+              multiple={filter.multiple}
+              className="w-full sm:w-[160px] min-w-0"
+              disabled={filter.disable}
+            />
+          );
+        }
 
-          if (filter.type === "dateRange") {
-            return (
-              <DateRangeFilter
-                key={filter.key}
-                placeholder={filter.placeholder ?? "Pick a date range"}
-                onChange={filter.onChange}
-                disabled={filter.disable}
-                className={filter.className}
-              />
-            );
-          }
+        if (filter.type === "dateRange") {
+          return (
+            <DateRangeFilter
+              key={filter.key}
+              placeholder={filter.placeholder ?? "Pick a date range"}
+              onChange={filter.onChange}
+              disabled={filter.disable}
+              className={filter.className}
+            />
+          );
+        }
 
-          return null;
-        })}
-      </div>
+        return null;
+      })}
     </div>
   );
 }
