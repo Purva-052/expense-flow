@@ -7,13 +7,51 @@ const projectFormSchemaBase = z.object({
     .string()
     .min(2, "Project name must be at least 2 characters")
     .max(100),
-  isProduct: z.boolean().default(false),
+  isProduct: z.preprocess((val) => {
+    if (val === "true") return true;
+    if (val === "false") return false;
+    if (typeof val === "boolean") return val;
+    return false;
+  }, z.boolean().default(false)),
   description: z.string().optional().nullable(),
-  clientId: z.number({ invalid_type_error: "Client is required" }),
-  technologyId: z
-    .array(z.number(), { invalid_type_error: "Technologies are required" })
-    .nonempty("At least one technology is required"),
-  projectTypeId: z.number({ message: "Project Type is required" }),
+  clientId: z.preprocess(
+    (val) => {
+      if (val === "" || val === null || val === undefined) return undefined;
+      const num = Number(val);
+      return isNaN(num) ? undefined : num;
+    },
+    z.number({
+      required_error: "Client is required",
+      invalid_type_error: "Client is required",
+    })
+  ),
+  technologyId: z.preprocess(
+    (val) => {
+      if (Array.isArray(val)) {
+        return val
+          .map((v) => {
+            const num = typeof v === "string" ? Number(v) : v;
+            return isNaN(num as number) ? undefined : num;
+          })
+          .filter((v) => v !== undefined);
+      }
+      return val;
+    },
+    z
+      .array(z.number(), { invalid_type_error: "Technologies are required" })
+      .nonempty("At least one technology is required")
+  ),
+  projectTypeId: z.preprocess(
+    (val) => {
+      if (val === "" || val === null || val === undefined) return undefined;
+      const num = Number(val);
+      return isNaN(num) ? undefined : num;
+    },
+    z.number({
+      required_error: "Project Type is required",
+      invalid_type_error: "Project Type is required",
+    })
+  ),
   startDate: z.preprocess(
     (val) => {
       if (
@@ -38,11 +76,18 @@ const projectFormSchemaBase = z.object({
     })
     .optional(),
 
-  handlerId: z
-    .union([z.number().min(1), z.undefined(), z.null()])
-    .refine((val) => val !== null && val !== undefined && val >= 1, {
-      message: "Project Coordinator is required",
-    }),
+  handlerId: z.preprocess(
+    (val) => {
+      if (val === "" || val === null || val === undefined) return undefined;
+      const num = Number(val);
+      return isNaN(num) ? undefined : num;
+    },
+    z
+      .union([z.number().min(1), z.undefined(), z.null()])
+      .refine((val) => val !== null && val !== undefined && val >= 1, {
+        message: "Project Coordinator is required",
+      })
+  ),
 
   percentageComplete: z.preprocess(
     (val) => (val === "" || val == null ? 0 : Number(val)),
@@ -52,7 +97,7 @@ const projectFormSchemaBase = z.object({
       .max(100, "Progress cannot exceed 100")
   ),
   status: z
-    .string({ required_error: "Status is required" })
+    .string({ required_error: "Project Status is required" })
     .min(1, "Status is required"),
   priority: z.preprocess(
     (val) => (val === "" ? undefined : val),

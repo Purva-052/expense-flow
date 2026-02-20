@@ -385,20 +385,24 @@ export function UserActionForm({
                     }
                   />
 
-                  <CustomDropDownSearchable
-                    form={form}
-                    name="reportLogAccessIds"
-                    label="Report Log Access"
-                    multiple
-                    options={technologyListData?.map((technology) => ({
-                      value: String(technology.id), // 👈 safe (string)
-                      label: technology.name,
-                    }))}
-                    placeholder="Select Report Log Access"
-                    searchEnabled={true}
-                    isLoading={technologyListLoading}
-                    className="report-log-access-dropdown"
-                  />
+                  {!selectedRole ||
+                    (selectedRole === roles.TEAM_LEAD && (
+                      <CustomDropDownSearchable
+                        form={form}
+                        name="reportLogAccessIds"
+                        label="Report Log Access"
+                        multiple
+                        options={technologyListData?.map((technology) => ({
+                          value: String(technology.id), // 👈 safe (string)
+                          label: technology.name,
+                        }))}
+                        placeholder="Select Report Log Access"
+                        searchEnabled={true}
+                        isLoading={technologyListLoading}
+                        className="report-log-access-dropdown"
+                        // disabled={selectedRole === roles.TEAM_LEAD}
+                      />
+                    ))}
                 </div>
 
                 <CustomDatePicker
