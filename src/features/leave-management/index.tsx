@@ -114,7 +114,7 @@ const LeaveManagementPage = () => {
     <PageLayout>
       <TablePageHeader
         title="Leave Management"
-        buttonText="Apply Leave"
+        buttonText="Add Leave"
         onButtonClick={handleAdd}
       >
         Manage employee leaves and track attendance.

@@ -16,6 +16,7 @@ export interface DailyReport {
   };
   taskDescription: string;
   timeSpent: string;
+  weightageHours?: string | number;
   createdBy: number;
   createdByUser: {
     id: number;

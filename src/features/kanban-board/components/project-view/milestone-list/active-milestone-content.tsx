@@ -76,7 +76,7 @@ const getReportColumns = (
       header: "Estimated Time (hrs)",
       cell: ({ row }) => (
         <span className="font-semibold">
-          {row.original.estimatedTime || "0"}
+          {formatTime(row.original.estimatedTime)}
         </span>
       ),
     },
@@ -85,7 +85,7 @@ const getReportColumns = (
       header: "Actual Hours (hrs)",
       cell: ({ row }) => (
         <span className="font-semibold text-green-600">
-          {row.original.actualTime || "0"}
+          {formatTime(row.original.actualTime)}
         </span>
       ),
     },
@@ -94,7 +94,7 @@ const getReportColumns = (
       header: "Weightage Hours (hrs)",
       cell: ({ row }) => (
         <span className="font-semibold text-blue-600">
-          {row.original.weightedHours || "0"}
+          {formatTime(row.original.weightedHours)}
         </span>
       ),
     },
@@ -120,6 +120,15 @@ const getReportColumns = (
   }
 
   return columns;
+};
+
+const formatTime = (value: any) => {
+  if (value === null || value === undefined) return "0:00";
+  const str = String(value);
+  if (str.includes(":")) return str;
+  const num = parseFloat(str);
+  if (isNaN(num)) return "0:00";
+  return num.toFixed(2).replace(".", ":");
 };
 
 export const ActiveMilestoneContent = ({
@@ -321,32 +330,36 @@ export const ActiveMilestoneContent = ({
 
   return (
     <div>
-      <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="grid flex-1 grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-stretch md:justify-between">
+        {/* Cards Section */}
+        <div className="grid flex-1 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <div className="rounded-xl border p-3 bg-card text-card-foreground shadow-sm">
             <p className="text-sm text-muted-foreground">
               Total Estimated Hours
             </p>
             <p className="text-3xl font-bold">
-              {actualMilestone?.estimatedTime || "0"}
+              {formatTime(actualMilestone?.estimatedTime)}
             </p>
           </div>
+
           <div className="rounded-xl border p-3 bg-card text-card-foreground shadow-sm">
             <p className="text-sm text-muted-foreground">Total Actual Hours</p>
             <p className="text-3xl font-bold">
-              {actualMilestone?.actualTime || "0"}
+              {formatTime(actualMilestone?.actualTime)}
             </p>
           </div>
+
           <div className="rounded-xl border p-3 bg-card text-card-foreground shadow-sm">
             <p className="text-sm text-muted-foreground">
               Total Weightage Hours
             </p>
             <p className="text-3xl font-bold">
-              {actualMilestone?.weightedHours || "0"}
+              {formatTime(actualMilestone?.weightedHours)}
             </p>
           </div>
         </div>
 
+        {/* Buttons Section */}
         {(isAdmin || isCurrentUserProjectHandler) && (
           <div className="flex shrink-0 flex-col gap-2 min-w-[160px]">
             <Button
@@ -357,6 +370,7 @@ export const ActiveMilestoneContent = ({
               <Pencil className="mr-2 h-4 w-4" />
               Edit Milestone
             </Button>
+
             {canDeleteMilestoneRole &&
               actualMilestone?.status === "pending" && (
                 <Button

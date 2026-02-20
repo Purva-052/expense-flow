@@ -190,7 +190,7 @@ export function LeaveActionForm({
               ? "View Leave Request"
               : isEdit
                 ? "Edit Leave Request"
-                : "Apply for Leave"}
+                : "Add Leave"}
           </DialogTitle>
         </DialogHeader>
 
@@ -253,7 +253,6 @@ export function LeaveActionForm({
                         <tr>
                           <th className="p-3 w-[120px]">Leave Date</th>
                           <th className="p-3 w-[100px]">Day</th>
-                          {/* Description Header Removed */}
                           <th className="p-3 w-[160px]">Half/Full day</th>
                           <th className="p-3 w-[180px]">1st/2nd Half</th>
                         </tr>
@@ -283,7 +282,6 @@ export function LeaveActionForm({
                                   </span>
                                 )}
                               </td>
-                              {/* Description Input Cell Removed */}
 
                               <td className="p-3 align-middle">
                                 <FormField
@@ -296,7 +294,12 @@ export function LeaveActionForm({
                                         if (val === "full") {
                                           form.setValue(
                                             `leaveDays.${index}.halfType`,
-                                            undefined
+                                            undefined as any,
+                                            {
+                                              shouldValidate: true,
+                                              shouldDirty: true,
+                                              shouldTouch: true,
+                                            }
                                           );
                                         }
                                       }}
@@ -343,7 +346,8 @@ export function LeaveActionForm({
                                   render={({ field: sessionField }) => (
                                     <RadioGroup
                                       onValueChange={sessionField.onChange}
-                                      value={sessionField.value}
+                                      // UPDATED: fallback to "" helps visually clear the selection
+                                      value={sessionField.value || ""}
                                       disabled={
                                         currentDayType === "full" ||
                                         isWeekend ||
