@@ -24,6 +24,7 @@ import { FileUpload } from "@/components/shared/custome-file-upload";
 import { useState, useEffect, useRef } from "react";
 import { useUploadTransactionFile } from "../../transaction-logs/services";
 import { toast } from "sonner";
+import { useAuthStore } from "@/stores/use-auth-store";
 // import { Switch } from "@/components/ui/switch";
 
 interface Props {
@@ -99,6 +100,8 @@ export function UserActionForm({
   const [imageToCrop, setImageToCrop] = useState<string | null>(null);
   const [showCropDialog, setShowCropDialog] = useState(false);
   const cropperRef = useRef<any>(null);
+  const user = useAuthStore((state) => state.user);
+  const userRole = user?.user?.role;
 
   const watchedFile = useWatch({
     control: form.control,
@@ -385,24 +388,23 @@ export function UserActionForm({
                     }
                   />
 
-                  {!selectedRole ||
-                    (selectedRole === roles.TEAM_LEAD && (
-                      <CustomDropDownSearchable
-                        form={form}
-                        name="reportLogAccessIds"
-                        label="Report Log Access"
-                        multiple
-                        options={technologyListData?.map((technology) => ({
-                          value: String(technology.id), // 👈 safe (string)
-                          label: technology.name,
-                        }))}
-                        placeholder="Select Report Log Access"
-                        searchEnabled={true}
-                        isLoading={technologyListLoading}
-                        className="report-log-access-dropdown"
-                        // disabled={selectedRole === roles.TEAM_LEAD}
-                      />
-                    ))}
+                  {userRole !== roles.TEAM_LEAD && (
+                    <CustomDropDownSearchable
+                      form={form}
+                      name="reportLogAccessIds"
+                      label="Report Log Access"
+                      multiple
+                      options={technologyListData?.map((technology) => ({
+                        value: String(technology.id), // 👈 safe (string)
+                        label: technology.name,
+                      }))}
+                      placeholder="Select Report Log Access"
+                      searchEnabled={true}
+                      isLoading={technologyListLoading}
+                      className="report-log-access-dropdown"
+                      // disabled={selectedRole === roles.TEAM_LEAD}
+                    />
+                  )}
                 </div>
 
                 <CustomDatePicker
