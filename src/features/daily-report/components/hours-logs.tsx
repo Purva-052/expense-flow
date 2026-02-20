@@ -186,7 +186,9 @@ const HoursLogs = ({
         header: "Logged Hours",
         cell: ({ row }) => (
           <span className="font-semibold text-green-600">
-            {convertTimeToDecimal(row.original.timeSpent).toFixed(2)}
+            {convertTimeToDecimal(row.original.timeSpent)
+              .toFixed(2)
+              .replace(".", ":")}
           </span>
         ),
       },
@@ -195,7 +197,9 @@ const HoursLogs = ({
         header: "Weightage Hours",
         cell: ({ row }) => (
           <span className="font-semibold text-green-600">
-            {convertTimeToDecimal(row.original.weightageHours).toFixed(2)}
+            {convertTimeToDecimal(row.original.weightageHours)
+              .toFixed(2)
+              .replace(".", ":")}
           </span>
         ),
       },

@@ -124,7 +124,7 @@ const ProjectPage = ({
           status: isInactiveTab ? "inactive" : "active",
           handlerId: undefined,
           technologyId: undefined,
-          priority: isInactiveTab ? undefined : "high",
+          priority: undefined,
           projectTypeId: undefined,
           search: "",
         };
@@ -496,12 +496,14 @@ const ProjectPage = ({
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-4">
       {!isBdeView && (
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <GlobalFilterSection filters={filters ?? []} />
+        <div className="flex flex-wrap items-start gap-3">
+          <div className="flex-1 min-w-0">
+            <GlobalFilterSection filters={filters ?? []} className="" />
+          </div>
           <Tabs
             value={view}
             onValueChange={(v: any) => setView(v)}
-            className="self-end sm:self-auto"
+            className="flex-none"
           >
             <TabsList className="bg-[#fdebef] rounded-full">
               <TabsTrigger
@@ -542,7 +544,7 @@ const ProjectPage = ({
         >
           <div
             ref={scrollContainerRef}
-            className={`space-y-4 !h-full overflow-y-auto p-2 [scrollbar-gutter:stable] rounded-md `}
+            className={`space-y-4 !h-full overflow-y-auto overflow-x-hidden p-2 [scrollbar-gutter:stable] rounded-md`}
           >
             {projectListLoading || LoadingProjectType ? (
               <div className="flex flex-col justify-center items-center py-10 gap-3">
@@ -555,7 +557,7 @@ const ProjectPage = ({
               <div
                 className={cn(
                   view === "grid"
-                    ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 2xl:grid-cols-3 gap-6"
+                    ? "grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4"
                     : "flex flex-col gap-0 border rounded-lg bg-white overflow-hidden"
                 )}
               >
@@ -700,7 +702,7 @@ const ProjectPage = ({
             <div ref={loadMoreRef} className="h-2" />
           </div>
 
-          {!isDeveloperView && (
+          {!isDeveloperView && !isBdeView && (
             <aside className="top-4 h-full overflow-hidden">
               <Card
                 ref={availableDroppable.setNodeRef}

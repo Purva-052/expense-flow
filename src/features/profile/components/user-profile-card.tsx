@@ -155,6 +155,31 @@ export const UserProfileCard = ({ user }: { user: any }) => {
   const [showCropDialog, setShowCropDialog] = useState(false);
   const cropperRef = useRef<any>(null);
 
+  // Saves and restores the #content scroll position around Radix Select open.
+  // When Radix focuses the SelectContent portal, some browsers scroll the
+  // nearest scroll ancestor (#content) to bring it into view — causing a
+  // jump to the top. We capture the position just before open and restore it
+  // one animation frame later (after the browser's scroll-into-view fires).
+  const preserveScroll = (isOpen: boolean) => {
+    const container = document.getElementById("content");
+    if (!container) return;
+
+    if (isOpen) {
+      const savedTop = container.scrollTop;
+      // Capture the position and restore it after focus shifts
+      const restore = () => {
+        if (container.scrollTop !== savedTop) {
+          container.scrollTop = savedTop;
+        }
+      };
+
+      // Try multiple frames to catch various browser/Radix behaviors
+      requestAnimationFrame(restore);
+      setTimeout(restore, 0);
+      setTimeout(restore, 10);
+    }
+  };
+
   const { mutateAsync: uploadFile } = useUploadTransactionFile();
   const { mutateAsync: updateProfile, isPending: isUpdating } =
     useUpdateUserData(user?.id);
@@ -164,7 +189,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
   const { mutateAsync: createLearning, isPending: isAddingSkill } =
     useCreateLearning();
   const { mutateAsync: createCertificate, isPending: isCreatingCertificate } =
-    useCreateCertificate(user?.id, status);
+    useCreateCertificate(user?.id);
   const { mutateAsync: updateCertificate, isPending: isUpdatingCertificate } =
     useUpdateCertificate(user?.id);
   const { mutateAsync: deleteCertificate } = useDeleteCertificate(user?.id);
@@ -377,6 +402,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
         name: editingCertName.trim(),
         status: editingCertStatus,
       });
+      toast
       // Clear editing state - data will be refetched automatically
       setEditingCertId(null);
       setEditingCertName("");
@@ -596,6 +622,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                           />
                           <Select
                             value={editingCertStatus}
+                            onOpenChange={preserveScroll}
                             onValueChange={(
                               value: "in_progress" | "completed"
                             ) => setEditingCertStatus(value)}
@@ -682,6 +709,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                 />
                 <Select
                   value={status}
+                  onOpenChange={preserveScroll}
                   onValueChange={(value: "in_progress" | "completed") =>
                     setStatus(value)
                   }
@@ -811,6 +839,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                     selected={selectedSkills}
                     onChange={setSelectedSkills}
                     onCreateSkill={handleCreateSkill}
+                    onOpenChange={preserveScroll}
                     loading={skillsLoading}
                     creating={isCreatingSkill}
                     placeholder="e.g., React, Node.js, Docker..."
@@ -819,6 +848,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                 </div>
                 <Select
                   value={skillType}
+                  onOpenChange={preserveScroll}
                   onValueChange={(value: "skill" | "learning") =>
                     setSkillType(value)
                   }

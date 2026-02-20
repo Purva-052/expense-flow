@@ -18,7 +18,7 @@ const baseUserSchema = z.object({
     .max(30, { message: "Role cannot exceed 30 characters." })
     .trim(),
   technologyId: z
-    .number({ invalid_type_error: "Technology is required." })
+    .coerce.number({ invalid_type_error: "Technology is required." })
     .min(1, { message: "Please select a technology." })
     .optional(),
   reportLogAccessIds: z.array(z.coerce.number()).optional(),

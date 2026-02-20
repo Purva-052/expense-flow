@@ -59,7 +59,7 @@ const formSchema = z.object({
     .max(20, "Milestone name should be less than 20 characters"),
   estimatedTime: z.string().min(0, "Estimated time is required"),
   status: z.string().min(1, "Status is required"),
-  orderNumber: z.string().optional(),
+  orderNumber: z.coerce.number().optional(),
   tasks: z.array(taskSchema).min(1, "At least one task is required"),
 });
 
@@ -113,7 +113,7 @@ export function AddManualMilestone({
       name: "",
       estimatedTime: "",
       status: "pending",
-      orderNumber: "",
+      orderNumber: 0,
       tasks: [{ taskName: "", estimatedTime: "" }],
     },
   });
@@ -191,10 +191,10 @@ export function AddManualMilestone({
           estimatedTime: initialData.estimatedTime || "",
           status: initialData.status || "pending",
           orderNumber: initialData.orderNumber
-            ? String(initialData.orderNumber)
+            ? initialData.orderNumber
             : initialData.order_number
-              ? String(initialData.order_number)
-              : "",
+              ? initialData.order_number
+              : 0,
           tasks: initialData.tasks?.map((t: any) => ({
             taskId: t.id,
             taskName: t.taskName,
@@ -206,7 +206,7 @@ export function AddManualMilestone({
           name: "",
           estimatedTime: "",
           status: "pending",
-          orderNumber: "",
+          orderNumber: 0,
           tasks: [{ taskName: "", estimatedTime: "" }],
         });
       }
@@ -400,12 +400,12 @@ export function AddManualMilestone({
                   <FormField
                     control={form.control}
                     name="orderNumber"
-                    render={({ field }: any) => (
+                    render={({ field }) => (
                       <FormItem>
                         <FormLabel>Order Number</FormLabel>
                         <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
+                          value={field.value ? String(field.value) : undefined}
+                          onValueChange={(val) => field.onChange(Number(val))}
                         >
                           <FormControl>
                             <SelectTrigger>

@@ -65,6 +65,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
   const milestones = useMemo<any[]>(() => {
     const rawData = milestonesListResponse?.data;
     let list: any[] = [];
+
     if (Array.isArray(rawData)) {
       list = rawData;
     } else if (Array.isArray(rawData?.data)) {
@@ -84,7 +85,13 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
     ) {
       list = [rawData.data];
     }
-    return list;
+
+    // 🔥 IMPORTANT SORT
+    return list.sort((a, b) => {
+      const orderA = Number(a.orderNumber ?? a.order_number ?? 0);
+      const orderB = Number(b.orderNumber ?? b.order_number ?? 0);
+      return orderA - orderB;
+    });
   }, [milestonesListResponse]);
 
   const hasAnyExcelUploaded = useMemo(() => {
