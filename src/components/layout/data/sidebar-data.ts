@@ -142,6 +142,12 @@ export const sidebarData: SidebarData = {
           icon: ScrollText,
           requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER, roles.TEAM_LEAD],
         },
+        {
+          title: "Tools Management",
+          url: "/tools-management",
+          icon: IconTool,
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER, roles.TEAM_LEAD],
+        },
       ],
     },
     {
