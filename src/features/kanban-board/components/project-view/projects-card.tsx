@@ -480,6 +480,11 @@ export function ProjectCard({
                           Edit Project
                         </DropdownMenuItem>
                       )}
+                      {!isArchiveTab && canDeleteProject && (
+                        <DropdownMenuItem onClick={handleDelete}>
+                          Delete Project
+                        </DropdownMenuItem>
+                      )}
                     </>
                   )}
                 </>
