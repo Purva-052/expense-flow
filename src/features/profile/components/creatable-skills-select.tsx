@@ -140,6 +140,7 @@ export function CreatableSkillsSelect({
   return (
     <Command
       onKeyDown={handleKeyDown}
+      shouldFilter={false}
       className={cn("overflow-visible bg-transparent relative", className)}
     >
       <div

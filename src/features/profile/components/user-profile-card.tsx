@@ -362,9 +362,9 @@ export const UserProfileCard = ({ user }: { user: any }) => {
       };
 
       if (skillType === "skill") {
-        setSkillsData([...skillsData, newItem]);
+        setSkillsData((prev) => [...prev, newItem]);
       } else {
-        setLearningData([...learningData, newItem]);
+        setLearningData((prev) => [...prev, newItem]);
       }
     } catch (error) {
       console.error("Failed to add skill with type", error);

@@ -232,8 +232,9 @@ export const ActiveMilestoneContent = ({
     else if (milestone?.data?.tasks) base = milestone.data;
     else base = milestone || {};
 
-    // Robust parsing function to handle numbers and "Xh Ym" formats
-    const parseTimeValue = (value: any): number => {
+    // Robust parsing function to handle numbers, "H.MM", "H:MM", and "Xh Ym" formats
+    // Returns total minutes for accurate summation
+    const parseTimeToMinutes = (value: any): number => {
       if (value === null || value === undefined || value === "") return 0;
       const str = String(value).trim();
 
@@ -244,12 +245,26 @@ export const ActiveMilestoneContent = ({
       if (hourMatch || minMatch) {
         const hours = hourMatch ? parseInt(hourMatch[1], 10) : 0;
         const mins = minMatch ? parseInt(minMatch[1], 10) : 0;
-        return hours + mins / 60;
+        return hours * 60 + mins;
       }
 
-      // Default to standard float parsing
+      // Handle "H:MM" or "H.MM" formats
+      const parts = str.split(/[:.]/);
+      if (parts.length === 2) {
+        const h = parseInt(parts[0], 10) || 0;
+        const m = parseInt(parts[1], 10) || 0;
+        return h * 60 + m;
+      }
+
+      // Default to standard float parsing (treating it as hours)
       const parsed = parseFloat(str);
-      return isNaN(parsed) ? 0 : parsed;
+      return isNaN(parsed) ? 0 : Math.round(parsed * 60);
+    };
+
+    const minutesToHHMM = (totalMinutes: number): string => {
+      const h = Math.floor(totalMinutes / 60);
+      const m = Math.round(totalMinutes % 60);
+      return `${h}.${m.toString().padStart(2, "0")}`;
     };
 
     // Use a unique key that avoids collisions, especially if IDs are missing
@@ -277,25 +292,27 @@ export const ActiveMilestoneContent = ({
 
     const allTasks = Array.from(mergedTasksMap.values());
 
-    // Calculate totals from the merged list
-    const calculatedWeightedHours = allTasks
-      .reduce((acc, t) => acc + parseTimeValue(t.weightedHours), 0)
-      .toFixed(2);
+    // Calculate totals from the merged list ONLY as a fallback
+    const calculatedWeightedHours = minutesToHHMM(
+      allTasks.reduce((acc, t) => acc + parseTimeToMinutes(t.weightedHours), 0)
+    );
 
-    const calculatedActualHours = allTasks
-      .reduce((acc, t) => acc + parseTimeValue(t.actualTime), 0)
-      .toFixed(2);
+    const calculatedActualHours = minutesToHHMM(
+      allTasks.reduce((acc, t) => acc + parseTimeToMinutes(t.actualTime), 0)
+    );
 
-    const calculatedEstimatedHours = allTasks
-      .reduce((acc, t) => acc + parseTimeValue(t.estimatedTime), 0)
-      .toFixed(2);
+    const calculatedEstimatedHours = minutesToHHMM(
+      allTasks.reduce((acc, t) => acc + parseTimeToMinutes(t.estimatedTime), 0)
+    );
 
     return {
       ...base,
       id: milestoneId,
-      estimatedTime: calculatedEstimatedHours,
-      actualTime: calculatedActualHours,
-      weightedHours: calculatedWeightedHours,
+      // Prioritize API values if they exist, otherwise use calculated fallbacks
+      estimatedTime: base.estimatedTime ?? calculatedEstimatedHours,
+      actualTime: base.actualTime ?? calculatedActualHours,
+      weightedHours:
+        base.weightedTime ?? base.weightedHours ?? calculatedWeightedHours,
     };
   }, [milestone, milestoneId, tasks, tasksFromParent]);
 
