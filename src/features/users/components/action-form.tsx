@@ -64,7 +64,9 @@ export function UserActionForm({
           role: currentRow?.role ?? "",
           technologyId: currentRow?.technology?.id ?? undefined,
           reportLogAccessIds:
-            currentRow?.reportLogAccess?.map((tech: any) => tech.id) ?? [],
+            currentRow?.reportLogAccess?.map((item: any) =>
+              String(item.technology.id)
+            ) ?? [],
           careerStartDate: currentRow?.careerStartDate
             ? currentRow.careerStartDate.slice(0, 10)
             : "",
@@ -111,15 +113,14 @@ export function UserActionForm({
         role: currentRow?.role ?? "",
         technologyId: currentRow?.technology?.id ?? undefined,
         reportLogAccessIds:
-          currentRow?.reportLogAccess?.map((tech: any) => tech.id) ?? [],
+          currentRow?.reportLogAccess?.map((item: any) => item.technology.id) ??
+          [],
         careerStartDate: currentRow?.careerStartDate
           ? currentRow.careerStartDate.slice(0, 10)
           : "",
         status: currentRow?.status === "active",
         joining: currentRow?.joining ?? false,
         // currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
-
-        // 🔥 IMPORTANT
         profilePicS3Key: currentRow?.profilePicUrl ?? "",
         file: null,
       });
@@ -390,12 +391,13 @@ export function UserActionForm({
                     label="Report Log Access"
                     multiple
                     options={technologyListData?.map((technology) => ({
-                      value: technology.id,
+                      value: String(technology.id), // 👈 safe (string)
                       label: technology.name,
                     }))}
                     placeholder="Select Report Log Access"
                     searchEnabled={true}
                     isLoading={technologyListLoading}
+                    className="report-log-access-dropdown"
                   />
                 </div>
 
