@@ -117,7 +117,7 @@ export function CustomDatePicker({
                       setMonth(newDate);
                     }}
                   >
-                    {Array.from({ length: 61 }, (_, i) => 1990 + i).map(
+                    {Array.from({ length: 61 }, (_, i) => 1970 + i).map(
                       (year) => (
                         <option key={year} value={year}>
                           {year}
