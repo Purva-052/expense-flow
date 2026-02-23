@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { SubmitHandler, useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { format } from "date-fns";
+import { eachDayOfInterval, endOfDay, format, startOfDay } from "date-fns";
 import {
   Dialog,
   DialogContent,
@@ -103,31 +103,27 @@ export function LeaveActionForm({
 
   useEffect(() => {
     if (open && watchFromDate && watchToDate) {
-      const start = new Date(watchFromDate);
-      const end = new Date(watchToDate);
+      const start = startOfDay(new Date(watchFromDate));
+      const end = endOfDay(new Date(watchToDate));
 
       if (start <= end) {
         const currentFormDays = form.getValues("leaveDays") || [];
-        const newDays = [];
-        const current = new Date(start);
-
-        while (current <= end) {
-          const dateStr = format(current, "yyyy-MM-dd");
+        const newDays = eachDayOfInterval({ start, end }).map((date) => {
+          const dateStr = format(date, "yyyy-MM-dd");
           const existingDay = currentFormDays.find((d) => d.date === dateStr);
 
           if (existingDay) {
             const { description, ...rest } = existingDay as any;
-            newDays.push(rest);
+            return rest;
           } else {
-            newDays.push({
+            return {
               date: dateStr,
-              dayName: format(current, "EEEE"),
+              dayName: format(date, "EEEE"),
               dayType: "full" as const,
               halfType: undefined,
-            });
+            };
           }
-          current.setDate(current.getDate() + 1);
-        }
+        });
 
         const currentDatesStr = currentFormDays.map((d) => d.date).join(",");
         const newDatesStr = newDays.map((d) => d.date).join(",");

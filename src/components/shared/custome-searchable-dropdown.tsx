@@ -184,71 +184,81 @@ const CustomDropDownSearchable = ({
                       ref={triggerRef}
                       variant="outline"
                       className={cn(
-                        "m-0 h-10 w-full justify-between pr-8",
+                        "m-0 h-10 w-full min-w-0 justify-between pr-8 overflow-hidden",
                         valueArray.length === 0 && "text-muted-foreground",
                         triggerClassName
                       )}
                       disabled={disabled || isLoading}
                     >
                       {valueArray.length > 0 ? (
-                        <span className="flex flex-wrap gap-1 items-center">
-                          {(() => {
-                            const entries = valueArray.map((val: any) => {
-                              const opt = options?.find(
-                                (o: any) => String(o.value) === String(val)
-                              );
-                              return {
-                                label: opt?.label ?? val,
-                                icon: opt?.icon,
-                              };
-                            });
-
-                            const shown = entries.slice(0, 3);
-                            const remainingCount = entries.length - 3;
-
-                            return (
-                              <>
-                                {shown.map((entry: any, i: any) => {
-                                  const renderIcon = (icon: any) => {
-                                    if (!icon) return null;
-                                    if (typeof icon === "string")
-                                      return (
-                                        <span className="text-sm">{icon}</span>
-                                      );
-                                    const IconComp: any = icon;
-                                    return <IconComp className="h-4 w-4" />;
-                                  };
-
-                                  return (
-                                    <span
-                                      key={i}
-                                      className="inline-flex items-center gap-2"
-                                    >
-                                      {renderIcon(entry.icon)}
-                                      <span>
-                                        {entry.label}
-                                        {i < shown.length - 1 && ","}
-                                      </span>
-                                    </span>
-                                  );
-                                })}
-                                {remainingCount > 0 && (
-                                  <span className="text-muted-foreground ml-1">
-                                    +{remainingCount} more
-                                  </span>
-                                )}
-                              </>
+                        (() => {
+                          const entries = valueArray.map((val: any) => {
+                            const opt = options?.find(
+                              (o: any) => String(o.value) === String(val)
                             );
-                          })()}
-                        </span>
+                            return {
+                              label: opt?.label ?? val,
+                              icon: opt?.icon,
+                            };
+                          });
+
+                          const renderIcon = (icon: any) => {
+                            if (!icon) return null;
+                            if (typeof icon === "string")
+                              return <span className="text-sm">{icon}</span>;
+                            const IconComp: any = icon;
+                            return <IconComp className="h-4 w-4 shrink-0" />;
+                          };
+
+                          if (!multiple) {
+                            const selected = entries[0];
+                            return (
+                              <span className="min-w-0 truncate">
+                                <span className="inline-flex max-w-full min-w-0 items-center gap-2">
+                                  {renderIcon(selected?.icon)}
+                                  <span className="truncate max-w-[15ch]">
+                                    {selected?.label}
+                                  </span>
+                                </span>
+                              </span>
+                            );
+                          }
+
+                          const shown = entries.slice(0, 3);
+                          const remainingCount = entries.length - 3;
+
+                          return (
+                            <span className="min-w-0 flex flex-1 flex-wrap items-center gap-1">
+                              {shown.map((entry: any, i: any) => (
+                                <span
+                                  key={i}
+                                  className="inline-flex items-center gap-2"
+                                >
+                                  {renderIcon(entry.icon)}
+                                  <span>
+                                    {entry.label}
+                                    {i < shown.length - 1 && ","}
+                                  </span>
+                                </span>
+                              ))}
+                              {remainingCount > 0 && (
+                                <span className="text-muted-foreground ml-1">
+                                  +{remainingCount} more
+                                </span>
+                              )}
+                            </span>
+                          );
+                        })()
                       ) : (
-                        <span>
+                        <span className="min-w-0 flex-1 truncate text-left">
                           {isLoading
                             ? loadingText
                             : placeholder || "Select an option"}
                         </span>
                       )}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      {!(valueArray.length > 0 && showClearButton) && (
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      )}
                     </Button>
                   </FormControl>
                 </PopoverTrigger>

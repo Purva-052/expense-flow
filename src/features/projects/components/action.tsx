@@ -9,6 +9,16 @@ import {
 } from "../services";
 import { ProjectActionForm } from "./action-form";
 
+const formatDateForPayload = (date?: Date | null) => {
+  if (!date) return null;
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
+
 export function ActionFormModal({
   clientsList,
   clientListLoading,
@@ -35,12 +45,10 @@ export function ActionFormModal({
       isProduct: values.isProduct,
       description: values.description,
       clientId: values.clientId,
-      startDate: values.startDate
-        ? values.startDate.toISOString().split("T")[0]
-        : null,
-      expectedCompletionDate: values.expectedCompletionDate
-        ? values.expectedCompletionDate.toISOString().split("T")[0]
-        : null,
+      startDate: formatDateForPayload(values.startDate),
+      expectedCompletionDate: formatDateForPayload(
+        values.expectedCompletionDate
+      ),
       handlerId: values.handlerId ? values.handlerId : undefined,
       percentageComplete: values.percentageComplete,
       priority: values.priority,
@@ -59,8 +67,10 @@ export function ActionFormModal({
       isProduct: values.isProduct,
       description: values.description,
       clientId: values.clientId,
-      startDate: values.startDate,
-      expectedCompletionDate: values.expectedCompletionDate,
+      startDate: formatDateForPayload(values.startDate),
+      expectedCompletionDate: formatDateForPayload(
+        values.expectedCompletionDate
+      ),
       handlerId: values.handlerId ? values.handlerId : undefined,
       percentageComplete: values.percentageComplete,
       priority: values.priority,

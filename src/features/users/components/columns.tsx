@@ -55,6 +55,18 @@ export const columns: ColumnDef<any>[] = [
     },
   },
   {
+    accessorKey: "dateOfBirth",
+    header: "Date of Birth",
+    cell: ({ row }) => {
+      const date = new Date(row.original.dateOfBirth);
+      return date.toLocaleDateString("en-IN", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    },
+  },
+  {
     accessorKey: "careerStartDate",
     header: "Career Start Date",
     cell: ({ row }) => {

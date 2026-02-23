@@ -19,6 +19,14 @@ export function ViewUserModal() {
       })
     : "-";
 
+  const dateOfBirth = currentRow.dateOfBirth
+    ? new Date(currentRow.dateOfBirth).toLocaleDateString("en-IN", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : "-";
+
   return (
     <Dialog open={open === "view"} onOpenChange={() => setOpen(null)}>
       <DialogContent className="max-w-lg">
@@ -70,6 +78,10 @@ export function ViewUserModal() {
             ) : (
               <span className="text-sm text-gray-600">-</span>
             )}
+          </div>
+          <div>
+            <h3 className="text-sm font-medium">Date of Birth</h3>
+            <p className="text-sm text-gray-600">{dateOfBirth}</p>
           </div>
           <div>
             <h3 className="text-sm font-medium">Career Start Date</h3>
