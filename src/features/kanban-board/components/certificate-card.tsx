@@ -95,14 +95,13 @@ export const CertificateCard = ({ user }: { user: any }) => {
                 {certificates.map((cert: any) => (
                   <div
                     key={cert.id}
-                    className="flex items-center justify-between gap-3 rounded-full border px-3 py-1.5 shadow-sm bg-background
-                     max-w-[320px] min-w-[220px]"
+                    className="inline-flex items-center gap-3 rounded-full border px-3 py-1.5 shadow-sm bg-background max-w-full"
                   >
                     {/* Certificate name */}
-                    <div className="flex items-center gap-2 min-w-0 max-w-[200px]">
+                    <div className="flex items-center gap-2 min-w-0">
                       <Award className="h-4 w-4 text-blue-500 shrink-0" />
                       <span
-                        className="text-xs font-semibold truncate"
+                        className="text-xs font-semibold truncate max-w-[25ch] uppercase"
                         title={cert.name}
                       >
                         {cert.name}

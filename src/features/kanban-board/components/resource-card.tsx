@@ -166,7 +166,7 @@ export const ResourceCard = ({
                     <Badge
                       key={s.skill.id}
                       variant="secondary"
-                      className="rounded-full bg-primary/10 text-primary hover:bg-primary/20 border-transparent px-2.5 py-0.5 font-semibold text-[10px] transition-colors duration-200"
+                      className="rounded-full bg-primary/10 text-primary hover:bg-primary/20 border-transparent px-2.5 py-0.5 font-semibold text-[10px] transition-colors duration-200 uppercase"
                     >
                       {s.skill.skillName}
                     </Badge>
