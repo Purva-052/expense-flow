@@ -426,287 +426,287 @@ const Board = ({
 
   return (
     <>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <GlobalFilterSection filters={filters ?? []} />
-        <div className="flex flex-wrap items-center gap-3 mb-4">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-orange-500"></span>
-            <span className="text-sm font-medium">High</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
-            <span className="text-sm font-medium">Medium</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-teal-500"></span>
-            <span className="text-sm font-medium">Low</span>
+      <div className="flex-1 min-h-0 flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <GlobalFilterSection filters={filters ?? []} />
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+              <span className="text-sm font-medium">High</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+              <span className="text-sm font-medium">Medium</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-teal-500"></span>
+              <span className="text-sm font-medium">Low</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* 
-        RESPONSIVE CONTAINER CONFIGURATION:
-        1. h-auto: Natural height on mobile/tablet (vertical scroll).
-        2. md:h-[calc(100vh-280px)]: On Desktop, calculate available height. 
-           (100vh - header - filters - padding). 
-           This locks the height to the viewport, allowing inner columns to scroll independently.
-      */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_320px] h-auto md:h-[calc(100vh-280px)] min-h-[500px]">
-        <DndContext
-          sensors={sensors}
-          onDragStart={onDragStart}
-          onDragEnd={onDragEnd}
-          onDragCancel={() => setActiveDeveloper(null)}
-        >
-          {/* LEFT COLUMN: PROJECTS */}
-          <div
-            ref={scrollContainerRef}
-            className="space-y-4 h-[500px] md:h-full overflow-y-auto p-2 [scrollbar-gutter:stable] rounded-md border"
+        <div className="flex-1 min-h-0 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <DndContext
+            sensors={sensors}
+            onDragStart={onDragStart}
+            onDragEnd={onDragEnd}
+            onDragCancel={() => setActiveDeveloper(null)}
           >
-            {projectListLoading || LoadingProjectType ? (
-              <div className="flex flex-col justify-center items-center py-10 gap-3">
-                <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
-                <span className="text-sm text-muted-foreground">
-                  Loading Projects...
-                </span>
-              </div>
-            ) : projectList?.length ? (
-              projectList?.map((p: any) => (
-                <ProjectCard key={p?.id} project={p} onStatusChanged={refetch}>
-                  {p?.developerAllocations?.length !== 0 && (
-                    <SortableContext
-                      id={`project-${p.id}`}
-                      items={
-                        p?.developerAllocations?.map(
-                          (da: any) => `${p.id}-${da.developer.id}`
-                        ) ?? []
-                      }
-                      strategy={rectSortingStrategy}
-                    >
-                      <div className="flex flex-wrap gap-2">
-                        {p?.developerAllocations?.map((allocation: any) => {
-                          const isMyChip =
-                            allocation.developer.id === currentUserId;
-                          const canClick = !isDeveloperView || isMyChip;
-                          return (
-                            <DeveloperChip
-                              key={`project-${p.id}-${allocation.developer.id}`}
-                              developer={allocation.developer}
-                              containerId={p.id}
-                              endDate={allocation.endDate}
-                              onClick={
-                                canClick
-                                  ? () => handleDeveloperClick(allocation, p.id)
-                                  : undefined
-                              }
-                              disabled={isDeveloperView}
-                            />
-                          );
-                        })}
-                      </div>
-                    </SortableContext>
-                  )}
-                </ProjectCard>
-              ))
-            ) : (
-              <div className="flex flex-col items-center justify-center py-10 text-center border border-dashed rounded-lg">
-                <h3 className="text-lg font-semibold text-muted-foreground">
-                  No projects available
-                </h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Try adjusting your filters or check back later.
-                </p>
-              </div>
-            )}
-            {isFetchingNextPage && (
-              <div className="flex justify-center items-center py-4">
-                <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
-              </div>
-            )}
-            <div ref={loadMoreRef} className="h-2" />
-          </div>
-
-          {/* RIGHT COLUMN: RESOURCES */}
-          {!isDeveloperView && (
-            <aside className="top-4 h-[500px] md:h-full overflow-hidden">
-              <Card
-                ref={availableDroppable.setNodeRef}
-                className={cn(
-                  // FLEXBOX FIX: Forces card to manage internal space
-                  "flex flex-col h-full py-2 gap-2 overflow-hidden",
-                  availableDroppable.isOver && "ring-2 ring-pink-500"
-                )}
-              >
-                {/* Header: Fixed height (flex-none) */}
-                <CardHeader className="flex-none flex flex-col gap-2 pb-2">
-                  <Tabs
-                    value={activeTabResource}
-                    onValueChange={setActiveTabResource}
-                    className="w-full my-1"
-                  >
-                    <TabsList>
-                      <TabsTrigger value="available">Available</TabsTrigger>
-                      <TabsTrigger value="becomeAvailable">
-                        Become Available
-                      </TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                  <CardTitle className="w-full flex items-center justify-between">
-                    {activeTabResource === "available" ? (
-                      <span className="flex gap-2 justify-between w-full items-center">
-                        {showAllDevelopers
-                          ? "All Developers"
-                          : "Available Resources"}
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-muted-foreground font-normal">
-                            All
-                          </span>
-                          <Switch
-                            checked={showAllDevelopers}
-                            onCheckedChange={setShowAllDevelopers}
-                          />
-                        </div>
-                      </span>
-                    ) : (
-                      <span>Become Available</span>
-                    )}
-                  </CardTitle>
-
-                  {/* REDUCED HEIGHT INPUT: h-10 instead of h-16 */}
-                  <Input
-                    value={searchTech}
-                    onChange={(e) => setSearchTech(e.target.value)}
-                    placeholder="Search developers..."
-                    className="w-full h-10"
-                  />
-                  <CustomMultiSelect
-                    options={techOptions}
-                    selected={selectedTech}
-                    onChange={setSelectedTech}
-                    loading={techLoading}
-                    placeholder="Filter by technology..."
-                    className="w-full"
-                  />
-                </CardHeader>
-
-                {/* Content: Takes remaining space (flex-1) and scrolls (overflow-y-auto) */}
-                <CardContent className="flex-1 min-h-0 overflow-y-auto pr-2 [scrollbar-gutter:stable]">
-                  {AllDevelopersLoading ? (
-                    <div className="flex flex-col justify-center items-center py-10 gap-3">
-                      <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
-                      <span className="text-sm text-muted-foreground">
-                        Loading developers...
-                      </span>
-                    </div>
-                  ) : groupedDevelopers?.length > 0 ? (
-                    <SortableContext
-                      items={allDeveloperIds}
-                      strategy={rectSortingStrategy}
-                    >
-                      <div className="space-y-2">
-                        {groupedDevelopers?.map((group) => (
-                          <Collapsible
-                            key={group.technologyName}
-                            open={openTechnology === group.technologyName}
-                            onOpenChange={(isOpen) => {
-                              setOpenTechnology(
-                                isOpen ? group.technologyName : ""
-                              );
-                            }}
-                            className="rounded-md border px-2 py-2 bg-secondary/50"
-                          >
-                            <CollapsibleTrigger asChild>
-                              <div className="flex w-full cursor-pointer items-center justify-between p-2 hover:bg-muted/50 rounded-sm">
-                                <div className="flex items-center gap-3">
-                                  <span className="font-semibold text-sm">
-                                    {group.technologyName}
-                                  </span>
-                                  <Badge
-                                    variant="secondary"
-                                    style={{
-                                      backgroundColor:
-                                        group.technologyColor || "#e2e8f0",
-                                      color: "#fff",
-                                    }}
-                                  >
-                                    {group.resources.length}
-                                  </Badge>
-                                </div>
-                                <ChevronDown
-                                  className={`h-5 w-5 transform transition-transform duration-200 ${
-                                    openTechnology === group.technologyName
-                                      ? "rotate-180"
-                                      : ""
-                                  }`}
-                                />
-                              </div>
-                            </CollapsibleTrigger>
-                            <CollapsibleContent>
-                              <div className="flex flex-col gap-2 pt-2">
-                                {group.resources.map((dev: any) => (
-                                  <DeveloperChip
-                                    key={`available-${dev.id}`}
-                                    developer={dev}
-                                    containerId="available"
-                                    disabled={isDeveloperView}
-                                    variant="compact"
-                                  />
-                                ))}
-                              </div>
-                            </CollapsibleContent>
-                          </Collapsible>
-                        ))}
-                      </div>
-                    </SortableContext>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center py-10 text-center transition-all duration-300">
-                      <div className="mb-3 p-3 rounded-full bg-muted">
-                        <Users className="h-8 w-8 text-muted-foreground/70" />
-                      </div>
-                      <h3 className="text-lg font-semibold text-muted-foreground">
-                        No developers found
-                      </h3>
-                      <p className="text-sm text-muted-foreground/70 mt-1">
-                        Try adjusting your filters.
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </aside>
-          )}
-
-          <DragOverlay dropAnimation={null}>
-            {activeDeveloper ? (
-              <div
-                key={`overlay-${activeDeveloper.id}`}
-                className="pointer-events-none flex items-center justify-between gap-2 rounded-md border bg-card px-3 py-2 text-sm shadow-lg backdrop-blur-sm scale-105 opacity-95 transition-transform duration-150"
-                style={{
-                  backgroundColor:
-                    (activeDeveloper.technology?.color || "#e2e8f0") + "1A",
-                  borderColor: activeDeveloper.technology?.color || "#e2e8f0",
-                }}
-              >
-                <div className="flex flex-col gap-0.5 truncate">
-                  <span className="truncate font-medium">
-                    {activeDeveloper.fullName}
+            {/* LEFT COLUMN: PROJECTS */}
+            <div
+              ref={scrollContainerRef}
+              className="min-h-[18rem] lg:min-h-0 lg:h-full space-y-4 overflow-y-auto overflow-x-hidden p-2 [scrollbar-gutter:stable] rounded-md border"
+            >
+              {projectListLoading || LoadingProjectType ? (
+                <div className="flex flex-col justify-center items-center py-10 gap-3">
+                  <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
+                  <span className="text-sm text-muted-foreground">
+                    Loading Projects...
                   </span>
                 </div>
-                <Badge
-                  variant="secondary"
-                  className="text-xs"
+              ) : projectList?.length ? (
+                projectList?.map((p: any) => (
+                  <ProjectCard
+                    key={p?.id}
+                    project={p}
+                    onStatusChanged={refetch}
+                  >
+                    {p?.developerAllocations?.length !== 0 && (
+                      <SortableContext
+                        id={`project-${p.id}`}
+                        items={
+                          p?.developerAllocations?.map(
+                            (da: any) => `${p.id}-${da.developer.id}`
+                          ) ?? []
+                        }
+                        strategy={rectSortingStrategy}
+                      >
+                        <div className="flex flex-wrap gap-2">
+                          {p?.developerAllocations?.map((allocation: any) => {
+                            const isMyChip =
+                              allocation.developer.id === currentUserId;
+                            const canClick = !isDeveloperView || isMyChip;
+                            return (
+                              <DeveloperChip
+                                key={`project-${p.id}-${allocation.developer.id}`}
+                                developer={allocation.developer}
+                                containerId={p.id}
+                                endDate={allocation.endDate}
+                                onClick={
+                                  canClick
+                                    ? () =>
+                                        handleDeveloperClick(allocation, p.id)
+                                    : undefined
+                                }
+                                disabled={isDeveloperView}
+                              />
+                            );
+                          })}
+                        </div>
+                      </SortableContext>
+                    )}
+                  </ProjectCard>
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center py-10 text-center border border-dashed rounded-lg">
+                  <h3 className="text-lg font-semibold text-muted-foreground">
+                    No projects available
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Try adjusting your filters or check back later.
+                  </p>
+                </div>
+              )}
+              {isFetchingNextPage && (
+                <div className="flex justify-center items-center py-4">
+                  <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
+                </div>
+              )}
+              <div ref={loadMoreRef} className="h-2" />
+            </div>
+
+            {/* RIGHT COLUMN: RESOURCES */}
+            {!isDeveloperView && (
+              <aside className="min-h-[18rem] lg:min-h-0 lg:h-full overflow-hidden">
+                <Card
+                  ref={availableDroppable.setNodeRef}
+                  className={cn(
+                    // FLEXBOX FIX: Forces card to manage internal space
+                    "flex flex-col h-full py-2 gap-2 overflow-hidden",
+                    availableDroppable.isOver && "ring-2 ring-pink-500"
+                  )}
+                >
+                  {/* Header: Fixed height (flex-none) */}
+                  <CardHeader className="flex-none flex flex-col gap-2 pb-2">
+                    <Tabs
+                      value={activeTabResource}
+                      onValueChange={setActiveTabResource}
+                      className="w-full my-1"
+                    >
+                      <TabsList>
+                        <TabsTrigger value="available">Available</TabsTrigger>
+                        <TabsTrigger value="becomeAvailable">
+                          Become Available
+                        </TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                    <CardTitle className="w-full flex items-center justify-between">
+                      {activeTabResource === "available" ? (
+                        <span className="flex gap-2 justify-between w-full items-center">
+                          {showAllDevelopers
+                            ? "All Developers"
+                            : "Available Resources"}
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground font-normal">
+                              All
+                            </span>
+                            <Switch
+                              checked={showAllDevelopers}
+                              onCheckedChange={setShowAllDevelopers}
+                            />
+                          </div>
+                        </span>
+                      ) : (
+                        <span>Become Available</span>
+                      )}
+                    </CardTitle>
+
+                    {/* REDUCED HEIGHT INPUT: h-10 instead of h-16 */}
+                    <Input
+                      value={searchTech}
+                      onChange={(e) => setSearchTech(e.target.value)}
+                      placeholder="Search Developers..."
+                      className="w-full h-10"
+                    />
+                    <CustomMultiSelect
+                      options={techOptions}
+                      selected={selectedTech}
+                      onChange={setSelectedTech}
+                      loading={techLoading}
+                      placeholder="Filter by Technology..."
+                      className="w-full"
+                    />
+                  </CardHeader>
+
+                  {/* Content: Takes remaining space (flex-1) and scrolls (overflow-y-auto) */}
+                  <CardContent className="flex-1 min-h-0 overflow-y-auto pr-2 [scrollbar-gutter:stable]">
+                    {AllDevelopersLoading ? (
+                      <div className="flex flex-col justify-center items-center py-10 gap-3">
+                        <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
+                        <span className="text-sm text-muted-foreground">
+                          Loading developers...
+                        </span>
+                      </div>
+                    ) : groupedDevelopers?.length > 0 ? (
+                      <SortableContext
+                        items={allDeveloperIds}
+                        strategy={rectSortingStrategy}
+                      >
+                        <div className="space-y-2">
+                          {groupedDevelopers?.map((group) => (
+                            <Collapsible
+                              key={group.technologyName}
+                              open={openTechnology === group.technologyName}
+                              onOpenChange={(isOpen) => {
+                                setOpenTechnology(
+                                  isOpen ? group.technologyName : ""
+                                );
+                              }}
+                              className="rounded-md border px-2 py-2 bg-secondary/50"
+                            >
+                              <CollapsibleTrigger asChild>
+                                <div className="flex w-full cursor-pointer items-center justify-between p-2 hover:bg-muted/50 rounded-sm">
+                                  <div className="flex items-center gap-3">
+                                    <span className="font-semibold text-sm">
+                                      {group.technologyName}
+                                    </span>
+                                    <Badge
+                                      variant="secondary"
+                                      style={{
+                                        backgroundColor:
+                                          group.technologyColor || "#e2e8f0",
+                                        color: "#fff",
+                                      }}
+                                    >
+                                      {group.resources.length}
+                                    </Badge>
+                                  </div>
+                                  <ChevronDown
+                                    className={`h-5 w-5 transform transition-transform duration-200 ${
+                                      openTechnology === group.technologyName
+                                        ? "rotate-180"
+                                        : ""
+                                    }`}
+                                  />
+                                </div>
+                              </CollapsibleTrigger>
+                              <CollapsibleContent>
+                                <div className="flex flex-col gap-2 pt-2">
+                                  {group.resources.map((dev: any) => (
+                                    <DeveloperChip
+                                      key={`available-${dev.id}`}
+                                      developer={dev}
+                                      containerId="available"
+                                      disabled={isDeveloperView}
+                                      variant="compact"
+                                    />
+                                  ))}
+                                </div>
+                              </CollapsibleContent>
+                            </Collapsible>
+                          ))}
+                        </div>
+                      </SortableContext>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-10 text-center transition-all duration-300">
+                        <div className="mb-3 p-3 rounded-full bg-muted">
+                          <Users className="h-8 w-8 text-muted-foreground/70" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-muted-foreground">
+                          No developers found
+                        </h3>
+                        <p className="text-sm text-muted-foreground/70 mt-1">
+                          Try adjusting your filters.
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </aside>
+            )}
+
+            <DragOverlay dropAnimation={null}>
+              {activeDeveloper ? (
+                <div
+                  key={`overlay-${activeDeveloper.id}`}
+                  className="pointer-events-none flex items-center justify-between gap-2 rounded-md border bg-card px-3 py-2 text-sm shadow-lg backdrop-blur-sm scale-105 opacity-95 transition-transform duration-150"
                   style={{
                     backgroundColor:
-                      activeDeveloper.technology?.color || "#e2e8f0",
-                    color: "#fff",
+                      (activeDeveloper.technology?.color || "#e2e8f0") + "1A",
+                    borderColor: activeDeveloper.technology?.color || "#e2e8f0",
                   }}
                 >
-                  {activeDeveloper.technology?.name}
-                </Badge>
-              </div>
-            ) : null}
-          </DragOverlay>
-        </DndContext>
+                  <div className="flex flex-col gap-0.5 truncate">
+                    <span className="truncate font-medium">
+                      {activeDeveloper.fullName}
+                    </span>
+                  </div>
+                  <Badge
+                    variant="secondary"
+                    className="text-xs"
+                    style={{
+                      backgroundColor:
+                        activeDeveloper.technology?.color || "#e2e8f0",
+                      color: "#fff",
+                    }}
+                  >
+                    {activeDeveloper.technology?.name}
+                  </Badge>
+                </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
+        </div>
       </div>
 
       <DeveloperDialog
