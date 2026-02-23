@@ -1,5 +1,21 @@
 import { z } from "zod";
 
+const toYMD = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const normalizeOptionalDate = (value: unknown) => {
+  if (value === "" || value === null || value === undefined) return null;
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) return null;
+    return toYMD(value);
+  }
+  return value;
+};
+
 // Base schema (common to both add and edit)
 const baseUserSchema = z.object({
   fullName: z
@@ -25,19 +41,22 @@ const baseUserSchema = z.object({
   careerStartDate: z.any().refine((val) => !isNaN(Date.parse(val)), {
     message: "Invalid date format.",
   }),
-  dateOfBirth: z
-    .string()
-    .nullable()
-    .optional()
-    .refine(
-      (val) => {
-        if (!val) return true; // allow empty/null
-        return !isNaN(Date.parse(val));
-      },
-      {
-        message: "Invalid date format.",
-      }
-    ),
+  dateOfBirth: z.preprocess(
+    normalizeOptionalDate,
+    z
+      .string()
+      .nullable()
+      .optional()
+      .refine(
+        (val) => {
+          if (!val) return true; // allow empty/null
+          return !isNaN(Date.parse(val));
+        },
+        {
+          message: "Invalid date format.",
+        }
+      )
+  ),
   status: z.boolean(),
   joining: z.boolean(),
   currentWorkingProjectId: z.any().optional(),
