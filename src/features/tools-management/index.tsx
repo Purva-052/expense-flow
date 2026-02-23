@@ -19,8 +19,10 @@ const ToolsManagementPage = () => {
     pageSize: 10,
     currentPage: 1,
     search: "",
-    purchaseDate: undefined as string | undefined,
-    expiryDate: undefined as string | undefined,
+    purchasedFromDate: undefined as string | undefined,
+    purchasedToDate: undefined as string | undefined,
+    expiryFromDate: undefined as string | undefined,
+    expiryToDate: undefined as string | undefined,
     purchasedBy: undefined as number | undefined,
   });
 
@@ -29,8 +31,10 @@ const ToolsManagementPage = () => {
     limit: listParams.pageSize,
     search: listParams.search,
     pagination: true,
-    purchaseDate: listParams.purchaseDate,
-    expiryDate: listParams.expiryDate,
+    purchasedFromDate: listParams.purchasedFromDate,
+    purchasedToDate: listParams.purchasedToDate,
+    expiryFromDate: listParams.expiryFromDate,
+    expiryToDate: listParams.expiryToDate,
     purchasedBy: listParams.purchasedBy,
   };
 
@@ -101,32 +105,44 @@ const ToolsManagementPage = () => {
     },
     // Filter by Purchase Date
     {
-      type: "date",
+      type: "dateRange",
       key: "purchaseDate",
-      placeholder: "Purchase Date",
-      value: listParams.purchaseDate
-        ? new Date(listParams.purchaseDate)
-        : undefined,
-      onChange: (date: Date | undefined) => {
+      placeholder: "Filter by purchase Date",
+      value: {
+        from: listParams.purchasedFromDate
+          ? new Date(listParams.purchasedFromDate)
+          : undefined,
+        to: listParams.purchasedToDate
+          ? new Date(listParams.purchasedToDate)
+          : undefined,
+      },
+      onChange: (range: { from?: Date; to?: Date } | undefined) => {
         setListParams({
           ...listParams,
-          purchaseDate: formatDate(date),
+          purchasedFromDate: formatDate(range?.from) ?? undefined,
+          purchasedToDate: formatDate(range?.to) ?? undefined,
           currentPage: 1,
         });
       },
     },
     // Filter by Expiry Date
     {
-      type: "date",
+      type: "dateRange",
       key: "expiryDate",
-      placeholder: "Expiry Date",
-      value: listParams.expiryDate
-        ? new Date(listParams.expiryDate)
-        : undefined,
-      onChange: (date: Date | undefined) => {
+      placeholder: "Filter by expiry Date",
+      value: {
+        from: listParams.expiryFromDate
+          ? new Date(listParams.expiryFromDate)
+          : undefined,
+        to: listParams.expiryToDate
+          ? new Date(listParams.expiryToDate)
+          : undefined,
+      },
+      onChange: (range: { from?: Date; to?: Date } | undefined) => {
         setListParams({
           ...listParams,
-          expiryDate: formatDate(date),
+          expiryFromDate: formatDate(range?.from) ?? undefined,
+          expiryToDate: formatDate(range?.to) ?? undefined,
           currentPage: 1,
         });
       },
