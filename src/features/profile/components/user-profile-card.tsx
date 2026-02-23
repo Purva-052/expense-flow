@@ -402,7 +402,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
         name: editingCertName.trim(),
         status: editingCertStatus,
       });
-      toast
+      toast;
       // Clear editing state - data will be refetched automatically
       setEditingCertId(null);
       setEditingCertName("");
@@ -658,7 +658,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                           </Button>
                         </div>
                       ) : (
-                        <Badge className="bg-yellow-500 text-white pr-1">
+                        <Badge className="bg-yellow-500 text-white pr-1 uppercase">
                           <Award className="h-3 w-3 mr-1" />
                           {cert?.name}
                           <div className="ml-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -767,7 +767,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                     {skillsData.length > 0 ? (
                       skillsData.map((item, i) => (
                         <div key={i} className="relative group">
-                          <Badge className="bg-blue-500 text-white pr-1">
+                          <Badge className="bg-blue-500 text-white pr-1 uppercase">
                             <span className="inline-flex items-center">
                               {item?.skill?.skillName}
                             </span>

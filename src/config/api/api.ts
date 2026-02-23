@@ -164,18 +164,18 @@ const API = {
     update: "/user-certificates",
   },
   leave_management: {
-    employee:"/leave-management/employees",
+    employee: "/leave-management/employees",
     create: "/leave-management",
     list: "/leave-management",
     update: "/leave-management",
     delete: "/leave-management",
   },
-  tools_management:{
-    create: "/Tools",
-    list: "/Tools",
-    update: "/Tools",
-    delete: "/Tools",
-  }
+  tools_management: {
+    create: "/tools",
+    list: "/tools",
+    update: "/tools",
+    delete: "/tools",
+  },
 };
 
 Object.freeze(API);

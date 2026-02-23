@@ -222,52 +222,56 @@ export function ProjectActionForm({
 
               {/* Relations */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="clientId"
-                  render={() => (
-                    <FormItem>
-                      <FormLabel>
-                        Client <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <CustomDropDownSearchable
-                        form={form}
-                        name="clientId"
-                        label=""
-                        options={clientsList?.map((c) => ({
-                          value: c.id,
-                          label: c.name,
-                        }))}
-                        isLoading={clientListLoading}
-                        placeholder="Select client"
-                      />
-                    </FormItem>
-                  )}
-                />
+                <div className="min-w-0">
+                  <FormField
+                    control={form.control}
+                    name="clientId"
+                    render={() => (
+                      <FormItem>
+                        <FormLabel>
+                          Client <span className="text-red-500">*</span>
+                        </FormLabel>
+                        <CustomDropDownSearchable
+                          form={form}
+                          name="clientId"
+                          label=""
+                          options={clientsList?.map((c) => ({
+                            value: c.id,
+                            label: c.name,
+                          }))}
+                          isLoading={clientListLoading}
+                          placeholder="Select client"
+                        />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-                <FormField
-                  control={form.control}
-                  name="projectTypeId"
-                  render={() => (
-                    <FormItem>
-                      <FormLabel>
-                        Project Type <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <CustomDropDownSearchable
-                        form={form}
-                        name="projectTypeId"
-                        label=""
-                        options={projectTypes?.map((t: any) => ({
-                          value: t.id,
-                          label: t.name,
-                        }))}
-                        isLoading={projectTypesLoading}
-                        searchEnabled={false}
-                        placeholder="Select type"
-                      />
-                    </FormItem>
-                  )}
-                />
+                <div className="min-w-0">
+                  <FormField
+                    control={form.control}
+                    name="projectTypeId"
+                    render={() => (
+                      <FormItem>
+                        <FormLabel>
+                          Project Type <span className="text-red-500">*</span>
+                        </FormLabel>
+                        <CustomDropDownSearchable
+                          form={form}
+                          name="projectTypeId"
+                          label=""
+                          options={projectTypes?.map((t: any) => ({
+                            value: t.id,
+                            label: t.name,
+                          }))}
+                          isLoading={projectTypesLoading}
+                          searchEnabled={false}
+                          placeholder="Select type"
+                        />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
 
               <FormField
