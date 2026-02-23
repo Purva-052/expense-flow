@@ -116,7 +116,15 @@ const SimpleDropDownSearchable = ({
                         (item) => String(item.value) === String(value)
                       )?.label}
               </span>
-              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              {!(
+                allowClear &&
+                !disabled &&
+                (Array.isArray(value)
+                  ? value.length > 0
+                  : value !== null && value !== undefined)
+              ) && (
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              )}
             </Button>
           </PopoverTrigger>
 
@@ -214,7 +222,7 @@ const SimpleDropDownSearchable = ({
             ? value.length > 0
             : value !== null && value !== undefined) && (
             <X
-              className="absolute top-1/2 right-8 h-4 w-4 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-red-500"
+              className="absolute top-1/2 right-4 h-4 w-4 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-red-500"
               onClick={() => onChange?.(null)}
             />
           )}

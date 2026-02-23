@@ -347,41 +347,52 @@ export const ActiveMilestoneContent = ({
 
   return (
     <div>
-      <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-stretch md:justify-between">
+      <div className="mb-4 flex flex-col gap-4 xl:flex-row xl:items-start">
         {/* Cards Section */}
-        <div className="grid flex-1 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          <div className="rounded-xl border p-3 bg-card text-card-foreground shadow-sm">
-            <p className="text-sm text-muted-foreground">
-              Total Estimated Hours
-            </p>
-            <p className="text-3xl font-bold">
-              {formatTime(actualMilestone?.estimatedTime)}
-            </p>
+        <div className="grid flex-1 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {/* Estimated */}
+          <div className="rounded-xl border bg-card p-3 shadow-sm">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                Total Estimated Hours
+              </p>
+              <p className="text-2xl font-semibold tracking-tight">
+                ({formatTime(actualMilestone?.estimatedTime)})
+              </p>
+            </div>
           </div>
 
-          <div className="rounded-xl border p-3 bg-card text-card-foreground shadow-sm">
-            <p className="text-sm text-muted-foreground">Total Actual Hours</p>
-            <p className="text-3xl font-bold">
-              {formatTime(actualMilestone?.actualTime)}
-            </p>
+          {/* Actual */}
+          <div className="rounded-xl border bg-card p-3 shadow-sm">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                Total Actual Hours
+              </p>
+              <p className="text-2xl font-semibold tracking-tight">
+                ({formatTime(actualMilestone?.actualTime)})
+              </p>
+            </div>
           </div>
 
-          <div className="rounded-xl border p-3 bg-card text-card-foreground shadow-sm">
-            <p className="text-sm text-muted-foreground">
-              Total Weightage Hours
-            </p>
-            <p className="text-3xl font-bold">
-              {formatTime(actualMilestone?.weightedHours)}
-            </p>
+          {/* Weightage */}
+          <div className="rounded-xl border bg-card p-3 shadow-sm">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                Total Weightage Hours
+              </p>
+              <p className="text-2xl font-semibold tracking-tight">
+                ({formatTime(actualMilestone?.weightedHours)})
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Buttons Section */}
         {(isAdmin || isCurrentUserProjectHandler) && (
-          <div className="flex shrink-0 flex-col gap-2 min-w-[160px]">
+          <div className="flex flex-col gap-1 sm:flex-row xl:w-auto xl:flex-col xl:min-w-[200px]">
             <Button
               variant="outline"
-              className="w-full justify-start"
+              className="justify-center xl:justify-start h-8"
               onClick={() => onEditMilestone(actualMilestone)}
             >
               <Pencil className="mr-2 h-4 w-4" />
@@ -392,7 +403,7 @@ export const ActiveMilestoneContent = ({
               actualMilestone?.status === "pending" && (
                 <Button
                   variant="outline"
-                  className="w-full justify-start"
+                  className="justify-start h-7"
                   onClick={() => setShowDeleteMilestoneModal(true)}
                 >
                   <Trash2 className="mr-2 h-4 w-4" />

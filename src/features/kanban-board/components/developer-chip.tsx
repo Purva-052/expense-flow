@@ -18,9 +18,13 @@ const getDaysRemaining = (
   if (!endDate) return null;
   const end = new Date(endDate);
   const now = new Date();
+
   end.setHours(0, 0, 0, 0);
   now.setHours(0, 0, 0, 0);
+
+  if (Number.isNaN(end.getTime())) return null;
   if (end < now) return null;
+
   const diffTime = end.getTime() - now.getTime();
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 };
@@ -197,8 +201,8 @@ export function DeveloperChip({
                     {developer.fullName?.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex flex-col gap-0.5 truncate">
-                  <div className="flex items-center gap-1">
+                <div className="flex flex-col gap-0.5 min-w-0">
+                  <div className="flex items-center gap-1 min-w-0">
                     {developer.isCurrentProject && (
                       <span
                         className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse shrink-0"
@@ -206,12 +210,12 @@ export function DeveloperChip({
                       />
                     )}
                     {/* 👇 3. Wrap the developer's name with the Tooltip components */}
-                    <span className="truncate font-bold text-card-foreground">
+                    <span className="truncate font-bold text-card-foreground min-w-0">
                       {truncateName(developer.fullName, 10)}
                     </span>
 
                     {showReleaseWarning && (
-                      <div className="flex items-center gap-1 text-orange-600 dark:text-orange-400 text-xs font-semibold animate-pulse">
+                      <div className="flex items-center gap-1 text-orange-600 dark:text-orange-400 text-xs font-semibold animate-pulse shrink-0">
                         <Clock className="h-3 w-3" />
                         <span>{getReleaseText()}</span>
                       </div>

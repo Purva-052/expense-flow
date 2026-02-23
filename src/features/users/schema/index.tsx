@@ -17,12 +17,15 @@ const baseUserSchema = z.object({
     .min(3, { message: "Role is required." })
     .max(30, { message: "Role cannot exceed 30 characters." })
     .trim(),
-  technologyId: z
-    .coerce.number({ invalid_type_error: "Technology is required." })
+  technologyId: z.coerce
+    .number({ invalid_type_error: "Technology is required." })
     .min(1, { message: "Please select a technology." })
     .optional(),
   reportLogAccessIds: z.array(z.coerce.number()).optional(),
   careerStartDate: z.any().refine((val) => !isNaN(Date.parse(val)), {
+    message: "Invalid date format.",
+  }),
+  dateOfBirth: z.any().refine((val) => !isNaN(Date.parse(val)), {
     message: "Invalid date format.",
   }),
   status: z.boolean(),
