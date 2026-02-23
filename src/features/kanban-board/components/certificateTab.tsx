@@ -105,15 +105,15 @@ const CertificateTab = () => {
   const isLoading = usersListLoading || certificatesLoading;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex-1 min-h-0 flex flex-col gap-4">
       <GlobalFilterSection filters={certificateFilters} />
       {isLoading ? (
-        <div className="flex flex-col justify-center items-center py-10 gap-3 h-full">
+        <div className="flex flex-col justify-center items-center py-10 gap-3 flex-1 min-h-0">
           <div className="w-10 h-10 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
           <span className="text-sm text-muted-foreground">Loading ...</span>
         </div>
       ) : finalUsers?.length > 0 ? (
-        <div className="space-y-4 max-h-[72dvh] overflow-auto [scrollbar-gutter:stable] p-2">
+        <div className="flex-1 min-h-0 space-y-4 overflow-y-auto [scrollbar-gutter:stable] p-2">
           {finalUsers.map((u: any) => (
             <CertificateCard key={u.id} user={u} />
           ))}

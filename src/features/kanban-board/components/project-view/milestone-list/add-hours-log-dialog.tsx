@@ -179,10 +179,7 @@ export const AddHoursLogDialog = ({
   };
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={onOpenChange}
-    >
+    <Dialog open={open} onOpenChange={onOpenChange}>
       {!hideTrigger && (
         <TooltipProvider>
           <Tooltip>
@@ -242,8 +239,8 @@ export const AddHoursLogDialog = ({
                     disabled={(date) => {
                       const today = new Date();
                       today.setHours(0, 0, 0, 0);
-                      const day = date.getDay();
-                      return date > today || day === 0 || day === 6;
+                      // const day = date.getDay();
+                      return date > today;
                     }}
                     mode="single"
                     selected={date}
