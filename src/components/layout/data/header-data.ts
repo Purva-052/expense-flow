@@ -17,4 +17,6 @@ export const URL_TO_TITLE_MAP: Record<string, string> = {
   "/conference-room-booking": "Conference Room Booking",
   "/interviews": "Interviews",
   "/transactions-logs": "Transaction Logs",
+  "/leave-management": "Leave Management",
+  "/tools-management": "Tools Management",
 };

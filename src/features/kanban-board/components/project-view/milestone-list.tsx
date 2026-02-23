@@ -65,6 +65,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
   const milestones = useMemo<any[]>(() => {
     const rawData = milestonesListResponse?.data;
     let list: any[] = [];
+
     if (Array.isArray(rawData)) {
       list = rawData;
     } else if (Array.isArray(rawData?.data)) {
@@ -84,7 +85,13 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
     ) {
       list = [rawData.data];
     }
-    return list;
+
+    // 🔥 IMPORTANT SORT
+    return list.sort((a, b) => {
+      const orderA = Number(a.orderNumber ?? a.order_number ?? 0);
+      const orderB = Number(b.orderNumber ?? b.order_number ?? 0);
+      return orderA - orderB;
+    });
   }, [milestonesListResponse]);
 
   const hasAnyExcelUploaded = useMemo(() => {
@@ -111,7 +118,6 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
   const isInitialLoading =
     isFetchingMilestones ||
     (isFetchingHandledProjects && !isAdmin && !isProjectManager);
-
 
   useEffect(() => {
     if (milestones.length > 0) {
@@ -223,7 +229,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
   return (
     <>
       {!isInitialLoading && (
-        <div className="mb-4 flex items-center gap-2 overflow-x-auto pb-2">
+        <div className="mb-4 flex items-center gap-2 overflow-x-auto pb-2 py-4">
           <div className="flex items-center gap-2">
             {canModifyMilestones && !hasAnyExcelUploaded && (
               <>
@@ -335,6 +341,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
                 onViewTaskLog={handleViewTaskLog}
                 onEditMilestone={(data) => handleEditMilestone(data)}
                 isCurrentUserProjectHandler={isCurrentUserProjectHandler}
+                tasksFromParent={m.tasks}
               />
             </TabsContent>
           ))}
@@ -417,6 +424,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
           }}
           projectId={projectId}
           initialData={milestoneToEdit}
+          milestonesCount={milestones.length}
           onMilestoneCreated={(milestone) => {
             if (milestone?.id) {
               justCreatedMilestoneIdRef.current = String(milestone.id);

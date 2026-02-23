@@ -33,7 +33,9 @@ import { roles } from "@/utils/constant";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 
-// Schema for schedule update (only step 2 fields)
+const formItemClass = " w-full";
+const formMessageClass = "text-xs font-medium text-red-500";
+
 const scheduleUpdateSchema = z
   .object({
     interviewerName: z.any().refine(
@@ -64,19 +66,6 @@ const scheduleUpdateSchema = z
         message: "Interview Status is required",
       }
     ),
-    // joiningDate: z
-    //   .union([z.date(), z.string()])
-    //   .optional()
-    //   .refine(
-    //     (val) => {
-    //       if (!val) return true;
-    //       if (val instanceof Date) return true;
-    //       return !isNaN(Date.parse(val));
-    //     },
-    //     {
-    //       message: "Invalid date format.",
-    //     }
-    //   ),
     statusChangedDate: z
       .union([z.date(), z.string()])
       .optional()
@@ -123,10 +112,8 @@ const scheduleUpdateSchema = z
   .superRefine((data, ctx) => {
     const { interviewStatus, statusChangedDate } = data;
 
-    // 1️⃣ Rejected → Optional (no error)
     if (interviewStatus === "rejected") return;
 
-    // 2️⃣ Joining → Required with custom message
     if (interviewStatus === "joining" && !statusChangedDate) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -136,7 +123,6 @@ const scheduleUpdateSchema = z
       return;
     }
 
-    // 3️⃣ Other statuses → Required with default message
     if (!statusChangedDate) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -197,27 +183,10 @@ export const ScheduleUpdateDialog = ({
       ? baseStatuses
       : baseStatuses.filter((s) => EDIT_STATUSES.includes(s.value));
 
-  // Adjust schema based on role and status
-  let activeSchema = scheduleUpdateSchema;
-  // if (userRole === roles.ADMIN) {
-  //   activeSchema = scheduleUpdateSchema.refine(
-  //     (data) => {
-  //       if (data.interviewStatus !== "joining") return true;
-  //       const val = data.joiningDate;
-  //       if (val instanceof Date) return true;
-  //       return !!val && typeof val === "string" && val.trim().length > 0;
-  //     },
-  //     {
-  //       message: "Joining Date is required when status is Joining",
-  //       path: ["joiningDate"],
-  //     }
-  //   ) as any;
-  // }
-
   const form = useForm<ScheduleUpdateFormValues>({
-    resolver: zodResolver(activeSchema),
-    mode: "onSubmit",
-    reValidateMode: "onSubmit",
+    resolver: zodResolver(scheduleUpdateSchema),
+    mode: "onChange",
+    reValidateMode: "onChange",
     defaultValues: {
       interviewerName: "",
       startTime: "10:00",
@@ -232,7 +201,6 @@ export const ScheduleUpdateDialog = ({
 
   useEffect(() => {
     if (initialData && open) {
-      console.log("Populating form with initial data:", initialData);
       form.reset({
         interviewerName: initialData.interviewer?.id?.toString() || "",
         statusChangedDate: initialData?.latestStatusLog?.effectiveDate
@@ -242,18 +210,16 @@ export const ScheduleUpdateDialog = ({
         endTime: extractTime(initialData.interviewEnd),
         interviewType: initialData.interviewType || "on_site",
         interviewUrl: initialData.interviewUrl || "",
-        // notes: initialData.notes || "",
         interviewStatus: initialData.status || "",
+        notes: initialData.notes || "",
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialData, open]);
+  }, [initialData, open, form]);
 
   const interviewType = form.watch("interviewType");
   const interviewStatus = form.watch("interviewStatus");
   const startTime = form.watch("startTime");
 
-  // Automatically set endTime to startTime + 30 minutes
   useEffect(() => {
     if (startTime) {
       const [hours, minutes] = startTime.split(":").map(Number);
@@ -270,8 +236,6 @@ export const ScheduleUpdateDialog = ({
     }
   }, [startTime, form]);
 
-
-  // Reset submission state on unmount
   useEffect(() => {
     return () => {
       setIsSubmittingForm(false);
@@ -296,13 +260,10 @@ export const ScheduleUpdateDialog = ({
 
     const prevStatus = previousStatusRef.current;
 
-    // Run only when user actually changes status
     if (prevStatus && prevStatus !== interviewStatus) {
-      // If new status is rejected → clear but optional
       if (interviewStatus === "rejected") {
         form.setValue("statusChangedDate", "");
       } else {
-        // Other statuses → clear + required
         form.setValue("statusChangedDate", "", {
           shouldDirty: true,
         });
@@ -335,7 +296,9 @@ export const ScheduleUpdateDialog = ({
               <h3 className="text-base sm:text-lg font-medium">
                 Scheduling Details
               </h3>
-              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 items-start">
+                {/* 1. Interviewer Name */}
                 <CustomDropDownSearchable
                   form={form}
                   name="interviewerName"
@@ -347,56 +310,65 @@ export const ScheduleUpdateDialog = ({
                   placeholder="Select interviewer"
                   isLoading={usersListLoading}
                 />
+
+                {/* 2. Interview Time */}
                 <FormField
                   control={form.control}
                   name="startTime"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className={formItemClass}>
                       <FormLabel>Interview Time</FormLabel>
                       <FormControl>
                         <TimePicker
                           value={field.value}
                           onChange={field.onChange}
                           placeholder="Select start time"
+                          className="h-10"
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className={formMessageClass} />
                     </FormItem>
                   )}
                 />
+
+                {/* 3. Interview Type */}
                 <CustomDropDownSearchable
                   form={form}
+                  triggerClassName="h-10"
                   name="interviewType"
                   label="Interview Type"
                   options={interviewTypes}
                   placeholder="Select type"
                   searchEnabled={false}
                 />
+
+                {/* 4. Interview URL */}
                 {interviewType === "video_call" && (
-                  <>
-                    <FormField
-                      control={form.control}
-                      name="interviewUrl"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Interview URL
-                            <RequiredIndicator
-                              error={!!form.formState.errors.interviewUrl}
-                            />
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="https://meet.google.com/..."
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </>
+                  <FormField
+                    control={form.control}
+                    name="interviewUrl"
+                    render={({ field }) => (
+                      <FormItem className={formItemClass}>
+                        <FormLabel>
+                          Interview URL
+                          <RequiredIndicator
+                            error={!!form.formState.errors.interviewUrl}
+                          />
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="https://meet.google.com/..."
+                            {...field}
+                            className="h-10"
+                          />
+                        </FormControl>
+                        <FormMessage className={formMessageClass} />
+                      </FormItem>
+                    )}
+                  />
                 )}
+
+                {/* 5. Interview Status */}
                 <CustomDropDownSearchable
                   form={form}
                   name="interviewStatus"
@@ -407,6 +379,7 @@ export const ScheduleUpdateDialog = ({
                   sortOptions={false}
                 />
 
+                {/* 6. Date */}
                 {interviewStatus !== "rejected" && (
                   <CustomDatePicker
                     control={form.control}
@@ -416,41 +389,43 @@ export const ScheduleUpdateDialog = ({
                         ? "Status Changed Date"
                         : "Joining Date"
                     }
+                    triggerClassName="h-10"
                     disabledDays={(date: Date) => {
                       const today = new Date();
-
-                      // Remove time part
                       today.setHours(0, 0, 0, 0);
-
-                      return date < today; // disable past only
+                      return date < today;
                     }}
                   />
                 )}
 
-                {/* {userRole === roles.ADMIN && interviewStatus === "joining" && (
-                  <CustomDatePicker
+                {/* 7. Notes (Full Width) */}
+                <div className="col-span-1 md:col-span-2">
+                  <FormField
                     control={form.control}
-                    name="joiningDate"
-                    label="Joining Date"
-                  />
-                )} */}
+                    name="notes"
+                    render={({ field }) => (
+                      <FormItem className={formItemClass}>
+                        <FormLabel>Interviewer Comment</FormLabel>
 
-                <FormField
-                  control={form.control}
-                  name="notes"
-                  render={({ field }) => (
-                    <FormItem className="md:col-span-2">
-                      <FormLabel>Interviewer Comment</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Instructions or notes for the interviewer..."
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <FormControl>
+                          <div className="relative">
+                            <Textarea
+                              placeholder="Instructions or notes for the interviewer..."
+                              maxLength={100}
+                              className="w-full max-w-full resize-none break-all whitespace-pre-wrap overflow-y-auto overflow-x-hidden pr-14 pb-2 min-h-[80px]"
+                              {...field}
+                            />
+                            {/* Counter positioned inside the text area */}
+                            <span className="absolute bottom-2 right-3 text-xs text-gray-400 pointer-events-none">
+                              {field.value?.length || 0}/100
+                            </span>
+                          </div>
+                        </FormControl>
+                        <FormMessage className={formMessageClass} />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
             </div>
 

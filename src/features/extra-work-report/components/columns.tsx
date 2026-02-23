@@ -110,9 +110,13 @@ export const columns: ColumnDef<any>[] = [
   {
     accessorKey: "timeSpent",
     header: "Time Spent",
-    cell: ({ row }) => (
-      <span className="text-sm">{row.original.timeSpent}</span>
-    ),
+    cell: ({ row }) => {
+      const val = row.original.timeSpent;
+      if (!val) return "0:00";
+      return String(val).includes(":")
+        ? val
+        : parseFloat(String(val)).toFixed(2).replace(".", ":");
+    },
   },
   {
     accessorKey: "inCashOrLeave",
@@ -121,7 +125,7 @@ export const columns: ColumnDef<any>[] = [
       const status = row.original.inCashOrLeave;
       return (
         <Badge variant={status === 0 ? "default" : "secondary"}>
-          {status === 0 ? "In Cash" : "In Leave"}
+          {status === 0 ? "Cash" : "Leave"}
         </Badge>
       );
     },

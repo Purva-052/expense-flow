@@ -88,6 +88,24 @@ export const columns = (
   {
     accessorKey: "timeSpent",
     header: "Hours",
+    cell: ({ row }) => {
+      const val = row.original.timeSpent;
+      if (!val) return "0:00";
+      return String(val).includes(":")
+        ? val
+        : parseFloat(String(val)).toFixed(2).replace(".", ":");
+    },
+  },
+  {
+    accessorKey: "weightageHours",
+    header: "Weightage Hours",
+    cell: ({ row }) => {
+      const val = row.original.weightageHours;
+      if (!val) return "0:00";
+      return String(val).includes(":")
+        ? val
+        : parseFloat(String(val)).toFixed(2).replace(".", ":");
+    },
   },
   // {
   //   accessorKey: "remark",

@@ -138,7 +138,13 @@ export const UserProfileCard = ({ user }: { user: any }) => {
   const [certInput, setCertInput] = useState("");
   const [editingCertId, setEditingCertId] = useState<number | null>(null);
   const [editingCertName, setEditingCertName] = useState("");
+  const [editingCertStatus, setEditingCertStatus] = useState<
+    "in_progress" | "completed"
+  >("in_progress");
   const [skillType, setSkillType] = useState<"skill" | "learning">("skill");
+  const [status, setStatus] = useState<"in_progress" | "completed">(
+    "in_progress"
+  );
   const [skillsData, setSkillsData] = useState<any[]>([]);
   const [learningData, setLearningData] = useState<any[]>([]);
   const [certificatesData, setCertificatesData] = useState<any[]>([]);
@@ -148,6 +154,31 @@ export const UserProfileCard = ({ user }: { user: any }) => {
   const [image, setImage] = useState<string | null>(null);
   const [showCropDialog, setShowCropDialog] = useState(false);
   const cropperRef = useRef<any>(null);
+
+  // Saves and restores the #content scroll position around Radix Select open.
+  // When Radix focuses the SelectContent portal, some browsers scroll the
+  // nearest scroll ancestor (#content) to bring it into view — causing a
+  // jump to the top. We capture the position just before open and restore it
+  // one animation frame later (after the browser's scroll-into-view fires).
+  const preserveScroll = (isOpen: boolean) => {
+    const container = document.getElementById("content");
+    if (!container) return;
+
+    if (isOpen) {
+      const savedTop = container.scrollTop;
+      // Capture the position and restore it after focus shifts
+      const restore = () => {
+        if (container.scrollTop !== savedTop) {
+          container.scrollTop = savedTop;
+        }
+      };
+
+      // Try multiple frames to catch various browser/Radix behaviors
+      requestAnimationFrame(restore);
+      setTimeout(restore, 0);
+      setTimeout(restore, 10);
+    }
+  };
 
   const { mutateAsync: uploadFile } = useUploadTransactionFile();
   const { mutateAsync: updateProfile, isPending: isUpdating } =
@@ -331,9 +362,9 @@ export const UserProfileCard = ({ user }: { user: any }) => {
       };
 
       if (skillType === "skill") {
-        setSkillsData([...skillsData, newItem]);
+        setSkillsData((prev) => [...prev, newItem]);
       } else {
-        setLearningData([...learningData, newItem]);
+        setLearningData((prev) => [...prev, newItem]);
       }
     } catch (error) {
       console.error("Failed to add skill with type", error);
@@ -344,7 +375,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
     if (!certInput.trim()) return;
 
     try {
-      await createCertificate({ name: certInput.trim() });
+      await createCertificate({ name: certInput.trim(), status: status });
       // Clear input - data will be refetched automatically
       setCertInput("");
     } catch (error) {
@@ -352,19 +383,30 @@ export const UserProfileCard = ({ user }: { user: any }) => {
     }
   };
 
-  const handleEditCertificate = (certId: number, certName: string) => {
+  const handleEditCertificate = (
+    certId: number,
+    certName: string,
+    certStatus: "in_progress" | "completed" = "in_progress"
+  ) => {
     setEditingCertId(certId);
     setEditingCertName(certName);
+    setEditingCertStatus(certStatus);
   };
 
   const handleSaveCertificate = async (certId: number) => {
     if (!editingCertName.trim()) return;
 
     try {
-      await updateCertificate({ id: certId, name: editingCertName.trim() });
+      await updateCertificate({
+        id: certId,
+        name: editingCertName.trim(),
+        status: editingCertStatus,
+      });
+      toast
       // Clear editing state - data will be refetched automatically
       setEditingCertId(null);
       setEditingCertName("");
+      setEditingCertStatus("in_progress");
     } catch (error) {
       console.error("Failed to update certificate", error);
     }
@@ -373,6 +415,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
   const handleCancelEdit = () => {
     setEditingCertId(null);
     setEditingCertName("");
+    setEditingCertStatus("in_progress");
   };
 
   const handleDeleteCertificate = async (certId: number) => {
@@ -566,7 +609,8 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                           <Input
                             value={editingCertName}
                             onChange={(e) => setEditingCertName(e.target.value)}
-                            className="h-6 px-2 py-0 text-sm border-yellow-300 focus:border-yellow-500"
+                            className="h-6 px-2 py-0 text-sm border-yellow-300 focus:border-yellow-500 flex-1"
+                            placeholder="Certificate name"
                             autoFocus
                             onKeyDown={(e) => {
                               if (e.key === "Enter") {
@@ -576,6 +620,25 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                               }
                             }}
                           />
+                          <Select
+                            value={editingCertStatus}
+                            onOpenChange={preserveScroll}
+                            onValueChange={(
+                              value: "in_progress" | "completed"
+                            ) => setEditingCertStatus(value)}
+                          >
+                            <SelectTrigger className="h-6 w-[110px] text-xs">
+                              <SelectValue placeholder="Status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="in_progress">
+                                In Progress
+                              </SelectItem>
+                              <SelectItem value="completed">
+                                Completed
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
                           <Button
                             size="icon"
                             variant="ghost"
@@ -604,7 +667,11 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                               variant="ghost"
                               className="h-4 w-4 p-0 hover:bg-yellow-600"
                               onClick={() =>
-                                handleEditCertificate(cert.id, cert.name)
+                                handleEditCertificate(
+                                  cert.id,
+                                  cert.name,
+                                  cert.status || "in_progress"
+                                )
                               }
                             >
                               <Pencil className="h-2.5 w-2.5" />
@@ -640,6 +707,21 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                     }
                   }}
                 />
+                <Select
+                  value={status}
+                  onOpenChange={preserveScroll}
+                  onValueChange={(value: "in_progress" | "completed") =>
+                    setStatus(value)
+                  }
+                >
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue placeholder="Select Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="in_progress">In Progress</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Button
                   onClick={handleAddCertificate}
                   disabled={!certInput.trim() || isCreatingCertificate}
@@ -679,7 +761,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                 {/* Skills */}
                 <div>
                   <h3 className="flex items-center gap-2 font-semibold mb-3">
-                    💡 Skills
+                    💡 Special Skills
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {skillsData.length > 0 ? (
@@ -757,6 +839,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                     selected={selectedSkills}
                     onChange={setSelectedSkills}
                     onCreateSkill={handleCreateSkill}
+                    onOpenChange={preserveScroll}
                     loading={skillsLoading}
                     creating={isCreatingSkill}
                     placeholder="e.g., React, Node.js, Docker..."
@@ -765,6 +848,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                 </div>
                 <Select
                   value={skillType}
+                  onOpenChange={preserveScroll}
                   onValueChange={(value: "skill" | "learning") =>
                     setSkillType(value)
                   }

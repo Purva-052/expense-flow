@@ -64,6 +64,12 @@ type GroupedDevelopers = {
   technologyColor?: string;
 }[];
 
+// type GroupedDevelopers = {
+//   technologyName: string;
+//   resources: Developer[];
+//   technologyColor?: string;
+// }[];
+
 const Board = ({
   technologies,
   techLoading,
@@ -75,8 +81,6 @@ const Board = ({
   const { user } = useAuthStore();
   const Role = user?.user?.role;
   const isDeveloperView = Role === roles.DEVELOPER;
-  const isCoordinatorView =
-    Role === roles.PROJECT_MANAGER || Role === roles.TEAM_LEAD;
   const currentUserId = user?.user?.id;
   const FILTER_STORAGE_KEY = "board_filters";
   const [searchTech, setSearchTech] = useState<string>("");
@@ -87,6 +91,7 @@ const Board = ({
   const { data: ProjectType, isPending: LoadingProjectType }: any =
     useGetProjectTypesDropdownList();
 
+  // ... (Keep your existing getInitialFilters and state logic)
   const getInitialFilters = () => {
     if (typeof window === "undefined")
       return {
@@ -106,7 +111,7 @@ const Board = ({
           pagination: true,
           status: isInactiveTab ? "inactive" : "active",
           projectTypeId: undefined,
-          handlerId: isCoordinatorView ? currentUserId : undefined,
+          handlerId: undefined,
           technologyId: undefined,
           ...JSON.parse(saved),
         }
@@ -114,9 +119,9 @@ const Board = ({
           pagination: true,
           clientId: null,
           status: isInactiveTab ? "inactive" : "active",
-          handlerId: isCoordinatorView ? currentUserId : undefined,
+          handlerId: undefined,
           technologyId: undefined,
-          priority: "high",
+          priority: undefined,
           projectTypeId: undefined,
           search: "",
         };
@@ -126,8 +131,6 @@ const Board = ({
   const [showAllDevelopers, setShowAllDevelopers] = useState(false);
   const [openTechnology, setOpenTechnology] = useState<string>("");
   const scrollContainerRef = React.useRef<HTMLDivElement | null>(null);
-
-  // State for the multi-select technology filter
   const [selectedTech, setSelectedTech] = useState<string[]>([]);
 
   useEffect(() => {
@@ -174,7 +177,6 @@ const Board = ({
     isFetchingNextPage,
   }: any = useGetProjectsData(listParams);
 
-  // Extract total count from pagination metadata and notify parent when it changes
   const totalCount =
     projectPages?.pages?.[0]?.metadata?.totalCount ??
     projectPages?.pages?.[projectPages.pages.length - 1]?.metadata
@@ -189,6 +191,7 @@ const Board = ({
     () => projectPages?.pages?.flatMap((page: any) => page.data) ?? [],
     [projectPages]
   );
+
   const fetchingLock = useRef(false);
 
   const { ref: loadMoreRef } = useInView({
@@ -302,19 +305,15 @@ const Board = ({
   const { data: technologyList, isPending: technologyListLoading }: any =
     useGetTechnologyDropdownList();
 
+  // ... (Keep existing handlers: handleClientChange, etc.)
   const handleClientChange = (value: any) =>
     setListParams((prev: any) => ({ ...prev, clientId: value ?? null }));
   const handleProjectHandleChange = (value: any) => {
     setListParams({ ...listParams, handlerId: value ?? null, currentPage: 1 });
   };
-
   const handleProjectTypeChange = (value: any) => {
-    setListParams({
-      ...listParams,
-      projectTypeId: value ?? undefined,
-    });
+    setListParams({ ...listParams, projectTypeId: value ?? undefined });
   };
-
   const handleTechnologyChange = (value: any) => {
     setListParams({
       ...listParams,
@@ -322,7 +321,6 @@ const Board = ({
       currentPage: 1,
     });
   };
-
   const handlePriorityChange = (value: any) =>
     setListParams((prev: any) => ({ ...prev, priority: value ?? undefined }));
   const handleSearch = (search: string | undefined) => {
@@ -375,7 +373,7 @@ const Board = ({
       options: technologyList?.data?.map((technology: any) => {
         return { value: technology.id, label: technology.name };
       }),
-      value: listParams.technologyId, // 👈 pre-selects if set
+      value: listParams.technologyId,
       onChange: handleTechnologyChange,
       isLoading: technologyListLoading,
       multiple: true,
@@ -446,16 +444,24 @@ const Board = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_320px] h-[71dvh]">
+      {/* 
+        RESPONSIVE CONTAINER CONFIGURATION:
+        1. h-auto: Natural height on mobile/tablet (vertical scroll).
+        2. md:h-[calc(100vh-280px)]: On Desktop, calculate available height. 
+           (100vh - header - filters - padding). 
+           This locks the height to the viewport, allowing inner columns to scroll independently.
+      */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_320px] h-auto md:h-[calc(100vh-280px)] min-h-[500px]">
         <DndContext
           sensors={sensors}
           onDragStart={onDragStart}
           onDragEnd={onDragEnd}
           onDragCancel={() => setActiveDeveloper(null)}
         >
+          {/* LEFT COLUMN: PROJECTS */}
           <div
             ref={scrollContainerRef}
-            className="space-y-4 !h-full overflow-y-auto p-2 [scrollbar-gutter:stable] rounded-md border"
+            className="space-y-4 h-[500px] md:h-full overflow-y-auto p-2 [scrollbar-gutter:stable] rounded-md border"
           >
             {projectListLoading || LoadingProjectType ? (
               <div className="flex flex-col justify-center items-center py-10 gap-3">
@@ -520,20 +526,23 @@ const Board = ({
             <div ref={loadMoreRef} className="h-2" />
           </div>
 
+          {/* RIGHT COLUMN: RESOURCES */}
           {!isDeveloperView && (
-            <aside className="top-4 !h-full">
+            <aside className="top-4 h-[500px] md:h-full overflow-hidden">
               <Card
                 ref={availableDroppable.setNodeRef}
                 className={cn(
-                  "!h-full !gap-2 py-2",
+                  // FLEXBOX FIX: Forces card to manage internal space
+                  "flex flex-col h-full py-2 gap-2 overflow-hidden",
                   availableDroppable.isOver && "ring-2 ring-pink-500"
                 )}
               >
-                <CardHeader className="flex flex-col gap-2">
+                {/* Header: Fixed height (flex-none) */}
+                <CardHeader className="flex-none flex flex-col gap-2 pb-2">
                   <Tabs
                     value={activeTabResource}
                     onValueChange={setActiveTabResource}
-                    className="!w-full my-1"
+                    className="w-full my-1"
                   >
                     <TabsList>
                       <TabsTrigger value="available">Available</TabsTrigger>
@@ -542,14 +551,14 @@ const Board = ({
                       </TabsTrigger>
                     </TabsList>
                   </Tabs>
-                  <CardTitle className="w-full text-balance flex items-center justify-between">
+                  <CardTitle className="w-full flex items-center justify-between">
                     {activeTabResource === "available" ? (
-                      <span className="flex gap-2 justify-between w-full">
+                      <span className="flex gap-2 justify-between w-full items-center">
                         {showAllDevelopers
                           ? "All Developers"
                           : "Available Resources"}
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-muted-foreground">
+                          <span className="text-sm text-muted-foreground font-normal">
                             All
                           </span>
                           <Switch
@@ -559,15 +568,16 @@ const Board = ({
                         </div>
                       </span>
                     ) : (
-                      <span>Become Available Resources</span>
+                      <span>Become Available</span>
                     )}
                   </CardTitle>
 
+                  {/* REDUCED HEIGHT INPUT: h-10 instead of h-16 */}
                   <Input
                     value={searchTech}
                     onChange={(e) => setSearchTech(e.target.value)}
                     placeholder="Search developers..."
-                    className="w-full h-16"
+                    className="w-full h-10"
                   />
                   <CustomMultiSelect
                     options={techOptions}
@@ -579,7 +589,8 @@ const Board = ({
                   />
                 </CardHeader>
 
-                <CardContent className="h-[50dvh] overflow-y-auto [scrollbar-gutter:stable] pr-2">
+                {/* Content: Takes remaining space (flex-1) and scrolls (overflow-y-auto) */}
+                <CardContent className="flex-1 min-h-0 overflow-y-auto pr-2 [scrollbar-gutter:stable]">
                   {AllDevelopersLoading ? (
                     <div className="flex flex-col justify-center items-center py-10 gap-3">
                       <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
@@ -593,7 +604,6 @@ const Board = ({
                       strategy={rectSortingStrategy}
                     >
                       <div className="space-y-2">
-                        {/* Render the filtered list of developers */}
                         {groupedDevelopers?.map((group) => (
                           <Collapsible
                             key={group.technologyName}
@@ -608,7 +618,7 @@ const Board = ({
                             <CollapsibleTrigger asChild>
                               <div className="flex w-full cursor-pointer items-center justify-between p-2 hover:bg-muted/50 rounded-sm">
                                 <div className="flex items-center gap-3">
-                                  <span className="font-semibold">
+                                  <span className="font-semibold text-sm">
                                     {group.technologyName}
                                   </span>
                                   <Badge
@@ -657,7 +667,7 @@ const Board = ({
                         No developers found
                       </h3>
                       <p className="text-sm text-muted-foreground/70 mt-1">
-                        Try adjusting your filters or check again later.
+                        Try adjusting your filters.
                       </p>
                     </div>
                   )}

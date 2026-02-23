@@ -52,15 +52,21 @@ export function ViewTransactionModal() {
           <div>
             <h3 className="text-sm font-medium">In Cash/Leave</h3>
             <div className="mt-1">
-              <Badge variant={currentRow.inCashOrLeave === 0 ? "default" : "secondary"}>
-                {currentRow.inCashOrLeave === 0 ? "In Cash" : "In Leave"}
+              <Badge
+                variant={
+                  currentRow.inCashOrLeave === 0 ? "default" : "secondary"
+                }
+              >
+                {currentRow.inCashOrLeave === 0 ? "Cash" : "Leave"}
               </Badge>
             </div>
           </div>
 
           <div>
             <h3 className="text-sm font-medium">Time Spent</h3>
-            <p className="text-sm text-gray-600">{currentRow.timeSpent || "-"}</p>
+            <p className="text-sm text-gray-600">
+              {currentRow.timeSpent || "-"}
+            </p>
           </div>
 
           <div>

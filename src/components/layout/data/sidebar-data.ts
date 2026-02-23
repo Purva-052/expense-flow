@@ -14,6 +14,7 @@ import {
   // IconUserScreen,
   IconReportAnalytics,
   IconReport,
+  IconClipboardCheck,
 } from "@tabler/icons-react";
 import {  CalendarCheck, Command, Cpu, ScrollText } from "lucide-react";
 import { type SidebarData } from "../types";
@@ -90,6 +91,16 @@ export const sidebarData: SidebarData = {
             roles.ADMIN,
           ],
         },
+        {
+          title: "Leave Management",
+          url: "/leave-management",
+          icon: IconClipboardCheck,
+          requiredRoles: [
+            roles.ADMIN,
+            roles.TEAM_LEAD,
+            roles.PROJECT_MANAGER,
+          ],
+        },
       ],
     },
     {
@@ -129,6 +140,12 @@ export const sidebarData: SidebarData = {
           title: "Transaction Logs",
           url: "/transactions-logs",
           icon: ScrollText,
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER, roles.TEAM_LEAD],
+        },
+        {
+          title: "Tools Management",
+          url: "/tools-management",
+          icon: IconTool,
           requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER, roles.TEAM_LEAD],
         },
       ],

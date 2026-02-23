@@ -39,9 +39,11 @@ import { FilterConfig } from "@/components/table/table-toolbar";
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import { roles } from "@/utils/constant";
 import { getDateRange } from "@/utils/commonFunctions";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 // --- MAIN PAGE COMPONENT ---
 const InterviewsPage = () => {
+  const { user } = useAuthStore();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -237,7 +239,17 @@ const InterviewsPage = () => {
   }, [interviewsData]);
 
   const handleDateClick = (date: Date) => {
-    setSelectedDate(date);
+    if (user?.user?.role !== roles.ADMIN) {
+      return;
+    }
+    // Normalize the date to ensure we get the correct date without timezone shifts
+    const normalizedDate = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    );
+
+    setSelectedDate(normalizedDate);
     setIsAddDialogOpen(true);
   };
 
@@ -391,6 +403,7 @@ const InterviewsPage = () => {
       await createStatusLog({
         interviewId: eventToUpdateSchedule.extendedProps.id,
         status: data.interviewStatus,
+        interviewUrl: data.interviewUrl || "",
         notes: data.notes || "",
         effectiveDate: effectiveDate || dateToUse,
         interviewType: data.interviewType,
@@ -483,7 +496,7 @@ const InterviewsPage = () => {
 
   return (
     <Main>
-      <div className="p-4">
+      <div className="p-0">
         <div className="mb-4 space-y-3">
           {/* Year Navigation */}
           <div className="mb-4 flex flex-wrap items-center gap-4">

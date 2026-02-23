@@ -59,6 +59,7 @@ const formSchema = z.object({
     .max(20, "Milestone name should be less than 20 characters"),
   estimatedTime: z.string().min(0, "Estimated time is required"),
   status: z.string().min(1, "Status is required"),
+  orderNumber: z.coerce.number().optional(),
   tasks: z.array(taskSchema).min(1, "At least one task is required"),
 });
 
@@ -71,6 +72,7 @@ interface AddManualMilestoneProps {
   initialData?: any;
   onSuccess?: () => void;
   onMilestoneCreated?: (milestone: any) => void;
+  milestonesCount?: number;
 }
 
 export function AddManualMilestone({
@@ -80,6 +82,7 @@ export function AddManualMilestone({
   initialData,
   onSuccess,
   onMilestoneCreated,
+  milestonesCount = 0,
 }: AddManualMilestoneProps) {
   const queryClient = useQueryClient();
   const [taskToDelete, setTaskToDelete] = useState<any>(null);
@@ -110,6 +113,7 @@ export function AddManualMilestone({
       name: "",
       estimatedTime: "",
       status: "pending",
+      orderNumber: 0,
       tasks: [{ taskName: "", estimatedTime: "" }],
     },
   });
@@ -186,6 +190,11 @@ export function AddManualMilestone({
             "",
           estimatedTime: initialData.estimatedTime || "",
           status: initialData.status || "pending",
+          orderNumber: initialData.orderNumber
+            ? initialData.orderNumber
+            : initialData.order_number
+              ? initialData.order_number
+              : 0,
           tasks: initialData.tasks?.map((t: any) => ({
             taskId: t.id,
             taskName: t.taskName,
@@ -197,6 +206,7 @@ export function AddManualMilestone({
           name: "",
           estimatedTime: "",
           status: "pending",
+          orderNumber: 0,
           tasks: [{ taskName: "", estimatedTime: "" }],
         });
       }
@@ -250,6 +260,7 @@ export function AddManualMilestone({
         estimatedTime: finalEstimatedTime, // Ensure we send the calculated string
         status: values.status,
         projectId: payloadProjectId,
+        orderNumber: values.orderNumber,
       };
 
       const initialTasks =
@@ -295,6 +306,7 @@ export function AddManualMilestone({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[550px] max-h-[95vh] flex flex-col p-0">
+        {/* Header */}
         <DialogHeader className="px-6 py-4 border-b shrink-0">
           <DialogTitle>
             {initialData ? "Edit Milestone" : "Add Milestone"}
@@ -306,14 +318,15 @@ export function AddManualMilestone({
             onSubmit={form.handleSubmit(onSubmit)}
             className="flex flex-col flex-1 min-h-0"
           >
+            {/* Scrollable Body */}
             <div className="flex-1 overflow-y-auto px-6 py-4 min-h-0">
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                {/* Milestone Name */}
+              {/* ================= Milestone Name ================= */}
+              <div className="mb-6">
                 <FormField
                   control={form.control}
                   name="name"
                   render={({ field }: any) => (
-                    <FormItem className="col-span-2">
+                    <FormItem>
                       <FormLabel>
                         Milestone Name <span className="text-red-500">*</span>
                       </FormLabel>
@@ -324,25 +337,27 @@ export function AddManualMilestone({
                     </FormItem>
                   )}
                 />
+              </div>
 
-                {/* Estimated Time (Calculated) */}
+              {/* ================= Meta Fields ================= */}
+              <div
+                className={cn(
+                  "grid gap-2 mb-6",
+                  initialData ? "grid-cols-3" : "grid-cols-2"
+                )}
+              >
+                {/* Estimated Time */}
                 <FormField
                   control={form.control}
                   name="estimatedTime"
                   render={({ field }: any) => (
                     <FormItem>
-                      <FormLabel>Total Estimated Time (Hours)</FormLabel>
+                      <FormLabel>Total Estimated Hours</FormLabel>
                       <FormControl>
-                        {/* 
-                          We use readOnly here. 
-                          The value is controlled by the useEffect via form.setValue 
-                          But {...field} connects it to the form state.
-                        */}
                         <Input
-                          placeholder="Auto-calculated"
                           {...field}
                           readOnly
-                          className="bg-slate-100 text-slate-700 focus-visible:ring-0 cursor-not-allowed"
+                          className="bg-slate-100 text-slate-700 cursor-not-allowed focus-visible:ring-0"
                           tabIndex={-1}
                         />
                       </FormControl>
@@ -379,9 +394,40 @@ export function AddManualMilestone({
                     </FormItem>
                   )}
                 />
+
+                {/* Order Number (Edit only) */}
+                {initialData && (
+                  <FormField
+                    control={form.control}
+                    name="orderNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Order Number</FormLabel>
+                        <Select
+                          value={field.value ? String(field.value) : undefined}
+                          onValueChange={(val) => field.onChange(Number(val))}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select order number" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {Array.from({ length: milestonesCount }, (_, i) => (
+                              <SelectItem key={i + 1} value={String(i + 1)}>
+                                {i + 1}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
               </div>
 
-              {/* Tasks */}
+              {/* ================= Tasks ================= */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-medium">Tasks</h3>
@@ -406,6 +452,7 @@ export function AddManualMilestone({
                       key={item.id}
                       className="grid grid-cols-12 gap-3 p-3 border rounded-lg bg-slate-50"
                     >
+                      {/* Task Name */}
                       <div className="col-span-7">
                         <FormField
                           control={form.control}
@@ -418,8 +465,8 @@ export function AddManualMilestone({
                               </FormLabel>
                               <FormControl>
                                 <Input
-                                  placeholder="Task Name"
                                   {...field}
+                                  placeholder="Task name"
                                   disabled={
                                     initialData?.tasks[index]?.status ===
                                     "completed"
@@ -432,6 +479,7 @@ export function AddManualMilestone({
                         />
                       </div>
 
+                      {/* Estimated Time */}
                       <div className="col-span-4">
                         <FormField
                           control={form.control}
@@ -444,8 +492,8 @@ export function AddManualMilestone({
                               </FormLabel>
                               <FormControl>
                                 <Input
-                                  placeholder="e.g. 1h 30m"
                                   {...field}
+                                  placeholder="e.g. 1h 30m"
                                   disabled={
                                     initialData?.tasks[index]?.status ===
                                     "completed"
@@ -458,6 +506,7 @@ export function AddManualMilestone({
                         />
                       </div>
 
+                      {/* Delete Button */}
                       {(!initialData ||
                         !isExistingTask ||
                         taskStatus === "pending") && (
@@ -481,9 +530,7 @@ export function AddManualMilestone({
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Delete task</p>
-                              </TooltipContent>
+                              <TooltipContent>Delete task</TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
                         </div>
@@ -494,6 +541,7 @@ export function AddManualMilestone({
               </div>
             </div>
 
+            {/* Footer */}
             <DialogFooter className="px-6 py-4 border-t shrink-0 bg-slate-50">
               <Button
                 type="button"

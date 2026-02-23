@@ -24,6 +24,7 @@ import { FileUpload } from "@/components/shared/custome-file-upload";
 import { useState, useEffect, useRef } from "react";
 import { useUploadTransactionFile } from "../../transaction-logs/services";
 import { toast } from "sonner";
+import { useAuthStore } from "@/stores/use-auth-store";
 // import { Switch } from "@/components/ui/switch";
 
 interface Props {
@@ -63,6 +64,10 @@ export function UserActionForm({
           email: currentRow?.email ?? "",
           role: currentRow?.role ?? "",
           technologyId: currentRow?.technology?.id ?? undefined,
+          reportLogAccessIds:
+            currentRow?.reportLogAccess?.map((item: any) =>
+              String(item.technology.id)
+            ) ?? [],
           careerStartDate: currentRow?.careerStartDate
             ? currentRow.careerStartDate.slice(0, 10)
             : "",
@@ -77,6 +82,7 @@ export function UserActionForm({
           email: "",
           role: "",
           technologyId: undefined,
+          reportLogAccessIds: [],
           careerStartDate: "",
           status: true,
           joining: false,
@@ -94,6 +100,8 @@ export function UserActionForm({
   const [imageToCrop, setImageToCrop] = useState<string | null>(null);
   const [showCropDialog, setShowCropDialog] = useState(false);
   const cropperRef = useRef<any>(null);
+  const user = useAuthStore((state) => state.user);
+  const userRole = user?.user?.role;
 
   const watchedFile = useWatch({
     control: form.control,
@@ -107,14 +115,15 @@ export function UserActionForm({
         email: currentRow?.email ?? "",
         role: currentRow?.role ?? "",
         technologyId: currentRow?.technology?.id ?? undefined,
+        reportLogAccessIds:
+          currentRow?.reportLogAccess?.map((item: any) => item.technology.id) ??
+          [],
         careerStartDate: currentRow?.careerStartDate
           ? currentRow.careerStartDate.slice(0, 10)
           : "",
         status: currentRow?.status === "active",
         joining: currentRow?.joining ?? false,
         // currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
-
-        // 🔥 IMPORTANT
         profilePicS3Key: currentRow?.profilePicUrl ?? "",
         file: null,
       });
@@ -362,21 +371,41 @@ export function UserActionForm({
                 />
 
                 {/* Technology Dropdown (disabled for project_manager) */}
-                <CustomDropDownSearchable
-                  form={form}
-                  name="technologyId"
-                  label="Technology"
-                  options={technologyListData?.map((technology) => ({
-                    value: technology.id,
-                    label: technology.name,
-                  }))}
-                  isLoading={technologyListLoading}
-                  placeholder="Select Technology"
-                  disabled={
-                    selectedRole === roles.PROJECT_MANAGER ||
-                    selectedRole === roles.ADMIN
-                  }
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <CustomDropDownSearchable
+                    form={form}
+                    name="technologyId"
+                    label="Technology"
+                    options={technologyListData?.map((technology) => ({
+                      value: technology.id,
+                      label: technology.name,
+                    }))}
+                    isLoading={technologyListLoading}
+                    placeholder="Select Technology"
+                    disabled={
+                      selectedRole === roles.PROJECT_MANAGER ||
+                      selectedRole === roles.ADMIN
+                    }
+                  />
+
+                  {userRole !== roles.TEAM_LEAD && (
+                    <CustomDropDownSearchable
+                      form={form}
+                      name="reportLogAccessIds"
+                      label="Report Log Access"
+                      multiple
+                      options={technologyListData?.map((technology) => ({
+                        value: String(technology.id), // 👈 safe (string)
+                        label: technology.name,
+                      }))}
+                      placeholder="Select Report Log Access"
+                      searchEnabled={true}
+                      isLoading={technologyListLoading}
+                      className="report-log-access-dropdown"
+                      // disabled={selectedRole === roles.TEAM_LEAD}
+                    />
+                  )}
+                </div>
 
                 <CustomDatePicker
                   control={form.control}

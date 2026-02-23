@@ -22,6 +22,7 @@ import { Route as authOtpRouteImport } from './routes/(auth)/otp'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as AuthenticatedTransactionsLogsIndexRouteImport } from './routes/_authenticated/transactions-logs/index'
+import { Route as AuthenticatedToolsManagementIndexRouteImport } from './routes/_authenticated/tools-management/index'
 import { Route as AuthenticatedTechnologyIndexRouteImport } from './routes/_authenticated/technology/index'
 import { Route as AuthenticatedServerIndexRouteImport } from './routes/_authenticated/server/index'
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects/index'
@@ -29,6 +30,7 @@ import { Route as AuthenticatedProjectTypeIndexRouteImport } from './routes/_aut
 import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authenticated/profile/index'
 import { Route as AuthenticatedNewJoineesIndexRouteImport } from './routes/_authenticated/new-joinees/index'
 import { Route as AuthenticatedLinodeServerDashboardIndexRouteImport } from './routes/_authenticated/linode-server-dashboard/index'
+import { Route as AuthenticatedLeaveManagementIndexRouteImport } from './routes/_authenticated/leave-management/index'
 import { Route as AuthenticatedInterviewsIndexRouteImport } from './routes/_authenticated/interviews/index'
 import { Route as AuthenticatedInquiryIndexRouteImport } from './routes/_authenticated/inquiry/index'
 import { Route as AuthenticatedInquiryTypeIndexRouteImport } from './routes/_authenticated/inquiry-type/index'
@@ -104,6 +106,12 @@ const AuthenticatedTransactionsLogsIndexRoute =
     path: '/transactions-logs/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedToolsManagementIndexRoute =
+  AuthenticatedToolsManagementIndexRouteImport.update({
+    id: '/tools-management/',
+    path: '/tools-management/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedTechnologyIndexRoute =
   AuthenticatedTechnologyIndexRouteImport.update({
     id: '/technology/',
@@ -144,6 +152,12 @@ const AuthenticatedLinodeServerDashboardIndexRoute =
   AuthenticatedLinodeServerDashboardIndexRouteImport.update({
     id: '/linode-server-dashboard/',
     path: '/linode-server-dashboard/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedLeaveManagementIndexRoute =
+  AuthenticatedLeaveManagementIndexRouteImport.update({
+    id: '/leave-management/',
+    path: '/leave-management/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedInterviewsIndexRoute =
@@ -219,6 +233,7 @@ export interface FileRoutesByFullPath {
   '/inquiry-type/': typeof AuthenticatedInquiryTypeIndexRoute
   '/inquiry/': typeof AuthenticatedInquiryIndexRoute
   '/interviews/': typeof AuthenticatedInterviewsIndexRoute
+  '/leave-management/': typeof AuthenticatedLeaveManagementIndexRoute
   '/linode-server-dashboard/': typeof AuthenticatedLinodeServerDashboardIndexRoute
   '/new-joinees/': typeof AuthenticatedNewJoineesIndexRoute
   '/profile/': typeof AuthenticatedProfileIndexRoute
@@ -226,6 +241,7 @@ export interface FileRoutesByFullPath {
   '/projects/': typeof AuthenticatedProjectsIndexRoute
   '/server/': typeof AuthenticatedServerIndexRoute
   '/technology/': typeof AuthenticatedTechnologyIndexRoute
+  '/tools-management/': typeof AuthenticatedToolsManagementIndexRoute
   '/transactions-logs/': typeof AuthenticatedTransactionsLogsIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
   '/linode-server-dashboard/detail/$id': typeof AuthenticatedLinodeServerDashboardDetailIdRoute
@@ -249,6 +265,7 @@ export interface FileRoutesByTo {
   '/inquiry-type': typeof AuthenticatedInquiryTypeIndexRoute
   '/inquiry': typeof AuthenticatedInquiryIndexRoute
   '/interviews': typeof AuthenticatedInterviewsIndexRoute
+  '/leave-management': typeof AuthenticatedLeaveManagementIndexRoute
   '/linode-server-dashboard': typeof AuthenticatedLinodeServerDashboardIndexRoute
   '/new-joinees': typeof AuthenticatedNewJoineesIndexRoute
   '/profile': typeof AuthenticatedProfileIndexRoute
@@ -256,6 +273,7 @@ export interface FileRoutesByTo {
   '/projects': typeof AuthenticatedProjectsIndexRoute
   '/server': typeof AuthenticatedServerIndexRoute
   '/technology': typeof AuthenticatedTechnologyIndexRoute
+  '/tools-management': typeof AuthenticatedToolsManagementIndexRoute
   '/transactions-logs': typeof AuthenticatedTransactionsLogsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
   '/linode-server-dashboard/detail/$id': typeof AuthenticatedLinodeServerDashboardDetailIdRoute
@@ -281,6 +299,7 @@ export interface FileRoutesById {
   '/_authenticated/inquiry-type/': typeof AuthenticatedInquiryTypeIndexRoute
   '/_authenticated/inquiry/': typeof AuthenticatedInquiryIndexRoute
   '/_authenticated/interviews/': typeof AuthenticatedInterviewsIndexRoute
+  '/_authenticated/leave-management/': typeof AuthenticatedLeaveManagementIndexRoute
   '/_authenticated/linode-server-dashboard/': typeof AuthenticatedLinodeServerDashboardIndexRoute
   '/_authenticated/new-joinees/': typeof AuthenticatedNewJoineesIndexRoute
   '/_authenticated/profile/': typeof AuthenticatedProfileIndexRoute
@@ -288,6 +307,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
   '/_authenticated/server/': typeof AuthenticatedServerIndexRoute
   '/_authenticated/technology/': typeof AuthenticatedTechnologyIndexRoute
+  '/_authenticated/tools-management/': typeof AuthenticatedToolsManagementIndexRoute
   '/_authenticated/transactions-logs/': typeof AuthenticatedTransactionsLogsIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
   '/_authenticated/linode-server-dashboard/detail/$id': typeof AuthenticatedLinodeServerDashboardDetailIdRoute
@@ -313,6 +333,7 @@ export interface FileRouteTypes {
     | '/inquiry-type/'
     | '/inquiry/'
     | '/interviews/'
+    | '/leave-management/'
     | '/linode-server-dashboard/'
     | '/new-joinees/'
     | '/profile/'
@@ -320,6 +341,7 @@ export interface FileRouteTypes {
     | '/projects/'
     | '/server/'
     | '/technology/'
+    | '/tools-management/'
     | '/transactions-logs/'
     | '/users/'
     | '/linode-server-dashboard/detail/$id'
@@ -343,6 +365,7 @@ export interface FileRouteTypes {
     | '/inquiry-type'
     | '/inquiry'
     | '/interviews'
+    | '/leave-management'
     | '/linode-server-dashboard'
     | '/new-joinees'
     | '/profile'
@@ -350,6 +373,7 @@ export interface FileRouteTypes {
     | '/projects'
     | '/server'
     | '/technology'
+    | '/tools-management'
     | '/transactions-logs'
     | '/users'
     | '/linode-server-dashboard/detail/$id'
@@ -374,6 +398,7 @@ export interface FileRouteTypes {
     | '/_authenticated/inquiry-type/'
     | '/_authenticated/inquiry/'
     | '/_authenticated/interviews/'
+    | '/_authenticated/leave-management/'
     | '/_authenticated/linode-server-dashboard/'
     | '/_authenticated/new-joinees/'
     | '/_authenticated/profile/'
@@ -381,6 +406,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/'
     | '/_authenticated/server/'
     | '/_authenticated/technology/'
+    | '/_authenticated/tools-management/'
     | '/_authenticated/transactions-logs/'
     | '/_authenticated/users/'
     | '/_authenticated/linode-server-dashboard/detail/$id'
@@ -493,6 +519,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTransactionsLogsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/tools-management/': {
+      id: '/_authenticated/tools-management/'
+      path: '/tools-management'
+      fullPath: '/tools-management/'
+      preLoaderRoute: typeof AuthenticatedToolsManagementIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/technology/': {
       id: '/_authenticated/technology/'
       path: '/technology'
@@ -540,6 +573,13 @@ declare module '@tanstack/react-router' {
       path: '/linode-server-dashboard'
       fullPath: '/linode-server-dashboard/'
       preLoaderRoute: typeof AuthenticatedLinodeServerDashboardIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/leave-management/': {
+      id: '/_authenticated/leave-management/'
+      path: '/leave-management'
+      fullPath: '/leave-management/'
+      preLoaderRoute: typeof AuthenticatedLeaveManagementIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/interviews/': {
@@ -617,6 +657,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInquiryTypeIndexRoute: typeof AuthenticatedInquiryTypeIndexRoute
   AuthenticatedInquiryIndexRoute: typeof AuthenticatedInquiryIndexRoute
   AuthenticatedInterviewsIndexRoute: typeof AuthenticatedInterviewsIndexRoute
+  AuthenticatedLeaveManagementIndexRoute: typeof AuthenticatedLeaveManagementIndexRoute
   AuthenticatedLinodeServerDashboardIndexRoute: typeof AuthenticatedLinodeServerDashboardIndexRoute
   AuthenticatedNewJoineesIndexRoute: typeof AuthenticatedNewJoineesIndexRoute
   AuthenticatedProfileIndexRoute: typeof AuthenticatedProfileIndexRoute
@@ -624,6 +665,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
   AuthenticatedServerIndexRoute: typeof AuthenticatedServerIndexRoute
   AuthenticatedTechnologyIndexRoute: typeof AuthenticatedTechnologyIndexRoute
+  AuthenticatedToolsManagementIndexRoute: typeof AuthenticatedToolsManagementIndexRoute
   AuthenticatedTransactionsLogsIndexRoute: typeof AuthenticatedTransactionsLogsIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
   AuthenticatedLinodeServerDashboardDetailIdRoute: typeof AuthenticatedLinodeServerDashboardDetailIdRoute
@@ -641,6 +683,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInquiryTypeIndexRoute: AuthenticatedInquiryTypeIndexRoute,
   AuthenticatedInquiryIndexRoute: AuthenticatedInquiryIndexRoute,
   AuthenticatedInterviewsIndexRoute: AuthenticatedInterviewsIndexRoute,
+  AuthenticatedLeaveManagementIndexRoute:
+    AuthenticatedLeaveManagementIndexRoute,
   AuthenticatedLinodeServerDashboardIndexRoute:
     AuthenticatedLinodeServerDashboardIndexRoute,
   AuthenticatedNewJoineesIndexRoute: AuthenticatedNewJoineesIndexRoute,
@@ -649,6 +693,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
   AuthenticatedServerIndexRoute: AuthenticatedServerIndexRoute,
   AuthenticatedTechnologyIndexRoute: AuthenticatedTechnologyIndexRoute,
+  AuthenticatedToolsManagementIndexRoute:
+    AuthenticatedToolsManagementIndexRoute,
   AuthenticatedTransactionsLogsIndexRoute:
     AuthenticatedTransactionsLogsIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,

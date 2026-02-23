@@ -52,11 +52,23 @@ const CertificateTab = () => {
   }, [usersList, selectedCertificates]);
 
   // Filter users based on role (exclude ADMIN and PROJECT_MANAGER)
-  const roleFilteredUsers = useMemo(() => {
-    return filteredUsers.filter(
+  const finalUsers = useMemo(() => {
+    let users = filteredUsers.filter(
       (u: any) => u.role !== roles.ADMIN && u.role !== roles.PROJECT_MANAGER
     );
-  }, [filteredUsers]);
+
+    // ✅ DEFAULT: show only users having certificates
+    if (selectedCertificates.length === 0 && !searchQuery) {
+      users = users.filter(
+        (u: any) => u.certificates && u.certificates.length > 0
+      );
+    }
+
+    // 🔍 SEARCH MODE: show all users (even without certificates)
+    // nothing to do, users already contains all
+
+    return users;
+  }, [filteredUsers, selectedCertificates, searchQuery]);
 
   const handleCertificateChange = (value: any) => {
     const val = value ?? null;
@@ -100,9 +112,9 @@ const CertificateTab = () => {
           <div className="w-10 h-10 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
           <span className="text-sm text-muted-foreground">Loading ...</span>
         </div>
-      ) : roleFilteredUsers?.length > 0 ? (
+      ) : finalUsers?.length > 0 ? (
         <div className="space-y-4 max-h-[72dvh] overflow-auto [scrollbar-gutter:stable] p-2">
-          {roleFilteredUsers.map((u: any) => (
+          {finalUsers.map((u: any) => (
             <CertificateCard key={u.id} user={u} />
           ))}
         </div>

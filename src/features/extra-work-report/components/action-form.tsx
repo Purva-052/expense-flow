@@ -91,8 +91,6 @@ export function ExtraWorkActionForm({
     if (currentRow && open) {
       const rowEmployeeId = currentRow.employeeId ?? currentRow.employee?.id;
       const rowProjectId = currentRow.projectId ?? currentRow.project?.id;
-
-      // Handle date parsing safely to avoid timezone shifts
       const rawDate = currentRow.reportingDate;
       const parsedDate = rawDate ? new Date(rawDate.split("T")[0]) : undefined;
 
@@ -106,7 +104,6 @@ export function ExtraWorkActionForm({
         remark: currentRow.remark,
       });
 
-      // Robust time parsing for both "10h0m" and "10.00" (decimal) formats
       const timeStr = String(currentRow.timeSpent || "0");
       let h = "0";
       let m = "0";
@@ -118,14 +115,10 @@ export function ExtraWorkActionForm({
         h = hMatch ? parseInt(hMatch[1], 10).toString() : "0";
         m = mMatch ? parseInt(mMatch[2], 10).toString() : "0";
       } else if (timeStr.includes(".")) {
-        // Handle HH.MM format (e.g., "7.20" -> 7 hours, 20 minutes)
         const parts = timeStr.split(".");
         h = parseInt(parts[0], 10).toString();
         const rawM = parts[1] || "0";
-        // Convert fractional part to literal minutes (e.g., "20" -> 20, "05" -> 5)
         let minutesValue = parseInt(rawM.slice(0, 2), 10);
-
-        // Normalize to nearest 5-minute increment to match dropdown options
         minutesValue = Math.round(minutesValue / 5) * 5;
 
         if (minutesValue === 60) {
@@ -135,7 +128,6 @@ export function ExtraWorkActionForm({
           m = minutesValue.toString();
         }
       } else if (!isNaN(Number(timeStr))) {
-        // Handle whole numbers (e.g., "10" -> 10 hours, 0 minutes)
         h = parseInt(timeStr, 10).toString();
         m = "0";
       }
@@ -157,7 +149,6 @@ export function ExtraWorkActionForm({
   }, [hours, minutes, form]);
 
   const onSubmit: SubmitHandler<TExtraWorkFormSchema> = async (values) => {
-    // Format date to local YYYY-MM-DD string to avoid timezone shift issues
     const date = values.reportingDate;
     const formattedDate = `${date.getFullYear()}-${String(
       date.getMonth() + 1
@@ -205,12 +196,12 @@ export function ExtraWorkActionForm({
                       <FormLabel>
                         Reporting Date <span className="text-red-500">*</span>
                       </FormLabel>
-
                       <CustomDatePicker
                         control={form.control}
                         name="reportingDate"
                         label=""
                         disabledDays={(date: Date) => date > new Date()}
+                        triggerClassName="h-9"
                       />
                     </FormItem>
                   )}
@@ -220,20 +211,31 @@ export function ExtraWorkActionForm({
                 <CustomDropDownSearchable
                   form={form}
                   name="employeeId"
-                  label="Employee"
+                  // --- Change is here ---
+                  label={
+                    <>
+                      Employee <span className="text-red-500">*</span>
+                    </>
+                  }
                   options={employeesList?.data?.map((user: any) => ({
                     value: user.id,
                     label: user.fullName,
                   }))}
                   placeholder="Select employee"
                   isLoading={employeesListLoading}
+                  triggerClassName="h-9"
                 />
               </div>
               {/* Project */}
               <CustomDropDownSearchable
                 form={form}
                 name="projectId"
-                label="Project"
+                // --- Change is here ---
+                label={
+                  <>
+                    Project <span className="text-red-500">*</span>
+                  </>
+                }
                 options={projectsList?.data?.map((project: any) => ({
                   value: project.id,
                   label: project.name,

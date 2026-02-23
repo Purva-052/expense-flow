@@ -31,6 +31,7 @@ type CreatableSkillsSelectProps = {
   maxSelectedShow?: number;
   loading?: boolean;
   creating?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 export function CreatableSkillsSelect({
@@ -44,10 +45,25 @@ export function CreatableSkillsSelect({
   maxSelectedShow = 3,
   loading,
   creating,
+  onOpenChange,
 }: CreatableSkillsSelectProps) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState("");
+
+  // When the dropdown opens, focus the search input WITHOUT letting the
+  // browser scroll the page to bring it into view (which caused the
+  // auto-scroll-to-top bug).
+  React.useEffect(() => {
+    onOpenChange?.(open);
+    if (open && inputRef.current) {
+      // Small timeout ensures the dropdown DOM is mounted before focusing
+      const timer = setTimeout(() => {
+        inputRef.current?.focus({ preventScroll: true });
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [open, onOpenChange]);
 
   const handleUnselect = (skillId: string) => {
     onChange(selected.filter((s) => s.id !== skillId));
@@ -124,6 +140,7 @@ export function CreatableSkillsSelect({
   return (
     <Command
       onKeyDown={handleKeyDown}
+      shouldFilter={false}
       className={cn("overflow-visible bg-transparent relative", className)}
     >
       <div
@@ -201,7 +218,6 @@ export function CreatableSkillsSelect({
                 onValueChange={setInputValue}
                 onBlur={() => setOpen(false)}
                 placeholder={placeholder}
-                autoFocus
                 className="border-none focus:ring-0"
               />
               {(loading || creating) && (
