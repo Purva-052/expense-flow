@@ -55,14 +55,14 @@ export function UserActionForm({
   roleListLoading,
 }: Readonly<Props>) {
   const isEdit = !!currentRow;
-  const formatDateToYMD = (value: unknown): string => {
-    if (!value) return "";
+  const formatDateToYMD = (value: unknown): string | null => {
+    if (!value) return null;
 
     if (typeof value === "string") {
       if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
 
       const parsedDate = new Date(value);
-      if (isNaN(parsedDate.getTime())) return "";
+      if (isNaN(parsedDate.getTime())) return null;
 
       const year = parsedDate.getFullYear();
       const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
@@ -71,7 +71,7 @@ export function UserActionForm({
     }
 
     if (value instanceof Date) {
-      if (isNaN(value.getTime())) return "";
+      if (isNaN(value.getTime())) return null;
 
       const year = value.getFullYear();
       const month = String(value.getMonth() + 1).padStart(2, "0");
@@ -79,7 +79,7 @@ export function UserActionForm({
       return `${year}-${month}-${day}`;
     }
 
-    return "";
+    return null;
   };
 
   const form = useForm<TUserFormSchema>({
@@ -99,7 +99,7 @@ export function UserActionForm({
             : "",
           dateOfBirth: currentRow?.dateOfBirth
             ? currentRow.dateOfBirth.slice(0, 10)
-            : "",
+            : null,
           status: currentRow?.status === "active",
           joining: currentRow?.joining ?? false, // ✅ FIXED
           // currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
@@ -113,7 +113,7 @@ export function UserActionForm({
           technologyId: undefined,
           reportLogAccessIds: [],
           careerStartDate: "",
-          dateOfBirth: "",
+          dateOfBirth: null,
           status: true,
           joining: false,
           password: "",
@@ -153,7 +153,7 @@ export function UserActionForm({
           : "",
         dateOfBirth: currentRow?.dateOfBirth
           ? currentRow.dateOfBirth.slice(0, 10)
-          : "",
+          : null,
         status: currentRow?.status === "active",
         joining: currentRow?.joining ?? false,
         // currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
@@ -228,7 +228,7 @@ export function UserActionForm({
     const payload = {
       ...values,
       dateOfBirth: formatDateToYMD(values.dateOfBirth),
-      careerStartDate: formatDateToYMD(values.careerStartDate),
+      careerStartDate: formatDateToYMD(values.careerStartDate) || "",
       profilePicS3Key: finalFileKey,
     };
     delete payload.file;
