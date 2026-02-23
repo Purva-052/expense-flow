@@ -534,7 +534,7 @@ const ProjectPage = ({
       )}
 
       <div
-        className={`${isDeveloperView || isBdeView ? "flex-1 min-h-0 flex flex-col gap-4" : "flex-1 min-h-0 grid grid-cols-1 gap-4 md:grid-cols-[1fr_320px]"}`}
+        className={`${isDeveloperView || isBdeView ? "flex-1 min-h-0 flex flex-col gap-4" : "flex-1 min-h-0 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px]"}`}
       >
         <DndContext
           sensors={sensors}
@@ -554,136 +554,247 @@ const ProjectPage = ({
                 </span>
               </div>
             ) : projectList?.length ? (
-              <div
-                className={cn(
-                  view === "grid"
-                    ? "grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4"
-                    : "flex flex-col gap-0 border rounded-lg bg-white overflow-hidden"
-                )}
-              >
-                {view === "list" && (
-                  <div className="flex items-center gap-4 px-6 py-3 bg-gray-50 border-b text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                    <div className="w-1 shrink-0" />
-                    <div className="flex-1 min-w-0">Project</div>
-
-                    <div className="w-32 shrink-0 text-center">Status</div>
-
-                    <div className="w-48 shrink-0">Progress</div>
-
-                    <div className="w-28 shrink-0">Deadline</div>
-                    <div className="w-24 shrink-0">Team</div>
-                    <div className="w-[64px] shrink-0 text-right pr-4">
-                      Actions
-                    </div>
-                  </div>
-                )}
-                {projectList?.map((p: any) => (
-                  <ProjectCard
-                    key={p?.id}
-                    project={p}
-                    onStatusChanged={refetch}
-                    isArchiveTab={isInactiveTab}
-                    view={view}
-                  >
-                    {p?.developerAllocations?.length !== 0 && (
-                      <SortableContext
-                        id={`project-${p.id}`}
-                        items={
-                          p?.developerAllocations?.map(
-                            (da: any) => `${p.id}-${da.developer.id}`
-                          ) ?? []
-                        }
-                        strategy={rectSortingStrategy}
-                      >
-                        <div className="flex -space-x-2 mb-2 items-center">
-                          {p?.developerAllocations
-                            ?.slice(0, view === "grid" ? 6 : 3)
-                            .map((allocation: any) => {
-                              const isMyChip =
-                                allocation.developer.id === currentUserId;
-                              const canClick = !isDeveloperView || isMyChip;
-                              return (
-                                <DeveloperChip
-                                  key={`project-${p.id}-${allocation.developer.id}`}
-                                  developer={allocation.developer}
-                                  containerId={p.id}
-                                  endDate={allocation.endDate}
-                                  variant="avatar"
-                                  onClick={
-                                    canClick
-                                      ? () =>
-                                          handleDeveloperClick(allocation, p.id)
-                                      : undefined
-                                  }
-                                  disabled={isDeveloperView}
-                                />
-                              );
-                            })}
-                          {p?.developerAllocations?.length >
-                            (view === "grid" ? 6 : 3) && (
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <div className="flex items-center justify-center h-10 w-10 rounded-full border-2 border-white bg-gray-100 text-[10px] font-bold text-gray-600 relative z-10 cursor-default hover:bg-gray-200 transition-colors">
-                                    +
-                                    {p.developerAllocations.length -
-                                      (view === "grid" ? 6 : 3)}
-                                  </div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <div className="space-y-1">
-                                    <p className="font-semibold text-xs border-b pb-1 mb-1">
-                                      Additional Team Members:
-                                    </p>
-                                    {p.developerAllocations
-                                      .slice(view === "grid" ? 6 : 3)
-                                      .map((allocation: any) => {
-                                        const isMyChip =
-                                          allocation.developer.id ===
-                                          currentUserId;
-                                        const canClick =
-                                          !isDeveloperView || isMyChip;
-                                        return (
-                                          <div
-                                            key={allocation.developer.id}
-                                            className={cn(
-                                              "flex flex-col py-1 border-b last:border-0",
-                                              canClick &&
-                                                "cursor-pointer hover:bg-muted/50 rounded px-1 -mx-1"
-                                            )}
-                                            onClick={
-                                              canClick
-                                                ? () =>
-                                                    handleDeveloperClick(
-                                                      allocation,
-                                                      p.id
-                                                    )
-                                                : undefined
-                                            }
-                                          >
-                                            <p className="text-[10px] font-medium text-foreground">
-                                              {allocation.developer.fullName}
-                                            </p>
-                                            <p className="text-[9px] text-muted-foreground">
-                                              {
-                                                allocation.developer?.technology
-                                                  ?.name
+              view === "grid" ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
+                  {projectList?.map((p: any) => (
+                    <ProjectCard
+                      key={p?.id}
+                      project={p}
+                      onStatusChanged={refetch}
+                      isArchiveTab={isInactiveTab}
+                      view={view}
+                    >
+                      {p?.developerAllocations?.length !== 0 && (
+                        <SortableContext
+                          id={`project-${p.id}`}
+                          items={
+                            p?.developerAllocations?.map(
+                              (da: any) => `${p.id}-${da.developer.id}`
+                            ) ?? []
+                          }
+                          strategy={rectSortingStrategy}
+                        >
+                          <div className="flex -space-x-2 mb-2 items-center">
+                            {p?.developerAllocations
+                              ?.slice(0, view === "grid" ? 6 : 3)
+                              .map((allocation: any) => {
+                                const isMyChip =
+                                  allocation.developer.id === currentUserId;
+                                const canClick = !isDeveloperView || isMyChip;
+                                return (
+                                  <DeveloperChip
+                                    key={`project-${p.id}-${allocation.developer.id}`}
+                                    developer={allocation.developer}
+                                    containerId={p.id}
+                                    endDate={allocation.endDate}
+                                    variant="avatar"
+                                    onClick={
+                                      canClick
+                                        ? () =>
+                                            handleDeveloperClick(
+                                              allocation,
+                                              p.id
+                                            )
+                                        : undefined
+                                    }
+                                    disabled={isDeveloperView}
+                                  />
+                                );
+                              })}
+                            {p?.developerAllocations?.length >
+                              (view === "grid" ? 6 : 3) && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="flex items-center justify-center h-10 w-10 rounded-full border-2 border-white bg-gray-100 text-[10px] font-bold text-gray-600 relative z-10 cursor-default hover:bg-gray-200 transition-colors">
+                                      +
+                                      {p.developerAllocations.length -
+                                        (view === "grid" ? 6 : 3)}
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <div className="space-y-1">
+                                      <p className="font-semibold text-xs border-b pb-1 mb-1">
+                                        Additional Team Members:
+                                      </p>
+                                      {p.developerAllocations
+                                        .slice(view === "grid" ? 6 : 3)
+                                        .map((allocation: any) => {
+                                          const isMyChip =
+                                            allocation.developer.id ===
+                                            currentUserId;
+                                          const canClick =
+                                            !isDeveloperView || isMyChip;
+                                          return (
+                                            <div
+                                              key={allocation.developer.id}
+                                              className={cn(
+                                                "flex flex-col py-1 border-b last:border-0",
+                                                canClick &&
+                                                  "cursor-pointer hover:bg-muted/50 rounded px-1 -mx-1"
+                                              )}
+                                              onClick={
+                                                canClick
+                                                  ? () =>
+                                                      handleDeveloperClick(
+                                                        allocation,
+                                                        p.id
+                                                      )
+                                                  : undefined
                                               }
-                                            </p>
-                                          </div>
-                                        );
-                                      })}
-                                  </div>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          )}
-                        </div>
-                      </SortableContext>
-                    )}
-                  </ProjectCard>
-                ))}
-              </div>
+                                            >
+                                              <p className="text-[10px] font-medium text-foreground">
+                                                {allocation.developer.fullName}
+                                              </p>
+                                              <p className="text-[9px] text-muted-foreground">
+                                                {
+                                                  allocation.developer
+                                                    ?.technology?.name
+                                                }
+                                              </p>
+                                            </div>
+                                          );
+                                        })}
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
+                          </div>
+                        </SortableContext>
+                      )}
+                    </ProjectCard>
+                  ))}
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <div className="min-w-[860px] flex flex-col gap-0 border rounded-lg bg-white overflow-hidden">
+                    <div className="flex items-center gap-4 px-6 py-3 bg-gray-50 border-b text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                      <div className="w-1 shrink-0" />
+                      <div className="flex-1 min-w-0">Project</div>
+
+                      <div className="w-32 shrink-0 text-center">Status</div>
+
+                      <div className="w-48 shrink-0">Progress</div>
+
+                      <div className="w-28 shrink-0">Deadline</div>
+                      <div className="w-24 shrink-0">Team</div>
+                      <div className="w-[64px] shrink-0 text-right pr-4">
+                        Actions
+                      </div>
+                    </div>
+                    {projectList?.map((p: any) => (
+                      <ProjectCard
+                        key={p?.id}
+                        project={p}
+                        onStatusChanged={refetch}
+                        isArchiveTab={isInactiveTab}
+                        view={view}
+                      >
+                        {p?.developerAllocations?.length !== 0 && (
+                          <SortableContext
+                            id={`project-${p.id}`}
+                            items={
+                              p?.developerAllocations?.map(
+                                (da: any) => `${p.id}-${da.developer.id}`
+                              ) ?? []
+                            }
+                            strategy={rectSortingStrategy}
+                          >
+                            <div className="flex -space-x-2 mb-2 items-center">
+                              {p?.developerAllocations
+                                ?.slice(0, 3)
+                                .map((allocation: any) => {
+                                  const isMyChip =
+                                    allocation.developer.id === currentUserId;
+                                  const canClick = !isDeveloperView || isMyChip;
+                                  return (
+                                    <DeveloperChip
+                                      key={`project-${p.id}-${allocation.developer.id}`}
+                                      developer={allocation.developer}
+                                      containerId={p.id}
+                                      endDate={allocation.endDate}
+                                      variant="avatar"
+                                      onClick={
+                                        canClick
+                                          ? () =>
+                                              handleDeveloperClick(
+                                                allocation,
+                                                p.id
+                                              )
+                                          : undefined
+                                      }
+                                      disabled={isDeveloperView}
+                                    />
+                                  );
+                                })}
+                              {p?.developerAllocations?.length > 3 && (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <div className="flex items-center justify-center h-10 w-10 rounded-full border-2 border-white bg-gray-100 text-[10px] font-bold text-gray-600 relative z-10 cursor-default hover:bg-gray-200 transition-colors">
+                                        +{p.developerAllocations.length - 3}
+                                      </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <div className="space-y-1">
+                                        <p className="font-semibold text-xs border-b pb-1 mb-1">
+                                          Additional Team Members:
+                                        </p>
+                                        {p.developerAllocations
+                                          .slice(3)
+                                          .map((allocation: any) => {
+                                            const isMyChip =
+                                              allocation.developer.id ===
+                                              currentUserId;
+                                            const canClick =
+                                              !isDeveloperView || isMyChip;
+                                            return (
+                                              <div
+                                                key={allocation.developer.id}
+                                                className={cn(
+                                                  "flex flex-col py-1 border-b last:border-0",
+                                                  canClick &&
+                                                    "cursor-pointer hover:bg-muted/50 rounded px-1 -mx-1"
+                                                )}
+                                                onClick={
+                                                  canClick
+                                                    ? () =>
+                                                        handleDeveloperClick(
+                                                          allocation,
+                                                          p.id
+                                                        )
+                                                    : undefined
+                                                }
+                                              >
+                                                <p className="text-[10px] font-medium text-foreground">
+                                                  {
+                                                    allocation.developer
+                                                      .fullName
+                                                  }
+                                                </p>
+                                                <p className="text-[9px] text-muted-foreground">
+                                                  {
+                                                    allocation.developer
+                                                      ?.technology?.name
+                                                  }
+                                                </p>
+                                              </div>
+                                            );
+                                          })}
+                                      </div>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              )}
+                            </div>
+                          </SortableContext>
+                        )}
+                      </ProjectCard>
+                    ))}
+                  </div>
+                </div>
+              )
             ) : (
               <div className="flex flex-col items-center justify-center py-10 text-center border border-dashed rounded-lg">
                 <h3 className="text-lg font-semibold text-muted-foreground">
@@ -760,7 +871,7 @@ const ProjectPage = ({
                   <Input
                     value={searchTech}
                     onChange={(e) => setSearchTech(e.target.value)}
-                    placeholder="Search developers..."
+                    placeholder="Search Developers..."
                     className="w-full h-10"
                   />
 
@@ -769,7 +880,7 @@ const ProjectPage = ({
                     selected={selectedTech}
                     onChange={setSelectedTech}
                     loading={techLoading}
-                    placeholder="Filter by technology..."
+                    placeholder="Filter by Technology..."
                     className="w-full"
                   />
                 </CardHeader>

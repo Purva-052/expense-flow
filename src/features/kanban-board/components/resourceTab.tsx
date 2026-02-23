@@ -266,106 +266,104 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
     >
-      <GlobalFilterSection filters={headingFilter} />
-      {isLoading ? (
-        <div className="flex flex-col justify-center items-center py-10 gap-3 h-full">
-          <div className="w-10 h-10 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
-          <span className="text-sm text-muted-foreground">Loading ...</span>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-4">
-          {!isProjectHandler &&
-          selectedTech.length === 0 &&
-          selectedSkill.length === 0 &&
-          !resourceSearch ? (
-            <div className="flex flex-col items-center justify-center py-10 text-center border border-dashed rounded-lg mt-4">
-              <div className="mb-3 p-3 rounded-full bg-muted">
-                <Users className="h-10 w-10 text-muted-foreground/70" />
+      <div className="flex-1 min-h-0 flex flex-col gap-4">
+        <GlobalFilterSection filters={headingFilter} />
+        {isLoading ? (
+          <div className="flex flex-col justify-center items-center py-10 gap-3 flex-1 min-h-0">
+            <div className="w-10 h-10 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
+            <span className="text-sm text-muted-foreground">Loading ...</span>
+          </div>
+        ) : (
+          <div className="flex-1 min-h-0 flex flex-col gap-4">
+            {!isProjectHandler &&
+            selectedTech.length === 0 &&
+            selectedSkill.length === 0 &&
+            !resourceSearch ? (
+              <div className="flex flex-col items-center justify-center py-10 text-center border border-dashed rounded-lg mt-4">
+                <div className="mb-3 p-3 rounded-full bg-muted">
+                  <Users className="h-10 w-10 text-muted-foreground/70" />
+                </div>
+                <h3 className="text-lg font-semibold text-muted-foreground">
+                  Please select a technology
+                </h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Choose a technology from the dropdown to view available
+                  resources.
+                </p>
               </div>
-              <h3 className="text-lg font-semibold text-muted-foreground">
-                Please select a technology
-              </h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Choose a technology from the dropdown to view available
-                resources.
-              </p>
-            </div>
-          ) : filteredUserDetails?.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_320px] gap-4">
-              {/* Developer List */}
-              <div className="space-y-4 max-h-[72dvh] overflow-auto [scrollbar-gutter:stable] p-2">
-                {userDetails.map((dev: any) => (
-                  <ResourceCard
-                    key={dev.id}
-                    developer={dev}
-                    isProjectHandler={isProjectHandler}
-                  />
-                ))}
-              </div>
+            ) : filteredUserDetails?.length > 0 ? (
+              <div className="flex-1 min-h-0 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+                <div className="min-h-[18rem] lg:min-h-0 lg:h-full space-y-4 overflow-y-auto [scrollbar-gutter:stable] p-2">
+                  {userDetails.map((dev: any) => (
+                    <ResourceCard
+                      key={dev.id}
+                      developer={dev}
+                      isProjectHandler={isProjectHandler}
+                    />
+                  ))}
+                </div>
 
-              {/* Project List Sidebar */}
-              {/* {!isProjectHandler && ( */}
-              <aside className="top-4 h-fit">
-                <Card className="gap-0!">
-                  <CardHeader className="ps-2!">
-                    <CardTitle className="w-full text-balance flex items-center justify-between ps-2">
-                      Project List
-                    </CardTitle>
-                    <GlobalFilterSection filters={projectFilters} />
-                  </CardHeader>
-                  <CardContent className="max-h-[62dvh] overflow-auto [scrollbar-gutter:stable] p-2 space-y-2">
-                    {projectListLoading ? (
-                      <div className="flex flex-col justify-center items-center py-10 gap-3">
-                        <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
-                        <span className="text-sm text-muted-foreground">
-                          Loading Projects...
-                        </span>
-                      </div>
-                    ) : projectList?.length > 0 ? (
-                      projectList.map((project: any) => (
-                        <DraggableProjectChip
-                          key={`draggable-${project?.id}`}
-                          project={project}
-                        />
-                      ))
-                    ) : (
-                      <div className="flex flex-col items-center justify-center py-10 text-center transition-all duration-300 hover:bg-muted/30">
-                        <div className="mb-3 p-3 rounded-full bg-muted">
-                          <Users className="h-8 w-8 text-muted-foreground/70" />
+                <aside className="min-h-[18rem] lg:min-h-0 lg:h-full overflow-hidden">
+                  <Card className="h-full gap-0! flex flex-col overflow-hidden">
+                    <CardHeader className="ps-2! flex-none">
+                      <CardTitle className="w-full text-balance flex items-center justify-between ps-2">
+                        Project List
+                      </CardTitle>
+                      <GlobalFilterSection filters={projectFilters} />
+                    </CardHeader>
+                    <CardContent className="flex-1 min-h-0 overflow-y-auto [scrollbar-gutter:stable] p-2 space-y-2">
+                      {projectListLoading ? (
+                        <div className="flex flex-col justify-center items-center py-10 gap-3">
+                          <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
+                          <span className="text-sm text-muted-foreground">
+                            Loading Projects...
+                          </span>
                         </div>
-                        <h3 className="text-lg font-semibold text-muted-foreground">
-                          No projects found
-                        </h3>
-                        <p className="text-sm text-muted-foreground/70 mt-1">
-                          There are currently no projects to display.
-                        </p>
-                      </div>
-                    )}
-                    <div ref={loadMoreRef} className="h-2" />
-                    {isFetchingNextPage && (
-                      <div className="flex justify-center items-center py-4">
-                        <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </aside>
-              {/* )} */}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-10 text-center border border-dashed rounded-lg mt-4">
-              <h3 className="text-lg font-semibold text-muted-foreground">
-                {isProjectHandler ? "No Handler found" : "No resources found"}
-              </h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                {isProjectHandler
-                  ? "There are no Handlers available"
-                  : "There are no developers available for the selected technology."}
-              </p>
-            </div>
-          )}
-        </div>
-      )}
+                      ) : projectList?.length > 0 ? (
+                        projectList.map((project: any) => (
+                          <DraggableProjectChip
+                            key={`draggable-${project?.id}`}
+                            project={project}
+                          />
+                        ))
+                      ) : (
+                        <div className="flex flex-col items-center justify-center py-10 text-center transition-all duration-300 hover:bg-muted/30">
+                          <div className="mb-3 p-3 rounded-full bg-muted">
+                            <Users className="h-8 w-8 text-muted-foreground/70" />
+                          </div>
+                          <h3 className="text-lg font-semibold text-muted-foreground">
+                            No projects found
+                          </h3>
+                          <p className="text-sm text-muted-foreground/70 mt-1">
+                            There are currently no projects to display.
+                          </p>
+                        </div>
+                      )}
+                      <div ref={loadMoreRef} className="h-2" />
+                      {isFetchingNextPage && (
+                        <div className="flex justify-center items-center py-4">
+                          <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </aside>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-10 text-center border border-dashed rounded-lg mt-4">
+                <h3 className="text-lg font-semibold text-muted-foreground">
+                  {isProjectHandler ? "No Handler found" : "No resources found"}
+                </h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {isProjectHandler
+                    ? "There are no Handlers available"
+                    : "There are no developers available for the selected technology."}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
       <DragOverlay dropAnimation={null}>
         {activeProject ? <ProjectChip project={activeProject} /> : null}
       </DragOverlay>

@@ -383,7 +383,7 @@ export function ProjectCard({
     <div
       ref={setNodeRef}
       className={cn(
-        "bg-white border-b hover:bg-gray-50 transition-colors py-4 px-6 relative group flex items-center gap-4",
+        "min-w-[860px] bg-white border-b hover:bg-gray-50 transition-colors py-4 px-6 relative group flex items-center gap-4",
         isOver && "bg-primary/5"
       )}
     >
@@ -407,10 +407,35 @@ export function ProjectCard({
             onClick={handlePinToggle}
           />
         </div>
+        {/* <div className="py-2"> */}
         <p className="text-[11px] text-muted-foreground truncate font-medium">
           Client : {clientName}
         </p>
+        <p className="text-[11px] text-muted-foreground truncate font-medium">
+          Coordinator : {coordinatorName}
+        </p>
+        {/* </div> */}
       </div>
+
+      {/* <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <h3
+            className="text-sm font-bold text-gray-900 truncate cursor-pointer hover:text-primary transition-colors"
+            onClick={() => setOpenDrawer(true)}
+          >
+            {title}
+          </h3>
+          <Pin
+            className={cn(
+              "h-3.5 w-3.5 cursor-pointer transition-colors hover:text-primary",
+              project?.isPinned
+                ? "fill-primary text-primary"
+                : "text-muted-foreground"
+            )}
+            onClick={handlePinToggle}
+          />
+        </div>
+      </div> */}
 
       <div className="w-32 shrink-0 text-center">
         <div

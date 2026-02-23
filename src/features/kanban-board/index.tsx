@@ -111,7 +111,7 @@ const ProjectBoard = () => {
       {/* {userRole === roles.BDE ? (
         <InquiryPage />
       ) : ( */}
-      <Main className="h-screen overflow-hidden  flex flex-col bg-[#f9fafb]">
+      <Main className="h-[100dvh] min-h-0 overflow-hidden flex flex-col bg-[#f9fafb]">
         <div className="flex-1 min-h-0 flex flex-col gap-4">
           {userRole === roles.DEVELOPER ? (
             <Tabs
@@ -132,17 +132,18 @@ const ProjectBoard = () => {
             >
               {/* Tab Headers */}
 
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <TabsList className="flex flex-wrap bg-[#fdebef] rounded-full h-auto">
-                  <TabsTrigger
-                    value="project_details"
-                    className={tabTriggerClass}
-                  >
-                    {userRole === roles.BDE ? "Dashboard" : "Projects"}
-                    {activeProjectCount !== null && (
-                      <Badge className="ml-1">{activeProjectCount}</Badge>
-                    )}
-                  </TabsTrigger>
+              <div className="flex flex-wrap items-start justify-between gap-3 min-w-0">
+                <div className="min-w-0 max-w-full overflow-x-auto">
+                  <TabsList className="flex w-max min-w-max flex-nowrap bg-[#fdebef] rounded-full h-auto">
+                    <TabsTrigger
+                      value="project_details"
+                      className={tabTriggerClass}
+                    >
+                      {userRole === roles.BDE ? "Dashboard" : "Projects"}
+                      {activeProjectCount !== null && (
+                        <Badge className="ml-1">{activeProjectCount}</Badge>
+                      )}
+                    </TabsTrigger>
 
                   {/* <TabsTrigger value="board">
                       Projects{" "}
@@ -150,55 +151,56 @@ const ProjectBoard = () => {
                         <span className="ml-1">({projectCount})</span>
                       )}
                     </TabsTrigger> */}
-                  {userRole !== roles.BDE && (
-                    <TabsTrigger value="resources" className={tabTriggerClass}>
-                      Resources
-                    </TabsTrigger>
-                  )}
-                  {userRole !== roles.BDE && (
-                    <TabsTrigger
-                      value="Project Coordinator"
-                      className={tabTriggerClass}
-                    >
-                      Project Coordinator
-                    </TabsTrigger>
-                  )}
-                  {userRole !== roles.BDE && (
-                    <TabsTrigger
-                      value="Archive Projects"
-                      className={tabTriggerClass}
-                    >
-                      Archive Projects
-                      {archiveProjectCount !== null && (
-                        <Badge className="ml-1">{archiveProjectCount}</Badge>
-                      )}
-                    </TabsTrigger>
-                  )}
-                  {userRole !== roles.BDE && (
-                    <TabsTrigger
-                      value="Certificates"
-                      className={tabTriggerClass}
-                    >
-                      Certificates
-                      {certificateCount !== null && (
-                        <Badge className="ml-1">{certificateCount}</Badge>
-                      )}
-                    </TabsTrigger>
-                  )}
-                  {(userId === 1 || userRole === roles.BDE) && (
-                    <TabsTrigger value="inquiry" className={tabTriggerClass}>
-                      Inquiries
-                    </TabsTrigger>
-                  )}
-                  {userId === 1 && (
-                    <TabsTrigger
-                      value="Archive inquiry"
-                      className={tabTriggerClass}
-                    >
-                      Archive Inquiries
-                    </TabsTrigger>
-                  )}
-                </TabsList>
+                    {userRole !== roles.BDE && (
+                      <TabsTrigger value="resources" className={tabTriggerClass}>
+                        Resources
+                      </TabsTrigger>
+                    )}
+                    {userRole !== roles.BDE && (
+                      <TabsTrigger
+                        value="Project Coordinator"
+                        className={tabTriggerClass}
+                      >
+                        Project Coordinator
+                      </TabsTrigger>
+                    )}
+                    {userRole !== roles.BDE && (
+                      <TabsTrigger
+                        value="Archive Projects"
+                        className={tabTriggerClass}
+                      >
+                        Archive Projects
+                        {archiveProjectCount !== null && (
+                          <Badge className="ml-1">{archiveProjectCount}</Badge>
+                        )}
+                      </TabsTrigger>
+                    )}
+                    {userRole !== roles.BDE && (
+                      <TabsTrigger
+                        value="Certificates"
+                        className={tabTriggerClass}
+                      >
+                        Certificates
+                        {certificateCount !== null && (
+                          <Badge className="ml-1">{certificateCount}</Badge>
+                        )}
+                      </TabsTrigger>
+                    )}
+                    {(userId === 1 || userRole === roles.BDE) && (
+                      <TabsTrigger value="inquiry" className={tabTriggerClass}>
+                        Inquiries
+                      </TabsTrigger>
+                    )}
+                    {userId === 1 && (
+                      <TabsTrigger
+                        value="Archive inquiry"
+                        className={tabTriggerClass}
+                      >
+                        Archive Inquiries
+                      </TabsTrigger>
+                    )}
+                  </TabsList>
+                </div>
 
                 {activeTab === "project_details" && userRole !== roles.BDE && (
                   <TablePageHeader
@@ -226,7 +228,7 @@ const ProjectBoard = () => {
               <TabsContent value="project_details" className="flex-1 min-h-0 flex flex-col">
                 <ProjectPage onTotalCountChange={setActiveProjectCount} />
               </TabsContent>
-              <TabsContent value="board">
+              <TabsContent value="board" className="flex-1 min-h-0 flex flex-col">
                 <Board
                   technologies={technologies}
                   techLoading={techLoading}
@@ -236,7 +238,7 @@ const ProjectBoard = () => {
               </TabsContent>
 
               {/* Resources Tab */}
-              <TabsContent value="resources">
+              <TabsContent value="resources" className="flex-1 min-h-0 flex flex-col">
                 <ResourceTab
                   technologies={technologies}
                   techLoading={techLoading}
@@ -244,7 +246,7 @@ const ProjectBoard = () => {
                 />
               </TabsContent>
 
-              <TabsContent value="Project Coordinator">
+              <TabsContent value="Project Coordinator" className="flex-1 min-h-0 flex flex-col">
                 <ResourceTab
                   technologies={technologies}
                   techLoading={techLoading}
@@ -258,16 +260,16 @@ const ProjectBoard = () => {
                   onTotalCountChange={setArchiveProjectCount}
                 />
               </TabsContent>
-              <TabsContent value="Certificates">
+              <TabsContent value="Certificates" className="flex-1 min-h-0 flex flex-col">
                 <CertificateTab />
               </TabsContent>
               {userId === 1 || userRole === roles.BDE ? (
-                <TabsContent value="inquiry">
+                <TabsContent value="inquiry" className="flex-1 min-h-0 flex flex-col">
                   {userRole === roles.BDE ? <InquiryPage /> : <InquiryTab />}
                 </TabsContent>
               ) : null}
               {userId === 1 && (
-                <TabsContent value="Archive inquiry">
+                <TabsContent value="Archive inquiry" className="flex-1 min-h-0 flex flex-col">
                   <InquiryTab activeTab={activeTab} />
                 </TabsContent>
               )}
