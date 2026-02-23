@@ -25,9 +25,19 @@ const baseUserSchema = z.object({
   careerStartDate: z.any().refine((val) => !isNaN(Date.parse(val)), {
     message: "Invalid date format.",
   }),
-  dateOfBirth: z.any().refine((val) => !isNaN(Date.parse(val)), {
-    message: "Invalid date format.",
-  }),
+  dateOfBirth: z
+    .string()
+    .nullable()
+    .optional()
+    .refine(
+      (val) => {
+        if (!val) return true; // allow empty/null
+        return !isNaN(Date.parse(val));
+      },
+      {
+        message: "Invalid date format.",
+      }
+    ),
   status: z.boolean(),
   joining: z.boolean(),
   currentWorkingProjectId: z.any().optional(),
