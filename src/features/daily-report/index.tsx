@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import PageLayout from "@/components/layout/layout-provider";
 import { GlobalTable } from "@/components/table/global-table";
 import GlobalFilterSection from "@/components/table/global-table-filter";
@@ -26,6 +27,8 @@ import { ReportsStatsDialog } from "./components/reports-stats-dialog";
 import { Clock, AlertCircle, CalendarDays } from "lucide-react";
 
 export default function DailyReportPage() {
+  const navigate = useNavigate();
+  const search = useSearch({ from: "/_authenticated/daily-report/" });
   const { user } = useAuthStore();
   const [listParams, setListParams] = useState({
     pageSize: 10,
@@ -49,6 +52,17 @@ export default function DailyReportPage() {
     "pending" | "incomplete" | "holiday" | null
   >(null);
   const [statsOpen, setStatsOpen] = useState(false);
+
+  useEffect(() => {
+    if (!search.openPendingReports) return;
+    setReportType("pending");
+    setStatsOpen(true);
+    navigate({
+      to: "/daily-report",
+      search: (prev) => ({ ...prev, openPendingReports: false }),
+      replace: true,
+    });
+  }, [search.openPendingReports, navigate]);
 
   const queryClient = useQueryClient();
   const { mutate: deleteReport, isPending: isDeleting } = useDeleteDailyReport(

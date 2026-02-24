@@ -42,7 +42,8 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
   // const { user } = useAuthStore();
   // const Role = user?.user?.role;
   // const isDeveloperView = Role === roles.DEVELOPER;
-  const { data: projectDetailsResponse } = useGetProjectsDetailData(
+  const { data: projectDetailsResponse, refetch: refetchProjectDetails } =
+    useGetProjectsDetailData(
     projectId?.toString()
   );
   const project = (projectDetailsResponse as any)?.data;
@@ -154,7 +155,10 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
             ) : (
               <>
                 <TabsContent value="overview">
-                  <OverviewProject projectId={projectId} />
+                  <OverviewProject
+                    projectId={projectId}
+                    onProjectUpdated={refetchProjectDetails}
+                  />
                 </TabsContent>
 
                 <TabsContent value="milestone">

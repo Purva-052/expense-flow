@@ -55,7 +55,6 @@ export const ReactBigCalendar = ({
   const [hoveredEvent, setHoveredEvent] = useState<string | null>(null);
   const user = useAuthStore((state) => state.user);
   const isAdmin = user?.user?.role === roles.ADMIN;
-  console.log("isAdmin", isAdmin);  
   const now = useMemo(() => new Date(), []);
 
   const calendarEvents = useMemo(() => {

@@ -81,7 +81,13 @@ const statusColorMap: any = {
   completed: "bg-emerald-100 text-emerald-700",
 };
 
-const OverviewProject = ({ projectId }: { projectId?: any }) => {
+const OverviewProject = ({
+  projectId,
+  onProjectUpdated,
+}: {
+  projectId?: any;
+  onProjectUpdated?: () => Promise<unknown> | unknown;
+}) => {
   const {
     data: projectDetailsResponse,
     isLoading,
@@ -112,6 +118,11 @@ const OverviewProject = ({ projectId }: { projectId?: any }) => {
   // );
 
   const project = (projectDetailsResponse as any)?.data;
+
+  const handleAfterDeveloperChange = () => {
+    refetchProjectDetails();
+    onProjectUpdated?.();
+  };
 
   if (isLoading) {
     return (
@@ -437,7 +448,7 @@ const OverviewProject = ({ projectId }: { projectId?: any }) => {
         projectId={projectId?.toString()}
         open={isDeveloperDialogOpen}
         onOpenChange={setIsDeveloperDialogOpen}
-        afterChange={() => refetchProjectDetails()}
+        afterChange={handleAfterDeveloperChange}
         refetchAvailableDevelopers={() => {}}
       />
     </div>

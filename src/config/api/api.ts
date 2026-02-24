@@ -176,6 +176,10 @@ const API = {
     update: "/tools",
     delete: "/tools",
   },
+  notifications: {
+    list: "/daily-reports/my-pending-report-count",
+    // markAsRead: "/notifications/mark-all-read",
+  },
 };
 
 Object.freeze(API);
