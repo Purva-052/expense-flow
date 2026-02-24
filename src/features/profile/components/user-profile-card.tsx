@@ -139,11 +139,11 @@ export const UserProfileCard = ({ user }: { user: any }) => {
   const [editingCertId, setEditingCertId] = useState<number | null>(null);
   const [editingCertName, setEditingCertName] = useState("");
   const [editingCertStatus, setEditingCertStatus] = useState<
-    "in_progress" | "completed"
-  >("in_progress");
+    "preparation" | "completed"
+  >("preparation");
   const [skillType, setSkillType] = useState<"skill" | "learning">("skill");
-  const [status, setStatus] = useState<"in_progress" | "completed">(
-    "in_progress"
+  const [status, setStatus] = useState<"preparation" | "completed">(
+    "preparation"
   );
   const [skillsData, setSkillsData] = useState<any[]>([]);
   const [learningData, setLearningData] = useState<any[]>([]);
@@ -386,7 +386,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
   const handleEditCertificate = (
     certId: number,
     certName: string,
-    certStatus: "in_progress" | "completed" = "in_progress"
+    certStatus: "preparation" | "completed" = "preparation"
   ) => {
     setEditingCertId(certId);
     setEditingCertName(certName);
@@ -406,7 +406,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
       // Clear editing state - data will be refetched automatically
       setEditingCertId(null);
       setEditingCertName("");
-      setEditingCertStatus("in_progress");
+      setEditingCertStatus("preparation");
     } catch (error) {
       console.error("Failed to update certificate", error);
     }
@@ -415,7 +415,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
   const handleCancelEdit = () => {
     setEditingCertId(null);
     setEditingCertName("");
-    setEditingCertStatus("in_progress");
+    setEditingCertStatus("preparation");
   };
 
   const handleDeleteCertificate = async (certId: number) => {
@@ -624,14 +624,14 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                             value={editingCertStatus}
                             onOpenChange={preserveScroll}
                             onValueChange={(
-                              value: "in_progress" | "completed"
+                              value: "preparation" | "completed"
                             ) => setEditingCertStatus(value)}
                           >
                             <SelectTrigger className="h-6 w-[110px] text-xs">
                               <SelectValue placeholder="Status" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="in_progress">
+                              <SelectItem value="preparation">
                                 In Progress
                               </SelectItem>
                               <SelectItem value="completed">
@@ -670,7 +670,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                                 handleEditCertificate(
                                   cert.id,
                                   cert.name,
-                                  cert.status || "in_progress"
+                                  cert.status || "preparation"
                                 )
                               }
                             >
@@ -710,7 +710,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                 <Select
                   value={status}
                   onOpenChange={preserveScroll}
-                  onValueChange={(value: "in_progress" | "completed") =>
+                  onValueChange={(value: "preparation" | "completed") =>
                     setStatus(value)
                   }
                 >
@@ -718,7 +718,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                     <SelectValue placeholder="Select Status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="in_progress">In Progress</SelectItem>
+                    <SelectItem value="preparation">Preparation</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
                   </SelectContent>
                 </Select>

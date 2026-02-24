@@ -41,36 +41,44 @@ const ProjectBoard = () => {
   const { data: technologies, isPending: techLoading } =
     useGetTechnologyDropdownList(null, userRole !== roles.BDE);
 
-  // Get initial filter for handlerId
-  const initialHandlerId = useMemo(() => {
-    if (userRole === roles.DEVELOPER || userRole === roles.BDE)
-      return undefined;
-    const isCoordinatorView =
-      userRole === roles.PROJECT_MANAGER || userRole === roles.TEAM_LEAD;
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem(PROJECT_DETAILS_FILTER_STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.handlerId !== undefined) return parsed.handlerId;
-      }
+  // Keep initial top-badge counts aligned with ProjectPage list filters
+  const initialProjectFilters = useMemo(() => {
+    if (typeof window === "undefined") return {};
+    const saved = localStorage.getItem(PROJECT_DETAILS_FILTER_STORAGE_KEY);
+    if (!saved) return {};
+
+    try {
+      const parsed = JSON.parse(saved);
+      return {
+        clientId: parsed?.clientId ?? undefined,
+        managerId: parsed?.managerId ?? undefined,
+        priority: parsed?.priority ?? undefined,
+      };
+    } catch {
+      return {};
     }
-    return isCoordinatorView ? userId : undefined;
-  }, [userRole, userId]);
+  }, []);
+
+  const commonCountParams = useMemo(
+    () => ({
+      ...initialProjectFilters,
+      page: 1,
+      limit: 1,
+      isPinned: userRole === roles.BDE ? undefined : true,
+    }),
+    [initialProjectFilters, userRole]
+  );
 
   // Fetch active projects count
   const { data: activeProjectsData } = useGetProjectsData({
     status: "active",
-    handlerId: initialHandlerId,
-    page: 1,
-    limit: 1,
+    ...commonCountParams,
   });
 
   // Fetch archive count
   const { data: archiveProjectsData } = useGetProjectsData({
     status: "inactive",
-    handlerId: initialHandlerId,
-    page: 1,
-    limit: 1,
+    ...commonCountParams,
   });
 
   // Update counts when data is fetched

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { CalendarIcon, Clock, Loader2 } from "lucide-react";
+import { AlarmClockPlus, CalendarIcon, Loader2 } from "lucide-react";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { Button } from "@/components/ui/button";
 import {
@@ -190,7 +190,7 @@ export const AddHoursLogDialog = ({
                   disabled={taskStatus === "completed"}
                   className="p-2 rounded-md hover:bg-[#fee2e2] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Clock className="h-5 w-5 text-[#e11d48]" />
+                  <AlarmClockPlus className="h-5 w-5 text-[#e11d48]" />
                 </button>
               </DialogTrigger>
             </TooltipTrigger>
