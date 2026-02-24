@@ -66,3 +66,12 @@ export const getDateRange = (
     return { start, end };
   }
 };
+
+export const formatTime = (value: any) => {
+  if (value === null || value === undefined) return "0:00";
+  const str = String(value);
+  if (str.includes(":")) return str;
+  const num = parseFloat(str);
+  if (isNaN(num)) return "0:00";
+  return num.toFixed(2).replace(".", ":");
+};

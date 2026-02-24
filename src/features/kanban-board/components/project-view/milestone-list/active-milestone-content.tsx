@@ -30,7 +30,6 @@ interface ActiveMilestoneContentProps {
   onViewTaskLog: (task: MilestoneTask) => void;
   onEditMilestone: (data: any) => void;
   isCurrentUserProjectHandler: boolean;
-  tasksFromParent?: MilestoneTask[];
 }
 
 const getReportColumns = (
@@ -137,7 +136,6 @@ export const ActiveMilestoneContent = ({
   onViewTaskLog,
   onEditMilestone,
   isCurrentUserProjectHandler,
-  tasksFromParent = [],
 }: ActiveMilestoneContentProps) => {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
@@ -212,19 +210,23 @@ export const ActiveMilestoneContent = ({
       baseTasks = milestone.data.tasks;
     else if (Array.isArray(milestone)) baseTasks = milestone;
 
-    // Merge weightedHours from parent tasks if not present in baseTasks
+    // Normalize task-level weightage fields from API into weightedHours
     return baseTasks.map((task) => {
-      if (task.weightedHours && task.weightedHours !== "0.00") return task;
+      const taskWithWeightage = task as MilestoneTask & {
+        weightedTime?: string;
+        weightageTime?: string;
+      };
 
-      const parentTask = tasksFromParent.find(
-        (pt) => String(pt.id) === String(task.id)
-      );
-      if (parentTask?.weightedHours) {
-        return { ...task, weightedHours: parentTask.weightedHours };
-      }
-      return task;
+      return {
+        ...task,
+        weightedHours:
+          taskWithWeightage.weightedHours ??
+          taskWithWeightage.weightedTime ??
+          taskWithWeightage.weightageTime ??
+          "0.00",
+      };
     });
-  }, [milestone, tasksFromParent]);
+  }, [milestone]);
 
   const actualMilestone = useMemo<any>(() => {
     let base: any = {};
@@ -232,89 +234,14 @@ export const ActiveMilestoneContent = ({
     else if (milestone?.data?.tasks) base = milestone.data;
     else base = milestone || {};
 
-    // Robust parsing function to handle numbers, "H.MM", "H:MM", and "Xh Ym" formats
-    // Returns total minutes for accurate summation
-    const parseTimeToMinutes = (value: any): number => {
-      if (value === null || value === undefined || value === "") return 0;
-      const str = String(value).trim();
-
-      // Handle "1h 30m" or "2h" or "45m" formats
-      const hourMatch = str.match(/(\d+)\s*h/i);
-      const minMatch = str.match(/(\d+)\s*m/i);
-
-      if (hourMatch || minMatch) {
-        const hours = hourMatch ? parseInt(hourMatch[1], 10) : 0;
-        const mins = minMatch ? parseInt(minMatch[1], 10) : 0;
-        return hours * 60 + mins;
-      }
-
-      // Handle "H:MM" or "H.MM" formats
-      const parts = str.split(/[:.]/);
-      if (parts.length === 2) {
-        const h = parseInt(parts[0], 10) || 0;
-        const m = parseInt(parts[1], 10) || 0;
-        return h * 60 + m;
-      }
-
-      // Default to standard float parsing (treating it as hours)
-      const parsed = parseFloat(str);
-      return isNaN(parsed) ? 0 : Math.round(parsed * 60);
-    };
-
-    const minutesToHHMM = (totalMinutes: number): string => {
-      const h = Math.floor(totalMinutes / 60);
-      const m = Math.round(totalMinutes % 60);
-      return `${h}.${m.toString().padStart(2, "0")}`;
-    };
-
-    // Use a unique key that avoids collisions, especially if IDs are missing
-    const getTaskKey = (t: any) => {
-      const id = t.id ?? t.taskId;
-      if (id) return `id-${id}`;
-      // Fallback to a combination of name and index as a last resort
-      return `name-${t.taskName || "unknown"}`;
-    };
-
-    const mergedTasksMap = new Map<string, any>();
-    // First, add tasks from parent (the full list)
-    tasksFromParent.forEach((t) => {
-      if (!t) return;
-      mergedTasksMap.set(getTaskKey(t), t);
-    });
-
-    // Then, override/add with tasks from the detailed call (which has actualTime/weightedHours)
-    tasks.forEach((t) => {
-      if (!t) return;
-      const key = getTaskKey(t);
-      const existing = mergedTasksMap.get(key);
-      mergedTasksMap.set(key, { ...existing, ...t });
-    });
-
-    const allTasks = Array.from(mergedTasksMap.values());
-
-    // Calculate totals from the merged list ONLY as a fallback
-    const calculatedWeightedHours = minutesToHHMM(
-      allTasks.reduce((acc, t) => acc + parseTimeToMinutes(t.weightedHours), 0)
-    );
-
-    const calculatedActualHours = minutesToHHMM(
-      allTasks.reduce((acc, t) => acc + parseTimeToMinutes(t.actualTime), 0)
-    );
-
-    const calculatedEstimatedHours = minutesToHHMM(
-      allTasks.reduce((acc, t) => acc + parseTimeToMinutes(t.estimatedTime), 0)
-    );
-
     return {
       ...base,
       id: milestoneId,
-      // Prioritize API values if they exist, otherwise use calculated fallbacks
-      estimatedTime: base.estimatedTime ?? calculatedEstimatedHours,
-      actualTime: base.actualTime ?? calculatedActualHours,
-      weightedHours:
-        base.weightedTime ?? base.weightedHours ?? calculatedWeightedHours,
+      estimatedTime: base.estimatedTime || "0.00",
+      actualTime: base.actualTime || "0.00",
+      weightedHours: base.weightedTime || base.weightageTime || "0.00",
     };
-  }, [milestone, milestoneId, tasks, tasksFromParent]);
+  }, [milestone, milestoneId]);
 
   if (isLoading) {
     return (
@@ -356,8 +283,9 @@ export const ActiveMilestoneContent = ({
               <p className="text-sm text-muted-foreground">
                 Total Estimated Hours
               </p>
-              <p className="text-2xl font-semibold tracking-tight">
-                ({formatTime(actualMilestone?.estimatedTime)})
+              {" - "}
+              <p className="text-[20px] font-semibold tracking-tight">
+                {formatTime(actualMilestone?.estimatedTime)}
               </p>
             </div>
           </div>
@@ -368,8 +296,9 @@ export const ActiveMilestoneContent = ({
               <p className="text-sm text-muted-foreground">
                 Total Actual Hours
               </p>
-              <p className="text-2xl font-semibold tracking-tight">
-                ({formatTime(actualMilestone?.actualTime)})
+              {" - "}
+              <p className="text-[20px] font-semibold tracking-tight">
+                {formatTime(actualMilestone?.actualTime)}
               </p>
             </div>
           </div>
@@ -380,8 +309,9 @@ export const ActiveMilestoneContent = ({
               <p className="text-sm text-muted-foreground">
                 Total Weightage Hours
               </p>
-              <p className="text-2xl font-semibold tracking-tight">
-                ({formatTime(actualMilestone?.weightedHours)})
+              {" - "}
+              <p className="text-[20px] font-semibold tracking-tight">
+                {formatTime(actualMilestone?.weightedHours)}
               </p>
             </div>
           </div>

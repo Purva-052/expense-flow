@@ -48,11 +48,19 @@ const convertTimeToDecimal = (timeStr: string): number => {
   return 0;
 };
 
+const parseHoursValue = (value: unknown): number => {
+  if (value === null || value === undefined) return 0;
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+  if (typeof value === "string") return convertTimeToDecimal(value);
+  return 0;
+};
+
 interface HoursLogsProps {
   projectId?: string | number;
   milestoneId?: string | number;
   taskId?: string | number;
   onTotalHoursChange?: (hours: number) => void;
+  onWeightageHoursChange?: (hours: number) => void;
 }
 
 const HoursLogs = ({
@@ -60,6 +68,7 @@ const HoursLogs = ({
   milestoneId,
   taskId,
   onTotalHoursChange,
+  onWeightageHoursChange,
 }: HoursLogsProps) => {
   const user = useAuthStore((state) => state.user);
   const [searchTerm, setSearchTerm] = useState("");
@@ -118,18 +127,31 @@ const HoursLogs = ({
 
   const metadata = logsResponse?.metadata;
 
-  // Calculate total hours by converting each timeSpent value from HH:MM to decimal
-  const totalHours = useMemo(() => {
-    if (!logs || logs.length === 0) return 0;
-    return logs.reduce((sum: any, log: any) => {
-      const decimalHours = convertTimeToDecimal(log.timeSpent);
-      return sum + decimalHours;
-    }, 0);
-  }, [logs]);
+  const totalHoursRaw =
+    logsResponse?.data?.totalHours ?? logsResponse?.data?.[" totalHours"];
+  const totalWeightageHoursRaw =
+    logsResponse?.data?.totalWeightageHours ??
+    logsResponse?.data?.[" totalWeightageHours"];
 
-  useMemo(() => {
+  const totalHours = useMemo(
+    () => parseHoursValue(totalHoursRaw),
+    [totalHoursRaw]
+  );
+
+  const totalWeightageHours = useMemo(
+    () => parseHoursValue(totalWeightageHoursRaw),
+    [totalWeightageHoursRaw]
+  );
+
+  useEffect(() => {
     onTotalHoursChange?.(totalHours);
-  }, [totalHours, onTotalHoursChange]);
+    onWeightageHoursChange?.(totalWeightageHours);
+  }, [
+    totalHours,
+    totalWeightageHours,
+    onTotalHoursChange,
+    onWeightageHoursChange,
+  ]);
 
   const userOptions = useMemo(() => {
     const options =
@@ -197,7 +219,7 @@ const HoursLogs = ({
         header: "Weightage Hours",
         cell: ({ row }) => (
           <span className="font-semibold text-green-600">
-            {convertTimeToDecimal(row.original.weightageHours)
+            {convertTimeToDecimal(row.original.weightageTime)
               .toFixed(2)
               .replace(".", ":")}
           </span>

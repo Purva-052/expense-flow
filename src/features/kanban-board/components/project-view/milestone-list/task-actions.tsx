@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Eye, Trash2, Clock } from "lucide-react";
+import { Check, Eye, Trash2, ClockPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
@@ -69,7 +69,7 @@ export const TaskActions = ({
                 });
               }}
             >
-              <Clock className="h-5 w-5 text-[#e11d48]" />
+              <ClockPlus className="h-5 w-5 text-[#e11d48]" />
             </button>
           </TooltipTrigger>
           <TooltipContent side="top">

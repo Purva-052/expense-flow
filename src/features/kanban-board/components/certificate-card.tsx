@@ -112,7 +112,7 @@ export const CertificateCard = ({ user }: { user: any }) => {
                     <span
                       className={cn(
                         "text-[11px] px-2 py-0.5 rounded-full font-medium capitalize shrink-0",
-                        cert.status === "in_progress"
+                        cert.status === "preparation"
                           ? "bg-yellow-100 text-yellow-700"
                           : "bg-green-100 text-green-700"
                       )}
