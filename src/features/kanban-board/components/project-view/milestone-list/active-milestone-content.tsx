@@ -89,11 +89,11 @@ const getReportColumns = (
       ),
     },
     {
-      accessorKey: "weightedHours",
+      accessorKey: "weightageHours",
       header: "Weightage Hours (hrs)",
       cell: ({ row }) => (
         <span className="font-semibold text-blue-600">
-          {formatTime(row.original.weightedHours)}
+          {formatTime(row.original.weightageHours)}
         </span>
       ),
     },
@@ -210,18 +210,18 @@ export const ActiveMilestoneContent = ({
       baseTasks = milestone.data.tasks;
     else if (Array.isArray(milestone)) baseTasks = milestone;
 
-    // Normalize task-level weightage fields from API into weightedHours
+    // Normalize task-level weightage fields from API into weightageHours
     return baseTasks.map((task) => {
       const taskWithWeightage = task as MilestoneTask & {
-        weightedTime?: string;
+        weightageHours?: string;
         weightageTime?: string;
       };
 
       return {
         ...task,
-        weightedHours:
-          taskWithWeightage.weightedHours ??
-          taskWithWeightage.weightedTime ??
+        weightageHours:
+          taskWithWeightage.weightageHours ??
+          taskWithWeightage.weightageHours ??
           taskWithWeightage.weightageTime ??
           "0.00",
       };
@@ -239,7 +239,7 @@ export const ActiveMilestoneContent = ({
       id: milestoneId,
       estimatedTime: base.estimatedTime || "0.00",
       actualTime: base.actualTime || "0.00",
-      weightedHours: base.weightedTime || base.weightageTime || "0.00",
+      weightageHours: base.weightageHours || base.weightageTime || "0.00",
     };
   }, [milestone, milestoneId]);
 
@@ -311,7 +311,7 @@ export const ActiveMilestoneContent = ({
               </p>
               {" - "}
               <p className="text-[20px] font-semibold tracking-tight">
-                {formatTime(actualMilestone?.weightedHours)}
+                {formatTime(actualMilestone?.weightageHours)}
               </p>
             </div>
           </div>

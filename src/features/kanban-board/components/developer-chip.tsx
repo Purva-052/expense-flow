@@ -98,7 +98,16 @@ export function DeveloperChip({
     disabled,
   });
 
-  const daysRemaining = getDaysRemaining(endDate);
+  const endingAllocations = Array.isArray(developer?.endingAllocations)
+    ? developer.endingAllocations
+    : [];
+  const apiDaysRemainingValues = endingAllocations
+    .map((allocation: any) => allocation?.daysRemaining)
+    .filter((days: any) => typeof days === "number" && days >= 0);
+  const daysRemaining =
+    apiDaysRemainingValues.length > 0
+      ? Math.min(...apiDaysRemainingValues)
+      : getDaysRemaining(endDate);
   const showReleaseWarning = daysRemaining !== null && daysRemaining <= 5;
 
   const getReleaseText = (): React.ReactNode => {
@@ -214,15 +223,28 @@ export function DeveloperChip({
                       {truncateName(developer.fullName, 10)}
                     </span>
 
-                    {showReleaseWarning && (
-                      <div className="flex items-center gap-1 text-orange-600 dark:text-orange-400 text-xs font-semibold animate-pulse shrink-0">
-                        <Clock className="h-3 w-3" />
-                        <span>{getReleaseText()}</span>
-                      </div>
-                    )}
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          {/* <Info
+                            className="h-4 w-4 cursor-pointer text-muted-foreground"
+                            onClick={handleViewTimeline} */}
+                          {showReleaseWarning && (
+                            <div className="flex items-center gap-1 text-orange-600 dark:text-orange-400 text-sm font-semibold animate-pulse shrink-0">
+                              <Clock className="h-4 w-4" />
+                              {/* <span>{getReleaseText()}</span> */}
+                            </div>
+                          )}
+                          {/* /> */}
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="text-sm">
+                          Available for new projects in {getReleaseText()} days.
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
 
                     {experience && (
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-muted-foreground text-center">
                         {experience}
                       </span>
                     )}
