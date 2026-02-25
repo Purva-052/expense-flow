@@ -127,7 +127,10 @@ const ProjectBoard = () => {
               onValueChange={setActiveTab}
               className="flex-1 min-h-0 "
             >
-              <TabsContent value="project_details" className="flex-1 min-h-0 flex flex-col">
+              <TabsContent
+                value="project_details"
+                className="flex-1 min-h-0 flex flex-col"
+              >
                 <ProjectPage onTotalCountChange={setActiveProjectCount} />
               </TabsContent>
             </Tabs>
@@ -153,14 +156,17 @@ const ProjectBoard = () => {
                       )}
                     </TabsTrigger>
 
-                  {/* <TabsTrigger value="board">
+                    {/* <TabsTrigger value="board">
                       Projects{" "}
                       {projectCount !== null && (
                         <span className="ml-1">({projectCount})</span>
                       )}
                     </TabsTrigger> */}
                     {userRole !== roles.BDE && (
-                      <TabsTrigger value="resources" className={tabTriggerClass}>
+                      <TabsTrigger
+                        value="resources"
+                        className={tabTriggerClass}
+                      >
                         Resources
                       </TabsTrigger>
                     )}
@@ -233,10 +239,16 @@ const ProjectBoard = () => {
               </div>
 
               {/* Board Tab */}
-              <TabsContent value="project_details" className="flex-1 min-h-0 flex flex-col">
+              <TabsContent
+                value="project_details"
+                className="flex-1 min-h-0 flex flex-col"
+              >
                 <ProjectPage onTotalCountChange={setActiveProjectCount} />
               </TabsContent>
-              <TabsContent value="board" className="flex-1 min-h-0 flex flex-col">
+              <TabsContent
+                value="board"
+                className="flex-1 min-h-0 flex flex-col"
+              >
                 <Board
                   technologies={technologies}
                   techLoading={techLoading}
@@ -246,7 +258,10 @@ const ProjectBoard = () => {
               </TabsContent>
 
               {/* Resources Tab */}
-              <TabsContent value="resources" className="flex-1 min-h-0 flex flex-col">
+              <TabsContent
+                value="resources"
+                className="flex-1 min-h-0 flex flex-col"
+              >
                 <ResourceTab
                   technologies={technologies}
                   techLoading={techLoading}
@@ -254,7 +269,10 @@ const ProjectBoard = () => {
                 />
               </TabsContent>
 
-              <TabsContent value="Project Coordinator" className="flex-1 min-h-0 flex flex-col">
+              <TabsContent
+                value="Project Coordinator"
+                className="flex-1 min-h-0 flex flex-col"
+              >
                 <ResourceTab
                   technologies={technologies}
                   techLoading={techLoading}
@@ -262,22 +280,34 @@ const ProjectBoard = () => {
                 />
               </TabsContent>
 
-              <TabsContent value="Archive Projects" className="flex-1 min-h-0 flex flex-col">
+              <TabsContent
+                value="Archive Projects"
+                className="flex-1 min-h-0 flex flex-col"
+              >
                 <ProjectPage
                   activeTab="Archive Projects"
                   onTotalCountChange={setArchiveProjectCount}
                 />
               </TabsContent>
-              <TabsContent value="Certificates" className="flex-1 min-h-0 flex flex-col">
+              <TabsContent
+                value="Certificates"
+                className="flex-1 min-h-0 flex flex-col"
+              >
                 <CertificateTab />
               </TabsContent>
               {userId === 1 || userRole === roles.BDE ? (
-                <TabsContent value="inquiry" className="flex-1 min-h-0 flex flex-col">
+                <TabsContent
+                  value="inquiry"
+                  className="flex-1 min-h-0 flex flex-col"
+                >
                   {userRole === roles.BDE ? <InquiryPage /> : <InquiryTab />}
                 </TabsContent>
               ) : null}
               {userId === 1 && (
-                <TabsContent value="Archive inquiry" className="flex-1 min-h-0 flex flex-col">
+                <TabsContent
+                  value="Archive inquiry"
+                  className="flex-1 min-h-0 flex flex-col"
+                >
                   <InquiryTab activeTab={activeTab} />
                 </TabsContent>
               )}
