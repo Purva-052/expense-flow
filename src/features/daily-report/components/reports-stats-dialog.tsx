@@ -16,6 +16,7 @@ interface ReportsStatsDialogProps {
   onOpenChange: (open: boolean) => void;
   type: "pending" | "incomplete" | "holiday" | null;
   reportingDate?: string;
+  userId?: string;
 }
 
 export function ReportsStatsDialog({
@@ -23,6 +24,7 @@ export function ReportsStatsDialog({
   onOpenChange,
   type,
   reportingDate,
+  userId,
 }: ReportsStatsDialogProps) {
   const [currentType, setCurrentType] = useState<any>(type);
   const [listParams, setListParams] = useState({
@@ -31,6 +33,7 @@ export function ReportsStatsDialog({
     search: "",
     fromDate: reportingDate || undefined,
     toDate: reportingDate || undefined,
+    userId: userId || undefined,
   });
 
   useEffect(() => {
@@ -43,15 +46,17 @@ export function ReportsStatsDialog({
         search: "",
         fromDate: reportingDate || undefined,
         toDate: reportingDate || undefined,
+        userId: userId || undefined,
       });
     }
-  }, [type, reportingDate]);
+  }, [type, reportingDate, userId]);
 
   const { data: listData, isPending: loading } = useGetReportDetails({
     type: currentType!,
     fromDate: listParams.fromDate,
     toDate: listParams.toDate,
     search: listParams.search,
+    userId: listParams.userId,
     page: listParams.currentPage,
     limit: listParams.pageSize,
   });

@@ -5,11 +5,31 @@ import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/daily-report/")({
   component: DailyReportPage,
-  validateSearch: (search: Record<string, unknown>) => ({
-    openPendingReports:
+  validateSearch: (search: Record<string, unknown>) => {
+    const openPendingReports =
       search.openPendingReports === true ||
-      search.openPendingReports === "true",
-  }),
+      search.openPendingReports === "true"
+        ? true
+        : undefined;
+
+    const type =
+      search.type === "pending" ||
+      search.type === "incomplete" ||
+      search.type === "holiday"
+        ? search.type
+        : undefined;
+
+    const userId =
+      typeof search.userId === "string" || typeof search.userId === "number"
+        ? String(search.userId)
+        : undefined;
+
+    return {
+      openPendingReports,
+      type,
+      userId,
+    };
+  },
   beforeLoad: () =>
     requireRole([
       roles.ADMIN,

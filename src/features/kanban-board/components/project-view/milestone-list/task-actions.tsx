@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Eye, Trash2, ClockPlus } from "lucide-react";
+import { Check, Eye, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
@@ -53,7 +53,7 @@ export const TaskActions = ({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <button
+            <Button
               type="button"
               disabled={task.status === "completed"}
               className="p-2 rounded-md hover:bg-[#fee2e2] disabled:opacity-50 disabled:cursor-not-allowed"
@@ -69,8 +69,9 @@ export const TaskActions = ({
                 });
               }}
             >
-              <ClockPlus className="h-5 w-5 text-[#e11d48]" />
-            </button>
+              {/* <ClockPlus className="h-5 w-5 text-[#e11d48]" /> */}Add Log
+              Hours
+            </Button>
           </TooltipTrigger>
           <TooltipContent side="top">
             <p>Add Hours Log</p>
