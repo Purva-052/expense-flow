@@ -130,8 +130,8 @@ const HoursLogs = ({
   const totalHoursRaw =
     logsResponse?.data?.totalHours ?? logsResponse?.data?.[" totalHours"];
   const totalWeightageHoursRaw =
-    logsResponse?.data?.totalWeightageHours ??
-    logsResponse?.data?.[" totalWeightageHours"];
+    logsResponse?.data?.weightageHours ??
+    logsResponse?.data?.["weightageHours"];
 
   const totalHours = useMemo(
     () => parseHoursValue(totalHoursRaw),
@@ -219,7 +219,7 @@ const HoursLogs = ({
         header: "Weightage Hours",
         cell: ({ row }) => (
           <span className="font-semibold text-green-600">
-            {convertTimeToDecimal(row.original.weightageTime)
+            {convertTimeToDecimal(row.original.weightageHours)
               .toFixed(2)
               .replace(".", ":")}
           </span>

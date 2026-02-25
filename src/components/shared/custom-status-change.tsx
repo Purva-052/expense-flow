@@ -99,7 +99,7 @@ export function ChangeStatusDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] gap-6">
+      <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-auto gap-6">
         <DialogHeader>
           <DialogTitle>Change Project Status ({projectName})</DialogTitle>
           <DialogDescription>

@@ -140,16 +140,53 @@ export function ReportsStatsDialog({
             {
               accessorKey: "description",
               header: "Holiday Name",
+              cell: ({ row }: any) => {
+                const holidayDate = new Date(row.original.date);
+                const today = new Date();
+                const isPast = holidayDate < new Date(today.toDateString());
+
+                return (
+                  <span
+                    className={`${isPast ? "text-gray-400 line-through" : ""}`}
+                  >
+                    {row.original.description}
+                  </span>
+                );
+              },
             },
             {
               accessorKey: "date",
               header: "Holiday Date",
-              cell: ({ row }: any) =>
-                format(new Date(row.original.date), "dd/MM/yyyy"),
+              cell: ({ row }: any) => {
+                const holidayDate = new Date(row.original.date);
+                const today = new Date();
+                const isPast = holidayDate < new Date(today.toDateString());
+
+                return (
+                  <span
+                    className={`${isPast ? "text-gray-400 line-through" : ""}`}
+                  >
+                    {format(holidayDate, "dd/MM/yyyy")}
+                  </span>
+                );
+              },
             },
             {
               accessorKey: "day",
               header: "Day",
+              cell: ({ row }: any) => {
+                const holidayDate = new Date(row.original.date);
+                const today = new Date();
+                const isPast = holidayDate < new Date(today.toDateString());
+
+                return (
+                  <span
+                    className={`${isPast ? "text-gray-400 line-through" : ""}`}
+                  >
+                    {row.original.day}
+                  </span>
+                );
+              },
             },
           ]
         : [
