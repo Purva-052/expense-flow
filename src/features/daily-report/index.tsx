@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearch } from "@tanstack/react-router";
+import { useSearch } from "@tanstack/react-router";
 import PageLayout from "@/components/layout/layout-provider";
 import { GlobalTable } from "@/components/table/global-table";
 import GlobalFilterSection from "@/components/table/global-table-filter";
@@ -27,7 +27,6 @@ import { ReportsStatsDialog } from "./components/reports-stats-dialog";
 import { Clock, AlertCircle, CalendarDays } from "lucide-react";
 
 export default function DailyReportPage() {
-  const navigate = useNavigate();
   const search = useSearch({ from: "/_authenticated/daily-report/" });
   const { user } = useAuthStore();
   const [listParams, setListParams] = useState({
@@ -51,18 +50,20 @@ export default function DailyReportPage() {
   const [reportType, setReportType] = useState<
     "pending" | "incomplete" | "holiday" | null
   >(null);
+  const [statsUserId, setStatsUserId] = useState<string | undefined>(undefined);
   const [statsOpen, setStatsOpen] = useState(false);
 
   useEffect(() => {
-    if (!search.openPendingReports) return;
-    setReportType("pending");
-    setStatsOpen(true);
-    navigate({
-      to: "/daily-report",
-      search: (prev) => ({ ...prev, openPendingReports: false }),
-      replace: true,
-    });
-  }, [search.openPendingReports, navigate]);
+  if (!search.openPendingReports && !search.type) return;
+
+  const nextType: any = search.type ?? "pending";
+
+  setReportType(nextType);
+  setStatsUserId(
+    search.userId ? String(search.userId).replace(/^"+|"+$/g, "") : undefined
+  );
+  setStatsOpen(true);
+}, [search.openPendingReports, search.type, search.userId]);
 
   const queryClient = useQueryClient();
   const { mutate: deleteReport, isPending: isDeleting } = useDeleteDailyReport(
@@ -105,6 +106,7 @@ export default function DailyReportPage() {
 
   const handleCardClick = (type: "pending" | "incomplete" | "holiday") => {
     setReportType(type);
+    setStatsUserId(undefined);
     setStatsOpen(true);
   };
 
@@ -477,6 +479,7 @@ export default function DailyReportPage() {
           onOpenChange={setStatsOpen}
           type={reportType}
           reportingDate={listParams.fromDate}
+          userId={statsUserId}
         />
       </div>
     </PageLayout>

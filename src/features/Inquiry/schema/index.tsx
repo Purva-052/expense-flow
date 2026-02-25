@@ -15,7 +15,7 @@ export const InquirySchema = z.object({
   sourceOfInquiry: z.string().trim().optional(),
   clientEmailId: z.string().trim().email().optional().or(z.literal("")),
   requirements: z
-    .array(z.number())
+    .array(z.coerce.number())
     .min(1, { message: "Please select a type." }),
 
   status: z.string().nonempty({ message: "Please select a status." }),
