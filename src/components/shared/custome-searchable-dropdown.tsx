@@ -34,8 +34,8 @@ interface CustomDropDownProps {
   isLoading?: boolean;
   loadingText?: string;
   onChangeValue?: any;
-  multiple?: boolean; // ✅ new prop
-  searchEnabled?: boolean; // ✅ new prop
+  multiple?: boolean;
+  searchEnabled?: boolean;
   showClearButton?: boolean;
   sortOptions?: boolean;
   triggerClassName?: string;
@@ -57,7 +57,7 @@ const CustomDropDownSearchable = ({
   isLoading = false,
   loadingText = "Loading...",
   onChangeValue,
-  multiple = false, // default false
+  multiple = false,
   searchEnabled = true,
   sortOptions = true,
 }: CustomDropDownProps) => {
@@ -79,71 +79,65 @@ const CustomDropDownSearchable = ({
     return () => window.removeEventListener("resize", updateWidth);
   }, [open]);
 
-  // ---------- Filtering + Sorting (replace the previous declarations) ----------
   const safeOptions = Array.isArray(options) ? options : [];
 
-  // filter by search
   const filteredOptions = safeOptions.filter(
     (option: any) =>
       typeof option?.label === "string" &&
       option.label.toLowerCase().includes((searchValue || "").toLowerCase())
   );
 
-  // non-mutating sort - extract location name after GMT offset for timezone sorting
   const sortArray = (arr: any[]) =>
     [...arr].sort((a: any, b: any) => {
       const labelA = (a?.label ?? "").toString();
       const labelB = (b?.label ?? "").toString();
-
-      // Extract text after GMT offset (e.g., "(GMT-11:00) Midway Island" -> "Midway Island")
       const extractName = (label: string) => {
         const match = label.match(/\)\s*(.+)$/);
         return match ? match[1].trim() : label;
       };
-
-      const nameA = extractName(labelA);
-      const nameB = extractName(labelB);
-
-      return nameA.toLowerCase().localeCompare(nameB.toLowerCase());
+      return extractName(labelA)
+        .toLowerCase()
+        .localeCompare(extractName(labelB).toLowerCase());
     });
 
-  // final list used throughout the UI
   const finalOptions = sortOptions
     ? sortArray(filteredOptions)
     : filteredOptions;
 
-  // Use a check against finalOptions when determining exact-match
+  // Loose equality so numbers and strings cross-match (e.g. 3 == "3")
+  const isSelected = (itemValue: any, valueArray: any[]) =>
+    valueArray.some((v) => v == itemValue);
+
   const exactMatchExists = finalOptions.some(
     (o: any) =>
       typeof o?.label === "string" &&
       o.label.toLowerCase() === (searchValue || "").toLowerCase()
   );
 
+  // ✅ Central setter — always goes through form.setValue with shouldValidate: true
+  // This is the KEY fix: field.onChange alone does NOT trigger RHF revalidation,
+  // so errors from a previous cleared state never get cleared on re-selection.
+  const setFieldValue = (value: any) => {
+    form.setValue(name, value, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
+  };
+
   const handleCreate = async () => {
     if (!allowCreate || !onCreateOption || !searchValue?.trim()) return;
     try {
       setIsCreating(true);
       const result = await onCreateOption(searchValue.trim());
-      const createdValue = String(result?.value ?? searchValue.trim());
+      const createdValue = result?.value ?? searchValue.trim();
       if (multiple) {
         const current = Array.isArray(form.getValues(name))
           ? form.getValues(name)
           : [];
-        form.setValue(
-          name,
-          [...current.map((v: any) => String(v)), createdValue],
-          {
-            shouldDirty: true,
-            shouldTouch: true,
-            shouldValidate: true,
-          }
-        );
+        setFieldValue([...current, createdValue]);
       } else {
-        form.setValue(name, createdValue, {
-          shouldDirty: true,
-          shouldTouch: true,
-          shouldValidate: true,
-        });
+        setFieldValue(createdValue);
       }
       setOpen(false);
     } finally {
@@ -156,23 +150,23 @@ const CustomDropDownSearchable = ({
       control={form?.control}
       name={name}
       render={({ field }: any) => {
-        // Preserve boolean false and numeric 0 as valid selected values for single select
-        // Treat empty string as no selection so placeholder shows correctly
-        // Handle multiple and single select separately to respect empty arrays
+        // Build valueArray preserving original types — no stringification
         let valueArray: any[] = [];
         if (multiple) {
           valueArray =
             Array.isArray(field.value) && field.value.length > 0
-              ? field.value.map((v: any) => String(v))
+              ? field.value
               : [];
         } else {
-          const isEmptyString =
-            typeof field.value === "string" && field.value.trim() === "";
-          valueArray =
-            field.value === null || field.value === undefined || isEmptyString
-              ? []
-              : [String(field.value)];
+          // Treat null, undefined, and blank string all as "nothing selected"
+          const isEmpty =
+            field.value === null ||
+            field.value === undefined ||
+            field.value === "" ||
+            (typeof field.value === "string" && field.value.trim() === "");
+          valueArray = isEmpty ? [] : [field.value];
         }
+
         return (
           <FormItem className={`flex flex-col ${className}`}>
             {!!label && <FormLabel>{label}</FormLabel>}
@@ -194,7 +188,7 @@ const CustomDropDownSearchable = ({
                         (() => {
                           const entries = valueArray.map((val: any) => {
                             const opt = options?.find(
-                              (o: any) => String(o.value) === String(val)
+                              (o: any) => o.value == val
                             );
                             return {
                               label: opt?.label ?? val,
@@ -296,29 +290,31 @@ const CustomDropDownSearchable = ({
                                   value={item.label}
                                   key={item.value}
                                   onSelect={() => {
-                                    const normalized = String(item.value);
                                     if (multiple) {
-                                      const exists =
-                                        valueArray.includes(normalized);
+                                      const exists = isSelected(
+                                        item.value,
+                                        valueArray
+                                      );
                                       const newValue = exists
                                         ? valueArray.filter(
-                                            (v: any) => v !== normalized
+                                            (v: any) => v != item.value
                                           )
-                                        : [...valueArray, normalized];
-                                      field.onChange(newValue);
+                                        : [...valueArray, item.value];
+                                      // ✅ form.setValue triggers revalidation; field.onChange does NOT
+                                      setFieldValue(newValue);
                                       onChangeValue?.(newValue);
                                     } else {
-                                      field.onChange(normalized);
-                                      onChangeValue?.(normalized);
+                                      // ✅ form.setValue triggers revalidation; field.onChange does NOT
+                                      setFieldValue(item.value);
+                                      onChangeValue?.(item.value);
                                       setOpen(false);
                                     }
-                                    field.onBlur();
                                   }}
                                 >
                                   <Check
                                     className={cn(
                                       "mr-2 h-4 w-4",
-                                      valueArray.includes(String(item.value))
+                                      isSelected(item.value, valueArray)
                                         ? "opacity-100"
                                         : "opacity-0"
                                     )}
@@ -368,19 +364,14 @@ const CustomDropDownSearchable = ({
                 <X
                   className="absolute top-1/2 right-9 h-4 w-4 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-red-500"
                   onClick={() => {
-                    form.setValue(name, multiple ? [] : "", {
-                      shouldDirty: true,
-                      shouldTouch: true,
-                      shouldValidate: true,
-                    });
+                    // ✅ Use "" for single (matches z.string() schemas), [] for multiple
+                    // setFieldValue ensures shouldValidate fires so the error shows immediately
+                    setFieldValue(multiple ? [] : "");
                   }}
                 />
               )}
             </div>
-            {/* Reserve space so the grid doesn't jump when an error appears */}
-            {/* <div className="min-h-5"> */}
             <FormMessage />
-            {/* </div> */}
           </FormItem>
         );
       }}

@@ -83,7 +83,10 @@ export const useUpdateProjectWorkingHour = (id: any, onsuccess: any) => {
 export const useProjectStatusChange = (onsuccess?: () => void) => {
   return usePostData({
     url: API.projects.status_change,
-    refetchQueries: [PROJECTS_API_URL],
+    // Keep both query-key styles in sync:
+    // - "projects" is used by useGetProjectsData (infinite query)
+    // - API.projects.list may be used by URL-keyed fetch hooks
+    refetchQueries: ["projects", PROJECTS_API_URL],
     onSuccess: () => {
       if (typeof onsuccess === "function") onsuccess();
     },
