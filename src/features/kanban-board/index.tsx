@@ -41,36 +41,44 @@ const ProjectBoard = () => {
   const { data: technologies, isPending: techLoading } =
     useGetTechnologyDropdownList(null, userRole !== roles.BDE);
 
-  // Get initial filter for handlerId
-  const initialHandlerId = useMemo(() => {
-    if (userRole === roles.DEVELOPER || userRole === roles.BDE)
-      return undefined;
-    const isCoordinatorView =
-      userRole === roles.PROJECT_MANAGER || userRole === roles.TEAM_LEAD;
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem(PROJECT_DETAILS_FILTER_STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.handlerId !== undefined) return parsed.handlerId;
-      }
+  // Keep initial top-badge counts aligned with ProjectPage list filters
+  const initialProjectFilters = useMemo(() => {
+    if (typeof window === "undefined") return {};
+    const saved = localStorage.getItem(PROJECT_DETAILS_FILTER_STORAGE_KEY);
+    if (!saved) return {};
+
+    try {
+      const parsed = JSON.parse(saved);
+      return {
+        clientId: parsed?.clientId ?? undefined,
+        managerId: parsed?.managerId ?? undefined,
+        priority: parsed?.priority ?? undefined,
+      };
+    } catch {
+      return {};
     }
-    return isCoordinatorView ? userId : undefined;
-  }, [userRole, userId]);
+  }, []);
+
+  const commonCountParams = useMemo(
+    () => ({
+      ...initialProjectFilters,
+      page: 1,
+      limit: 1,
+      isPinned: userRole === roles.BDE ? undefined : true,
+    }),
+    [initialProjectFilters, userRole]
+  );
 
   // Fetch active projects count
   const { data: activeProjectsData } = useGetProjectsData({
     status: "active",
-    handlerId: initialHandlerId,
-    page: 1,
-    limit: 1,
+    ...commonCountParams,
   });
 
   // Fetch archive count
   const { data: archiveProjectsData } = useGetProjectsData({
     status: "inactive",
-    handlerId: initialHandlerId,
-    page: 1,
-    limit: 1,
+    ...commonCountParams,
   });
 
   // Update counts when data is fetched
@@ -119,7 +127,10 @@ const ProjectBoard = () => {
               onValueChange={setActiveTab}
               className="flex-1 min-h-0 "
             >
-              <TabsContent value="project_details" className="flex-1 min-h-0 flex flex-col">
+              <TabsContent
+                value="project_details"
+                className="flex-1 min-h-0 flex flex-col"
+              >
                 <ProjectPage onTotalCountChange={setActiveProjectCount} />
               </TabsContent>
             </Tabs>
@@ -145,14 +156,17 @@ const ProjectBoard = () => {
                       )}
                     </TabsTrigger>
 
-                  {/* <TabsTrigger value="board">
+                    {/* <TabsTrigger value="board">
                       Projects{" "}
                       {projectCount !== null && (
                         <span className="ml-1">({projectCount})</span>
                       )}
                     </TabsTrigger> */}
                     {userRole !== roles.BDE && (
-                      <TabsTrigger value="resources" className={tabTriggerClass}>
+                      <TabsTrigger
+                        value="resources"
+                        className={tabTriggerClass}
+                      >
                         Resources
                       </TabsTrigger>
                     )}
@@ -225,10 +239,16 @@ const ProjectBoard = () => {
               </div>
 
               {/* Board Tab */}
-              <TabsContent value="project_details" className="flex-1 min-h-0 flex flex-col">
+              <TabsContent
+                value="project_details"
+                className="flex-1 min-h-0 flex flex-col"
+              >
                 <ProjectPage onTotalCountChange={setActiveProjectCount} />
               </TabsContent>
-              <TabsContent value="board" className="flex-1 min-h-0 flex flex-col">
+              <TabsContent
+                value="board"
+                className="flex-1 min-h-0 flex flex-col"
+              >
                 <Board
                   technologies={technologies}
                   techLoading={techLoading}
@@ -238,7 +258,10 @@ const ProjectBoard = () => {
               </TabsContent>
 
               {/* Resources Tab */}
-              <TabsContent value="resources" className="flex-1 min-h-0 flex flex-col">
+              <TabsContent
+                value="resources"
+                className="flex-1 min-h-0 flex flex-col"
+              >
                 <ResourceTab
                   technologies={technologies}
                   techLoading={techLoading}
@@ -246,7 +269,10 @@ const ProjectBoard = () => {
                 />
               </TabsContent>
 
-              <TabsContent value="Project Coordinator" className="flex-1 min-h-0 flex flex-col">
+              <TabsContent
+                value="Project Coordinator"
+                className="flex-1 min-h-0 flex flex-col"
+              >
                 <ResourceTab
                   technologies={technologies}
                   techLoading={techLoading}
@@ -254,22 +280,34 @@ const ProjectBoard = () => {
                 />
               </TabsContent>
 
-              <TabsContent value="Archive Projects" className="flex-1 min-h-0 flex flex-col">
+              <TabsContent
+                value="Archive Projects"
+                className="flex-1 min-h-0 flex flex-col"
+              >
                 <ProjectPage
                   activeTab="Archive Projects"
                   onTotalCountChange={setArchiveProjectCount}
                 />
               </TabsContent>
-              <TabsContent value="Certificates" className="flex-1 min-h-0 flex flex-col">
+              <TabsContent
+                value="Certificates"
+                className="flex-1 min-h-0 flex flex-col"
+              >
                 <CertificateTab />
               </TabsContent>
               {userId === 1 || userRole === roles.BDE ? (
-                <TabsContent value="inquiry" className="flex-1 min-h-0 flex flex-col">
+                <TabsContent
+                  value="inquiry"
+                  className="flex-1 min-h-0 flex flex-col"
+                >
                   {userRole === roles.BDE ? <InquiryPage /> : <InquiryTab />}
                 </TabsContent>
               ) : null}
               {userId === 1 && (
-                <TabsContent value="Archive inquiry" className="flex-1 min-h-0 flex flex-col">
+                <TabsContent
+                  value="Archive inquiry"
+                  className="flex-1 min-h-0 flex flex-col"
+                >
                   <InquiryTab activeTab={activeTab} />
                 </TabsContent>
               )}

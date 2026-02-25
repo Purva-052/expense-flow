@@ -29,6 +29,7 @@ import { roles } from "@/utils/constant";
 import { MilestoneTask } from "./milestone-list/types";
 import { ActiveMilestoneContent } from "./milestone-list/active-milestone-content";
 import { toast } from "sonner";
+import { formatTime } from "@/utils/commonFunctions";
 
 const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
   const { user } = useAuthStore();
@@ -41,7 +42,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
   const [selectedTaskForLogs, setSelectedTaskForLogs] =
     useState<MilestoneTask | null>(null);
   const [totalTaskHours, setTotalTaskHours] = useState<number>(0);
-
+  const [totalWeightageHours, setTotalWeightageHours] = useState<number>(0);
   const [previewData, setPreviewData] = useState<ExcelPreviewData | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -341,7 +342,6 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
                 onViewTaskLog={handleViewTaskLog}
                 onEditMilestone={(data) => handleEditMilestone(data)}
                 isCurrentUserProjectHandler={isCurrentUserProjectHandler}
-                tasksFromParent={m.tasks}
               />
             </TabsContent>
           ))}
@@ -391,10 +391,19 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
           </div>
           <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 shrink-0">
             <span className="text-[10px] font-bold text-primary uppercase tracking-wider">
-              Total:
+              Total Logged Hours:
             </span>
             <span className="text-sm font-bold text-primary">
-              {totalTaskHours.toFixed(2)} hrs
+              {formatTime(totalTaskHours.toFixed(2))} hrs
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 shrink-0">
+            <span className="text-[10px] font-bold text-primary uppercase tracking-wider">
+              Total Weightage Hours:
+            </span>
+            <span className="text-sm font-bold text-primary">
+              {formatTime(totalWeightageHours.toFixed(2))} hrs
             </span>
           </div>
         </DialogHeader>
@@ -403,6 +412,7 @@ const MilestoneList = ({ projectId }: { projectId?: string | number }) => {
           milestoneId={activeTab}
           taskId={selectedTaskForLogs?.id}
           onTotalHoursChange={setTotalTaskHours}
+          onWeightageHoursChange={setTotalWeightageHours}
         />
       </CommonModal>
 

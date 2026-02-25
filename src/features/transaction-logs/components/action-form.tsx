@@ -203,7 +203,7 @@ export function TransactionLogsActionForm({
         onOpenChange(state);
       }}
     >
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-auto">
         <DialogHeader>
           <DialogTitle>
             {isEdit ? "Edit Transaction" : "Add Transaction"}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { CalendarIcon, Clock, Loader2 } from "lucide-react";
+import { AlarmClockPlus, CalendarIcon, Loader2 } from "lucide-react";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { Button } from "@/components/ui/button";
 import {
@@ -104,7 +104,7 @@ export const AddHoursLogDialog = ({
   hideTrigger,
 }: AddHoursLogDialogProps) => {
   const { user } = useAuthStore();
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [date, setDate] = useState<Date>(new Date());
   const [hours, setHours] = useState("0");
   const [minutes, setMinutes] = useState("0");
   const [description, setDescription] = useState("");
@@ -153,9 +153,15 @@ export const AddHoursLogDialog = ({
   );
 
   const isPending = isCreating || isUpdating;
+  const handleDateSelect = (selectedDate?: Date) => {
+    // Keep a valid selected date; do not allow calendar clear on repeated clicks.
+    if (selectedDate) {
+      setDate(selectedDate);
+    }
+  };
 
   const handleSave = () => {
-    if (!date || !description || (hours === "0" && minutes === "0")) {
+    if (!description || (hours === "0" && minutes === "0")) {
       return;
     }
 
@@ -190,7 +196,7 @@ export const AddHoursLogDialog = ({
                   disabled={taskStatus === "completed"}
                   className="p-2 rounded-md hover:bg-[#fee2e2] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Clock className="h-5 w-5 text-[#e11d48]" />
+                  <AlarmClockPlus className="h-5 w-5 text-[#e11d48]" />
                 </button>
               </DialogTrigger>
             </TooltipTrigger>
@@ -231,7 +237,7 @@ export const AddHoursLogDialog = ({
                     disabled={!!reportId}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date ? format(date, "PPP") : "Pick a date"}
+                    {format(date, "PPP")}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -244,7 +250,7 @@ export const AddHoursLogDialog = ({
                     }}
                     mode="single"
                     selected={date}
-                    onSelect={setDate}
+                    onSelect={handleDateSelect}
                     initialFocus
                   />
                 </PopoverContent>

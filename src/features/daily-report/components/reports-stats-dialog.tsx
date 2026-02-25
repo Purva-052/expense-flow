@@ -16,6 +16,7 @@ interface ReportsStatsDialogProps {
   onOpenChange: (open: boolean) => void;
   type: "pending" | "incomplete" | "holiday" | null;
   reportingDate?: string;
+  userId?: string;
 }
 
 export function ReportsStatsDialog({
@@ -23,6 +24,7 @@ export function ReportsStatsDialog({
   onOpenChange,
   type,
   reportingDate,
+  userId,
 }: ReportsStatsDialogProps) {
   const [currentType, setCurrentType] = useState<any>(type);
   const [listParams, setListParams] = useState({
@@ -31,6 +33,7 @@ export function ReportsStatsDialog({
     search: "",
     fromDate: reportingDate || undefined,
     toDate: reportingDate || undefined,
+    userId: userId || undefined,
   });
 
   useEffect(() => {
@@ -43,15 +46,17 @@ export function ReportsStatsDialog({
         search: "",
         fromDate: reportingDate || undefined,
         toDate: reportingDate || undefined,
+        userId: userId || undefined,
       });
     }
-  }, [type, reportingDate]);
+  }, [type, reportingDate, userId]);
 
   const { data: listData, isPending: loading } = useGetReportDetails({
     type: currentType!,
     fromDate: listParams.fromDate,
     toDate: listParams.toDate,
     search: listParams.search,
+    userId: listParams.userId,
     page: listParams.currentPage,
     limit: listParams.pageSize,
   });
@@ -135,16 +140,53 @@ export function ReportsStatsDialog({
             {
               accessorKey: "description",
               header: "Holiday Name",
+              cell: ({ row }: any) => {
+                const holidayDate = new Date(row.original.date);
+                const today = new Date();
+                const isPast = holidayDate < new Date(today.toDateString());
+
+                return (
+                  <span
+                    className={`${isPast ? "text-gray-400 line-through" : ""}`}
+                  >
+                    {row.original.description}
+                  </span>
+                );
+              },
             },
             {
               accessorKey: "date",
               header: "Holiday Date",
-              cell: ({ row }: any) =>
-                format(new Date(row.original.date), "dd/MM/yyyy"),
+              cell: ({ row }: any) => {
+                const holidayDate = new Date(row.original.date);
+                const today = new Date();
+                const isPast = holidayDate < new Date(today.toDateString());
+
+                return (
+                  <span
+                    className={`${isPast ? "text-gray-400 line-through" : ""}`}
+                  >
+                    {format(holidayDate, "dd/MM/yyyy")}
+                  </span>
+                );
+              },
             },
             {
               accessorKey: "day",
               header: "Day",
+              cell: ({ row }: any) => {
+                const holidayDate = new Date(row.original.date);
+                const today = new Date();
+                const isPast = holidayDate < new Date(today.toDateString());
+
+                return (
+                  <span
+                    className={`${isPast ? "text-gray-400 line-through" : ""}`}
+                  >
+                    {row.original.day}
+                  </span>
+                );
+              },
             },
           ]
         : [

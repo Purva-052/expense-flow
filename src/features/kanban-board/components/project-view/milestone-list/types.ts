@@ -4,7 +4,7 @@ export interface MilestoneTask {
   taskName: string;
   estimatedTime: string;
   actualTime: string;
-  weightedHours?: string;
+  weightageHours?: string;
   status?: string;
   comment?: string | null;
 }
@@ -13,7 +13,7 @@ export interface Milestone {
   id: number;
   name: string;
   estimatedTime: string;
-  weightedHours?: string;
+  weightageHours?: string;
   tasks: MilestoneTask[];
   status?: string;
 }

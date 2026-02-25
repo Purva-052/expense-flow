@@ -329,8 +329,8 @@ export function ProjectCard({
         </div>
       </div>
       <div className="flex justify-between">
-        <span className="text-sm text-muted-foreground mb-1">Progress</span>
-        <span className="text-sm font-bold text-gray-900">{progress}%</span>
+        <span className="text-xs text-muted-foreground mb-1">Progress</span>
+        <span className="text-xs font-bold text-gray-900">{progress}%</span>
       </div>
 
       {/* Progress Bar */}
