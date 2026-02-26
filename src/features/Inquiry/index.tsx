@@ -104,7 +104,7 @@ const InquiryPage = () => {
   };
 
   const statusUpdateSchema = z.object({
-    notes: z.string().min(1, { message: "Notes are required." }),
+    notes: z.string().trim().min(1, { message: "Notes is required." }),
   });
 
   // Modal component with validation
@@ -140,7 +140,9 @@ const InquiryPage = () => {
                   name="notes"
                   render={({ field }) => (
                     <FormItem>
-                      <Label htmlFor="notes">Notes</Label>
+                      <Label htmlFor="notes">
+                        Notes<span className="text-red-500">*</span>
+                      </Label>
                       <FormControl>
                         <Textarea
                           id="notes"

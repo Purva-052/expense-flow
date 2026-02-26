@@ -2,7 +2,10 @@ import * as z from "zod";
 
 export const transactionLogSchema = z
   .object({
-    reason: z.string().min(2, "Reason must be at least 2 characters long"),
+    reason: z
+      .string()
+      .trim()
+      .min(2, "Reason must be at least 2 characters long"),
     projectId: z.preprocess(
       (val) => (val === "" || val === null ? undefined : String(val)),
       z.string().optional()

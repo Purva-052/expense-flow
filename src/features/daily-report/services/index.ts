@@ -30,7 +30,7 @@ export const useGetTasksDropdownList = (
 export const useUpdateDailyReport = (id: string, onSuccess?: () => void) => {
   return usePatchData({
     url: `${API.daily_report.update}/${id}`,
-    refetchQueries: [GET_DAILY_REPORT_LIST],
+    refetchQueries: [GET_DAILY_REPORT_LIST, API.daily_report.report_analytics],
     onSuccess,
   });
 };
@@ -38,7 +38,7 @@ export const useUpdateDailyReport = (id: string, onSuccess?: () => void) => {
 export const useCreateDailyReport = (onSuccess?: () => void) => {
   return usePostData({
     url: API.daily_report.create,
-    refetchQueries: [GET_DAILY_REPORT_LIST],
+    refetchQueries: [GET_DAILY_REPORT_LIST, API.daily_report.report_analytics],
     onSuccess,
   });
 };
@@ -54,7 +54,9 @@ export const useDeleteDailyReport = (onSuccess?: () => void) => {
       return response;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [GET_DAILY_REPORT_LIST] });
+      queryClient.invalidateQueries({
+        queryKey: [GET_DAILY_REPORT_LIST, API.daily_report.report_analytics],
+      });
       onSuccess?.();
     },
   });
@@ -78,14 +80,17 @@ export const useGetTaskLogs = (taskId: string | number, params?: any) => {
 export const useGetReportsAnalytics = () => {
   return useFetchData({
     url: API.daily_report.report_analytics,
+    // refetchQueries: [API.daily_report.report_details],
   });
 };
 
-export const useGetReportDetails = (params: { type: string; [key: string]: any }) => {
+export const useGetReportDetails = (params: {
+  type: string;
+  [key: string]: any;
+}) => {
   return useFetchData({
     url: `${API.daily_report.report_details}`,
     params,
     enabled: !!params.type,
   });
 };
-

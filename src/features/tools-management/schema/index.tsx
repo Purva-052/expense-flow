@@ -16,9 +16,9 @@ const numberField = (fieldName: string) =>
   );
 
 export const toolsSchema = z.object({
-  toolName: z.string().min(1, "Tool Name is required"),
+  toolName: z.string().trim().min(1, "Tool Name is required"),
 
-  description: z.string().min(1, "Description is required"),
+  description: z.string().trim().min(1, "Description is required"),
 
   purchaseDate: z.date({
     required_error: "Purchase Date is required",
