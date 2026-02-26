@@ -627,12 +627,12 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                               value: "preparation" | "completed"
                             ) => setEditingCertStatus(value)}
                           >
-                            <SelectTrigger className="h-6 w-[110px] text-xs">
+                            <SelectTrigger className="h-6 w-[130px] text-xs">
                               <SelectValue placeholder="Status" />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="preparation">
-                                In Progress
+                                Preparation
                               </SelectItem>
                               <SelectItem value="completed">
                                 Completed

@@ -9,7 +9,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Form } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { useGetInquiryType } from "@/features/Inquiry-type/services";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,6 +25,7 @@ import { InquirySchema, TInquirySchema } from "../schema";
 import { INQUIRY_STATUS } from "@/utils/constant";
 import { PhoneInputField } from "@/components/shared/custom-phone-number-countrywise";
 import { useGetCountryDropdownList } from "@/features/clients/services";
+import { Input } from "@/components/ui/input";
 
 interface Props {
   currentRow?: any;
@@ -100,13 +108,26 @@ export function InquiryActionForm({
 
               <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                 {/* Client Name */}
-                <TextInputField
+                <FormField
                   control={form.control}
                   name="clientName"
-                  label="Client Name"
-                  placeholder="Enter client name"
+                  render={({ field }: any) => (
+                    <FormItem>
+                      <FormLabel>
+                        Client Name
+                        <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter client name"
+                          {...field}
+                          // disabled={loading || isViewOnly}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-
                 {/* Client Company Name. */}
                 <TextInputField
                   control={form.control}
@@ -132,16 +153,27 @@ export function InquiryActionForm({
                 label="Client Contact No."
                 placeholder="Enter client contact no."
               /> */}
-                <CustomDropDownSearchable
-                  form={form}
+                <FormField
+                  control={form.control}
                   name="countryId"
-                  label="Country"
-                  placeholder="Select country"
-                  sortOptions={false}
-                  isLoading={loadingCountry}
-                  options={countryList?.data?.map((opt: any) => {
-                    return { value: opt.id, label: opt.name };
-                  })}
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>
+                        Country <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <CustomDropDownSearchable
+                        form={form}
+                        name="countryId"
+                        label=""
+                        placeholder="Select country"
+                        sortOptions={false}
+                        isLoading={loadingCountry}
+                        options={countryList?.data?.map((opt: any) => {
+                          return { value: opt.id, label: opt.name };
+                        })}
+                      />
+                    </FormItem>
+                  )}
                 />
               </div>
 
@@ -170,48 +202,71 @@ export function InquiryActionForm({
 
               {/* Type Dropdown */}
               {/* </div> */}
-              <CustomDropDownSearchable
-                form={form}
+              <FormField
+                control={form.control}
                 name="requirements"
-                label="Inquiry Type"
-                multiple
-                options={inquiryOptions}
-                placeholder="Select Inquiry Type"
-                searchEnabled={false}
-                isLoading={loadingType}
+                render={() => (
+                  <FormItem>
+                    <FormLabel>
+                      Inquiry Type <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <CustomDropDownSearchable
+                      form={form}
+                      name="requirements"
+                      label=""
+                      multiple
+                      options={inquiryOptions}
+                      placeholder="Select Inquiry Type"
+                      searchEnabled={false}
+                      isLoading={loadingType}
+                    />
+                  </FormItem>
+                )}
               />
 
               {!isEdit && (
                 <>
-                  <CustomDropDownSearchable
-                    form={form}
+                  <FormField
+                    control={form.control}
                     name="status"
-                    label="Status"
-                    options={[
-                      {
-                        value: INQUIRY_STATUS.NEW_INQUIRY,
-                        label: "New Inquiry",
-                      },
-                      {
-                        value: INQUIRY_STATUS.IN_DISCUSSION,
-                        label: "In Discussion",
-                      },
-                      {
-                        value: INQUIRY_STATUS.NEAR_TO_CLOSE,
-                        label: "Near to Close",
-                      },
-                      {
-                        value: INQUIRY_STATUS.CLOSED,
-                        label: "Closed",
-                      },
-                      {
-                        value: INQUIRY_STATUS.OPTED_OUT,
-                        label: "Opted Out",
-                      },
-                    ]}
-                    placeholder="Select Status"
-                    searchEnabled={false}
+                    render={() => (
+                      <FormItem>
+                        <FormLabel>
+                          Status <span className="text-red-500">*</span>
+                        </FormLabel>
+                        <CustomDropDownSearchable
+                          form={form}
+                          name="status"
+                          label=""
+                          options={[
+                            {
+                              value: INQUIRY_STATUS.NEW_INQUIRY,
+                              label: "New Inquiry",
+                            },
+                            {
+                              value: INQUIRY_STATUS.IN_DISCUSSION,
+                              label: "In Discussion",
+                            },
+                            {
+                              value: INQUIRY_STATUS.NEAR_TO_CLOSE,
+                              label: "Near to Close",
+                            },
+                            {
+                              value: INQUIRY_STATUS.CLOSED,
+                              label: "Closed",
+                            },
+                            {
+                              value: INQUIRY_STATUS.OPTED_OUT,
+                              label: "Opted Out",
+                            },
+                          ]}
+                          placeholder="Select Status"
+                          searchEnabled={false}
+                        />
+                      </FormItem>
+                    )}
                   />
+
                   <div className="flex flex-col space-y-2">
                     <label className="text-sm font-medium text-gray-700">
                       Notes

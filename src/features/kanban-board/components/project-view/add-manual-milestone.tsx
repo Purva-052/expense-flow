@@ -47,13 +47,14 @@ import {
 
 const taskSchema = z.object({
   taskId: z.number().optional(),
-  taskName: z.string().min(1, "Task name is required"),
-  estimatedTime: z.string().min(1, "Estimated time is required"),
+  taskName: z.string().trim().min(1, "Task name is required"),
+  estimatedTime: z.string().trim().min(1, "Estimated time is required"),
 });
 
 const formSchema = z.object({
   name: z
     .string()
+    .trim()
     .nonempty("Milestone name is required")
     .min(2, "Milestone name must be at least 2 characters")
     .max(20, "Milestone name should be less than 20 characters"),

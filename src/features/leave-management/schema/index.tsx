@@ -39,7 +39,7 @@ const dayRowSchema = z
 export const leaveSchema = z
   .object({
     employeeId: numberField("Employee"),
-    reason: z.string().min(2, "Reason is required"),
+    reason: z.string().trim().min(2, "Reason is required"),
 
     // Create Mode Fields
     fromDate: z.date().optional(),

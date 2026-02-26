@@ -63,7 +63,8 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
       search: isProjectHandler ? projectHandlerSearch : resourceSearch,
     }),
     status: "active",
-    includeSkills: true,
+    // includeSkills: true,
+    // isLearning: false,
   };
 
   const {

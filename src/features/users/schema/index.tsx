@@ -20,19 +20,19 @@ const normalizeOptionalDate = (value: unknown) => {
 const baseUserSchema = z.object({
   fullName: z
     .string()
+    .trim()
     .min(2, { message: "Full name must be at least 2 characters long." })
-    .max(50, { message: "Full name cannot exceed 50 characters." })
-    .trim(),
+    .max(50, { message: "Full name cannot exceed 50 characters." }),
   email: z
     .string()
+    .trim()
     .email({ message: "Invalid email address." })
-    .max(100, { message: "Email cannot exceed 100 characters." })
-    .trim(),
+    .max(100, { message: "Email cannot exceed 100 characters." }),
   role: z
     .string()
+    .trim()
     .min(3, { message: "Role is required." })
-    .max(30, { message: "Role cannot exceed 30 characters." })
-    .trim(),
+    .max(30, { message: "Role cannot exceed 30 characters." }),
   technologyId: z.coerce
     .number({ invalid_type_error: "Technology is required." })
     .min(1, { message: "Please select a technology." })
@@ -87,9 +87,9 @@ const baseUserSchema = z.object({
 // Separate field for add/edit mode
 const passwordField = z
   .string()
+  .trim()
   .min(6, { message: "Password must be at least 6 characters long." })
-  .max(100, { message: "Password cannot exceed 100 characters." })
-  .trim();
+  .max(100, { message: "Password cannot exceed 100 characters." });
 
 // For add user (password required)
 export const addUserSchema = baseUserSchema.extend({
