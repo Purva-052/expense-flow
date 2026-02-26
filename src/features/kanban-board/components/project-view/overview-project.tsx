@@ -230,7 +230,7 @@ const OverviewProject = ({
               <div className="text-base text-gray-800 pl-6">
                 <p>
                   {project.startDate
-                    ? format(new Date(project.startDate), "yyyy-MM-dd")
+                    ? format(new Date(project.startDate), "dd-MM-yyyy")
                     : "-"}
                 </p>
               </div>
@@ -246,7 +246,7 @@ const OverviewProject = ({
                   {project.expectedCompletionDate
                     ? format(
                         new Date(project.expectedCompletionDate),
-                        "yyyy-MM-dd"
+                        "dd-MM-yyyy"
                       )
                     : "-"}
                 </p>

@@ -20,7 +20,9 @@ const ProfilePage = () => {
   const [open, setOpen] = useState(false);
   const { user } = useAuthStore();
   const userId = user?.user?.id;
-  const { data: userDetailsData }: any = useGetUserDetails(userId);
+  const { data: userDetailsData }: any = useGetUserDetails(userId, {
+    isLearning: true,
+  });
   const userDetails = userDetailsData?.data;
 
   return (
