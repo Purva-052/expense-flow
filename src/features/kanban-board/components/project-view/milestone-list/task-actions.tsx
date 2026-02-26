@@ -74,7 +74,7 @@ export const TaskActions = ({
             </Button>
           </TooltipTrigger>
           <TooltipContent side="top">
-            <p>Add Hours Log</p>
+            <p>Add Log Hours</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

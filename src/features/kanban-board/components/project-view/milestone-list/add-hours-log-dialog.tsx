@@ -202,7 +202,7 @@ export const AddHoursLogDialog = ({
             </TooltipTrigger>
 
             <TooltipContent side="top">
-              <p>Add Hours Log</p>
+              <p>Add Log Hours</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -221,7 +221,7 @@ export const AddHoursLogDialog = ({
       >
         <DialogHeader>
           <DialogTitle>
-            {reportId ? "Edit" : "Add"} Hour Log{" "}
+            {reportId ? "Edit" : "Add"} Log Hours{" "}
             {taskName ? `- ${taskName}` : ""}
           </DialogTitle>
         </DialogHeader>
