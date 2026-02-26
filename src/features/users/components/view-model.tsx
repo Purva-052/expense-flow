@@ -103,7 +103,7 @@ export function ViewUserModal() {
             Array.isArray(currentRow.skills) &&
             currentRow.skills.length > 0 && (
               <div>
-                <h3 className="text-sm font-medium mb-1.5">Strengths</h3>
+                <h3 className="text-sm font-medium mb-1.5">Skills</h3>
                 <div className="flex flex-wrap gap-1.5">
                   {currentRow.skills.map((item: any) => (
                     <Badge
