@@ -21,6 +21,22 @@ export const columns: ColumnDef<any>[] = [
   {
     accessorKey: "fullName",
     header: "Full Name",
+    cell: ({ row }) => {
+      const { setOpen, setCurrentRow } = useUsersStore();
+
+      return (
+        <div
+          className="cursor-pointer font-medium text-blue-600 hover:underline"
+          onClick={() => {
+            setCurrentRow(row.original);
+            // CHANGE THIS: Use a unique key for the profile card modal
+            setOpen("view_profile");
+          }}
+        >
+          {row.original.fullName}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "email",
@@ -47,7 +63,7 @@ export const columns: ColumnDef<any>[] = [
         <div className="flex items-center gap-2">
           <span
             className="h-2.5 w-2.5 rounded-full"
-            style={{ backgroundColor: tech?.color }}
+            style={{ backgroundColor: tech?.color || "#ccc" }}
           />
           <span>{tech?.name ?? "-"}</span>
         </div>
@@ -58,6 +74,7 @@ export const columns: ColumnDef<any>[] = [
     accessorKey: "dateOfBirth",
     header: "Date of Birth",
     cell: ({ row }) => {
+      if (!row.original.dateOfBirth) return "-";
       const date = new Date(row.original.dateOfBirth);
       return date.toLocaleDateString("en-IN", {
         year: "numeric",
@@ -70,6 +87,7 @@ export const columns: ColumnDef<any>[] = [
     accessorKey: "careerStartDate",
     header: "Career Start Date",
     cell: ({ row }) => {
+      if (!row.original.careerStartDate) return "-";
       const date = new Date(row.original.careerStartDate);
       return date.toLocaleDateString("en-IN", {
         year: "numeric",
@@ -95,23 +113,24 @@ export const columns: ColumnDef<any>[] = [
     header: "Actions",
     cell: function Cell({ row }) {
       const operator = row.original;
+      // Hook usage here was already correct, just ensure imports match
       const { setOpen, setCurrentRow } = useUsersStore();
       const user = useAuthStore((state) => state.user);
       const UserRole = user?.user?.role;
 
       const handleEdit = () => {
-        setOpen("edit");
         setCurrentRow(operator);
+        setOpen("edit"); // Order changed slightly for safety (set data then open)
       };
 
       const handleDelete = () => {
-        setOpen("delete");
         setCurrentRow(operator);
+        setOpen("delete");
       };
 
       const handleView = () => {
-        setOpen("view");
         setCurrentRow(operator);
+        setOpen("view");
       };
 
       return (

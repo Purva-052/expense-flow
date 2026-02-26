@@ -13,6 +13,7 @@ import { useGetUsersList, useGetUsersRoles } from "./services";
 import { useGetTechnologyDropdownList } from "../technology/services";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roleLabels, roles } from "@/utils/constant";
+import { ViewUserProfileModal } from "../profile/components/view-user-modal";
 
 const UsersPage = () => {
   const { open, setOpen } = useUsersStore();
@@ -185,6 +186,7 @@ const UsersPage = () => {
         />
       )}
       <ViewUserModal />
+      <ViewUserProfileModal />
     </PageLayout>
   );
 };
