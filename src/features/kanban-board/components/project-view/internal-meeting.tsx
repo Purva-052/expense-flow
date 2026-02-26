@@ -48,7 +48,7 @@ import {
   useDeleteInternalMeeting,
 } from "@/features/kanban-board/services";
 import {
-  ExternalLink,
+  // ExternalLink,
   Loader2,
   Eye,
   Pencil,
@@ -63,13 +63,20 @@ import { cn } from "@/lib/utils";
 
 // Schema validation
 const InternalMeetingSchema = z.object({
-  meetingName: z.string().min(1, "Meeting name is required"),
+  meetingName: z.string().trim().optional(),
   description: z.string().min(1, "Description is required"),
   projectId: z.number({ required_error: "Project is required" }),
   startDate: z.date({ required_error: "Start date is required" }),
   // endDate is removed as per requirement
   link: z.string().url("Invalid URL").optional().or(z.literal("")),
 });
+
+const stripHtml = (html: string) => {
+  if (typeof window === "undefined") return html;
+  const tmp = document.createElement("DIV");
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || "";
+};
 
 type TInternalMeetingSchema = z.infer<typeof InternalMeetingSchema>;
 
@@ -196,7 +203,8 @@ export function InternalMeetingDialog({
                 render={({ field }: any) => (
                   <FormItem className="col-span-2">
                     <FormLabel>
-                      Meeting Name <span className="text-red-500">*</span>
+                      Meeting Name
+                      {/* <span className="text-red-500">*</span> */}
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -398,7 +406,7 @@ export function InternalMeetingListing({
   const [isViewOnly, setIsViewOnly] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [meetingToDelete, setMeetingToDelete] = useState<any>(null);
-
+  const [viewDescription, setViewDescription] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
   const [dateRange, setDateRange] = useState<{
@@ -474,10 +482,10 @@ export function InternalMeetingListing({
 
   const columns = useMemo<ColumnDef<any>[]>(
     () => [
-      {
-        accessorKey: "meetingName",
-        header: "Meeting Name",
-      },
+      // {
+      //   accessorKey: "meetingName",
+      //   header: "Meeting Name",
+      // },
       {
         accessorKey: "startDate",
         header: "Start Date",
@@ -486,22 +494,38 @@ export function InternalMeetingListing({
           return date ? format(new Date(date), "PPP") : "-";
         },
       },
+      // {
+      //   accessorKey: "link",
+      //   header: "Link",
+      //   cell: ({ row }) =>
+      //     row.original.link ? (
+      //       <a
+      //         href={row.original.link}
+      //         target="_blank"
+      //         rel="noopener noreferrer"
+      //         className="flex items-center text-blue-600 hover:underline gap-1"
+      //       >
+      //         Link <ExternalLink className="w-3 h-3" />
+      //       </a>
+      //     ) : (
+      //       "-"
+      //     ),
+      // },
       {
-        accessorKey: "link",
-        header: "Link",
-        cell: ({ row }) =>
-          row.original.link ? (
-            <a
-              href={row.original.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center text-blue-600 hover:underline gap-1"
-            >
-              Link <ExternalLink className="w-3 h-3" />
-            </a>
-          ) : (
-            "-"
-          ),
+        accessorKey: "description",
+        header: "Description",
+        cell: ({ row }) => {
+          const rawDesc = row.original.description || "-";
+          const desc = stripHtml(rawDesc);
+
+          return (
+            <div className="w-full min-w-0">
+              <p className="text-muted-foreground line-clamp-4 break-words whitespace-normal overflow-hidden">
+                {desc}
+              </p>
+            </div>
+          );
+        },
       },
       {
         id: "actions",
@@ -578,6 +602,20 @@ export function InternalMeetingListing({
           loading={isLoading}
         />
       )}
+      <Dialog
+        open={!!viewDescription}
+        onOpenChange={(open) => !open && setViewDescription(null)}
+      >
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl overflow-hidden text-black">
+          <DialogHeader>
+            <DialogTitle>Full Description</DialogTitle>
+          </DialogHeader>
+          <div
+            className="py-4 whitespace-normal leading-relaxed text-muted-foreground break-words overflow-y-auto max-h-[70vh] w-full ck-content"
+            dangerouslySetInnerHTML={{ __html: viewDescription || "" }}
+          />
+        </DialogContent>
+      </Dialog>
 
       <InternalMeetingDialog
         open={isDialogOpen}
