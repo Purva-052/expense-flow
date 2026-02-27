@@ -60,6 +60,9 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import { FilterConfig } from "@/components/table/table-toolbar";
 import { cn } from "@/lib/utils";
+import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
+import { useGetUserDropdownList } from "@/features/users/services";
+import { roles } from "@/utils/constant";
 
 // Schema validation
 const InternalMeetingSchema = z.object({
@@ -67,6 +70,7 @@ const InternalMeetingSchema = z.object({
   description: z.string().min(1, "Description is required"),
   projectId: z.number({ required_error: "Project is required" }),
   startDate: z.date({ required_error: "Start date is required" }),
+  employeeIds: z.array(z.number()).optional(), // For report log access
   // endDate is removed as per requirement
   link: z.string().url("Invalid URL").optional().or(z.literal("")),
 });
@@ -89,6 +93,10 @@ interface InternalMeetingDialogProps {
   isViewOnly?: boolean;
   currentData?: Partial<TInternalMeetingSchema> & {
     id?: number;
+    employees?: {
+      id: number;
+      name: string;
+    }[];
   };
   title?: string;
   descriptionLabel?: string;
@@ -108,6 +116,17 @@ export function InternalMeetingDialog({
   onSuccess,
 }: InternalMeetingDialogProps) {
   const [editorReady, setEditorReady] = useState(false);
+  const { data: usersList, isPending: usersListLoading }: any =
+    useGetUserDropdownList({
+      role: [
+        roles.TEAM_LEAD,
+        roles.ADMIN,
+        roles.PROJECT_MANAGER,
+        roles.DEVELOPER,
+        roles.BDE,
+      ],
+      status: "active",
+    });
 
   const form = useForm<TInternalMeetingSchema>({
     resolver: zodResolver(InternalMeetingSchema),
@@ -146,6 +165,9 @@ export function InternalMeetingDialog({
       form.reset({
         meetingName: currentData?.meetingName ?? "",
         description: currentData?.description ?? "",
+        employeeIds: currentData?.employees
+          ? currentData.employees.map((emp: any) => emp.id)
+          : [],
         link: currentData?.link ?? "",
         projectId:
           Number(projectId ?? currentData?.projectId) || (undefined as any),
@@ -255,6 +277,41 @@ export function InternalMeetingDialog({
                   </FormItem>
                 )}
               />
+
+              {isViewOnly ? (
+                <div className="space-y-2">
+                  <FormLabel>Employee Name</FormLabel>
+
+                  {currentData?.employees?.length ? (
+                    <div className="flex flex-wrap gap-2">
+                      {currentData.employees.map((emp: any) => (
+                        <span
+                          key={emp.id}
+                          className="px-3 py-1 bg-muted rounded-full text-sm"
+                        >
+                          {emp.name}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">-</p>
+                  )}
+                </div>
+              ) : (
+                <CustomDropDownSearchable
+                  form={form}
+                  name="employeeIds"
+                  label="Employee Name"
+                  multiple
+                  options={usersList?.data.map((user: any) => ({
+                    value: user.id,
+                    label: user.fullName,
+                  }))}
+                  placeholder="Select Employee Name"
+                  searchEnabled
+                  isLoading={usersListLoading}
+                />
+              )}
               {/* </div> */}
 
               {/* Link Field - Full Width */}
@@ -491,7 +548,38 @@ export function InternalMeetingListing({
         header: "Start Date",
         cell: ({ row }) => {
           const date = row.original.startDate;
-          return date ? format(new Date(date), "PPP") : "-";
+          return date ? format(new Date(date), "EEE, d MMM yyyy") : "-";
+        },
+      },
+      {
+        accessorKey: "employees",
+        header: "Employee Name(s)",
+        cell: ({ row }) => {
+          const employees = row.original?.employees;
+
+          if (!employees || employees.length === 0) return "-";
+
+          const visibleEmployees = employees.slice(0, 3);
+          const remainingCount = employees.length - 3;
+
+          return (
+            <div className="flex flex-wrap gap-1 items-center">
+              {visibleEmployees.map((emp: any) => (
+                <span
+                  key={emp.id}
+                  className="px-2 py-0.5 bg-muted rounded-full text-sm"
+                >
+                  {emp.name}
+                </span>
+              ))}
+
+              {remainingCount > 0 && (
+                <span className="px-2 py-0.5 bg-muted rounded-full text-sm font-medium">
+                  +{remainingCount} more
+                </span>
+              )}
+            </div>
+          );
         },
       },
       // {
@@ -519,8 +607,8 @@ export function InternalMeetingListing({
           const desc = stripHtml(rawDesc);
 
           return (
-            <div className="w-full min-w-0">
-              <p className="text-muted-foreground line-clamp-4 break-words whitespace-normal overflow-hidden">
+            <div className="min-w-[400px] max-w-[600px]">
+              <p className="text-muted-foreground line-clamp-4 break-words whitespace-normal">
                 {desc}
               </p>
             </div>

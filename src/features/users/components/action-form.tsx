@@ -11,10 +11,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Form } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import CustomButton from "@/components/shared/custom-button";
 import { Button } from "@/components/ui/button";
-import { TextInputField } from "@/components/shared/custom-input-field";
 import { Checkbox } from "@/components/ui/checkbox";
 import { addUserSchema, editUserSchema, TUserFormSchema } from "../schema";
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
@@ -25,6 +31,8 @@ import { useState, useEffect, useRef } from "react";
 import { useUploadTransactionFile } from "../../transaction-logs/services";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 // import { Switch } from "@/components/ui/switch";
 
 interface Props {
@@ -362,47 +370,85 @@ export function UserActionForm({
                   </div>
                 </div>
 
-                <TextInputField
+                <FormField
                   control={form.control}
                   name="fullName"
-                  label="Full Name"
-                  placeholder="Enter full name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Full Name <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter full name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
 
-                <TextInputField
+                <FormField
                   control={form.control}
                   name="email"
-                  label="Email"
-                  placeholder="Enter email"
-                  type="email"
-                  autoComplete="new-email" // 👈 disables auto-fill
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Email <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter email" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
 
                 {!isEdit && (
-                  <TextInputField
+                  <FormField
                     control={form.control}
                     name="password"
-                    label="Password"
-                    placeholder="Enter password"
-                    type="password"
-                    autoComplete="new-password" // 👈 disables Chrome’s “suggested password”
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Password <span className="text-red-500">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter password" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 )}
 
                 {/* Role Dropdown */}
-                <CustomDropDownSearchable
-                  form={form}
+
+                <FormField
+                  control={form.control}
                   name="role"
-                  label="Role"
-                  options={roleList?.data?.map((role: any) => ({
-                    value: role,
-                    label: role
-                      .split("_")
-                      .map((word: any) => word[0].toUpperCase() + word.slice(1))
-                      .join(" "),
-                  }))}
-                  placeholder="Select role"
-                  isLoading={roleListLoading}
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>
+                        Role<span className="text-red-500">*</span>
+                      </FormLabel>
+                      <CustomDropDownSearchable
+                        form={form}
+                        name="role"
+                        label=""
+                        options={roleList?.data?.map((role: any) => ({
+                          value: role,
+                          label: role
+                            .split("_")
+                            .map(
+                              (word: any) =>
+                                word[0].toUpperCase() + word.slice(1)
+                            )
+                            .join(" "),
+                        }))}
+                        placeholder="Select role"
+                        isLoading={roleListLoading}
+                      />
+                    </FormItem>
+                  )}
                 />
 
                 {/* Technology Dropdown (disabled for project_manager) */}
@@ -448,10 +494,27 @@ export function UserActionForm({
                   label="Date of Birth"
                 />
 
-                <CustomDatePicker
+                <FormField
                   control={form.control}
                   name="careerStartDate"
-                  label="Career Start Date"
+                  render={({ fieldState }) => (
+                    <FormItem>
+                      <FormLabel
+                        className={cn(
+                          "flex items-center gap-1",
+                          fieldState.error && "text-red-500"
+                        )}
+                      >
+                        Career Start Date
+                        <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <CustomDatePicker
+                        control={form.control}
+                        name="careerStartDate"
+                        label=""
+                      />
+                    </FormItem>
+                  )}
                 />
 
                 {/* ✅ Status Checkbox */}
