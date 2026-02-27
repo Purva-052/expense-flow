@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Form } from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -75,7 +75,7 @@ export function ServerActionForm({
                 render={({ field, fieldState }) => (
                   <div className="flex flex-col gap-1">
                     <label htmlFor={field.name} className="font-medium text-sm">
-                      IP Address
+                      IP Address<span className="text-red-500 ml-1">*</span>
                     </label>
                     <Input
                       {...field}
@@ -94,15 +94,26 @@ export function ServerActionForm({
                 )}
               />
 
-              {/* Owner Dropdown */}
-              <CustomDropDownSearchable
-                form={form}
+              <FormField
+                control={form.control}
                 name="ownerName"
-                label="Owner"
-                options={ServerOwnerTypeOptions}
-                placeholder="Select Owner"
-                searchEnabled={false}
+                render={() => (
+                  <FormItem>
+                    <FormLabel>
+                      Owner<span className="text-red-500">*</span>
+                    </FormLabel>
+                    <CustomDropDownSearchable
+                      form={form}
+                      name="ownerName"
+                      label=""
+                      options={ServerOwnerTypeOptions}
+                      placeholder="Select Owner"
+                      searchEnabled={false}
+                    />
+                  </FormItem>
+                )}
               />
+              {/* Owner Dropdown */}
 
               {/* SSL / NONSSL */}
               <div className="flex items-center justify-between border rounded-md p-3">

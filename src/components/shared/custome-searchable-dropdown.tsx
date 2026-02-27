@@ -222,7 +222,7 @@ const CustomDropDownSearchable = ({
                           const remainingCount = entries.length - 3;
 
                           return (
-                            <span className="min-w-0 flex flex-1 flex-wrap items-center gap-1">
+                            <span className="min-w-0 flex flex-wrap items-center gap-1">
                               {shown.map((entry: any, i: any) => (
                                 <span
                                   key={i}

@@ -8,13 +8,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Form } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import CustomButton from "@/components/shared/custom-button";
 import { TextInputField } from "@/components/shared/custom-input-field";
 import { clientFormSchema, TClientFormSchema } from "../schema";
 import { useTimezoneSelect, allTimezones } from "react-timezone-select";
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import { useGetCountryDropdownList } from "../services";
+import { Input } from "@/components/ui/input";
 
 interface Props {
   currentRow?: any;
@@ -89,40 +97,74 @@ export function ClientActionForm({
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-4 p-0.5"
             >
-              <TextInputField
+              <FormField
                 control={form.control}
                 name="name"
-                label="Name"
-                placeholder="Enter name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Name <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
+
               <TextInputField
                 control={form.control}
                 name="company"
                 label="Company"
                 placeholder="Enter company"
               />
-              <CustomDropDownSearchable
-                form={form}
+
+              <FormField
+                control={form.control}
                 name="countryId"
-                label="Country"
-                placeholder="Select country"
-                sortOptions={false}
-                options={countryList?.data?.map((opt: any) => {
-                  return { value: opt.id, label: opt.name };
-                })}
-                // change for the country id fixing
+                render={() => (
+                  <FormItem>
+                    <FormLabel>
+                      Country<span className="text-red-500">*</span>
+                    </FormLabel>
+                    <CustomDropDownSearchable
+                      form={form}
+                      name="countryId"
+                      label=""
+                      placeholder="Select country"
+                      sortOptions={false}
+                      options={countryList?.data?.map((opt: any) => {
+                        return { value: opt.id, label: opt.name };
+                      })}
+                      // change for the country id fixing
+                    />
+                  </FormItem>
+                )}
               />
-              <CustomDropDownSearchable
-                form={form}
+
+              <FormField
+                control={form.control}
                 name="timezone"
-                label="Timezone"
-                isLoading={loadingCountry}
-                sortOptions={true}
-                options={options?.map((opt) => {
-                  return { value: opt.value, label: opt.label };
-                })}
-                placeholder="Select Timezone"
-                searchEnabled={true}
+                render={() => (
+                  <FormItem>
+                    <FormLabel>
+                      Timezone<span className="text-red-500">*</span>
+                    </FormLabel>
+                    <CustomDropDownSearchable
+                      form={form}
+                      name="timezone"
+                      label=""
+                      isLoading={loadingCountry}
+                      sortOptions={true}
+                      options={options?.map((opt) => {
+                        return { value: opt.value, label: opt.label };
+                      })}
+                      placeholder="Select Timezone"
+                      searchEnabled={true}
+                    />
+                  </FormItem>
+                )}
               />
             </form>
           </Form>

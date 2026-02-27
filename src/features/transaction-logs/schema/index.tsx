@@ -36,8 +36,7 @@ export const transactionLogSchema = z
     ),
     cardLast4: z
       .string()
-      .min(1, "Card last 4 digits is required")
-      .max(4, "Card last 4 digits must be 4 characters"),
+      .regex(/^\d{4}$/, "Card last 4 digits must be exactly 4 numbers"),
     transactionDate: z.date({
       required_error: "Transaction Date is required",
       invalid_type_error: "Please select a valid date",
