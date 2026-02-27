@@ -8,10 +8,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Form } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import CustomButton from "@/components/shared/custom-button";
-import { TextInputField } from "@/components/shared/custom-input-field";
 import { technologyFormSchema, TTechnologyFormSchema } from "../schema";
+import { Input } from "@/components/ui/input";
 
 interface Props {
   currentRow?: any;
@@ -65,18 +72,36 @@ export function TechnologyActionForm({
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-4 p-0.5"
             >
-              <TextInputField
+              <FormField
                 control={form.control}
                 name="name"
-                label="Technology Name"
-                placeholder="Enter technology name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Technology Name <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter technology name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              <TextInputField
+
+              <FormField
                 control={form.control}
                 name="color"
-                label="Color HEX"
-                placeholder="#61DAFB"
-                type="text"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Color HEX <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter color HEX" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </form>
           </Form>

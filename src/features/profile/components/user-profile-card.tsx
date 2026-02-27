@@ -131,7 +131,12 @@ const ProfileSkeleton = () => {
   );
 };
 
-export const UserProfileCard = ({ user }: { user: any }) => {
+interface UserProfileCardProps {
+  user: any;
+  isReadOnly?: boolean;
+}
+
+export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [localIsUploading, setLocalIsUploading] = useState(false);
   const [selectedSkills, setSelectedSkills] = useState<Skill[]>([]);
@@ -238,6 +243,7 @@ export const UserProfileCard = ({ user }: { user: any }) => {
   }, [user]);
 
   const handleFileSelect = async (file: File) => {
+    if (isReadOnly) return;
     if (!file) return;
 
     // Check file size (2MB limit)
@@ -522,24 +528,9 @@ export const UserProfileCard = ({ user }: { user: any }) => {
       <div className="bg-linear-to-r from-black to-[#e80339] text-white py-12">
         <div className="max-w-6xl mx-auto px-6 flex items-center gap-6">
           <FormProvider {...methods}>
-            <FileUpload
-              name="file"
-              label=""
-              onFileSelect={handleFileSelect}
-              hideDefaultUI
-              acceptedFormats={{
-                "image/jpeg": [".jpg", ".jpeg"],
-                "image/png": [".png"],
-              }}
-              className="flex flex-col items-center"
-            >
-              <div className="relative group cursor-pointer">
-                <Avatar className="h-24 w-24 text-3xl border-4 border-white overflow-hidden relative transition-all duration-300 group-hover:opacity-90">
-                  {(localIsUploading || isUpdating) && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/10 z-10 transition-opacity">
-                      <Loader2 className="h-8 w-8 animate-spin text-white" />
-                    </div>
-                  )}
+            <div className="flex flex-col items-center">
+              {isReadOnly ? (
+                <Avatar className="h-24 w-24 text-3xl border-4 border-white overflow-hidden">
                   <AvatarImage
                     src={previewUrl || ""}
                     alt={user?.fullName}
@@ -549,11 +540,41 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                     {getInitials(user?.fullName)}
                   </AvatarFallback>
                 </Avatar>
-                <div className="absolute bottom-0 right-0 h-8 w-8 bg-primary rounded-full flex items-center justify-center border-2 border-white shadow-sm text-white group-hover:scale-110 transition-all duration-200">
-                  <Pencil className="h-4 w-4" />
-                </div>
-              </div>
-            </FileUpload>
+              ) : (
+                <FileUpload
+                  name="file"
+                  label=""
+                  onFileSelect={handleFileSelect}
+                  hideDefaultUI
+                  acceptedFormats={{
+                    "image/jpeg": [".jpg", ".jpeg"],
+                    "image/png": [".png"],
+                  }}
+                  className="flex flex-col items-center"
+                >
+                  <div className="relative group cursor-pointer">
+                    <Avatar className="h-24 w-24 text-3xl border-4 border-white overflow-hidden relative transition-all duration-300 group-hover:opacity-90">
+                      {(localIsUploading || isUpdating) && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/10 z-10 transition-opacity">
+                          <Loader2 className="h-8 w-8 animate-spin text-white" />
+                        </div>
+                      )}
+                      <AvatarImage
+                        src={previewUrl || ""}
+                        alt={user?.fullName}
+                        className="object-cover"
+                      />
+                      <AvatarFallback className="bg-gray-600 text-white">
+                        {getInitials(user?.fullName)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="absolute bottom-0 right-0 h-8 w-8 bg-primary rounded-full flex items-center justify-center border-2 border-white shadow-sm text-white group-hover:scale-110 transition-all duration-200">
+                      <Pencil className="h-4 w-4" />
+                    </div>
+                  </div>
+                </FileUpload>
+              )}
+            </div>
           </FormProvider>
           <div>
             <h1 className="text-3xl font-bold">{user?.fullName}</h1>
@@ -639,53 +660,63 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                               </SelectItem>
                             </SelectContent>
                           </Select>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-6 w-6 p-0"
-                            onClick={() => handleSaveCertificate(cert.id)}
-                            disabled={isUpdatingCertificate}
-                          >
-                            <Check className="h-3 w-3 text-green-600" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-6 w-6 p-0"
-                            onClick={handleCancelEdit}
-                          >
-                            <X className="h-3 w-3 text-red-600" />
-                          </Button>
+                          {!isReadOnly && (
+                            <>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-6 w-6 p-0"
+                                onClick={() => handleSaveCertificate(cert.id)}
+                                disabled={isUpdatingCertificate}
+                              >
+                                <Check className="h-3 w-3 text-green-600" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-6 w-6 p-0"
+                                onClick={handleCancelEdit}
+                              >
+                                <X className="h-3 w-3 text-red-600" />
+                              </Button>
+                            </>
+                          )}
                         </div>
                       ) : (
-                        <Badge className="bg-yellow-500 text-white pr-1 uppercase">
-                          <Award className="h-3 w-3 mr-1" />
-                          {cert?.name}
-                          <div className="ml-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-4 w-4 p-0 hover:bg-yellow-600"
-                              onClick={() =>
-                                handleEditCertificate(
-                                  cert.id,
-                                  cert.name,
-                                  cert.status || "preparation"
-                                )
-                              }
-                            >
-                              <Pencil className="h-2.5 w-2.5" />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-4 w-4 p-0 hover:bg-yellow-600"
-                              onClick={() => handleDeleteCertificate(cert.id)}
-                            >
-                              <X className="h-2.5 w-2.5" />
-                            </Button>
-                          </div>
-                        </Badge>
+                        <>
+                          <Badge className="bg-yellow-500 text-white pr-1 uppercase">
+                            <Award className="h-3 w-3 mr-1" />
+                            {cert?.name}
+                            {!isReadOnly && (
+                              <div className="ml-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-4 w-4 p-0 hover:bg-yellow-600"
+                                  onClick={() =>
+                                    handleEditCertificate(
+                                      cert.id,
+                                      cert.name,
+                                      cert.status || "preparation"
+                                    )
+                                  }
+                                >
+                                  <Pencil className="h-2.5 w-2.5" />
+                                </Button>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-4 w-4 p-0 hover:bg-yellow-600"
+                                  onClick={() =>
+                                    handleDeleteCertificate(cert.id)
+                                  }
+                                >
+                                  <X className="h-2.5 w-2.5" />
+                                </Button>
+                              </div>
+                            )}
+                          </Badge>
+                        </>
                       )}
                     </div>
                   ))
@@ -696,44 +727,46 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                 )}
               </div>
 
-              <div className="border-t pt-4 flex gap-3">
-                <Input
-                  placeholder="Add certificate (e.g., AWS Certified, Google Cloud...)"
-                  value={certInput}
-                  onChange={(e) => setCertInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && certInput.trim()) {
-                      handleAddCertificate();
+              {!isReadOnly && (
+                <div className="border-t pt-4 flex gap-3">
+                  <Input
+                    placeholder="Add certificate (e.g., AWS Certified, Google Cloud...)"
+                    value={certInput}
+                    onChange={(e) => setCertInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && certInput.trim()) {
+                        handleAddCertificate();
+                      }
+                    }}
+                  />
+                  <Select
+                    value={status}
+                    onOpenChange={preserveScroll}
+                    onValueChange={(value: "preparation" | "completed") =>
+                      setStatus(value)
                     }
-                  }}
-                />
-                <Select
-                  value={status}
-                  onOpenChange={preserveScroll}
-                  onValueChange={(value: "preparation" | "completed") =>
-                    setStatus(value)
-                  }
-                >
-                  <SelectTrigger className="w-[140px]">
-                    <SelectValue placeholder="Select Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="preparation">Preparation</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  onClick={handleAddCertificate}
-                  disabled={!certInput.trim() || isCreatingCertificate}
-                >
-                  {isCreatingCertificate ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Plus className="h-4 w-4 mr-2" />
-                  )}
-                  Add
-                </Button>
-              </div>
+                  >
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue placeholder="Select Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="preparation">Preparation</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    onClick={handleAddCertificate}
+                    disabled={!certInput.trim() || isCreatingCertificate}
+                  >
+                    {isCreatingCertificate ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Plus className="h-4 w-4 mr-2" />
+                    )}
+                    Add
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
@@ -771,18 +804,20 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                             <span className="inline-flex items-center">
                               {item?.skill?.skillName}
                             </span>
-                            <div className="ml-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-4 w-4 p-0 hover:bg-blue-600"
-                                onClick={() =>
-                                  handleDeleteSkill(item?.skill?.id, "skill")
-                                }
-                              >
-                                <X className="h-2.5 w-2.5" />
-                              </Button>
-                            </div>
+                            {!isReadOnly && (
+                              <div className="ml-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-4 w-4 p-0 hover:bg-blue-600"
+                                  onClick={() =>
+                                    handleDeleteSkill(item?.skill?.id, "skill")
+                                  }
+                                >
+                                  <X className="h-2.5 w-2.5" />
+                                </Button>
+                              </div>
+                            )}
                           </Badge>
                         </div>
                       ))
@@ -807,18 +842,23 @@ export const UserProfileCard = ({ user }: { user: any }) => {
                             <span className="inline-flex items-center">
                               {item?.skill?.skillName}
                             </span>
-                            <div className="ml-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-4 w-4 p-0 hover:bg-yellow-300"
-                                onClick={() =>
-                                  handleDeleteSkill(item?.skill?.id, "learning")
-                                }
-                              >
-                                <X className="h-2.5 w-2.5" />
-                              </Button>
-                            </div>
+                            {!isReadOnly && (
+                              <div className="ml-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-4 w-4 p-0 hover:bg-yellow-300"
+                                  onClick={() =>
+                                    handleDeleteSkill(
+                                      item?.skill?.id,
+                                      "learning"
+                                    )
+                                  }
+                                >
+                                  <X className="h-2.5 w-2.5" />
+                                </Button>
+                              </div>
+                            )}
                           </Badge>
                         </div>
                       ))
@@ -832,96 +872,100 @@ export const UserProfileCard = ({ user }: { user: any }) => {
               </div>
 
               {/* Add Skill with Type */}
-              <div className="border-t pt-6 flex gap-3 items-end">
-                <div className="flex-1">
-                  <CreatableSkillsSelect
-                    options={filteredSkillOptions}
-                    selected={selectedSkills}
-                    onChange={setSelectedSkills}
-                    onCreateSkill={handleCreateSkill}
+              {!isReadOnly && (
+                <div className="border-t pt-6 flex gap-3 items-end">
+                  <div className="flex-1">
+                    <CreatableSkillsSelect
+                      options={filteredSkillOptions}
+                      selected={selectedSkills}
+                      onChange={setSelectedSkills}
+                      onCreateSkill={handleCreateSkill}
+                      onOpenChange={preserveScroll}
+                      loading={skillsLoading}
+                      creating={isCreatingSkill}
+                      placeholder="e.g., React, Node.js, Docker..."
+                      maxSelectedShow={3}
+                    />
+                  </div>
+                  <Select
+                    value={skillType}
                     onOpenChange={preserveScroll}
-                    loading={skillsLoading}
-                    creating={isCreatingSkill}
-                    placeholder="e.g., React, Node.js, Docker..."
-                    maxSelectedShow={3}
-                  />
-                </div>
-                <Select
-                  value={skillType}
-                  onOpenChange={preserveScroll}
-                  onValueChange={(value: "skill" | "learning") =>
-                    setSkillType(value)
-                  }
-                >
-                  <SelectTrigger className="w-[140px]">
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="skill">Skill</SelectItem>
-                    <SelectItem value="learning">Want to Learn</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  onClick={async () => {
-                    if (selectedSkills.length > 0) {
-                      await Promise.all(
-                        selectedSkills.map((skill) =>
-                          handleAddSkillWithType(skill)
-                        )
-                      );
-                      // Clear selection after all skills are added
-                      setSelectedSkills([]);
+                    onValueChange={(value: "skill" | "learning") =>
+                      setSkillType(value)
                     }
-                  }}
-                  disabled={selectedSkills.length === 0 || isAddingSkill}
-                >
-                  {isAddingSkill ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Plus className="h-4 w-4 mr-2" />
-                  )}
-                  Add
-                </Button>
-              </div>
+                  >
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="skill">Skill</SelectItem>
+                      <SelectItem value="learning">Want to Learn</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    onClick={async () => {
+                      if (selectedSkills.length > 0) {
+                        await Promise.all(
+                          selectedSkills.map((skill) =>
+                            handleAddSkillWithType(skill)
+                          )
+                        );
+                        // Clear selection after all skills are added
+                        setSelectedSkills([]);
+                      }
+                    }}
+                    disabled={selectedSkills.length === 0 || isAddingSkill}
+                  >
+                    {isAddingSkill ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Plus className="h-4 w-4 mr-2" />
+                    )}
+                    Add
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
 
         {/* ================= PROJECT VIEW PREFERENCE ================= */}
-        <Card className="shadow-sm">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-blue-500" />
-              Project View Preference
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Choose how you want to view projects on the Kanban board
-            </p>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label
-                  htmlFor="project-view-toggle"
-                  className="text-base font-medium"
-                >
-                  {projectViewType === "grid" ? "Grid View" : "List View"}
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  {projectViewType === "grid"
-                    ? "Projects displayed as cards in a grid layout"
-                    : "Projects displayed in a compact list layout"}
-                </p>
+        {!isReadOnly && (
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-blue-500" />
+                Project View Preference
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Choose how you want to view projects on the Kanban board
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label
+                    htmlFor="project-view-toggle"
+                    className="text-base font-medium"
+                  >
+                    {projectViewType === "grid" ? "Grid View" : "List View"}
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    {projectViewType === "grid"
+                      ? "Projects displayed as cards in a grid layout"
+                      : "Projects displayed in a compact list layout"}
+                  </p>
+                </div>
+                <Switch
+                  id="project-view-toggle"
+                  checked={projectViewType === "list"}
+                  onCheckedChange={handleProjectViewToggle}
+                  disabled={isUpdating}
+                />
               </div>
-              <Switch
-                id="project-view-toggle"
-                checked={projectViewType === "list"}
-                onCheckedChange={handleProjectViewToggle}
-                disabled={isUpdating}
-              />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
         {/* ================= SKILLS SECTION ================= */}
         {/* {user?.role !== "admin" && user?.role !== "project_manager" && (
@@ -964,53 +1008,60 @@ export const UserProfileCard = ({ user }: { user: any }) => {
         )}
 
         {/* ================= UPDATE PASSWORD ================= */}
-        <Card className="shadow-sm">
-          <CardFooter className="pt-6">
-            <DialogTrigger asChild>
-              <Button className="w-full" variant="outline">
-                <KeyRound className="mr-2 h-4 w-4" />
-                Update Password
-              </Button>
-            </DialogTrigger>
-          </CardFooter>
-        </Card>
+        {!isReadOnly && (
+          <Card className="shadow-sm">
+            <CardFooter className="pt-6">
+              <DialogTrigger asChild>
+                <Button className="w-full" variant="outline">
+                  <KeyRound className="mr-2 h-4 w-4" />
+                  Update Password
+                </Button>
+              </DialogTrigger>
+            </CardFooter>
+          </Card>
+        )}
       </div>
 
-      <Dialog open={showCropDialog} onOpenChange={setShowCropDialog}>
-        <DialogContent className="sm:max-w-xl">
-          <DialogHeader>
-            <DialogTitle>Crop Profile Picture</DialogTitle>
-            <DialogDescription>
-              Max file size : 2MB. Please crop your image to a square aspect
-              ratio for best results.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="mt-4">
-            {image && (
-              <Cropper
-                src={image}
-                style={{ height: 400, width: "100%" }}
-                initialAspectRatio={1}
-                aspectRatio={1}
-                guides={true}
-                ref={cropperRef}
-                viewMode={1}
-                dragMode="move"
-                background={false}
-                responsive={true}
-                autoCropArea={1}
-                checkOrientation={false}
-              />
-            )}
-          </div>
-          <DialogFooter className="mt-6">
-            <Button variant="outline" onClick={() => setShowCropDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleCrop}>Crop & Save</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {!isReadOnly && (
+        <Dialog open={showCropDialog} onOpenChange={setShowCropDialog}>
+          <DialogContent className="sm:max-w-xl">
+            <DialogHeader>
+              <DialogTitle>Crop Profile Picture</DialogTitle>
+              <DialogDescription>
+                Max file size : 2MB. Please crop your image to a square aspect
+                ratio for best results.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-4">
+              {image && (
+                <Cropper
+                  src={image}
+                  style={{ height: 400, width: "100%" }}
+                  initialAspectRatio={1}
+                  aspectRatio={1}
+                  guides={true}
+                  ref={cropperRef}
+                  viewMode={1}
+                  dragMode="move"
+                  background={false}
+                  responsive={true}
+                  autoCropArea={1}
+                  checkOrientation={false}
+                />
+              )}
+            </div>
+            <DialogFooter className="mt-6">
+              <Button
+                variant="outline"
+                onClick={() => setShowCropDialog(false)}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleCrop}>Crop & Save</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
