@@ -11,6 +11,7 @@ export const ViewUserProfileModal = () => {
   // Fetch full details
   const { data: userData, isLoading }: any = useGetUserDetails(currentRow?.id, {
     enabled: !!currentRow?.id && isOpen,
+    isLearning: true,
   });
 
   const handleClose = () => {

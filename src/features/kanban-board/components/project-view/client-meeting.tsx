@@ -501,11 +501,7 @@ export function ClientMeetingListing({
         header: "Meeting Date",
         cell: ({ row }) => {
           const date = row.original.startDate;
-          return date ? (
-            <div className="text-sm">{format(new Date(date), "PPP")}</div>
-          ) : (
-            <span className="text-muted-foreground">-</span>
-          );
+          return date ? format(new Date(date), "EEE, d MMM yyyy") : "-";
         },
       },
       {

@@ -96,7 +96,7 @@ export function ToolsActionForm({
           <DialogTitle>{isEdit ? "Edit Tool" : "Add Tool"}</DialogTitle>
         </DialogHeader>
 
-        <div className="h-fit w-full overflow-y-auto py-1">
+        <div className="h-fit w-full overflow-y-auto py-2">
           <Form {...form}>
             <form
               id="tools-form"
@@ -114,33 +114,6 @@ export function ToolsActionForm({
                     </FormLabel>
                     <FormControl>
                       <Input {...field} placeholder="e.g. GitLab" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Description */}
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Description <span className="text-red-500">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <div className="space-y-1">
-                        <Textarea
-                          {...field}
-                          maxLength={150}
-                          placeholder="Tool description..."
-                          className="w-full max-w-full resize-none break-all whitespace-pre-wrap overflow-y-auto overflow-x-hidden pr-4 pb-2 min-h-[80px]"
-                        />
-                        <div className="text-xs text-muted-foreground text-right">
-                          {field.value?.length || 0}/150
-                        </div>
-                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -203,6 +176,33 @@ export function ToolsActionForm({
                 placeholder="Select user"
                 isLoading={usersListLoading}
                 triggerClassName="h-9"
+              />
+
+              {/* Description */}
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Description <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <div className="space-y-1">
+                        <Textarea
+                          {...field}
+                          maxLength={150}
+                          placeholder="Tool description..."
+                          className="w-full max-w-full resize-none break-all whitespace-pre-wrap overflow-y-auto overflow-x-hidden pr-4 pb-2 min-h-[80px]"
+                        />
+                        <div className="text-xs text-muted-foreground text-right">
+                          {field.value?.length || 0}/150
+                        </div>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </form>
           </Form>

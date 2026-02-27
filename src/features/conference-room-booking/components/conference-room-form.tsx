@@ -414,7 +414,9 @@ export const ConferenceRoomForm = ({
                     name="meetingName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Meeting Name</FormLabel>
+                        <FormLabel>
+                          Meeting Name<span className="text-red-500">*</span>
+                        </FormLabel>
                         <FormControl>
                           <Input placeholder="Team Standup" {...field} />
                         </FormControl>
@@ -423,13 +425,24 @@ export const ConferenceRoomForm = ({
                     )}
                   />
 
-                  <CustomDropDownSearchable
-                    form={form}
+                  <FormField
+                    control={form.control}
                     name="meetingType"
-                    label="Meeting Type"
-                    options={MeetingType}
-                    placeholder="Select Meeting type"
-                    searchEnabled={false}
+                    render={() => (
+                      <FormItem>
+                        <FormLabel>
+                          Meeting Type<span className="text-red-500">*</span>
+                        </FormLabel>
+                        <CustomDropDownSearchable
+                          form={form}
+                          name="meetingType"
+                          label=""
+                          options={MeetingType}
+                          placeholder="Select Meeting type"
+                          searchEnabled={false}
+                        />
+                      </FormItem>
+                    )}
                   />
 
                   <CustomDropDownSearchable
@@ -444,13 +457,24 @@ export const ConferenceRoomForm = ({
                     sortOptions={false}
                   />
 
-                  <CustomDropDownSearchable
-                    form={form}
+                  <FormField
+                    control={form.control}
                     name="recurringType"
-                    label="Recurring Type"
-                    options={recurringTypes}
-                    placeholder="Select recurring type"
-                    searchEnabled={false}
+                    render={() => (
+                      <FormItem>
+                        <FormLabel>
+                          Recurring Type<span className="text-red-500">*</span>
+                        </FormLabel>
+                        <CustomDropDownSearchable
+                          form={form}
+                          name="recurringType"
+                          label=""
+                          options={recurringTypes}
+                          placeholder="Select recurring type"
+                          searchEnabled={false}
+                        />
+                      </FormItem>
+                    )}
                   />
 
                   {/* {recurringType && recurringType !== "none" && ( */}

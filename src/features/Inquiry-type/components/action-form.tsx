@@ -8,11 +8,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Form } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import CustomButton from "@/components/shared/custom-button";
-import { TextInputField } from "@/components/shared/custom-input-field";
 import { TProjectFormSchema } from "@/features/projects/schema";
 import { InquiryTypeSchema, TInquiryTypeSchema } from "../schema";
+import { Input } from "@/components/ui/input";
 
 interface Props {
   currentRow?: any;
@@ -65,11 +72,20 @@ export function InquiryTypeActionForm({
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-4 p-0.5"
             >
-              <TextInputField
+              <FormField
                 control={form.control}
                 name="name"
-                label="Inquiry Type name"
-                placeholder="Enter Inquiry Type name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Inquiry Type name <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter Inquiry Type name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </form>
           </Form>
