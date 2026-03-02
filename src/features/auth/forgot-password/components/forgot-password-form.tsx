@@ -63,8 +63,8 @@ export function ForgotPasswordForm({
             Check your inbox!
           </h2>
           <p className="text-sm text-gray-300 max-w-sm">
-            A password reset link has been sent to your email.  
-            Please check your inbox to set your new password.
+            Your current password has been sent to your registered email
+            address. Please use that password to log in to your account.
           </p>
         </div>
 
