@@ -66,7 +66,7 @@ const MeetingsOverviewListing = ({
     projectId,
     coordinatorId,
   ]);
-
+  const [activeTab, _] = useState("projects");
   const isSelectionMissing = !projectId && !coordinatorId;
   const queryParams = {
     page,
@@ -217,9 +217,14 @@ const MeetingsOverviewListing = ({
                 <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0 w-[150px]">
                   Start Date
                 </th>
-                <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0 w-[45%]">
-                  Employee Name(s)
+                <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0 w-[40%]">
+                  Coordinator(s)
                 </th>
+                {activeTab === "project_coordinator" && (
+                  <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0 w-[20%]">
+                    Project
+                  </th>
+                )}
                 <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0">
                   Description
                 </th>
@@ -262,6 +267,20 @@ const MeetingsOverviewListing = ({
                         </div>
                       )}
                     </td>
+
+                    {activeTab === "project_coordinator" && (
+                      <td className="p-4 align-middle">
+                        <div className="min-w-[200px]">
+                          {meeting.projectName ? (
+                            <span className="px-2 py-0.5 bg-muted rounded-full text-sm">
+                              {meeting.projectName}
+                            </span>
+                          ) : (
+                            "-"
+                          )}
+                        </div>
+                      </td>
+                    )}
                     <td className="p-4 align-middle">
                       <div className="min-w-[300px]">
                         <p className="text-muted-foreground line-clamp-4 break-words whitespace-normal">
@@ -302,12 +321,12 @@ const MeetingsOverviewListing = ({
 // --- Main Tab Component ---
 interface MeetingsOverviewTabProps {
   search: string;
-  technologyIds: (string | number)[];
+  // technologyIds: (string | number)[];
 }
 
 const MeetingsOverviewTab = ({
   search,
-  technologyIds,
+  // technologyIds,
 }: MeetingsOverviewTabProps) => {
   const [activeTab, setActiveTab] = useState("projects");
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(
@@ -317,10 +336,17 @@ const MeetingsOverviewTab = ({
     number | null
   >(null);
   const [projectSearch, setProjectSearch] = useState<string | undefined>();
+  const [projectHandlerSearch, setProjectHandlerSearch] = useState<
+    string | undefined
+  >();
   const debouncedProjectSearch = useDebounce(projectSearch, 500);
 
   const handleProjectSearch = (search: string | undefined) => {
     setProjectSearch(search ?? undefined);
+  };
+
+  const handleCoordinatorSearch = (search: string | undefined) => {
+    setProjectHandlerSearch(search ?? undefined);
   };
 
   const projectFilters: FilterConfig[] = [
@@ -330,6 +356,17 @@ const MeetingsOverviewTab = ({
       key: "search",
       value: projectSearch,
       onChange: handleProjectSearch,
+      className: "w-[250px]",
+    },
+  ];
+
+  const coordinatorFilters: FilterConfig[] = [
+    {
+      type: "search",
+      placeholder: "Search by coordinator name ...",
+      key: "search",
+      value: projectHandlerSearch,
+      onChange: handleCoordinatorSearch,
       className: "w-[250px]",
     },
   ];
@@ -344,7 +381,7 @@ const MeetingsOverviewTab = ({
     useGetProjectsData({
       pagination: false,
       search: debouncedProjectSearch || search,
-      technologyId: technologyIds.length > 0 ? technologyIds : undefined,
+      // technologyId: technologyIds.length > 0 ? technologyIds : undefined,
       status: "active",
     });
 
@@ -359,7 +396,7 @@ const MeetingsOverviewTab = ({
   // 2. Fetch Coordinators (Tab 2)
   const { data: coordinatorsData, isPending: coordinatorsLoading }: any =
     useGetProjectHandlerProjectsAPI({
-      search: search,
+      search: projectHandlerSearch || search,
       enabled: activeTab === "Project Coordinator",
     });
 
@@ -401,6 +438,9 @@ const MeetingsOverviewTab = ({
   const tabTriggerClass =
     "flex items-center gap-2 rounded-[50px] px-3 py-2  transition-all " +
     "data-[state=active]:bg-black data-[state=active]:text-white";
+  const activeListItemClass =
+    "bg-gradient-to-r from-[#f43f5e] to-[#e11d48] text-white border-[#fb7185]";
+  const inactiveListItemClass = "hover:bg-[#fff4f7] border-transparent";
 
   return (
     <div className="flex flex-col h-full min-h-0 gap-4 overflow-hidden">
@@ -414,7 +454,7 @@ const MeetingsOverviewTab = ({
             Projects
           </TabsTrigger>
           <TabsTrigger value="Project Coordinator" className={tabTriggerClass}>
-            Project Coordinator
+            Coordinator
           </TabsTrigger>
         </TabsList>
 
@@ -426,11 +466,14 @@ const MeetingsOverviewTab = ({
           <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-4 h-full min-h-0 overflow-hidden">
             {/* Left: Project List */}
             <Card className="flex flex-col h-full min-h-0 overflow-hidden">
-              <CardHeader className="p-3 border-b bg-muted/10">
-                <CardTitle className="text-sm font-medium">
+              <CardHeader className="pb-0! justify-center border-b bg-muted/10">
+                {/* <CardTitle className="text-sm font-medium">
                   Projects List
-                </CardTitle>
-                <GlobalFilterSection filters={projectFilters} />
+                </CardTitle> */}
+                <GlobalFilterSection
+                  filters={projectFilters}
+                  className="my-2"
+                />
               </CardHeader>
               <CardContent className="flex-1 min-h-0 overflow-y-auto p-2 space-y-1">
                 {projectsLoading ? (
@@ -445,8 +488,8 @@ const MeetingsOverviewTab = ({
                       className={`p-2.5 rounded-md cursor-pointer text-sm font-medium flex items-center gap-2 transition-colors border
                         ${
                           selectedProjectId === project.id
-                            ? "bg-primary text-primary-foreground border-primary"
-                            : "hover:bg-muted border-transparent"
+                            ? activeListItemClass
+                            : inactiveListItemClass
                         }`}
                     >
                       <Briefcase className="w-4 h-4 shrink-0" />
@@ -465,9 +508,18 @@ const MeetingsOverviewTab = ({
             <Card className="flex flex-col h-full min-h-0 overflow-hidden border-dashed">
               <CardHeader className="p-3 border-b flex justify-between items-center bg-muted/5">
                 <CardTitle className="text-sm font-medium">
-                  {selectedProjectId
-                    ? `${projectList.find((p: any) => p.id === selectedProjectId)?.name || "Unknown Project"} Internal Meetings`
-                    : "Internal Meetings"}
+                  {selectedProjectId ? (
+                    <>
+                      <span className="font-bold">
+                        {projectList.find(
+                          (p: any) => p.id === selectedProjectId
+                        )?.name || "Unknown Project"}
+                      </span>{" "}
+                      - Internal Meetings
+                    </>
+                  ) : (
+                    "Internal Meetings"
+                  )}
                 </CardTitle>
                 {/* {selectedProjectId && (
                   <Badge variant="outline">
@@ -492,10 +544,14 @@ const MeetingsOverviewTab = ({
         >
           <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-4 h-full min-h-0 overflow-hidden">
             <Card className="flex flex-col h-full min-h-0 overflow-hidden">
-              <CardHeader className="p-3 border-b bg-muted/10">
-                <CardTitle className="text-sm font-medium">
+              <CardHeader className="border-b bg-muted/10 pb-0! justify-center">
+                {/* <CardTitle className="text-sm font-medium">
                   Project Coordinator List
-                </CardTitle>
+                </CardTitle> */}
+                <GlobalFilterSection
+                  filters={coordinatorFilters}
+                  className="my-2"
+                />
               </CardHeader>
               <CardContent className="flex-1 min-h-0 overflow-y-auto p-2 space-y-1">
                 {coordinatorsLoading ? (
@@ -510,8 +566,8 @@ const MeetingsOverviewTab = ({
                       className={`p-2.5 rounded-md cursor-pointer text-sm font-medium flex items-center gap-2 transition-colors border
                         ${
                           selectedCoordinatorId === coordinator.id
-                            ? "bg-primary text-primary-foreground border-primary"
-                            : "hover:bg-muted border-transparent"
+                            ? activeListItemClass
+                            : inactiveListItemClass
                         }`}
                     >
                       <User className="w-4 h-4 shrink-0" />
@@ -529,9 +585,18 @@ const MeetingsOverviewTab = ({
             <Card className="flex flex-col h-full min-h-0 overflow-hidden border-dashed">
               <CardHeader className="p-3 border-b flex justify-between items-center bg-muted/5">
                 <CardTitle className="text-sm font-medium">
-                  {selectedCoordinatorId
-                    ? `${coordinatorsList.find((c: any) => c.id === selectedCoordinatorId)?.fullName || "Unknown Coordinator"} Internal Meetings`
-                    : "Internal Meetings"}
+                  {selectedCoordinatorId ? (
+                    <>
+                      <span className="font-bold">
+                        {coordinatorsList.find(
+                          (c: any) => c.id === selectedCoordinatorId
+                        )?.fullName || "Unknown Coordinator"}
+                      </span>{" "}
+                      - Internal Meetings
+                    </>
+                  ) : (
+                    "Internal Meetings"
+                  )}
                 </CardTitle>
               </CardHeader>
               <div className="flex-1 min-h-0 overflow-hidden">
