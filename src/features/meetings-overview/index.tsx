@@ -45,7 +45,7 @@ const MeetingsOverviewPage = () => {
 
   return (
     <PageLayout>
-      <TablePageHeader title="Meetings Overview">
+      <TablePageHeader title="Meetings Overview" showActionButton={false}>
         View and manage internal meetings across all projects.
       </TablePageHeader>
 
