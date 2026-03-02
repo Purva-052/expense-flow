@@ -29,6 +29,7 @@ import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedProjectTypeIndexRouteImport } from './routes/_authenticated/project-type/index'
 import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authenticated/profile/index'
 import { Route as AuthenticatedNewJoineesIndexRouteImport } from './routes/_authenticated/new-joinees/index'
+import { Route as AuthenticatedMeetingsOverviewIndexRouteImport } from './routes/_authenticated/meetings-overview/index'
 import { Route as AuthenticatedLinodeServerDashboardIndexRouteImport } from './routes/_authenticated/linode-server-dashboard/index'
 import { Route as AuthenticatedLeaveManagementIndexRouteImport } from './routes/_authenticated/leave-management/index'
 import { Route as AuthenticatedInterviewsIndexRouteImport } from './routes/_authenticated/interviews/index'
@@ -148,6 +149,12 @@ const AuthenticatedNewJoineesIndexRoute =
     path: '/new-joinees/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedMeetingsOverviewIndexRoute =
+  AuthenticatedMeetingsOverviewIndexRouteImport.update({
+    id: '/meetings-overview/',
+    path: '/meetings-overview/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedLinodeServerDashboardIndexRoute =
   AuthenticatedLinodeServerDashboardIndexRouteImport.update({
     id: '/linode-server-dashboard/',
@@ -235,6 +242,7 @@ export interface FileRoutesByFullPath {
   '/interviews/': typeof AuthenticatedInterviewsIndexRoute
   '/leave-management/': typeof AuthenticatedLeaveManagementIndexRoute
   '/linode-server-dashboard/': typeof AuthenticatedLinodeServerDashboardIndexRoute
+  '/meetings-overview/': typeof AuthenticatedMeetingsOverviewIndexRoute
   '/new-joinees/': typeof AuthenticatedNewJoineesIndexRoute
   '/profile/': typeof AuthenticatedProfileIndexRoute
   '/project-type/': typeof AuthenticatedProjectTypeIndexRoute
@@ -267,6 +275,7 @@ export interface FileRoutesByTo {
   '/interviews': typeof AuthenticatedInterviewsIndexRoute
   '/leave-management': typeof AuthenticatedLeaveManagementIndexRoute
   '/linode-server-dashboard': typeof AuthenticatedLinodeServerDashboardIndexRoute
+  '/meetings-overview': typeof AuthenticatedMeetingsOverviewIndexRoute
   '/new-joinees': typeof AuthenticatedNewJoineesIndexRoute
   '/profile': typeof AuthenticatedProfileIndexRoute
   '/project-type': typeof AuthenticatedProjectTypeIndexRoute
@@ -301,6 +310,7 @@ export interface FileRoutesById {
   '/_authenticated/interviews/': typeof AuthenticatedInterviewsIndexRoute
   '/_authenticated/leave-management/': typeof AuthenticatedLeaveManagementIndexRoute
   '/_authenticated/linode-server-dashboard/': typeof AuthenticatedLinodeServerDashboardIndexRoute
+  '/_authenticated/meetings-overview/': typeof AuthenticatedMeetingsOverviewIndexRoute
   '/_authenticated/new-joinees/': typeof AuthenticatedNewJoineesIndexRoute
   '/_authenticated/profile/': typeof AuthenticatedProfileIndexRoute
   '/_authenticated/project-type/': typeof AuthenticatedProjectTypeIndexRoute
@@ -335,6 +345,7 @@ export interface FileRouteTypes {
     | '/interviews/'
     | '/leave-management/'
     | '/linode-server-dashboard/'
+    | '/meetings-overview/'
     | '/new-joinees/'
     | '/profile/'
     | '/project-type/'
@@ -367,6 +378,7 @@ export interface FileRouteTypes {
     | '/interviews'
     | '/leave-management'
     | '/linode-server-dashboard'
+    | '/meetings-overview'
     | '/new-joinees'
     | '/profile'
     | '/project-type'
@@ -400,6 +412,7 @@ export interface FileRouteTypes {
     | '/_authenticated/interviews/'
     | '/_authenticated/leave-management/'
     | '/_authenticated/linode-server-dashboard/'
+    | '/_authenticated/meetings-overview/'
     | '/_authenticated/new-joinees/'
     | '/_authenticated/profile/'
     | '/_authenticated/project-type/'
@@ -568,6 +581,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNewJoineesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/meetings-overview/': {
+      id: '/_authenticated/meetings-overview/'
+      path: '/meetings-overview'
+      fullPath: '/meetings-overview/'
+      preLoaderRoute: typeof AuthenticatedMeetingsOverviewIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/linode-server-dashboard/': {
       id: '/_authenticated/linode-server-dashboard/'
       path: '/linode-server-dashboard'
@@ -659,6 +679,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInterviewsIndexRoute: typeof AuthenticatedInterviewsIndexRoute
   AuthenticatedLeaveManagementIndexRoute: typeof AuthenticatedLeaveManagementIndexRoute
   AuthenticatedLinodeServerDashboardIndexRoute: typeof AuthenticatedLinodeServerDashboardIndexRoute
+  AuthenticatedMeetingsOverviewIndexRoute: typeof AuthenticatedMeetingsOverviewIndexRoute
   AuthenticatedNewJoineesIndexRoute: typeof AuthenticatedNewJoineesIndexRoute
   AuthenticatedProfileIndexRoute: typeof AuthenticatedProfileIndexRoute
   AuthenticatedProjectTypeIndexRoute: typeof AuthenticatedProjectTypeIndexRoute
@@ -687,6 +708,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedLeaveManagementIndexRoute,
   AuthenticatedLinodeServerDashboardIndexRoute:
     AuthenticatedLinodeServerDashboardIndexRoute,
+  AuthenticatedMeetingsOverviewIndexRoute:
+    AuthenticatedMeetingsOverviewIndexRoute,
   AuthenticatedNewJoineesIndexRoute: AuthenticatedNewJoineesIndexRoute,
   AuthenticatedProfileIndexRoute: AuthenticatedProfileIndexRoute,
   AuthenticatedProjectTypeIndexRoute: AuthenticatedProjectTypeIndexRoute,
