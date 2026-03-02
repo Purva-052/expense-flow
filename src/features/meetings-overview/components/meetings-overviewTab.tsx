@@ -49,6 +49,7 @@ const MeetingsOverviewListing = ({
     to: undefined,
   });
   const [viewDescription, setViewDescription] = useState<string | null>(null);
+  const showProjectColumn = !!coordinatorId;
   // const [projectHandlerSearch, setProjectHandlerSearch] = useState<
   //   string | undefined
   // >();
@@ -66,7 +67,6 @@ const MeetingsOverviewListing = ({
     projectId,
     coordinatorId,
   ]);
-  const [activeTab, _] = useState("projects");
   const isSelectionMissing = !projectId && !coordinatorId;
   const queryParams = {
     page,
@@ -220,7 +220,7 @@ const MeetingsOverviewListing = ({
                 <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0 w-[40%]">
                   Coordinator(s)
                 </th>
-                {activeTab === "project_coordinator" && (
+                {showProjectColumn && (
                   <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0 w-[20%]">
                     Project
                   </th>
@@ -268,7 +268,7 @@ const MeetingsOverviewListing = ({
                       )}
                     </td>
 
-                    {activeTab === "project_coordinator" && (
+                    {showProjectColumn && (
                       <td className="p-4 align-middle">
                         <div className="min-w-[200px]">
                           {meeting.projectName ? (
