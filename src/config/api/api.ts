@@ -155,10 +155,13 @@ const API = {
     create: "/skills",
     list: "/skills",
     learning: "/skill-reference",
+    skill_reference: "/skill-reference",
+    update_reference: "/skill-reference",
     delete: "/skills",
   },
   certificates: {
     create: "/user-certificates",
+    dropdown: "/user-certificates/dropdown",
     list: "/user-certificates",
     delete: "/user-certificates",
     update: "/user-certificates",
