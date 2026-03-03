@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import {
+  useState,
+  useMemo,
+  useEffect,
+  useRef,
+  useCallback,
+  type UIEvent,
+} from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Pencil, Trash2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -130,6 +137,28 @@ const formatTime = (value: any) => {
   return num.toFixed(2).replace(".", ":");
 };
 
+const normalizeTasks = (milestone: any): MilestoneTask[] => {
+  let baseTasks: MilestoneTask[] = [];
+  if (Array.isArray(milestone?.tasks)) baseTasks = milestone.tasks;
+  else if (Array.isArray(milestone?.data?.tasks)) baseTasks = milestone.data.tasks;
+  else if (Array.isArray(milestone)) baseTasks = milestone;
+
+  return baseTasks.map((task) => {
+    const taskWithWeightage = task as MilestoneTask & {
+      weightageHours?: string;
+      weightageTime?: string;
+    };
+
+    return {
+      ...task,
+      weightageHours:
+        taskWithWeightage.weightageHours ??
+        taskWithWeightage.weightageTime ??
+        "0.00",
+    };
+  });
+};
+
 export const ActiveMilestoneContent = ({
   projectId,
   milestoneId,
@@ -146,22 +175,23 @@ export const ActiveMilestoneContent = ({
   const isTeamLead = Role === roles.TEAM_LEAD;
   const isAuthorized = isAdmin || isDeveloper || isCurrentUserProjectHandler;
   const canDeleteMilestoneRole = isAdmin || isProjectManager || isTeamLead;
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const pageSize = 10;
 
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 10,
-  });
+  const [page, setPage] = useState(1);
+  const [allTasks, setAllTasks] = useState<MilestoneTask[]>([]);
+  const [hasMore, setHasMore] = useState(true);
 
   const [itemToDelete, setItemToDelete] = useState<MilestoneTask | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDeleteMilestoneModal, setShowDeleteMilestoneModal] =
     useState(false);
 
-  const { data: taskDataResponse, isLoading } = useGetMilestoneTasks(
+  const { data: taskDataResponse, isLoading, isFetching } = useGetMilestoneTasks(
     milestoneId,
     {
-      page: pagination.pageIndex + 1,
-      limit: pagination.pageSize,
+      page,
+      limit: pageSize,
     }
   );
 
@@ -203,30 +233,55 @@ export const ActiveMilestoneContent = ({
   const milestone = taskDataResponse?.data || taskDataResponse;
   const metadata = taskDataResponse?.metadata;
 
-  const tasks = useMemo<MilestoneTask[]>(() => {
-    let baseTasks: MilestoneTask[] = [];
-    if (Array.isArray(milestone?.tasks)) baseTasks = milestone.tasks;
-    else if (Array.isArray(milestone?.data?.tasks))
-      baseTasks = milestone.data.tasks;
-    else if (Array.isArray(milestone)) baseTasks = milestone;
+  const tasks = useMemo<MilestoneTask[]>(() => normalizeTasks(milestone), [milestone]);
 
-    // Normalize task-level weightage fields from API into weightageHours
-    return baseTasks.map((task) => {
-      const taskWithWeightage = task as MilestoneTask & {
-        weightageHours?: string;
-        weightageTime?: string;
-      };
+  useEffect(() => {
+    setAllTasks([]);
+    setPage(1);
+    setHasMore(true);
+  }, [milestoneId]);
 
-      return {
-        ...task,
-        weightageHours:
-          taskWithWeightage.weightageHours ??
-          taskWithWeightage.weightageHours ??
-          taskWithWeightage.weightageTime ??
-          "0.00",
-      };
+  useEffect(() => {
+    if (!taskDataResponse) return;
+
+    setAllTasks((prev) => {
+      if (page === 1) return tasks;
+
+      const merged = [...prev, ...tasks];
+      return merged.filter(
+        (task, index, self) => index === self.findIndex((item) => item.id === task.id)
+      );
     });
-  }, [milestone]);
+
+    const totalPages = metadata?.totalPages;
+    const total = metadata?.total;
+    const currentPage = metadata?.page ?? page;
+
+    if (totalPages) {
+      setHasMore(currentPage < totalPages);
+      return;
+    }
+
+    if (typeof total === "number") {
+      setHasMore(page * pageSize < total);
+      return;
+    }
+
+    setHasMore(tasks.length >= pageSize);
+  }, [taskDataResponse, tasks, metadata?.page, metadata?.totalPages, metadata?.total, page]);
+
+  const handleListScroll = useCallback(
+    (event: UIEvent<HTMLDivElement>) => {
+      const target = event.currentTarget;
+      const reachedBottom =
+        target.scrollTop + target.clientHeight >= target.scrollHeight - 100;
+
+      if (reachedBottom && hasMore && !isFetching && !isLoading) {
+        setPage((prev) => prev + 1);
+      }
+    },
+    [hasMore, isFetching, isLoading]
+  );
 
   const actualMilestone = useMemo<any>(() => {
     let base: any = {};
@@ -243,7 +298,7 @@ export const ActiveMilestoneContent = ({
     };
   }, [milestone, milestoneId]);
 
-  if (isLoading) {
+  if (isLoading && allTasks.length === 0) {
     return (
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
@@ -344,32 +399,47 @@ export const ActiveMilestoneContent = ({
         )}
       </div>
 
-      <GlobalTable<MilestoneTask>
-        data={tasks}
-        columns={getReportColumns(
-          onViewTaskLog,
-          handleDeleteTask,
-          projectId,
-          milestoneId,
-          () => {
-            queryClient.invalidateQueries({
-              queryKey: [`${API.projects.milestone_list}/${milestoneId}`],
-            });
-            queryClient.invalidateQueries({
-              queryKey: [API.dropdown_api.milestones, { projectId }],
-            });
-          },
-          isAuthorized,
-          isCurrentUserProjectHandler,
-          actualMilestone?.status
-        )}
-        totalCount={metadata?.total || tasks.length}
-        currentPage={metadata?.page || pagination.pageIndex + 1}
-        pageSize={metadata?.limit || pagination.pageSize}
-        onPaginationChange={setPagination}
-        isPaginationEnabled={true}
-        loading={isLoading || isDeleting}
-      />
+      <div
+        ref={listRef}
+        onScroll={handleListScroll}
+        className="max-h-[55dvh] overflow-auto"
+      >
+        <GlobalTable<MilestoneTask>
+          data={allTasks}
+          columns={getReportColumns(
+            onViewTaskLog,
+            handleDeleteTask,
+            projectId,
+            milestoneId,
+            () => {
+              queryClient.invalidateQueries({
+                queryKey: [`${API.projects.milestone_list}/${milestoneId}`],
+              });
+              queryClient.invalidateQueries({
+                queryKey: [API.dropdown_api.milestones, { projectId }],
+              });
+              setPage(1);
+              setHasMore(true);
+            },
+            isAuthorized,
+            isCurrentUserProjectHandler,
+            actualMilestone?.status
+          )}
+          totalCount={metadata?.total || allTasks.length}
+          currentPage={1}
+          pageSize={allTasks.length || pageSize}
+          onPaginationChange={() => {}}
+          isPaginationEnabled={false}
+          loading={(isLoading && page === 1) || isDeleting}
+          scrollY=""
+        />
+      </div>
+
+      {isFetching && page > 1 && (
+        <div className="py-2 text-center text-sm text-muted-foreground">
+          Loading more tasks...
+        </div>
+      )}
 
       <DeleteModal
         isOpen={showDeleteModal}
