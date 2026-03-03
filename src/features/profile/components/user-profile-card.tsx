@@ -768,11 +768,11 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
                         </div>
                       ) : (
                         <>
-                          <Badge className="bg-yellow-500 text-white pr-1 uppercase">
+                          <Badge className="relative bg-yellow-500 text-white uppercase transition-all duration-150 group-hover:pr-12">
                             <Award className="h-3 w-3 mr-1" />
                             {cert?.name}
                             {!isReadOnly && (
-                              <div className="ml-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="absolute right-1 top-1/2 z-10 flex -translate-y-1/2 items-center gap-0.5 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity">
                                 <Button
                                   size="icon"
                                   variant="ghost"
@@ -947,12 +947,12 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
                                 </div>
                               </div>
                             ) : (
-                              <Badge className="bg-blue-500 text-white pr-1 uppercase">
+                              <Badge className="relative bg-blue-500 text-white uppercase transition-all duration-150 group-hover:pr-12">
                                 <span className="inline-flex items-center">
                                   {item?.skill?.skillName}
                                 </span>
                                 {!isReadOnly && (
-                                  <div className="ml-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <div className="absolute right-1 top-1/2 z-10 flex -translate-y-1/2 items-center gap-0.5 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity">
                                     <Button
                                       size="icon"
                                       variant="ghost"
@@ -1071,12 +1071,12 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
                                 </div>
                               </div>
                             ) : (
-                              <Badge className="bg-yellow-400 text-black pr-1 uppercase">
+                              <Badge className="relative bg-yellow-400 text-black uppercase transition-all duration-150 group-hover:pr-12">
                                 <span className="inline-flex items-center">
                                   {item?.skill?.skillName}
                                 </span>
                                 {!isReadOnly && (
-                                  <div className="ml-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <div className="absolute right-1 top-1/2 z-10 flex -translate-y-1/2 items-center gap-0.5 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity">
                                     <Button
                                       size="icon"
                                       variant="ghost"
