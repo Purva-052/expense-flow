@@ -73,7 +73,7 @@ export function DataTableToolbarCompact({
               placeholder={filter.placeholder ?? "Select..."}
               onChange={(val: any) => filter.onChange?.(val ?? undefined)}
               multiple={filter.multiple}
-              className="w-full sm:w-[160px] min-w-0"
+              className="w-full sm:w-[180px] min-w-0"
               disabled={filter.disable}
             />
           );
