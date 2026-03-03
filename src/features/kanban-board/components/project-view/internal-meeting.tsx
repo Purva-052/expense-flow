@@ -70,7 +70,9 @@ const InternalMeetingSchema = z.object({
   description: z.string().min(1, "Description is required"),
   projectId: z.number({ required_error: "Project is required" }),
   startDate: z.date({ required_error: "Start date is required" }),
-  employeeIds: z.array(z.number()).optional(), // For report log access
+  employeeIds: z
+    .array(z.number().min(1, "Employee is required"))
+    .min(1, "At least one employee is required"), // For report log access
   // endDate is removed as per requirement
   link: z.string().url("Invalid URL").optional().or(z.literal("")),
 });
@@ -301,7 +303,11 @@ export function InternalMeetingDialog({
                 <CustomDropDownSearchable
                   form={form}
                   name="employeeIds"
-                  label="Employee Name"
+                  label={
+                    <>
+                      Employee Name <span className="text-red-500">*</span>
+                    </>
+                  }
                   multiple
                   options={usersList?.data.map((user: any) => ({
                     value: user.id,

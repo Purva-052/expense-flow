@@ -511,7 +511,7 @@ export function AddManualMilestone({
                       {(!initialData ||
                         !isExistingTask ||
                         taskStatus === "pending") && (
-                        <div className="col-span-1 flex items-start pt-8">
+                        <div className="col-span-1 flex items-start pt-5">
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>

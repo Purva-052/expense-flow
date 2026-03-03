@@ -33,6 +33,7 @@ export const extraWorkSchema = z.object({
 
   taskDescription: z
     .string()
+    .trim()
     .min(2, "Task Description must be at least 2 characters long"),
 
   timeSpent: z

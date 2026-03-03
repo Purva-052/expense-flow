@@ -16,7 +16,7 @@ import {
   IconReport,
   IconClipboardCheck,
 } from "@tabler/icons-react";
-import {  CalendarCheck, Command, Cpu, ScrollText } from "lucide-react";
+import { CalendarCheck, Command, Cpu, ScrollText } from "lucide-react";
 import { type SidebarData } from "../types";
 import { useAuthStore } from "@/stores/use-auth-store";
 
@@ -87,19 +87,19 @@ export const sidebarData: SidebarData = {
           title: "Extra Work Report",
           url: "/extra-work-report",
           icon: IconReport,
-          requiredRoles: [
-            roles.ADMIN,
-          ],
+          requiredRoles: [roles.ADMIN],
         },
         {
           title: "Leave Management",
           url: "/leave-management",
           icon: IconClipboardCheck,
-          requiredRoles: [
-            roles.ADMIN,
-            roles.TEAM_LEAD,
-            roles.PROJECT_MANAGER,
-          ],
+          requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
+        },
+        {
+          title: "Meetings Overview",
+          url: "/meetings-overview",
+          icon: IconMessage2Question,
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
         },
       ],
     },
