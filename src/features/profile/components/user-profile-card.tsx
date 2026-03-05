@@ -592,15 +592,15 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
   const filteredSkillOptions = useMemo(() => {
     if (!skillsList?.data) return [];
 
-    const addedSkillIds =
-      skillType === "skill"
-        ? skillsData.map((s: any) => s?.skill?.id)
-        : learningData.map((l: any) => l?.skill?.id);
+    const addedSkillIds = [
+      ...skillsData.map((s: any) => s?.skill?.id),
+      ...learningData.map((l: any) => l?.skill?.id),
+    ];
 
     return skillsList.data.filter(
       (skill: any) => !addedSkillIds.includes(skill.id)
     );
-  }, [skillsList?.data, skillType, skillsData, learningData]);
+  }, [skillsList?.data, skillsData, learningData]);
 
   if (!user) {
     return <ProfileSkeleton />;
