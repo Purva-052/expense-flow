@@ -25,7 +25,7 @@ import {
   useResetPasswordWithOtp,
   useVerifyForgotPasswordOtp,
 } from "../services";
-import { toast } from "sonner";
+// import { toast } from "sonner";
 
 type ForgotFormProps = HTMLAttributes<HTMLFormElement>;
 type ForgotPasswordStep = "email" | "otp" | "reset";
@@ -125,7 +125,8 @@ export function ForgotPasswordForm({
       setResendCooldown(RESEND_COOLDOWN_SECONDS);
       setStep("otp");
     } catch {
-      toast.error("Failed to send OTP. Please check the email and try again.");
+      throw new Error("Failed to send OTP");
+      // toast.error("Failed to send OTP. Please check the email and try again.");
     }
   };
 
@@ -135,9 +136,10 @@ export function ForgotPasswordForm({
       resetPasswordForm.reset({ newPassword: "", confirmPassword: "" });
       setStep("reset");
     } catch {
-      toast.error(
-        "OTP verification failed. Please check the OTP and try again."
-      );
+      throw new Error("OTP verification failed");
+      // toast.error(
+      //   "OTP verification failed. Please check the OTP and try again."
+      // );
     }
   };
 
@@ -150,9 +152,10 @@ export function ForgotPasswordForm({
       });
       handleBackToLogin();
     } catch {
-      toast.error(
-        "Password reset failed. Please try again with a different password."
-      );
+      throw new Error("Password reset failed");
+      // toast.error(
+      //   "Password reset failed. Please try again with a different password."
+      // );
     }
   };
 
@@ -165,7 +168,8 @@ export function ForgotPasswordForm({
       await sendOtp({ email });
       setResendCooldown(RESEND_COOLDOWN_SECONDS);
     } catch {
-      toast.error("Failed to send OTP. Please check the email and try again.");
+      throw new Error("Failed to send OTP");
+      // toast.error("Failed to send OTP. Please check the email and try again.");
     }
   };
 
