@@ -7,7 +7,7 @@ import { Users } from "lucide-react";
 import { useMemo, useState } from "react";
 // import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
-import { useGetCertificatesList } from "@/features/profile/services";
+import { useGetCertificatesDropdown } from "@/features/profile/services";
 import { CertificateCard } from "./certificate-card";
 
 const CertificateTab = () => {
@@ -21,7 +21,7 @@ const CertificateTab = () => {
 
   // Fetch all available certificates for dropdown
   const { data: certificatesData, isPending: certificatesLoading }: any =
-    useGetCertificatesList({ pagination: false });
+    useGetCertificatesDropdown();
 
   // Build API params - include selected certificate IDs if any
   const apiParams = {

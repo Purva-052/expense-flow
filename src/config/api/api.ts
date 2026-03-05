@@ -2,6 +2,8 @@ const API = {
   auth: {
     login: "/auth/login",
     forgotPassword: "/auth/forgot-password",
+    verifyOtp: "/auth/verify-forgot-password-otp",
+    resetPasswordwithOtp: "/auth/reset-password-with-otp",
     resetPassword: "/auth/change-password",
   },
   users: {
@@ -155,10 +157,13 @@ const API = {
     create: "/skills",
     list: "/skills",
     learning: "/skill-reference",
+    skill_reference: "/skill-reference",
+    update_reference: "/skill-reference",
     delete: "/skills",
   },
   certificates: {
     create: "/user-certificates",
+    dropdown: "/user-certificates/dropdown",
     list: "/user-certificates",
     delete: "/user-certificates",
     update: "/user-certificates",

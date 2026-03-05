@@ -6,6 +6,7 @@ import usePostData from "@/hooks/use-post-data";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import instance from "@/config/instance/instance";
 import { toast } from "sonner";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 const GET_SKILLS_API_URL = API.skills.list;
 
@@ -20,6 +21,19 @@ export interface SkillsResponse {
   data: Skill[];
 }
 
+export interface SkillReference {
+  id: number;
+  skillId: number;
+  userId: number;
+  skillType: "skill" | "learning";
+}
+
+export interface SkillReferenceResponse {
+  statusCode: number;
+  message: string;
+  data: SkillReference[];
+}
+
 export const useGetSkillsList = (params?: any) => {
   return useFetchData<SkillsResponse>({ url: GET_SKILLS_API_URL, params });
 };
@@ -32,8 +46,63 @@ export const useCreateSkill = () => {
 };
 
 export const useCreateLearning = () => {
+  const queryClient = useQueryClient();
+
   return usePostData<any, { skillId: number; skillType: string }>({
     url: API.skills.learning,
+    onSuccess: (data) => {
+      const authState = useAuthStore.getState().user;
+      const fallbackUserId = authState?.user?.id ?? authState?.user_id;
+      const responseUserId = data?.userId ?? data?.user?.id;
+      const resolvedUserId = responseUserId || fallbackUserId;
+
+      if (resolvedUserId) {
+        queryClient.invalidateQueries({
+          queryKey: [`${API.users.list}/${resolvedUserId}`],
+        });
+      }
+    },
+  });
+};
+
+export const useGetSkillReference = (userId?: string | number) => {
+  return useFetchData<SkillReferenceResponse>({
+    url: API.skills.skill_reference,
+    params: { userId },
+    enabled: !!userId,
+  });
+};
+
+export const useUpdateSkillReference = (onSuccess?: any) => {
+  const queryClient = useQueryClient();
+  return useMutation<
+    any,
+    Error,
+    { id: number | string; skillId: number; userId: number; skillType: string }
+  >({
+    mutationFn: async ({ id, skillId, userId, skillType }) => {
+      const response = await instance.patch({
+        url: `${API.skills.update_reference}/${id}`,
+        data: { skillId, userId, skillType },
+      });
+      return response.data;
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: [`${API.users.list}/${variables.userId}`],
+      });
+      if (onSuccess) onSuccess(data);
+      toast.success("Skill reference updated successfully", {
+        duration: 3000,
+        position: "top-right",
+      });
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || "Failed to update skill reference", {
+        duration: 3000,
+        position: "top-right",
+      });
+    },
   });
 };
 
@@ -52,6 +121,12 @@ export const useGetCertificatesList = (params?: any) => {
   return useFetchData<CertificatesResponse>({
     url: API.certificates.list,
     params,
+  });
+};
+
+export const useGetCertificatesDropdown = () => {
+  return useFetchData<CertificatesResponse>({
+    url: API.certificates.dropdown,
   });
 };
 

@@ -61,6 +61,8 @@ import {
   useUpdateCertificate,
   useDeleteCertificate,
   Skill,
+  useGetSkillReference,
+  useUpdateSkillReference,
   // Certificate,
 } from "../services";
 
@@ -96,7 +98,7 @@ const InfoCard = ({
 const ProfileSkeleton = () => {
   return (
     <div className="w-full">
-      <div className="bg-linear-to-r from-black to-[#e80339] text-white py-12">
+      <div className="bg-linear-to-r from-[#1a1a1a] via-[#3b0a14] to-[#e80339] text-white py-12">
         <div className="max-w-6xl mx-auto px-6 flex items-center gap-6">
           <div className="h-24 w-24 rounded-full bg-slate-700 animate-pulse" />
           <div className="flex-1">
@@ -158,6 +160,14 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
   );
   const [image, setImage] = useState<string | null>(null);
   const [showCropDialog, setShowCropDialog] = useState(false);
+  const [skillEditingKey, setEditingSkillKey] = useState<string | null>(null);
+  const [editingSkillRefId, setEditingSkillRefId] = useState<number | null>(
+    null
+  );
+  const [editingSkillValue, setEditingSkillValue] = useState<Skill[]>([]);
+  const [editingSkillType, setEditingSkillType] = useState<
+    "skill" | "learning"
+  >("skill");
   const cropperRef = useRef<any>(null);
 
   // Saves and restores the #content scroll position around Radix Select open.
@@ -189,6 +199,7 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
   const { mutateAsync: updateProfile, isPending: isUpdating } =
     useUpdateUserData(user?.id);
   const { data: skillsList, isLoading: skillsLoading } = useGetSkillsList();
+  const { data: skillReferenceData } = useGetSkillReference(user?.id);
   const { mutateAsync: createSkill, isPending: isCreatingSkill } =
     useCreateSkill();
   const { mutateAsync: createLearning, isPending: isAddingSkill } =
@@ -198,6 +209,10 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
   const { mutateAsync: updateCertificate, isPending: isUpdatingCertificate } =
     useUpdateCertificate(user?.id);
   const { mutateAsync: deleteCertificate } = useDeleteCertificate(user?.id);
+  const {
+    mutateAsync: updateSkillReference,
+    isPending: isUpdatingSkillReference,
+  } = useUpdateSkillReference();
 
   const methods = useForm({
     defaultValues: {
@@ -241,6 +256,37 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
       localStorage.setItem("projectViewType", viewType);
     }
   }, [user]);
+
+  const getSkillEditKey = (
+    skillId: number | string,
+    type: "skill" | "learning"
+  ) => `${type}-${String(skillId)}`;
+
+  const getSkillReferenceId = (
+    item: any,
+    type: "skill" | "learning"
+  ): number | null => {
+    const directSkillRefId = Number(
+      item?.id ?? item?.skillReferenceId ?? item?.skillRefId
+    );
+    if (Number.isFinite(directSkillRefId) && directSkillRefId > 0) {
+      return directSkillRefId;
+    }
+
+    const skillId = Number(item?.skill?.id ?? item?.skillId);
+    if (!skillId || !skillReferenceData?.data?.length) {
+      return null;
+    }
+
+    const matchedRef = skillReferenceData.data.find(
+      (reference) =>
+        Number(reference?.skillId) === skillId && reference?.skillType === type
+    );
+    const resolvedRefId = Number(matchedRef?.id);
+    return Number.isFinite(resolvedRefId) && resolvedRefId > 0
+      ? resolvedRefId
+      : null;
+  };
 
   const handleFileSelect = async (file: File) => {
     if (isReadOnly) return;
@@ -357,21 +403,6 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
       };
 
       await createLearning(payload);
-
-      // Update local state
-      const newItem = {
-        skillType: skillType,
-        skill: {
-          id: skill.id,
-          skillName: skill.skillName,
-        },
-      };
-
-      if (skillType === "skill") {
-        setSkillsData((prev) => [...prev, newItem]);
-      } else {
-        setLearningData((prev) => [...prev, newItem]);
-      }
     } catch (error) {
       console.error("Failed to add skill with type", error);
     }
@@ -397,6 +428,59 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
     setEditingCertId(certId);
     setEditingCertName(certName);
     setEditingCertStatus(certStatus);
+  };
+
+  const handleEditSkill = (
+    skillRefId: number | null,
+    skill: Skill,
+    skillType: "skill" | "learning"
+  ) => {
+    if (!skill?.id) return;
+
+    setEditingSkillKey(getSkillEditKey(skill.id, skillType));
+    setEditingSkillRefId(skillRefId);
+    setEditingSkillValue([skill]);
+    setEditingSkillType(skillType);
+  };
+
+  const handleCancelSkillEdit = () => {
+    setEditingSkillKey(null);
+    setEditingSkillRefId(null);
+    setEditingSkillValue([]);
+    setEditingSkillType("skill");
+  };
+
+  const handleSaveSkillReference = async () => {
+    if (editingSkillValue.length === 0) return;
+
+    const skillId = Number(editingSkillValue[0].id);
+    const userId = Number(user?.id);
+    if (!skillId || !userId) return;
+    const resolvedSkillRefId =
+      editingSkillRefId ??
+      Number(
+        skillReferenceData?.data?.find(
+          (reference) =>
+            Number(reference?.skillId) === skillId &&
+            reference?.skillType === editingSkillType
+        )?.id
+      );
+    if (!resolvedSkillRefId) {
+      toast.error("Unable to find skill reference to update.");
+      return;
+    }
+
+    try {
+      await updateSkillReference({
+        id: resolvedSkillRefId,
+        skillId,
+        userId,
+        skillType: editingSkillType,
+      });
+      handleCancelSkillEdit();
+    } catch (error) {
+      console.error("Failed to update skill reference", error);
+    }
   };
 
   const handleSaveCertificate = async (certId: number) => {
@@ -508,15 +592,15 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
   const filteredSkillOptions = useMemo(() => {
     if (!skillsList?.data) return [];
 
-    const addedSkillIds =
-      skillType === "skill"
-        ? skillsData.map((s: any) => s?.skill?.id)
-        : learningData.map((l: any) => l?.skill?.id);
+    const addedSkillIds = [
+      ...skillsData.map((s: any) => s?.skill?.id),
+      ...learningData.map((l: any) => l?.skill?.id),
+    ];
 
     return skillsList.data.filter(
       (skill: any) => !addedSkillIds.includes(skill.id)
     );
-  }, [skillsList?.data, skillType, skillsData, learningData]);
+  }, [skillsList?.data, skillsData, learningData]);
 
   if (!user) {
     return <ProfileSkeleton />;
@@ -525,7 +609,7 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
   return (
     <div className="w-full">
       {/* ================= HEADER ================= */}
-      <div className="bg-linear-to-r from-black to-[#e80339] text-white py-12">
+      <div className="bg-linear-to-r from-[#1a1a1a] via-[#3b0a14] to-[#e80339] text-white py-12">
         <div className="max-w-6xl mx-auto px-6 flex items-center gap-6">
           <FormProvider {...methods}>
             <div className="flex flex-col items-center">
@@ -684,11 +768,11 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
                         </div>
                       ) : (
                         <>
-                          <Badge className="bg-yellow-500 text-white pr-1 uppercase">
+                          <Badge className="relative bg-yellow-500 text-white uppercase transition-all duration-150 group-hover:pr-12">
                             <Award className="h-3 w-3 mr-1" />
                             {cert?.name}
                             {!isReadOnly && (
-                              <div className="ml-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="absolute right-1 top-1/2 z-10 flex -translate-y-1/2 items-center gap-0.5 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity">
                                 <Button
                                   size="icon"
                                   variant="ghost"
@@ -798,29 +882,111 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {skillsData.length > 0 ? (
-                      skillsData.map((item, i) => (
-                        <div key={i} className="relative group">
-                          <Badge className="bg-blue-500 text-white pr-1 uppercase">
-                            <span className="inline-flex items-center">
-                              {item?.skill?.skillName}
-                            </span>
-                            {!isReadOnly && (
-                              <div className="ml-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-4 w-4 p-0 hover:bg-blue-600"
-                                  onClick={() =>
-                                    handleDeleteSkill(item?.skill?.id, "skill")
-                                  }
+                      skillsData.map((item, i) => {
+                        const skillRefId = getSkillReferenceId(item, "skill");
+                        const skillId = item?.skill?.id ?? `skill-${i}`;
+                        const isEditing =
+                          skillEditingKey === getSkillEditKey(skillId, "skill");
+
+                        return (
+                          <div
+                            key={String(skillRefId ?? skillId)}
+                            className="relative group"
+                          >
+                            {isEditing ? (
+                              <div className="flex items-center gap-2 bg-yellow-100 px-3 py-1.5 rounded-md">
+                                <Code className="h-3 w-3 text-yellow-700" />
+                                <div className="min-w-[150px]">
+                                  <CreatableSkillsSelect
+                                    options={filteredSkillOptions}
+                                    selected={editingSkillValue}
+                                    onChange={setEditingSkillValue}
+                                    onCreateSkill={handleCreateSkill}
+                                    onOpenChange={preserveScroll}
+                                    loading={skillsLoading}
+                                    creating={isCreatingSkill}
+                                    placeholder="Skill"
+                                    maxSelectedShow={1}
+                                  />
+                                </div>
+                                <Select
+                                  value={editingSkillType}
+                                  onOpenChange={preserveScroll}
+                                  onValueChange={(
+                                    value: "skill" | "learning"
+                                  ) => setEditingSkillType(value)}
                                 >
-                                  <X className="h-2.5 w-2.5" />
-                                </Button>
+                                  <SelectTrigger className="h-8 w-[130px] text-xs">
+                                    <SelectValue placeholder="Type" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="skill">Skill</SelectItem>
+                                    <SelectItem value="learning">
+                                      Want to Learn
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <div className="flex items-center gap-1">
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-6 w-6 p-0"
+                                    onClick={handleSaveSkillReference}
+                                    disabled={isUpdatingSkillReference}
+                                  >
+                                    <Check className="h-3 w-3 text-green-600" />
+                                  </Button>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-6 w-6 p-0"
+                                    onClick={handleCancelSkillEdit}
+                                  >
+                                    <X className="h-3 w-3 text-red-600" />
+                                  </Button>
+                                </div>
                               </div>
+                            ) : (
+                              <Badge className="relative bg-blue-500 text-white uppercase transition-all duration-150 group-hover:pr-12">
+                                <span className="inline-flex items-center">
+                                  {item?.skill?.skillName}
+                                </span>
+                                {!isReadOnly && (
+                                  <div className="absolute right-1 top-1/2 z-10 flex -translate-y-1/2 items-center gap-0.5 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity">
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      className="h-4 w-4 p-0 hover:bg-blue-600"
+                                      onClick={() =>
+                                        handleEditSkill(
+                                          skillRefId,
+                                          item?.skill,
+                                          "skill"
+                                        )
+                                      }
+                                    >
+                                      <Pencil className="h-2.5 w-2.5" />
+                                    </Button>
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      className="h-4 w-4 p-0 hover:bg-blue-600"
+                                      onClick={() =>
+                                        handleDeleteSkill(
+                                          item?.skill?.id,
+                                          "skill"
+                                        )
+                                      }
+                                    >
+                                      <X className="h-2.5 w-2.5" />
+                                    </Button>
+                                  </div>
+                                )}
+                              </Badge>
                             )}
-                          </Badge>
-                        </div>
-                      ))
+                          </div>
+                        );
+                      })
                     ) : (
                       <p className="text-sm text-muted-foreground">
                         No skills added yet
@@ -836,32 +1002,115 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {learningData.length > 0 ? (
-                      learningData.map((item, i) => (
-                        <div key={i} className="relative group">
-                          <Badge className="bg-yellow-400 text-black pr-1">
-                            <span className="inline-flex items-center">
-                              {item?.skill?.skillName}
-                            </span>
-                            {!isReadOnly && (
-                              <div className="ml-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-4 w-4 p-0 hover:bg-yellow-300"
-                                  onClick={() =>
-                                    handleDeleteSkill(
-                                      item?.skill?.id,
-                                      "learning"
-                                    )
-                                  }
+                      learningData.map((item, i) => {
+                        const skillRefId = getSkillReferenceId(
+                          item,
+                          "learning"
+                        );
+                        const skillId = item?.skill?.id ?? `learning-${i}`;
+                        const isEditing =
+                          skillEditingKey ===
+                          getSkillEditKey(skillId, "learning");
+
+                        return (
+                          <div
+                            key={String(skillRefId ?? skillId)}
+                            className="relative group"
+                          >
+                            {isEditing ? (
+                              <div className="flex items-center gap-2 bg-yellow-100 px-3 py-1.5 rounded-md">
+                                <Code className="h-3 w-3 text-yellow-700" />
+                                <div className="min-w-[150px]">
+                                  <CreatableSkillsSelect
+                                    options={filteredSkillOptions}
+                                    selected={editingSkillValue}
+                                    onChange={setEditingSkillValue}
+                                    onCreateSkill={handleCreateSkill}
+                                    onOpenChange={preserveScroll}
+                                    loading={skillsLoading}
+                                    creating={isCreatingSkill}
+                                    placeholder="Skill"
+                                    maxSelectedShow={1}
+                                  />
+                                </div>
+                                <Select
+                                  value={editingSkillType}
+                                  onOpenChange={preserveScroll}
+                                  onValueChange={(
+                                    value: "skill" | "learning"
+                                  ) => setEditingSkillType(value)}
                                 >
-                                  <X className="h-2.5 w-2.5" />
-                                </Button>
+                                  <SelectTrigger className="h-8 w-[130px] text-xs">
+                                    <SelectValue placeholder="Type" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="skill">Skill</SelectItem>
+                                    <SelectItem value="learning">
+                                      Want to Learn
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <div className="flex items-center gap-1">
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-6 w-6 p-0"
+                                    onClick={handleSaveSkillReference}
+                                    disabled={isUpdatingSkillReference}
+                                  >
+                                    <Check className="h-3 w-3 text-green-600" />
+                                  </Button>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-6 w-6 p-0"
+                                    onClick={handleCancelSkillEdit}
+                                  >
+                                    <X className="h-3 w-3 text-red-600" />
+                                  </Button>
+                                </div>
                               </div>
+                            ) : (
+                              <Badge className="relative bg-yellow-400 text-black uppercase transition-all duration-150 group-hover:pr-12">
+                                <span className="inline-flex items-center">
+                                  {item?.skill?.skillName}
+                                </span>
+                                {!isReadOnly && (
+                                  <div className="absolute right-1 top-1/2 z-10 flex -translate-y-1/2 items-center gap-0.5 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity">
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      className="h-4 w-4 p-0 hover:bg-yellow-600"
+                                      onClick={() =>
+                                        handleEditSkill(
+                                          skillRefId,
+                                          item?.skill,
+                                          "learning"
+                                        )
+                                      }
+                                    >
+                                      <Pencil className="h-2.5 w-2.5" />
+                                    </Button>
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      className="h-4 w-4 p-0 hover:bg-yellow-300"
+                                      onClick={() =>
+                                        handleDeleteSkill(
+                                          item?.skill?.id,
+                                          "learning"
+                                        )
+                                      }
+                                    >
+                                      <X className="h-2.5 w-2.5" />
+                                    </Button>
+                                  </div>
+                                )}
+                              </Badge>
                             )}
-                          </Badge>
-                        </div>
-                      ))
+                          </div>
+                        );
+                      })
                     ) : (
                       <p className="text-sm text-muted-foreground">
                         No skills added yet
