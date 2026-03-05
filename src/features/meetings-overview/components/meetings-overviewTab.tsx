@@ -1,10 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { format } from "date-fns";
-import { Briefcase, User, Loader2, CalendarIcon } from "lucide-react";
+import {
+  Briefcase,
+  User,
+  Loader2,
+  CalendarIcon,
+  Pencil,
+  Trash2,
+  Info,
+  Plus,
+} from "lucide-react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +33,22 @@ import { FilterConfig } from "@/components/table/table-toolbar";
 import useDebounce from "@/hooks/use-debaunce";
 import useFetchData from "@/hooks/use-fetch-data";
 import API from "@/config/api/api";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { InternalMeetingDialog } from "@/features/kanban-board/components/project-view/internal-meeting";
+import { useDeleteInternalMeeting } from "@/features/kanban-board/services";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import DateRangeFilter from "@/components/table/custome-dateRange";
+import { Button } from "@/components/ui/button";
 
 // --- Helper: Clean HTML for description display ---
 const stripHtml = (html: string) => {
@@ -31,24 +62,28 @@ const MeetingsOverviewListing = ({
   projectId,
   coordinatorId,
   emptyMessage,
+  dateRange,
+  refreshTick,
 }: {
   projectId?: number | null;
   coordinatorId?: number | null;
   emptyMessage: string;
+  dateRange: {
+    from: Date | undefined;
+    to: Date | undefined;
+  };
+  refreshTick: number;
 }) => {
   const [meetings, setMeetings] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [searchQuery] = useState("");
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
-  const [dateRange, setDateRange] = useState<{
-    from: Date | undefined;
-    to: Date | undefined;
-  }>({
-    from: undefined,
-    to: undefined,
-  });
   const [viewDescription, setViewDescription] = useState<string | null>(null);
+  const [selectedMeeting, setSelectedMeeting] = useState<any>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [meetingToDelete, setMeetingToDelete] = useState<any>(null);
   const showProjectColumn = !!coordinatorId;
   // const [projectHandlerSearch, setProjectHandlerSearch] = useState<
   //   string | undefined
@@ -85,11 +120,21 @@ const MeetingsOverviewListing = ({
     data: meetingsResponse,
     isLoading,
     isFetching,
+    refetch,
   } = useFetchData({
     url: API.internal_meetings.list,
     params: queryParams,
     enabled: !isSelectionMissing,
   }) as any;
+
+  const { mutate: deleteMeeting, isPending: isDeleting } =
+    useDeleteInternalMeeting(() => {
+      setIsDeleteDialogOpen(false);
+      setMeetingToDelete(null);
+      setMeetings((prev) =>
+        prev.filter((meeting) => meeting.id !== meetingToDelete?.id)
+      );
+    });
 
   useEffect(() => {
     if (!meetingsResponse) return;
@@ -139,32 +184,48 @@ const MeetingsOverviewListing = ({
     [hasMore, isFetching, isLoading]
   );
 
-  const filters: FilterConfig[] = [
-    // {
-    //   type: "search",
-    //   placeholder: "Search meetings...",
-    //   key: "search",
-    //   value: searchQuery,
-    //   onChange: setSearchQuery,
-    //   className: "w-full sm:w-[280px] rounded-full",
-    // },
-    // {
-    //   type: "search",
-    //   placeholder: "Search by project name ...",
-    //   key: "search",
-    //   value: projectSearch,
-    //   onChange: handleProjectSearch,
-    //   className: "w-[292px]",
-    // },
-    {
-      type: "dateRange",
-      placeholder: "Filter by date range",
-      key: "dateRange",
-      onChange: (range: any) =>
-        setDateRange({ from: range?.from, to: range?.to }),
-      className: "rounded-full h-9",
+  const handleMeetingUpdated = useCallback(() => {
+    setMeetings([]);
+    setPage(1);
+    setHasMore(true);
+    refetch();
+  }, [refetch]);
+
+  const resolveMeetingProjectId = useCallback(
+    (meeting: any) => {
+      const resolved =
+        meeting?.projectId ??
+        meeting?.project?.id ??
+        meeting?.projectID ??
+        meeting?.project_id ??
+        projectId;
+
+      return resolved ? Number(resolved) : undefined;
     },
-  ];
+    [projectId]
+  );
+
+  const handleAction = useCallback(
+    (type: "edit" | "delete", meeting: any) => {
+      if (type === "delete") {
+        setMeetingToDelete(meeting);
+        setIsDeleteDialogOpen(true);
+        return;
+      }
+
+      setSelectedMeeting({
+        ...meeting,
+        projectId: resolveMeetingProjectId(meeting),
+      });
+      setIsEditDialogOpen(true);
+    },
+    [resolveMeetingProjectId]
+  );
+
+  useEffect(() => {
+    if (!refreshTick || isSelectionMissing) return;
+    handleMeetingUpdated();
+  }, [refreshTick, handleMeetingUpdated, isSelectionMissing]);
 
   if (isSelectionMissing) {
     return (
@@ -177,13 +238,6 @@ const MeetingsOverviewListing = ({
 
   return (
     <div className="flex flex-col min-h-0 overflow-hidden">
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-4 p-2">
-        {/* <h2 className="text-sm font-semibold">
-          {meetingsResponse?.metadata?.total || meetings.length} Internal
-          Meetings
-        </h2> */}
-        <GlobalFilterSection filters={filters} className="mb-0" />
-      </div>
       {isLoading && page === 1 ? (
         <div className="flex items-center justify-center p-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -221,12 +275,15 @@ const MeetingsOverviewListing = ({
                   Coordinator(s)
                 </th>
                 {showProjectColumn && (
-                  <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0 w-[20%]">
+                  <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0">
                     Project
                   </th>
                 )}
                 <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0">
                   Description
+                </th>
+                <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0">
+                  Actions
                 </th>
               </tr>
             </thead>
@@ -260,9 +317,34 @@ const MeetingsOverviewListing = ({
                             </span>
                           ))}
                           {remainingCount > 0 && (
-                            <span className="px-2 py-0.5 bg-muted rounded-full text-sm font-medium">
-                              +{remainingCount} more
-                            </span>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <button
+                                  type="button"
+                                  className="px-2 py-0.5 bg-muted rounded-full text-sm font-medium hover:bg-muted/80 cursor-pointer"
+                                >
+                                  +{remainingCount} more
+                                </button>
+                              </PopoverTrigger>
+                              <PopoverContent
+                                align="start"
+                                className="w-[280px] p-3"
+                              >
+                                <p className="text-xs font-medium mb-2 text-muted-foreground">
+                                  Coordinators
+                                </p>
+                                <div className="flex flex-wrap gap-1">
+                                  {employees.map((emp: any) => (
+                                    <span
+                                      key={`popover-${meeting.id}-${emp.id}`}
+                                      className="px-2 py-0.5 bg-muted rounded-full text-sm"
+                                    >
+                                      {emp.name}
+                                    </span>
+                                  ))}
+                                </div>
+                              </PopoverContent>
+                            </Popover>
                           )}
                         </div>
                       )}
@@ -286,6 +368,24 @@ const MeetingsOverviewListing = ({
                         <p className="text-muted-foreground line-clamp-4 break-words whitespace-normal">
                           {stripHtml(meeting.description || "-")}
                         </p>
+                      </div>
+                    </td>
+                    <td className="p-4 align-middle">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleAction("edit", meeting)}
+                          className="p-1 hover:bg-muted rounded text-muted-foreground hover:text-primary transition-colors"
+                          title="Edit Meeting"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleAction("delete", meeting)}
+                          className="p-1 hover:bg-muted rounded text-muted-foreground hover:text-destructive transition-colors"
+                          title="Delete Meeting"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -314,6 +414,24 @@ const MeetingsOverviewListing = ({
           />
         </DialogContent>
       </Dialog>
+
+      <InternalMeetingDialog
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        currentData={selectedMeeting}
+        projectId={resolveMeetingProjectId(selectedMeeting)}
+        title="Edit Internal Meeting Details"
+        onSuccess={handleMeetingUpdated}
+      />
+
+      <ConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        handleConfirm={() => deleteMeeting(meetingToDelete?.id)}
+        isLoading={isDeleting}
+        title="Delete Internal Meeting"
+        desc={`Are you sure you want to delete the meeting "${meetingToDelete?.meetingName}"? This action cannot be undone.`}
+      />
     </div>
   );
 };
@@ -329,12 +447,28 @@ const MeetingsOverviewTab = ({
   // technologyIds,
 }: MeetingsOverviewTabProps) => {
   const [activeTab, setActiveTab] = useState("projects");
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [meetingsRefreshTick, setMeetingsRefreshTick] = useState(0);
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(
     null
   );
   const [selectedCoordinatorId, setSelectedCoordinatorId] = useState<
     number | null
   >(null);
+  const [projectDateRange, setProjectDateRange] = useState<{
+    from: Date | undefined;
+    to: Date | undefined;
+  }>({
+    from: undefined,
+    to: undefined,
+  });
+  const [coordinatorDateRange, setCoordinatorDateRange] = useState<{
+    from: Date | undefined;
+    to: Date | undefined;
+  }>({
+    from: undefined,
+    to: undefined,
+  });
   const [projectSearch, setProjectSearch] = useState<string | undefined>();
   const [projectHandlerSearch, setProjectHandlerSearch] = useState<
     string | undefined
@@ -348,6 +482,10 @@ const MeetingsOverviewTab = ({
   const handleCoordinatorSearch = (search: string | undefined) => {
     setProjectHandlerSearch(search ?? undefined);
   };
+
+  const handleCreateMeetingSuccess = useCallback(() => {
+    setMeetingsRefreshTick((prev) => prev + 1);
+  }, []);
 
   const projectFilters: FilterConfig[] = [
     {
@@ -441,22 +579,41 @@ const MeetingsOverviewTab = ({
   const activeListItemClass =
     "bg-gradient-to-r from-[#f43f5e] to-[#e11d48] text-white border-[#fb7185]";
   const inactiveListItemClass = "hover:bg-[#fff4f7] border-transparent";
+  const selectedProject = projectList.find(
+    (project: any) => project.id === selectedProjectId
+  );
+  const selectedProjectDescription = selectedProject?.description || "";
+  const hasLongProjectDescription = selectedProjectDescription.length > 500;
 
   return (
-    <div className="flex flex-col h-full min-h-0 gap-4 overflow-hidden">
+    <div className="flex flex-col h-full min-h-0 gap-2 overflow-hidden">
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
-        className="w-full my-1 flex-1 min-h-0 flex flex-col overflow-hidden"
+        className="w-full flex-1 min-h-0 flex flex-col overflow-hidden px-4"
       >
-        <TabsList className="bg-[#fdebef] rounded-full shrink-0">
-          <TabsTrigger value="projects" className={tabTriggerClass}>
-            Projects
-          </TabsTrigger>
-          <TabsTrigger value="Project Coordinator" className={tabTriggerClass}>
-            Coordinator
-          </TabsTrigger>
-        </TabsList>
+        <div className="flex items-center justify-between gap-2 mt-2">
+          <TabsList className="bg-[#fdebef] rounded-full shrink-0">
+            <TabsTrigger value="projects" className={tabTriggerClass}>
+              Projects
+            </TabsTrigger>
+            <TabsTrigger
+              value="Project Coordinator"
+              className={tabTriggerClass}
+            >
+              Coordinator
+            </TabsTrigger>
+          </TabsList>
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => setIsCreateDialogOpen(true)}
+            disabled={!selectedProjectId}
+          >
+            <Plus className="h-4 w-4" />
+            Add
+          </Button>
+        </div>
 
         {/* --- TAB 1: PROJECTS --- */}
         <TabsContent
@@ -465,14 +622,14 @@ const MeetingsOverviewTab = ({
         >
           <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-4 h-full min-h-0 overflow-hidden">
             {/* Left: Project List */}
-            <Card className="flex flex-col h-full min-h-0 overflow-hidden">
-              <CardHeader className="pb-0! justify-center border-b bg-muted/10">
+            <Card className="flex flex-col h-full min-h-0 overflow-hidden gap-0 py-0 px-0">
+              <CardHeader className="px-6 py-3 border-b bg-muted/10 pb-0!">
                 {/* <CardTitle className="text-sm font-medium">
                   Projects List
                 </CardTitle> */}
                 <GlobalFilterSection
                   filters={projectFilters}
-                  className="my-2"
+                  className="my-0"
                 />
               </CardHeader>
               <CardContent className="flex-1 min-h-0 overflow-y-auto p-2 space-y-1">
@@ -505,32 +662,64 @@ const MeetingsOverviewTab = ({
             </Card>
 
             {/* Right: Detailed Infinite Scroll Meetings */}
-            <Card className="flex flex-col h-full min-h-0 overflow-hidden border-dashed">
-              <CardHeader className="p-3 border-b flex justify-between items-center bg-muted/5">
-                <CardTitle className="text-sm font-medium">
-                  {selectedProjectId ? (
-                    <>
-                      <span className="font-bold">
-                        {projectList.find(
-                          (p: any) => p.id === selectedProjectId
-                        )?.name || "Unknown Project"}
-                      </span>{" "}
-                      - Internal Meetings
-                    </>
-                  ) : (
-                    "Internal Meetings"
-                  )}
-                </CardTitle>
-                {/* {selectedProjectId && (
-                  <Badge variant="outline">
-                    Project ID: {selectedProjectId}
-                  </Badge>
-                )} */}
+            <Card className="flex flex-col h-full min-h-0 overflow-hidden border-dashed gap-0 py-0 px-0">
+              <CardHeader className="border-b bg-muted/5 pb-0!">
+                <div className="flex items-center gap-2 py-2">
+                  <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                    <CardTitle className="text-sm font-medium">
+                      {selectedProjectId ? (
+                        <>
+                          <span className="font-bold">
+                            {selectedProject?.name || "Unknown Project"}
+                          </span>{" "}
+                          - Internal Meetings
+                          {hasLongProjectDescription && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Info className="inline-block h-4 w-4 mx-1 cursor-pointer opacity-70 hover:opacity-100 transition" />
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs text-xs">
+                                  {selectedProjectDescription}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                        </>
+                      ) : (
+                        "Internal Meetings"
+                      )}
+                    </CardTitle>
+
+                    {selectedProjectId &&
+                      selectedProjectDescription &&
+                      !hasLongProjectDescription && (
+                        <CardDescription className="text-muted-foreground text-[13px] flex items-center gap-1">
+                          {selectedProjectDescription}
+                        </CardDescription>
+                      )}
+                  </div>
+
+                  <div className="ml-auto shrink-0">
+                    <DateRangeFilter
+                      placeholder="Filter by date range"
+                      onChange={(range: any) =>
+                        setProjectDateRange({
+                          from: range?.from,
+                          to: range?.to,
+                        })
+                      }
+                      className="rounded-full h-8"
+                    />
+                  </div>
+                </div>
               </CardHeader>
               <div className="flex-1 min-h-0 overflow-hidden">
                 <MeetingsOverviewListing
                   projectId={selectedProjectId}
                   emptyMessage="Select a project to view meetings"
+                  dateRange={projectDateRange}
+                  refreshTick={meetingsRefreshTick}
                 />
               </div>
             </Card>
@@ -543,14 +732,14 @@ const MeetingsOverviewTab = ({
           className="flex-1 min-h-0 mt-0 overflow-hidden"
         >
           <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-4 h-full min-h-0 overflow-hidden">
-            <Card className="flex flex-col h-full min-h-0 overflow-hidden">
-              <CardHeader className="border-b bg-muted/10 pb-0! justify-center">
+            <Card className="flex flex-col h-full min-h-0 overflow-hidden gap-0 py-0 px-0">
+              <CardHeader className="px-6 py-3 border-b bg-muted/10 pb-0!">
                 {/* <CardTitle className="text-sm font-medium">
                   Project Coordinator List
                 </CardTitle> */}
                 <GlobalFilterSection
                   filters={coordinatorFilters}
-                  className="my-2"
+                  className="my-0"
                 />
               </CardHeader>
               <CardContent className="flex-1 min-h-0 overflow-y-auto p-2 space-y-1">
@@ -582,33 +771,56 @@ const MeetingsOverviewTab = ({
               </CardContent>
             </Card>
 
-            <Card className="flex flex-col h-full min-h-0 overflow-hidden border-dashed">
-              <CardHeader className="p-3 border-b flex justify-between items-center bg-muted/5">
-                <CardTitle className="text-sm font-medium">
-                  {selectedCoordinatorId ? (
-                    <>
-                      <span className="font-bold">
-                        {coordinatorsList.find(
-                          (c: any) => c.id === selectedCoordinatorId
-                        )?.fullName || "Unknown Coordinator"}
-                      </span>{" "}
-                      - Internal Meetings
-                    </>
-                  ) : (
-                    "Internal Meetings"
-                  )}
-                </CardTitle>
+            <Card className="flex flex-col h-full min-h-0 overflow-hidden border-dashed gap-0 py-0 px-0">
+              <CardHeader className="border-b bg-muted/5 pb-0!">
+                <div className="flex items-center justify-between gap-3 py-2">
+                  <CardTitle className="text-sm font-medium truncate">
+                    {selectedCoordinatorId ? (
+                      <>
+                        <span className="font-bold">
+                          {coordinatorsList.find(
+                            (c: any) => c.id === selectedCoordinatorId
+                          )?.fullName || "Unknown Coordinator"}
+                        </span>{" "}
+                        - Internal Meetings
+                      </>
+                    ) : (
+                      "Internal Meetings"
+                    )}
+                  </CardTitle>
+
+                  <DateRangeFilter
+                    placeholder="Filter by date range"
+                    onChange={(range: any) =>
+                      setCoordinatorDateRange({
+                        from: range?.from,
+                        to: range?.to,
+                      })
+                    }
+                    className="rounded-full h-8 shrink-0"
+                  />
+                </div>
               </CardHeader>
               <div className="flex-1 min-h-0 overflow-hidden">
                 <MeetingsOverviewListing
                   coordinatorId={selectedCoordinatorId}
                   emptyMessage="Select a coordinator to view meetings"
+                  dateRange={coordinatorDateRange}
+                  refreshTick={meetingsRefreshTick}
                 />
               </div>
             </Card>
           </div>
         </TabsContent>
       </Tabs>
+
+      <InternalMeetingDialog
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        projectId={selectedProjectId ?? undefined}
+        title="Add Internal Meeting"
+        onSuccess={handleCreateMeetingSuccess}
+      />
     </div>
   );
 };

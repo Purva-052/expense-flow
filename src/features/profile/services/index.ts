@@ -6,6 +6,7 @@ import usePostData from "@/hooks/use-post-data";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import instance from "@/config/instance/instance";
 import { toast } from "sonner";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 const GET_SKILLS_API_URL = API.skills.list;
 
@@ -45,8 +46,22 @@ export const useCreateSkill = () => {
 };
 
 export const useCreateLearning = () => {
+  const queryClient = useQueryClient();
+
   return usePostData<any, { skillId: number; skillType: string }>({
     url: API.skills.learning,
+    onSuccess: (data) => {
+      const authState = useAuthStore.getState().user;
+      const fallbackUserId = authState?.user?.id ?? authState?.user_id;
+      const responseUserId = data?.userId ?? data?.user?.id;
+      const resolvedUserId = responseUserId || fallbackUserId;
+
+      if (resolvedUserId) {
+        queryClient.invalidateQueries({
+          queryKey: [`${API.users.list}/${resolvedUserId}`],
+        });
+      }
+    },
   });
 };
 
