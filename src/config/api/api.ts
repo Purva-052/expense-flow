@@ -2,6 +2,8 @@ const API = {
   auth: {
     login: "/auth/login",
     forgotPassword: "/auth/forgot-password",
+    verifyOtp: "/auth/verify-forgot-password-otp",
+    resetPasswordwithOtp: "/auth/reset-password-with-otp",
     resetPassword: "/auth/change-password",
   },
   users: {
