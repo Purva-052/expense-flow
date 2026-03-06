@@ -185,6 +185,56 @@ const API = {
     list: "/daily-reports/my-pending-report-count",
     // markAsRead: "/notifications/mark-all-read",
   },
+  processor: {
+    list: "/processor",
+    create: "/processor",
+    update: "/processor",
+    delete: "/processor",
+  },
+  ram: {
+    list: "/ram",
+    create: "/ram",
+    update: "/ram",
+    delete: "/ram",
+  },
+  headphone_brand: {
+    list: "/headphone-brand",
+    create: "/headphone-brand",
+    update: "/headphone-brand",
+    delete: "/headphone-brand",
+  },
+  storage: {
+    list: "/storage",
+    create: "/storage",
+    update: "/storage",
+    delete: "/storage",
+  },
+  monitor_size: {
+    list: "/monitor-size",
+    create: "/monitor-size",
+    update: "/monitor-size",
+    delete: "/monitor-size",
+  },
+  brands: {
+    list: "/brand",
+    create: "/brand",
+    update: "/brand",
+    delete: "/brand",
+  },
+  system_inventory_dropdowns: {
+    processor: "/processor/dropdown",
+    monitor: "/monitor-size/dropdown",
+    ram: "/ram/dropdown",
+    storage: "/storage/dropdown",
+    headphone: "/headphone-brand/dropdown",
+    brand: "/brand/dropdown",
+  },
+  system_inventory: {
+    list: "/system-inventory",
+    create: "/system-inventory",
+    update: "/system-inventory",
+    delete: "/system-inventory",
+  },
 };
 
 Object.freeze(API);
