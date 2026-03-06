@@ -54,16 +54,26 @@ export default function DailyReportPage() {
   const [statsOpen, setStatsOpen] = useState(false);
 
   useEffect(() => {
-  if (!search.openPendingReports && !search.type) return;
+    if (!search.openPendingReports && !search.type) return;
 
-  const nextType: any = search.type ?? "pending";
+    const nextType =
+      search.type === "pending" ||
+      search.type === "incomplete" ||
+      search.type === "holiday"
+        ? search.type
+        : "pending";
 
-  setReportType(nextType);
-  setStatsUserId(
-    search.userId ? String(search.userId).replace(/^"+|"+$/g, "") : undefined
-  );
-  setStatsOpen(true);
-}, [search.openPendingReports, search.type, search.userId]);
+    setReportType(nextType);
+    setStatsUserId(
+      search.userId ? String(search.userId).replace(/^"+|"+$/g, "") : undefined
+    );
+    setStatsOpen(true);
+  }, [
+    search.openPendingReports,
+    search.openPendingReportsAt,
+    search.type,
+    search.userId,
+  ]);
 
   const queryClient = useQueryClient();
   const { mutate: deleteReport, isPending: isDeleting } = useDeleteDailyReport(

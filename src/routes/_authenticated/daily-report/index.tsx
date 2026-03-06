@@ -24,8 +24,24 @@ export const Route = createFileRoute("/_authenticated/daily-report/")({
         ? String(search.userId)
         : undefined;
 
+    const openPendingReportsAtRaw = search.openPendingReportsAt;
+    const openPendingReportsAtParsed =
+      typeof openPendingReportsAtRaw === "number"
+        ? openPendingReportsAtRaw
+        : typeof openPendingReportsAtRaw === "string" &&
+            openPendingReportsAtRaw.trim() !== ""
+          ? Number(openPendingReportsAtRaw)
+          : undefined;
+
+    const openPendingReportsAt =
+      typeof openPendingReportsAtParsed === "number" &&
+      Number.isFinite(openPendingReportsAtParsed)
+        ? openPendingReportsAtParsed
+        : undefined;
+
     return {
       openPendingReports,
+      openPendingReportsAt,
       type,
       userId,
     };
