@@ -64,6 +64,8 @@ const MeetingsOverviewListing = ({
   emptyMessage,
   dateRange,
   refreshTick,
+  isCoordinatorContext = false,
+  projectOptions = [],
 }: {
   projectId?: number | null;
   coordinatorId?: number | null;
@@ -73,6 +75,8 @@ const MeetingsOverviewListing = ({
     to: Date | undefined;
   };
   refreshTick: number;
+  isCoordinatorContext?: boolean;
+  projectOptions?: { value: string | number; label: string }[];
 }) => {
   const [meetings, setMeetings] = useState<any[]>([]);
   const [page, setPage] = useState(1);
@@ -272,7 +276,7 @@ const MeetingsOverviewListing = ({
                   Start Date
                 </th>
                 <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0">
-                  Coordinator(s)
+                  Coordinator's Name
                 </th>
                 {showProjectColumn && (
                   <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0">
@@ -353,9 +357,9 @@ const MeetingsOverviewListing = ({
                     {showProjectColumn && (
                       <td className="p-4 align-middle">
                         <div className="min-w-[200px]">
-                          {meeting.projectName ? (
+                          {meeting.project.name ? (
                             <span className="px-2 py-0.5 bg-muted rounded-full text-sm">
-                              {meeting.projectName}
+                              {meeting.project.name}
                             </span>
                           ) : (
                             "-"
@@ -422,6 +426,12 @@ const MeetingsOverviewListing = ({
         projectId={resolveMeetingProjectId(selectedMeeting)}
         title="Edit Internal Meeting Details"
         onSuccess={handleMeetingUpdated}
+        projectDisplayName={
+          isCoordinatorContext
+            ? (selectedMeeting?.project?.name ?? undefined)
+            : undefined
+        }
+        projectOptions={isCoordinatorContext ? projectOptions : []}
       />
 
       <ConfirmDialog
@@ -522,6 +532,10 @@ const MeetingsOverviewTab = ({
       // technologyId: technologyIds.length > 0 ? technologyIds : undefined,
       status: "active",
     });
+  const { data: allProjectsData }: any = useGetProjectsData({
+    pagination: false,
+    status: "active",
+  });
 
   const projectList = useMemo(
     () =>
@@ -529,6 +543,13 @@ const MeetingsOverviewTab = ({
       projectData?.data ||
       [],
     [projectData]
+  );
+  const allProjectsList = useMemo(
+    () =>
+      allProjectsData?.pages?.flatMap((page: any) => page.data) ||
+      allProjectsData?.data ||
+      [],
+    [allProjectsData]
   );
 
   // 2. Fetch Coordinators (Tab 2)
@@ -584,6 +605,23 @@ const MeetingsOverviewTab = ({
   );
   const selectedProjectDescription = selectedProject?.description || "";
   const hasLongProjectDescription = selectedProjectDescription.length > 500;
+  const coordinatorProjectOptions = useMemo(() => {
+    const uniqueProjects = new Map<number, any>();
+    allProjectsList.forEach((project: any) => {
+      const projectId = Number(project?.id);
+      if (!projectId || uniqueProjects.has(projectId)) return;
+      uniqueProjects.set(projectId, project);
+    });
+
+    return Array.from(uniqueProjects.values()).map((project: any) => ({
+      value: Number(project.id),
+      label: project?.name ? `${project.name}` : `Project ID: ${project.id}`,
+    }));
+  }, [allProjectsList]);
+  const canOpenCreateDialog =
+    activeTab === "projects"
+      ? !!selectedProjectId
+      : !!selectedCoordinatorId && coordinatorProjectOptions.length > 0;
 
   return (
     <div className="flex flex-col h-full min-h-0 gap-2 overflow-hidden">
@@ -608,7 +646,7 @@ const MeetingsOverviewTab = ({
             type="button"
             size="sm"
             onClick={() => setIsCreateDialogOpen(true)}
-            disabled={!selectedProjectId}
+            disabled={!canOpenCreateDialog}
           >
             <Plus className="h-4 w-4" />
             Add
@@ -807,6 +845,8 @@ const MeetingsOverviewTab = ({
                   emptyMessage="Select a coordinator to view meetings"
                   dateRange={coordinatorDateRange}
                   refreshTick={meetingsRefreshTick}
+                  isCoordinatorContext={true}
+                  projectOptions={coordinatorProjectOptions}
                 />
               </div>
             </Card>
@@ -817,7 +857,21 @@ const MeetingsOverviewTab = ({
       <InternalMeetingDialog
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
-        projectId={selectedProjectId ?? undefined}
+        projectId={
+          activeTab === "projects"
+            ? (selectedProjectId ?? undefined)
+            : undefined
+        }
+        showProjectSelect={activeTab === "Project Coordinator"}
+        hideCoordinatorSelect={activeTab === "Project Coordinator"}
+        defaultEmployeeId={
+          activeTab === "Project Coordinator"
+            ? (selectedCoordinatorId ?? undefined)
+            : undefined
+        }
+        projectOptions={
+          activeTab === "Project Coordinator" ? coordinatorProjectOptions : []
+        }
         title="Add Internal Meeting"
         onSuccess={handleCreateMeetingSuccess}
       />
