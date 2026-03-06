@@ -16,7 +16,18 @@ import {
   IconReport,
   IconClipboardCheck,
 } from "@tabler/icons-react";
-import { CalendarCheck, Command, Cpu, ScrollText } from "lucide-react";
+import {
+  CalendarCheck,
+  Command,
+  Cpu,
+  // CpuIcon,
+  HardDrive,
+  Headset,
+  MemoryStick,
+  Microchip,
+  ScrollText,
+  Tag,
+} from "lucide-react";
 import { type SidebarData } from "../types";
 import { useAuthStore } from "@/stores/use-auth-store";
 
@@ -75,6 +86,18 @@ export const sidebarData: SidebarData = {
           title: "Daily Report",
           url: "/daily-report",
           icon: IconReportAnalytics,
+          requiredRoles: [
+            roles.ADMIN,
+            roles.TEAM_LEAD,
+            roles.PROJECT_MANAGER,
+            roles.DEVELOPER,
+            roles.BDE,
+          ],
+        },
+        {
+          title: "System Inventory",
+          url: "/system-inventory",
+          icon: IconReservedLine,
           requiredRoles: [
             roles.ADMIN,
             roles.TEAM_LEAD,
@@ -165,6 +188,49 @@ export const sidebarData: SidebarData = {
           url: "/linode-server-dashboard",
           icon: Cpu,
           requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
+        },
+      ],
+    },
+    {
+      title: "System Inventory Management",
+      requiredRoles: [roles.ADMIN],
+      isCollapsible: true,
+      items: [
+        {
+          title: "Processor Types",
+          url: "/processor",
+          icon: Microchip,
+          requiredRoles: ["admin"],
+        },
+        {
+          title: "RAM Types",
+          url: "/ram-types",
+          icon: MemoryStick,
+          requiredRoles: ["admin"],
+        },
+        {
+          title: "Headphone Brands",
+          url: "/headphone-brand",
+          icon: Headset,
+          requiredRoles: ["admin"],
+        },
+        {
+          title: "Storage",
+          url: "/storage",
+          icon: HardDrive,
+          requiredRoles: ["admin"],
+        },
+        {
+          title: "Monitor Sizes",
+          url: "/monitor-size",
+          icon: IconReservedLine,
+          requiredRoles: ["admin"],
+        },
+        {
+          title: "Brands",
+          url: "/brands",
+          icon: Tag,
+          requiredRoles: ["admin"],
         },
       ],
     },

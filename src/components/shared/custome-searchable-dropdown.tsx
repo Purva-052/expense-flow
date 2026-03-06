@@ -167,6 +167,9 @@ const CustomDropDownSearchable = ({
           valueArray = isEmpty ? [] : [field.value];
         }
 
+        const canClear =
+          valueArray.length > 0 && showClearButton && !disabled && !isLoading;
+
         return (
           <FormItem className={`flex flex-col ${className}`}>
             {!!label && <FormLabel>{label}</FormLabel>}
@@ -250,7 +253,7 @@ const CustomDropDownSearchable = ({
                             : placeholder || "Select an option"}
                         </span>
                       )}
-                      {!(valueArray.length > 0 && showClearButton) && (
+                      {!canClear && (
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       )}
                     </Button>
@@ -360,10 +363,12 @@ const CustomDropDownSearchable = ({
               </Popover>
 
               {/* Clear button */}
-              {valueArray.length > 0 && showClearButton && (
+              {canClear && (
                 <X
                   className="absolute top-1/2 right-9 h-4 w-4 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-red-500"
-                  onClick={() => {
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
                     // ✅ Use "" for single (matches z.string() schemas), [] for multiple
                     // setFieldValue ensures shouldValidate fires so the error shows immediately
                     setFieldValue(multiple ? [] : "");

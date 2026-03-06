@@ -20,4 +20,11 @@ export const URL_TO_TITLE_MAP: Record<string, string> = {
   "/leave-management": "Leave Management",
   "/tools-management": "Tools Management",
   "/meetings-overview": "Meetings Overview",
+  "/system-inventory": "System Inventory",
+  "/processor": "Processor Types",
+  "/ram-types": "RAM Types",
+  "/headphone-brand": "Headphone Brands",
+  "/storage": "Storage",
+  "/monitor-size": "Monitor Sizes",
+  "/brands": "Brands",
 };
