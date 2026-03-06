@@ -47,8 +47,17 @@ export function NotificationModal() {
       e.preventDefault();
       e.stopPropagation();
       setOpenNoPendingPopover(false);
+      const params = new URLSearchParams({
+        type: "pending",
+        openPendingReports: "true",
+        openPendingReportsAt: String(Date.now()),
+      });
+      const userId = user?.user?.id;
+      if (userId != null) {
+        params.set("userId", String(userId));
+      }
       navigate({
-        to: `/daily-report?type=pending&userId=${user?.user?.id}&openPendingReports=true`,
+        to: `/daily-report?${params.toString()}`,
       });
       return;
     }
