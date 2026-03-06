@@ -244,7 +244,7 @@ const MeetingsOverviewListing = ({
           <span className="ml-2">Loading meetings...</span>
         </div>
       ) : meetings.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-12 text-center border rounded-lg bg-muted/10">
+        <div className="flex flex-col items-center justify-center p-12 text-center border bg-muted/10">
           <div className="rounded-full bg-muted p-3 mb-4">
             <CalendarIcon className="h-8 w-8 text-muted-foreground" />
           </div>
@@ -268,10 +268,10 @@ const MeetingsOverviewListing = ({
           <table className="w-full caption-bottom text-sm">
             <thead className="[&_tr]:border-b">
               <tr className="border-b transition-colors hover:bg-muted/50">
-                <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0 w-[150px]">
+                <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0">
                   Start Date
                 </th>
-                <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0 w-[40%]">
+                <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0">
                   Coordinator(s)
                 </th>
                 {showProjectColumn && (
@@ -298,7 +298,7 @@ const MeetingsOverviewListing = ({
                     key={meeting.id}
                     className="border-b transition-colors hover:bg-muted/50"
                   >
-                    <td className="p-4 align-middle">
+                    <td className="p-4 align-middle w-50">
                       {meeting.startDate
                         ? format(new Date(meeting.startDate), "EEE, d MMM yyyy")
                         : "-"}
