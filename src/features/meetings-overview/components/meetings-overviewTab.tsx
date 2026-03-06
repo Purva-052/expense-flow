@@ -268,7 +268,7 @@ const MeetingsOverviewListing = ({
           <table className="w-full caption-bottom text-sm">
             <thead className="[&_tr]:border-b">
               <tr className="border-b transition-colors hover:bg-muted/50">
-                <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0">
+                <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0 whitespace-nowrap">
                   Start Date
                 </th>
                 <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0">
@@ -290,15 +290,15 @@ const MeetingsOverviewListing = ({
             <tbody className="[&_tr:last-child]:border-0">
               {meetings.map((meeting: any) => {
                 const employees = meeting?.employees || [];
-                const visibleEmployees = employees.slice(0, 5);
-                const remainingCount = employees.length - 5;
+                const visibleEmployees = employees.slice(0, 3);
+                const remainingCount = employees.length - 3;
 
                 return (
                   <tr
                     key={meeting.id}
                     className="border-b transition-colors hover:bg-muted/50"
                   >
-                    <td className="p-4 align-middle w-50">
+                    <td className="p-4 align-middle w-50 whitespace-nowrap">
                       {meeting.startDate
                         ? format(new Date(meeting.startDate), "EEE, d MMM yyyy")
                         : "-"}
@@ -364,7 +364,7 @@ const MeetingsOverviewListing = ({
                       </td>
                     )}
                     <td className="p-4 align-middle">
-                      <div className="min-w-[300px]">
+                      <div className="min-w-[250px]">
                         <p className="text-muted-foreground line-clamp-4 break-words whitespace-normal">
                           {stripHtml(meeting.description || "-")}
                         </p>
