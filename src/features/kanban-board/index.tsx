@@ -119,7 +119,7 @@ const ProjectBoard = () => {
       {/* {userRole === roles.BDE ? (
         <InquiryPage />
       ) : ( */}
-      <Main className="h-[100dvh] min-h-0 overflow-hidden flex flex-col bg-[#f9fafb]">
+      <Main className="flex flex-col bg-[#f9fafb] 2xl:h-[100dvh] 2xl:min-h-0 2xl:overflow-hidden">
         <div className="flex-1 min-h-0 flex flex-col gap-4">
           {userRole === roles.DEVELOPER ? (
             <Tabs
