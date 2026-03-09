@@ -72,22 +72,6 @@ const systemInventorySchema = z
     const hasValue = (value: SelectValue | string | undefined) =>
       !(value === null || value === undefined || value === "");
 
-    if (values.mouseEnabled && !hasValue(values.mouseConnectionType)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["mouseConnectionType"],
-        message: "Connection type is required",
-      });
-    }
-
-    if (values.keyboardEnabled && !hasValue(values.keyboardConnectionType)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["keyboardConnectionType"],
-        message: "Connection type is required",
-      });
-    }
-
     if (values.cpuEnabled && !hasValue(values.cpuProcessorId)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -141,38 +125,6 @@ const systemInventorySchema = z
         code: z.ZodIssueCode.custom,
         path: ["laptopRamId"],
         message: "RAM is required",
-      });
-    }
-
-    if (values.monitorEnabled && !hasValue(values.monitorBrandId)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["monitorBrandId"],
-        message: "Brand is required",
-      });
-    }
-
-    if (values.monitorEnabled && !hasValue(values.monitorSizeId)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["monitorSizeId"],
-        message: "Size is required",
-      });
-    }
-
-    if (values.headphoneEnabled && !hasValue(values.headphoneBrandId)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["headphoneBrandId"],
-        message: "Brand is required",
-      });
-    }
-
-    if (values.headphoneEnabled && !hasValue(values.headphoneConnectionType)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["headphoneConnectionType"],
-        message: "Connection type is required",
       });
     }
   });
@@ -682,6 +634,7 @@ function InventorySection({
   onEnabledChange,
   disabled,
   icon,
+  showAsterisk,
   children,
 }: Readonly<{
   title: string;
@@ -689,6 +642,7 @@ function InventorySection({
   onEnabledChange: (checked: boolean) => void;
   disabled?: boolean;
   icon: ComponentType<{ className?: string }>;
+  showAsterisk?: boolean;
   children: ReactNode;
 }>) {
   const Icon = icon;
@@ -702,7 +656,10 @@ function InventorySection({
           disabled={disabled}
         />
         <Icon className="h-4 w-4 text-muted-foreground" />
-        <span className="text-sm font-semibold">{title}</span>
+        <span className="text-sm font-semibold">
+          {title}
+          {showAsterisk && <span className="ml-1 text-red-500">*</span>}
+        </span>
       </div>
       <div>{children}</div>
     </div>
@@ -902,12 +859,20 @@ export function SystemInventoryActionForm({
                 enabled={field.value}
                 onEnabledChange={field.onChange}
                 disabled={disabled}
+                showAsterisk={cpuEnabled}
               >
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                   <CustomDropDownSearchable
                     form={form}
                     name="cpuProcessorId"
-                    label="Processor"
+                    label={
+                      <span>
+                        Processor
+                        {cpuEnabled && (
+                          <span className="ml-1 text-red-500">*</span>
+                        )}
+                      </span>
+                    }
                     options={processorOptions}
                     placeholder="Select processor"
                     disabled={disabled || !cpuEnabled || dropdownLoading}
@@ -916,7 +881,14 @@ export function SystemInventoryActionForm({
                   <CustomDropDownSearchable
                     form={form}
                     name="cpuStorageId"
-                    label="Storage"
+                    label={
+                      <span>
+                        Storage
+                        {cpuEnabled && (
+                          <span className="ml-1 text-red-500">*</span>
+                        )}
+                      </span>
+                    }
                     options={storageOptions}
                     placeholder="Select storage"
                     disabled={disabled || !cpuEnabled || dropdownLoading}
@@ -925,7 +897,14 @@ export function SystemInventoryActionForm({
                   <CustomDropDownSearchable
                     form={form}
                     name="cpuRamId"
-                    label="RAM"
+                    label={
+                      <span>
+                        RAM
+                        {cpuEnabled && (
+                          <span className="ml-1 text-red-500">*</span>
+                        )}
+                      </span>
+                    }
                     options={ramOptions}
                     placeholder="Select RAM"
                     disabled={disabled || !cpuEnabled || dropdownLoading}
@@ -946,12 +925,20 @@ export function SystemInventoryActionForm({
                 enabled={field.value}
                 onEnabledChange={field.onChange}
                 disabled={disabled}
+                showAsterisk={laptopEnabled}
               >
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   <CustomDropDownSearchable
                     form={form}
                     name="laptopBrandId"
-                    label="Brand"
+                    label={
+                      <span>
+                        Brand
+                        {laptopEnabled && (
+                          <span className="ml-1 text-red-500">*</span>
+                        )}
+                      </span>
+                    }
                     options={brandOptions}
                     placeholder="Select brand"
                     disabled={disabled || !laptopEnabled || dropdownLoading}
@@ -960,7 +947,14 @@ export function SystemInventoryActionForm({
                   <CustomDropDownSearchable
                     form={form}
                     name="laptopProcessorId"
-                    label="Processor"
+                    label={
+                      <span>
+                        Processor
+                        {laptopEnabled && (
+                          <span className="ml-1 text-red-500">*</span>
+                        )}
+                      </span>
+                    }
                     options={processorOptions}
                     placeholder="Select processor"
                     disabled={disabled || !laptopEnabled || dropdownLoading}
@@ -969,7 +963,14 @@ export function SystemInventoryActionForm({
                   <CustomDropDownSearchable
                     form={form}
                     name="laptopStorageId"
-                    label="Storage"
+                    label={
+                      <span>
+                        Storage
+                        {laptopEnabled && (
+                          <span className="ml-1 text-red-500">*</span>
+                        )}
+                      </span>
+                    }
                     options={storageOptions}
                     placeholder="Select storage"
                     disabled={disabled || !laptopEnabled || dropdownLoading}
@@ -978,7 +979,14 @@ export function SystemInventoryActionForm({
                   <CustomDropDownSearchable
                     form={form}
                     name="laptopRamId"
-                    label="RAM"
+                    label={
+                      <span>
+                        RAM
+                        {laptopEnabled && (
+                          <span className="ml-1 text-red-500">*</span>
+                        )}
+                      </span>
+                    }
                     options={ramOptions}
                     placeholder="Select RAM"
                     disabled={disabled || !laptopEnabled || dropdownLoading}
