@@ -24,21 +24,28 @@ import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedTransactionsLogsIndexRouteImport } from './routes/_authenticated/transactions-logs/index'
 import { Route as AuthenticatedToolsManagementIndexRouteImport } from './routes/_authenticated/tools-management/index'
 import { Route as AuthenticatedTechnologyIndexRouteImport } from './routes/_authenticated/technology/index'
+import { Route as AuthenticatedSystemInventoryIndexRouteImport } from './routes/_authenticated/system-inventory/index'
+import { Route as AuthenticatedStorageIndexRouteImport } from './routes/_authenticated/storage/index'
 import { Route as AuthenticatedServerIndexRouteImport } from './routes/_authenticated/server/index'
+import { Route as AuthenticatedRamTypesIndexRouteImport } from './routes/_authenticated/ram-types/index'
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects/index'
 import { Route as AuthenticatedProjectTypeIndexRouteImport } from './routes/_authenticated/project-type/index'
 import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authenticated/profile/index'
+import { Route as AuthenticatedProcessorIndexRouteImport } from './routes/_authenticated/processor/index'
 import { Route as AuthenticatedNewJoineesIndexRouteImport } from './routes/_authenticated/new-joinees/index'
+import { Route as AuthenticatedMonitorSizeIndexRouteImport } from './routes/_authenticated/monitor-size/index'
 import { Route as AuthenticatedMeetingsOverviewIndexRouteImport } from './routes/_authenticated/meetings-overview/index'
 import { Route as AuthenticatedLinodeServerDashboardIndexRouteImport } from './routes/_authenticated/linode-server-dashboard/index'
 import { Route as AuthenticatedLeaveManagementIndexRouteImport } from './routes/_authenticated/leave-management/index'
 import { Route as AuthenticatedInterviewsIndexRouteImport } from './routes/_authenticated/interviews/index'
 import { Route as AuthenticatedInquiryIndexRouteImport } from './routes/_authenticated/inquiry/index'
 import { Route as AuthenticatedInquiryTypeIndexRouteImport } from './routes/_authenticated/inquiry-type/index'
+import { Route as AuthenticatedHeadphoneBrandIndexRouteImport } from './routes/_authenticated/headphone-brand/index'
 import { Route as AuthenticatedExtraWorkReportIndexRouteImport } from './routes/_authenticated/extra-work-report/index'
 import { Route as AuthenticatedDailyReportIndexRouteImport } from './routes/_authenticated/daily-report/index'
 import { Route as AuthenticatedConferenceRoomBookingIndexRouteImport } from './routes/_authenticated/conference-room-booking/index'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
+import { Route as AuthenticatedBrandsIndexRouteImport } from './routes/_authenticated/brands/index'
 import { Route as AuthenticatedProjectsDetailIdRouteImport } from './routes/_authenticated/projects/detail.$id'
 import { Route as AuthenticatedLinodeServerDashboardDetailIdRouteImport } from './routes/_authenticated/linode-server-dashboard/detail.$id'
 
@@ -119,10 +126,28 @@ const AuthenticatedTechnologyIndexRoute =
     path: '/technology/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSystemInventoryIndexRoute =
+  AuthenticatedSystemInventoryIndexRouteImport.update({
+    id: '/system-inventory/',
+    path: '/system-inventory/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedStorageIndexRoute =
+  AuthenticatedStorageIndexRouteImport.update({
+    id: '/storage/',
+    path: '/storage/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedServerIndexRoute =
   AuthenticatedServerIndexRouteImport.update({
     id: '/server/',
     path: '/server/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedRamTypesIndexRoute =
+  AuthenticatedRamTypesIndexRouteImport.update({
+    id: '/ram-types/',
+    path: '/ram-types/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedProjectsIndexRoute =
@@ -143,10 +168,22 @@ const AuthenticatedProfileIndexRoute =
     path: '/profile/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedProcessorIndexRoute =
+  AuthenticatedProcessorIndexRouteImport.update({
+    id: '/processor/',
+    path: '/processor/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedNewJoineesIndexRoute =
   AuthenticatedNewJoineesIndexRouteImport.update({
     id: '/new-joinees/',
     path: '/new-joinees/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMonitorSizeIndexRoute =
+  AuthenticatedMonitorSizeIndexRouteImport.update({
+    id: '/monitor-size/',
+    path: '/monitor-size/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedMeetingsOverviewIndexRoute =
@@ -185,6 +222,12 @@ const AuthenticatedInquiryTypeIndexRoute =
     path: '/inquiry-type/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHeadphoneBrandIndexRoute =
+  AuthenticatedHeadphoneBrandIndexRouteImport.update({
+    id: '/headphone-brand/',
+    path: '/headphone-brand/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedExtraWorkReportIndexRoute =
   AuthenticatedExtraWorkReportIndexRouteImport.update({
     id: '/extra-work-report/',
@@ -207,6 +250,12 @@ const AuthenticatedClientsIndexRoute =
   AuthenticatedClientsIndexRouteImport.update({
     id: '/clients/',
     path: '/clients/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedBrandsIndexRoute =
+  AuthenticatedBrandsIndexRouteImport.update({
+    id: '/brands/',
+    path: '/brands/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedProjectsDetailIdRoute =
@@ -233,21 +282,28 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/unauthorized': typeof errorsUnauthorizedRoute
+  '/brands/': typeof AuthenticatedBrandsIndexRoute
   '/clients/': typeof AuthenticatedClientsIndexRoute
   '/conference-room-booking/': typeof AuthenticatedConferenceRoomBookingIndexRoute
   '/daily-report/': typeof AuthenticatedDailyReportIndexRoute
   '/extra-work-report/': typeof AuthenticatedExtraWorkReportIndexRoute
+  '/headphone-brand/': typeof AuthenticatedHeadphoneBrandIndexRoute
   '/inquiry-type/': typeof AuthenticatedInquiryTypeIndexRoute
   '/inquiry/': typeof AuthenticatedInquiryIndexRoute
   '/interviews/': typeof AuthenticatedInterviewsIndexRoute
   '/leave-management/': typeof AuthenticatedLeaveManagementIndexRoute
   '/linode-server-dashboard/': typeof AuthenticatedLinodeServerDashboardIndexRoute
   '/meetings-overview/': typeof AuthenticatedMeetingsOverviewIndexRoute
+  '/monitor-size/': typeof AuthenticatedMonitorSizeIndexRoute
   '/new-joinees/': typeof AuthenticatedNewJoineesIndexRoute
+  '/processor/': typeof AuthenticatedProcessorIndexRoute
   '/profile/': typeof AuthenticatedProfileIndexRoute
   '/project-type/': typeof AuthenticatedProjectTypeIndexRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
+  '/ram-types/': typeof AuthenticatedRamTypesIndexRoute
   '/server/': typeof AuthenticatedServerIndexRoute
+  '/storage/': typeof AuthenticatedStorageIndexRoute
+  '/system-inventory/': typeof AuthenticatedSystemInventoryIndexRoute
   '/technology/': typeof AuthenticatedTechnologyIndexRoute
   '/tools-management/': typeof AuthenticatedToolsManagementIndexRoute
   '/transactions-logs/': typeof AuthenticatedTransactionsLogsIndexRoute
@@ -266,21 +322,28 @@ export interface FileRoutesByTo {
   '/503': typeof errors503Route
   '/unauthorized': typeof errorsUnauthorizedRoute
   '/': typeof AuthenticatedIndexRoute
+  '/brands': typeof AuthenticatedBrandsIndexRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
   '/conference-room-booking': typeof AuthenticatedConferenceRoomBookingIndexRoute
   '/daily-report': typeof AuthenticatedDailyReportIndexRoute
   '/extra-work-report': typeof AuthenticatedExtraWorkReportIndexRoute
+  '/headphone-brand': typeof AuthenticatedHeadphoneBrandIndexRoute
   '/inquiry-type': typeof AuthenticatedInquiryTypeIndexRoute
   '/inquiry': typeof AuthenticatedInquiryIndexRoute
   '/interviews': typeof AuthenticatedInterviewsIndexRoute
   '/leave-management': typeof AuthenticatedLeaveManagementIndexRoute
   '/linode-server-dashboard': typeof AuthenticatedLinodeServerDashboardIndexRoute
   '/meetings-overview': typeof AuthenticatedMeetingsOverviewIndexRoute
+  '/monitor-size': typeof AuthenticatedMonitorSizeIndexRoute
   '/new-joinees': typeof AuthenticatedNewJoineesIndexRoute
+  '/processor': typeof AuthenticatedProcessorIndexRoute
   '/profile': typeof AuthenticatedProfileIndexRoute
   '/project-type': typeof AuthenticatedProjectTypeIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
+  '/ram-types': typeof AuthenticatedRamTypesIndexRoute
   '/server': typeof AuthenticatedServerIndexRoute
+  '/storage': typeof AuthenticatedStorageIndexRoute
+  '/system-inventory': typeof AuthenticatedSystemInventoryIndexRoute
   '/technology': typeof AuthenticatedTechnologyIndexRoute
   '/tools-management': typeof AuthenticatedToolsManagementIndexRoute
   '/transactions-logs': typeof AuthenticatedTransactionsLogsIndexRoute
@@ -301,21 +364,28 @@ export interface FileRoutesById {
   '/(errors)/503': typeof errors503Route
   '/(errors)/unauthorized': typeof errorsUnauthorizedRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/brands/': typeof AuthenticatedBrandsIndexRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
   '/_authenticated/conference-room-booking/': typeof AuthenticatedConferenceRoomBookingIndexRoute
   '/_authenticated/daily-report/': typeof AuthenticatedDailyReportIndexRoute
   '/_authenticated/extra-work-report/': typeof AuthenticatedExtraWorkReportIndexRoute
+  '/_authenticated/headphone-brand/': typeof AuthenticatedHeadphoneBrandIndexRoute
   '/_authenticated/inquiry-type/': typeof AuthenticatedInquiryTypeIndexRoute
   '/_authenticated/inquiry/': typeof AuthenticatedInquiryIndexRoute
   '/_authenticated/interviews/': typeof AuthenticatedInterviewsIndexRoute
   '/_authenticated/leave-management/': typeof AuthenticatedLeaveManagementIndexRoute
   '/_authenticated/linode-server-dashboard/': typeof AuthenticatedLinodeServerDashboardIndexRoute
   '/_authenticated/meetings-overview/': typeof AuthenticatedMeetingsOverviewIndexRoute
+  '/_authenticated/monitor-size/': typeof AuthenticatedMonitorSizeIndexRoute
   '/_authenticated/new-joinees/': typeof AuthenticatedNewJoineesIndexRoute
+  '/_authenticated/processor/': typeof AuthenticatedProcessorIndexRoute
   '/_authenticated/profile/': typeof AuthenticatedProfileIndexRoute
   '/_authenticated/project-type/': typeof AuthenticatedProjectTypeIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
+  '/_authenticated/ram-types/': typeof AuthenticatedRamTypesIndexRoute
   '/_authenticated/server/': typeof AuthenticatedServerIndexRoute
+  '/_authenticated/storage/': typeof AuthenticatedStorageIndexRoute
+  '/_authenticated/system-inventory/': typeof AuthenticatedSystemInventoryIndexRoute
   '/_authenticated/technology/': typeof AuthenticatedTechnologyIndexRoute
   '/_authenticated/tools-management/': typeof AuthenticatedToolsManagementIndexRoute
   '/_authenticated/transactions-logs/': typeof AuthenticatedTransactionsLogsIndexRoute
@@ -336,21 +406,28 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/unauthorized'
+    | '/brands/'
     | '/clients/'
     | '/conference-room-booking/'
     | '/daily-report/'
     | '/extra-work-report/'
+    | '/headphone-brand/'
     | '/inquiry-type/'
     | '/inquiry/'
     | '/interviews/'
     | '/leave-management/'
     | '/linode-server-dashboard/'
     | '/meetings-overview/'
+    | '/monitor-size/'
     | '/new-joinees/'
+    | '/processor/'
     | '/profile/'
     | '/project-type/'
     | '/projects/'
+    | '/ram-types/'
     | '/server/'
+    | '/storage/'
+    | '/system-inventory/'
     | '/technology/'
     | '/tools-management/'
     | '/transactions-logs/'
@@ -369,21 +446,28 @@ export interface FileRouteTypes {
     | '/503'
     | '/unauthorized'
     | '/'
+    | '/brands'
     | '/clients'
     | '/conference-room-booking'
     | '/daily-report'
     | '/extra-work-report'
+    | '/headphone-brand'
     | '/inquiry-type'
     | '/inquiry'
     | '/interviews'
     | '/leave-management'
     | '/linode-server-dashboard'
     | '/meetings-overview'
+    | '/monitor-size'
     | '/new-joinees'
+    | '/processor'
     | '/profile'
     | '/project-type'
     | '/projects'
+    | '/ram-types'
     | '/server'
+    | '/storage'
+    | '/system-inventory'
     | '/technology'
     | '/tools-management'
     | '/transactions-logs'
@@ -403,21 +487,28 @@ export interface FileRouteTypes {
     | '/(errors)/503'
     | '/(errors)/unauthorized'
     | '/_authenticated/'
+    | '/_authenticated/brands/'
     | '/_authenticated/clients/'
     | '/_authenticated/conference-room-booking/'
     | '/_authenticated/daily-report/'
     | '/_authenticated/extra-work-report/'
+    | '/_authenticated/headphone-brand/'
     | '/_authenticated/inquiry-type/'
     | '/_authenticated/inquiry/'
     | '/_authenticated/interviews/'
     | '/_authenticated/leave-management/'
     | '/_authenticated/linode-server-dashboard/'
     | '/_authenticated/meetings-overview/'
+    | '/_authenticated/monitor-size/'
     | '/_authenticated/new-joinees/'
+    | '/_authenticated/processor/'
     | '/_authenticated/profile/'
     | '/_authenticated/project-type/'
     | '/_authenticated/projects/'
+    | '/_authenticated/ram-types/'
     | '/_authenticated/server/'
+    | '/_authenticated/storage/'
+    | '/_authenticated/system-inventory/'
     | '/_authenticated/technology/'
     | '/_authenticated/tools-management/'
     | '/_authenticated/transactions-logs/'
@@ -546,11 +637,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTechnologyIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/system-inventory/': {
+      id: '/_authenticated/system-inventory/'
+      path: '/system-inventory'
+      fullPath: '/system-inventory/'
+      preLoaderRoute: typeof AuthenticatedSystemInventoryIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/storage/': {
+      id: '/_authenticated/storage/'
+      path: '/storage'
+      fullPath: '/storage/'
+      preLoaderRoute: typeof AuthenticatedStorageIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/server/': {
       id: '/_authenticated/server/'
       path: '/server'
       fullPath: '/server/'
       preLoaderRoute: typeof AuthenticatedServerIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/ram-types/': {
+      id: '/_authenticated/ram-types/'
+      path: '/ram-types'
+      fullPath: '/ram-types/'
+      preLoaderRoute: typeof AuthenticatedRamTypesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/projects/': {
@@ -574,11 +686,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfileIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/processor/': {
+      id: '/_authenticated/processor/'
+      path: '/processor'
+      fullPath: '/processor/'
+      preLoaderRoute: typeof AuthenticatedProcessorIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/new-joinees/': {
       id: '/_authenticated/new-joinees/'
       path: '/new-joinees'
       fullPath: '/new-joinees/'
       preLoaderRoute: typeof AuthenticatedNewJoineesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/monitor-size/': {
+      id: '/_authenticated/monitor-size/'
+      path: '/monitor-size'
+      fullPath: '/monitor-size/'
+      preLoaderRoute: typeof AuthenticatedMonitorSizeIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/meetings-overview/': {
@@ -623,6 +749,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInquiryTypeIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/headphone-brand/': {
+      id: '/_authenticated/headphone-brand/'
+      path: '/headphone-brand'
+      fullPath: '/headphone-brand/'
+      preLoaderRoute: typeof AuthenticatedHeadphoneBrandIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/extra-work-report/': {
       id: '/_authenticated/extra-work-report/'
       path: '/extra-work-report'
@@ -651,6 +784,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClientsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/brands/': {
+      id: '/_authenticated/brands/'
+      path: '/brands'
+      fullPath: '/brands/'
+      preLoaderRoute: typeof AuthenticatedBrandsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/projects/detail/$id': {
       id: '/_authenticated/projects/detail/$id'
       path: '/projects/detail/$id'
@@ -670,21 +810,28 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedBrandsIndexRoute: typeof AuthenticatedBrandsIndexRoute
   AuthenticatedClientsIndexRoute: typeof AuthenticatedClientsIndexRoute
   AuthenticatedConferenceRoomBookingIndexRoute: typeof AuthenticatedConferenceRoomBookingIndexRoute
   AuthenticatedDailyReportIndexRoute: typeof AuthenticatedDailyReportIndexRoute
   AuthenticatedExtraWorkReportIndexRoute: typeof AuthenticatedExtraWorkReportIndexRoute
+  AuthenticatedHeadphoneBrandIndexRoute: typeof AuthenticatedHeadphoneBrandIndexRoute
   AuthenticatedInquiryTypeIndexRoute: typeof AuthenticatedInquiryTypeIndexRoute
   AuthenticatedInquiryIndexRoute: typeof AuthenticatedInquiryIndexRoute
   AuthenticatedInterviewsIndexRoute: typeof AuthenticatedInterviewsIndexRoute
   AuthenticatedLeaveManagementIndexRoute: typeof AuthenticatedLeaveManagementIndexRoute
   AuthenticatedLinodeServerDashboardIndexRoute: typeof AuthenticatedLinodeServerDashboardIndexRoute
   AuthenticatedMeetingsOverviewIndexRoute: typeof AuthenticatedMeetingsOverviewIndexRoute
+  AuthenticatedMonitorSizeIndexRoute: typeof AuthenticatedMonitorSizeIndexRoute
   AuthenticatedNewJoineesIndexRoute: typeof AuthenticatedNewJoineesIndexRoute
+  AuthenticatedProcessorIndexRoute: typeof AuthenticatedProcessorIndexRoute
   AuthenticatedProfileIndexRoute: typeof AuthenticatedProfileIndexRoute
   AuthenticatedProjectTypeIndexRoute: typeof AuthenticatedProjectTypeIndexRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
+  AuthenticatedRamTypesIndexRoute: typeof AuthenticatedRamTypesIndexRoute
   AuthenticatedServerIndexRoute: typeof AuthenticatedServerIndexRoute
+  AuthenticatedStorageIndexRoute: typeof AuthenticatedStorageIndexRoute
+  AuthenticatedSystemInventoryIndexRoute: typeof AuthenticatedSystemInventoryIndexRoute
   AuthenticatedTechnologyIndexRoute: typeof AuthenticatedTechnologyIndexRoute
   AuthenticatedToolsManagementIndexRoute: typeof AuthenticatedToolsManagementIndexRoute
   AuthenticatedTransactionsLogsIndexRoute: typeof AuthenticatedTransactionsLogsIndexRoute
@@ -695,12 +842,14 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedBrandsIndexRoute: AuthenticatedBrandsIndexRoute,
   AuthenticatedClientsIndexRoute: AuthenticatedClientsIndexRoute,
   AuthenticatedConferenceRoomBookingIndexRoute:
     AuthenticatedConferenceRoomBookingIndexRoute,
   AuthenticatedDailyReportIndexRoute: AuthenticatedDailyReportIndexRoute,
   AuthenticatedExtraWorkReportIndexRoute:
     AuthenticatedExtraWorkReportIndexRoute,
+  AuthenticatedHeadphoneBrandIndexRoute: AuthenticatedHeadphoneBrandIndexRoute,
   AuthenticatedInquiryTypeIndexRoute: AuthenticatedInquiryTypeIndexRoute,
   AuthenticatedInquiryIndexRoute: AuthenticatedInquiryIndexRoute,
   AuthenticatedInterviewsIndexRoute: AuthenticatedInterviewsIndexRoute,
@@ -710,11 +859,17 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedLinodeServerDashboardIndexRoute,
   AuthenticatedMeetingsOverviewIndexRoute:
     AuthenticatedMeetingsOverviewIndexRoute,
+  AuthenticatedMonitorSizeIndexRoute: AuthenticatedMonitorSizeIndexRoute,
   AuthenticatedNewJoineesIndexRoute: AuthenticatedNewJoineesIndexRoute,
+  AuthenticatedProcessorIndexRoute: AuthenticatedProcessorIndexRoute,
   AuthenticatedProfileIndexRoute: AuthenticatedProfileIndexRoute,
   AuthenticatedProjectTypeIndexRoute: AuthenticatedProjectTypeIndexRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
+  AuthenticatedRamTypesIndexRoute: AuthenticatedRamTypesIndexRoute,
   AuthenticatedServerIndexRoute: AuthenticatedServerIndexRoute,
+  AuthenticatedStorageIndexRoute: AuthenticatedStorageIndexRoute,
+  AuthenticatedSystemInventoryIndexRoute:
+    AuthenticatedSystemInventoryIndexRoute,
   AuthenticatedTechnologyIndexRoute: AuthenticatedTechnologyIndexRoute,
   AuthenticatedToolsManagementIndexRoute:
     AuthenticatedToolsManagementIndexRoute,

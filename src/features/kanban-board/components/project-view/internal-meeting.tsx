@@ -103,6 +103,15 @@ interface InternalMeetingDialogProps {
   title?: string;
   descriptionLabel?: string;
   projectId?: string | number;
+  showProjectSelect?: boolean;
+  hideCoordinatorSelect?: boolean;
+  defaultEmployeeId?: number;
+  projectOptions?: {
+    value: string | number;
+    label: string;
+  }[];
+  /** When set (coordinator tab edit context), shows this project name as a read-only label and hides the coordinator selector */
+  projectDisplayName?: string;
 }
 
 export function InternalMeetingDialog({
@@ -115,9 +124,15 @@ export function InternalMeetingDialog({
   title = "Internal Meeting Details",
   descriptionLabel = "Description or Discussion Points",
   projectId,
+  showProjectSelect = false,
+  hideCoordinatorSelect = false,
+  defaultEmployeeId,
+  projectOptions = [],
   onSuccess,
+  projectDisplayName,
 }: InternalMeetingDialogProps) {
   const [editorReady, setEditorReady] = useState(false);
+  const [editorDirty, setEditorDirty] = useState(false);
   const { data: usersList, isPending: usersListLoading }: any =
     useGetUserDropdownList({
       role: [
@@ -138,14 +153,22 @@ export function InternalMeetingDialog({
       link: currentData?.link ?? "",
       projectId:
         Number(projectId ?? currentData?.projectId) || (undefined as any),
+      employeeIds: currentData?.employees
+        ? currentData.employees.map((emp: any) => emp.id)
+        : defaultEmployeeId
+          ? [defaultEmployeeId]
+          : [],
       startDate: currentData?.startDate
         ? new Date(currentData.startDate)
         : undefined,
     },
   });
 
+  const { isDirty } = form.formState;
+
   const closeDialog = useCallback(() => {
     form.reset();
+    setEditorDirty(false);
     onOpenChange(false);
     if (onSuccess) onSuccess();
   }, [form, onOpenChange, onSuccess]);
@@ -169,7 +192,9 @@ export function InternalMeetingDialog({
         description: currentData?.description ?? "",
         employeeIds: currentData?.employees
           ? currentData.employees.map((emp: any) => emp.id)
-          : [],
+          : defaultEmployeeId
+            ? [defaultEmployeeId]
+            : [],
         link: currentData?.link ?? "",
         projectId:
           Number(projectId ?? currentData?.projectId) || (undefined as any),
@@ -177,8 +202,9 @@ export function InternalMeetingDialog({
           ? new Date(currentData.startDate)
           : undefined,
       });
+      setEditorDirty(false);
     }
-  }, [open, currentData, projectId, form]);
+  }, [open, currentData, projectId, form, defaultEmployeeId]);
 
   const onSubmit = (values: TInternalMeetingSchema) => {
     const payload = {
@@ -200,9 +226,14 @@ export function InternalMeetingDialog({
   const handleDialogOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
       form.reset();
+      setEditorDirty(false);
     }
     onOpenChange(isOpen);
   };
+
+  // Disable submit when editing with no changes
+  const isEditMode = !!currentData?.id;
+  const isSubmitDisabled = loading || (isEditMode && !isDirty && !editorDirty);
 
   return (
     <Dialog modal open={open} onOpenChange={handleDialogOpenChange}>
@@ -242,15 +273,31 @@ export function InternalMeetingDialog({
                 )}
               />
 
-              {/* Hidden Project ID */}
-              <div className="hidden">
-                <TextInputField
-                  control={form.control}
+              {(showProjectSelect || projectDisplayName) && !isViewOnly ? (
+                // Coordinator tab (add or edit): show editable project dropdown
+                <CustomDropDownSearchable
+                  form={form}
                   name="projectId"
-                  label="Project ID"
-                  placeholder="Project ID"
+                  label={
+                    <>
+                      Project Name <span className="text-red-500">*</span>
+                    </>
+                  }
+                  options={projectOptions}
+                  placeholder="Select Project Name"
+                  sortOptions={false}
+                  disabled={loading || projectOptions.length === 0}
                 />
-              </div>
+              ) : (
+                <div className="hidden">
+                  <TextInputField
+                    control={form.control}
+                    name="projectId"
+                    label="Project ID"
+                    placeholder="Project ID"
+                  />
+                </div>
+              )}
 
               {/* Start Date */}
               {/* <div className="grid grid-cols-1 gap-4 sm:grid-cols-2"> */}
@@ -282,7 +329,7 @@ export function InternalMeetingDialog({
 
               {isViewOnly ? (
                 <div className="space-y-2">
-                  <FormLabel>Employee Name</FormLabel>
+                  <FormLabel>Coordinator's Name</FormLabel>
 
                   {currentData?.employees?.length ? (
                     <div className="flex flex-wrap gap-2">
@@ -299,13 +346,14 @@ export function InternalMeetingDialog({
                     <p className="text-sm text-muted-foreground">-</p>
                   )}
                 </div>
-              ) : (
+              ) : projectDisplayName ? // Coordinator tab edit context: project name is shown above; hide coordinator selector
+              null : !hideCoordinatorSelect ? (
                 <CustomDropDownSearchable
                   form={form}
                   name="employeeIds"
                   label={
                     <>
-                      Employee Name <span className="text-red-500">*</span>
+                      Coordinator's Name <span className="text-red-500">*</span>
                     </>
                   }
                   multiple
@@ -313,11 +361,11 @@ export function InternalMeetingDialog({
                     value: user.id,
                     label: user.fullName,
                   }))}
-                  placeholder="Select Employee Name"
+                  placeholder="Select Coordinator's Name"
                   searchEnabled
                   isLoading={usersListLoading}
                 />
-              )}
+              ) : null}
               {/* </div> */}
 
               {/* Link Field - Full Width */}
@@ -360,6 +408,7 @@ export function InternalMeetingDialog({
                           onChange={(_, editor) => {
                             const data = editor.getData();
                             field.onChange(data);
+                            if (isEditMode) setEditorDirty(true);
                           }}
                           onReady={() => {
                             setEditorReady(true);
@@ -433,7 +482,7 @@ export function InternalMeetingDialog({
                 {!isViewOnly && (
                   <CustomButton
                     type="submit"
-                    disabled={loading}
+                    disabled={isSubmitDisabled}
                     isLoading={loading}
                   >
                     {loading
@@ -490,10 +539,10 @@ export function InternalMeetingListing({
       page: pagination.pageIndex + 1,
       limit: pagination.pageSize,
       search: debouncedSearchQuery,
-      startDate: dateRange.from
+      fromDate: dateRange.from
         ? format(dateRange.from, "yyyy-MM-dd")
         : undefined,
-      endDate: dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
+      toDate: dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
     }
   ) as any;
   const { mutate: deleteMeeting, isPending: isDeleting } =
@@ -559,7 +608,7 @@ export function InternalMeetingListing({
       },
       {
         accessorKey: "employees",
-        header: "Employee Name(s)",
+        header: "Coordinator's Name",
         cell: ({ row }) => {
           const employees = row.original?.employees;
 

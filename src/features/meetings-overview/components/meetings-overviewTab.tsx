@@ -64,6 +64,8 @@ const MeetingsOverviewListing = ({
   emptyMessage,
   dateRange,
   refreshTick,
+  isCoordinatorContext = false,
+  projectOptions = [],
 }: {
   projectId?: number | null;
   coordinatorId?: number | null;
@@ -73,6 +75,8 @@ const MeetingsOverviewListing = ({
     to: Date | undefined;
   };
   refreshTick: number;
+  isCoordinatorContext?: boolean;
+  projectOptions?: { value: string | number; label: string }[];
 }) => {
   const [meetings, setMeetings] = useState<any[]>([]);
   const [page, setPage] = useState(1);
@@ -108,10 +112,8 @@ const MeetingsOverviewListing = ({
     limit: pageSize,
     search: debouncedSearchQuery,
     pagination: true,
-    startDate: dateRange.from
-      ? format(dateRange.from, "yyyy-MM-dd")
-      : undefined,
-    endDate: dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
+    fromDate: dateRange.from ? format(dateRange.from, "yyyy-MM-dd") : undefined,
+    toDate: dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
     ...(projectId ? { projectId } : {}),
     ...(coordinatorId ? { employeeId: coordinatorId } : {}),
   };
@@ -244,7 +246,7 @@ const MeetingsOverviewListing = ({
           <span className="ml-2">Loading meetings...</span>
         </div>
       ) : meetings.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-12 text-center border rounded-lg bg-muted/10">
+        <div className="flex flex-col items-center justify-center p-12 text-center border bg-muted/10">
           <div className="rounded-full bg-muted p-3 mb-4">
             <CalendarIcon className="h-8 w-8 text-muted-foreground" />
           </div>
@@ -268,11 +270,11 @@ const MeetingsOverviewListing = ({
           <table className="w-full caption-bottom text-sm">
             <thead className="[&_tr]:border-b">
               <tr className="border-b transition-colors hover:bg-muted/50">
-                <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0 w-[150px]">
+                <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0 whitespace-nowrap">
                   Start Date
                 </th>
-                <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0 w-[40%]">
-                  Coordinator(s)
+                <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0">
+                  Coordinator's Name
                 </th>
                 {showProjectColumn && (
                   <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0">
@@ -290,15 +292,15 @@ const MeetingsOverviewListing = ({
             <tbody className="[&_tr:last-child]:border-0">
               {meetings.map((meeting: any) => {
                 const employees = meeting?.employees || [];
-                const visibleEmployees = employees.slice(0, 5);
-                const remainingCount = employees.length - 5;
+                const visibleEmployees = employees.slice(0, 3);
+                const remainingCount = employees.length - 3;
 
                 return (
                   <tr
                     key={meeting.id}
                     className="border-b transition-colors hover:bg-muted/50"
                   >
-                    <td className="p-4 align-middle">
+                    <td className="p-4 align-middle w-50 whitespace-nowrap">
                       {meeting.startDate
                         ? format(new Date(meeting.startDate), "EEE, d MMM yyyy")
                         : "-"}
@@ -353,9 +355,9 @@ const MeetingsOverviewListing = ({
                     {showProjectColumn && (
                       <td className="p-4 align-middle">
                         <div className="min-w-[200px]">
-                          {meeting.projectName ? (
+                          {meeting.project.name ? (
                             <span className="px-2 py-0.5 bg-muted rounded-full text-sm">
-                              {meeting.projectName}
+                              {meeting.project.name}
                             </span>
                           ) : (
                             "-"
@@ -364,7 +366,7 @@ const MeetingsOverviewListing = ({
                       </td>
                     )}
                     <td className="p-4 align-middle">
-                      <div className="min-w-[300px]">
+                      <div className="min-w-[250px]">
                         <p className="text-muted-foreground line-clamp-4 break-words whitespace-normal">
                           {stripHtml(meeting.description || "-")}
                         </p>
@@ -422,6 +424,12 @@ const MeetingsOverviewListing = ({
         projectId={resolveMeetingProjectId(selectedMeeting)}
         title="Edit Internal Meeting Details"
         onSuccess={handleMeetingUpdated}
+        projectDisplayName={
+          isCoordinatorContext
+            ? (selectedMeeting?.project?.name ?? undefined)
+            : undefined
+        }
+        projectOptions={isCoordinatorContext ? projectOptions : []}
       />
 
       <ConfirmDialog
@@ -522,6 +530,10 @@ const MeetingsOverviewTab = ({
       // technologyId: technologyIds.length > 0 ? technologyIds : undefined,
       status: "active",
     });
+  const { data: allProjectsData }: any = useGetProjectsData({
+    pagination: false,
+    status: "active",
+  });
 
   const projectList = useMemo(
     () =>
@@ -529,6 +541,13 @@ const MeetingsOverviewTab = ({
       projectData?.data ||
       [],
     [projectData]
+  );
+  const allProjectsList = useMemo(
+    () =>
+      allProjectsData?.pages?.flatMap((page: any) => page.data) ||
+      allProjectsData?.data ||
+      [],
+    [allProjectsData]
   );
 
   // 2. Fetch Coordinators (Tab 2)
@@ -584,6 +603,23 @@ const MeetingsOverviewTab = ({
   );
   const selectedProjectDescription = selectedProject?.description || "";
   const hasLongProjectDescription = selectedProjectDescription.length > 500;
+  const coordinatorProjectOptions = useMemo(() => {
+    const uniqueProjects = new Map<number, any>();
+    allProjectsList.forEach((project: any) => {
+      const projectId = Number(project?.id);
+      if (!projectId || uniqueProjects.has(projectId)) return;
+      uniqueProjects.set(projectId, project);
+    });
+
+    return Array.from(uniqueProjects.values()).map((project: any) => ({
+      value: Number(project.id),
+      label: project?.name ? `${project.name}` : `Project ID: ${project.id}`,
+    }));
+  }, [allProjectsList]);
+  const canOpenCreateDialog =
+    activeTab === "projects"
+      ? !!selectedProjectId
+      : !!selectedCoordinatorId && coordinatorProjectOptions.length > 0;
 
   return (
     <div className="flex flex-col h-full min-h-0 gap-2 overflow-hidden">
@@ -608,7 +644,7 @@ const MeetingsOverviewTab = ({
             type="button"
             size="sm"
             onClick={() => setIsCreateDialogOpen(true)}
-            disabled={!selectedProjectId}
+            disabled={!canOpenCreateDialog}
           >
             <Plus className="h-4 w-4" />
             Add
@@ -807,6 +843,8 @@ const MeetingsOverviewTab = ({
                   emptyMessage="Select a coordinator to view meetings"
                   dateRange={coordinatorDateRange}
                   refreshTick={meetingsRefreshTick}
+                  isCoordinatorContext={true}
+                  projectOptions={coordinatorProjectOptions}
                 />
               </div>
             </Card>
@@ -817,7 +855,21 @@ const MeetingsOverviewTab = ({
       <InternalMeetingDialog
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
-        projectId={selectedProjectId ?? undefined}
+        projectId={
+          activeTab === "projects"
+            ? (selectedProjectId ?? undefined)
+            : undefined
+        }
+        showProjectSelect={activeTab === "Project Coordinator"}
+        hideCoordinatorSelect={activeTab === "Project Coordinator"}
+        defaultEmployeeId={
+          activeTab === "Project Coordinator"
+            ? (selectedCoordinatorId ?? undefined)
+            : undefined
+        }
+        projectOptions={
+          activeTab === "Project Coordinator" ? coordinatorProjectOptions : []
+        }
         title="Add Internal Meeting"
         onSuccess={handleCreateMeetingSuccess}
       />
