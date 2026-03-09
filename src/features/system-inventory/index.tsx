@@ -284,7 +284,7 @@ const SystemInventoryPage = () => {
         value: p.id,
         label: p.name,
       })),
-      value: listParams.userId,
+      value: listParams.processorId,
       onChange: (value: any) => {
         setListParams({
           ...listParams,
