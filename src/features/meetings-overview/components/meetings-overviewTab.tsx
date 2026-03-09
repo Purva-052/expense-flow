@@ -112,10 +112,8 @@ const MeetingsOverviewListing = ({
     limit: pageSize,
     search: debouncedSearchQuery,
     pagination: true,
-    startDate: dateRange.from
-      ? format(dateRange.from, "yyyy-MM-dd")
-      : undefined,
-    endDate: dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
+    fromDate: dateRange.from ? format(dateRange.from, "yyyy-MM-dd") : undefined,
+    toDate: dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
     ...(projectId ? { projectId } : {}),
     ...(coordinatorId ? { employeeId: coordinatorId } : {}),
   };

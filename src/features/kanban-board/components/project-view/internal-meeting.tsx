@@ -346,10 +346,8 @@ export function InternalMeetingDialog({
                     <p className="text-sm text-muted-foreground">-</p>
                   )}
                 </div>
-              ) : projectDisplayName ? (
-                // Coordinator tab edit context: project name is shown above; hide coordinator selector
-                null
-              ) : !hideCoordinatorSelect ? (
+              ) : projectDisplayName ? // Coordinator tab edit context: project name is shown above; hide coordinator selector
+              null : !hideCoordinatorSelect ? (
                 <CustomDropDownSearchable
                   form={form}
                   name="employeeIds"
@@ -541,10 +539,10 @@ export function InternalMeetingListing({
       page: pagination.pageIndex + 1,
       limit: pagination.pageSize,
       search: debouncedSearchQuery,
-      startDate: dateRange.from
+      fromDate: dateRange.from
         ? format(dateRange.from, "yyyy-MM-dd")
         : undefined,
-      endDate: dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
+      toDate: dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
     }
   ) as any;
   const { mutate: deleteMeeting, isPending: isDeleting } =
