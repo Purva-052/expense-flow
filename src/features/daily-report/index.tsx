@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearch } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import PageLayout from "@/components/layout/layout-provider";
 import { GlobalTable } from "@/components/table/global-table";
 import GlobalFilterSection from "@/components/table/global-table-filter";
@@ -28,6 +28,7 @@ import { Clock, AlertCircle, CalendarDays } from "lucide-react";
 
 export default function DailyReportPage() {
   const search = useSearch({ from: "/_authenticated/daily-report/" });
+  const navigate = useNavigate();
   const { user } = useAuthStore();
   const [listParams, setListParams] = useState({
     pageSize: 10,
@@ -486,7 +487,22 @@ export default function DailyReportPage() {
         />
         <ReportsStatsDialog
           open={statsOpen}
-          onOpenChange={setStatsOpen}
+          onOpenChange={(open) => {
+            setStatsOpen(open);
+            if (!open) {
+              // Clear URL params so a page refresh doesn't reopen the dialog
+              navigate({
+                to: "/daily-report",
+                search: {
+                  openPendingReports: undefined,
+                  openPendingReportsAt: undefined,
+                  type: undefined,
+                  userId: undefined,
+                },
+                replace: true,
+              });
+            }
+          }}
           type={reportType}
           reportingDate={listParams.fromDate}
           userId={statsUserId}
