@@ -8,6 +8,7 @@ import { GlobalTable } from "@/components/table/global-table";
 import { useGetReportDetails } from "../services";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import { FilterConfig } from "@/components/table/table-toolbar";
 
@@ -27,31 +28,44 @@ export function ReportsStatsDialog({
   userId,
 }: ReportsStatsDialogProps) {
   const [currentType, setCurrentType] = useState<any>(type);
-  const [listParams, setListParams] = useState({
-    pageSize: 10,
-    currentPage: 1,
-    search: "",
-    fromDate: reportingDate || undefined,
-    toDate: reportingDate || undefined,
-    userId: userId || undefined,
+  const [listParams, setListParams] = useState(() => {
+    const isHoliday = type === "holiday";
+    return {
+      pageSize: isHoliday ? 100 : 10,
+      currentPage: 1,
+      search: "",
+      fromDate: isHoliday ? undefined : reportingDate || undefined,
+      toDate: isHoliday ? undefined : reportingDate || undefined,
+      userId: userId || undefined,
+    };
   });
+
+  const [accumulatedData, setAccumulatedData] = useState<any[]>([]);
+  const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
     if (type) {
       setCurrentType(type);
-      // Reset filter params when type changes
+      const isHoliday = type === "holiday";
+      // Reset filter params and accumulated data when type changes
       setListParams({
-        pageSize: 10,
+        pageSize: isHoliday ? 100 : 10,
         currentPage: 1,
         search: "",
-        fromDate: reportingDate || undefined,
-        toDate: reportingDate || undefined,
+        fromDate: isHoliday ? undefined : reportingDate || undefined,
+        toDate: isHoliday ? undefined : reportingDate || undefined,
         userId: userId || undefined,
       });
+      setAccumulatedData([]);
+      setHasMore(true);
     }
   }, [type, reportingDate, userId]);
 
-  const { data: listData, isPending: loading } = useGetReportDetails({
+  const {
+    data: listData,
+    isPending: loading,
+    isFetching,
+  } = useGetReportDetails({
     type: currentType!,
     fromDate: listParams.fromDate,
     toDate: listParams.toDate,
@@ -60,6 +74,29 @@ export function ReportsStatsDialog({
     page: listParams.currentPage,
     limit: listParams.pageSize,
   });
+
+  useEffect(() => {
+    if (listData) {
+      const fetchedData = (listData as any)?.data ?? [];
+      const metadata = (listData as any)?.metadata;
+
+      setAccumulatedData((prev) => {
+        if (listParams.currentPage === 1) return fetchedData;
+        const combined = [...prev, ...fetchedData];
+        // Ensure no duplicates by ID if data has it, otherwise just append
+        return combined.filter(
+          (item, index, self) =>
+            index === self.findIndex((t) => (t.id ? t.id === item.id : true))
+        );
+      });
+
+      if (metadata) {
+        setHasMore(listParams.currentPage < metadata.totalPages);
+      } else {
+        setHasMore(fetchedData.length === listParams.pageSize);
+      }
+    }
+  }, [listData, listParams.currentPage, listParams.pageSize]);
 
   const totalCount = (listData as any)?.metadata?.totalCount;
 
@@ -72,6 +109,19 @@ export function ReportsStatsDialog({
       pageSize: newPagination.pageSize,
       currentPage: newPagination.pageIndex + 1,
     });
+  };
+
+  const handleListScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    const target = event.currentTarget;
+    const reachedBottom =
+      target.scrollTop + target.clientHeight >= target.scrollHeight - 50;
+
+    if (reachedBottom && hasMore && !loading && !isFetching) {
+      setListParams((prev) => ({
+        ...prev,
+        currentPage: prev.currentPage + 1,
+      }));
+    }
   };
 
   const formatDate = (date?: Date) => {
@@ -96,6 +146,7 @@ export function ReportsStatsDialog({
                 search: value ?? "",
                 currentPage: 1,
               });
+              setAccumulatedData([]);
             },
           },
           {
@@ -116,6 +167,7 @@ export function ReportsStatsDialog({
                 toDate: formatDate(range?.to),
                 currentPage: 1,
               });
+              setAccumulatedData([]);
             },
           },
         ]
@@ -203,7 +255,6 @@ export function ReportsStatsDialog({
             {
               accessorKey: "workingHours",
               header: "Working Hours",
-              // cell:
               cell: ({ row }: any) => {
                 const val = row.original.workingHours;
                 if (!val) return "0:00";
@@ -215,7 +266,6 @@ export function ReportsStatsDialog({
           ];
 
   // Each row is ~53px tall, header ~45px, pagination ~52px
-  // Pre-reserve space for pageSize rows so height never jumps between pages
   const ROW_HEIGHT = 53;
   const HEADER_HEIGHT = 45;
   const PAGINATION_HEIGHT = 52;
@@ -233,21 +283,104 @@ export function ReportsStatsDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 pt-4">
-          <GlobalFilterSection filters={filters} className="mb-4" />
-          {/* Min height locked to pageSize rows — no jump on page change */}
-          <div style={{ minHeight: tableMinHeight }}>
-            <GlobalTable<any>
-              pageSize={listParams.pageSize}
-              currentPage={listParams.currentPage}
-              totalCount={totalCount ?? 0}
-              data={(listData as any)?.data ?? []}
-              onPaginationChange={handlePaginationChange}
-              columns={columns}
-              loading={loading}
-              isPaginationEnabled
-            />
-          </div>
+        <div className="space-y-4 pt-4 flex-1 overflow-hidden flex flex-col">
+          {filters.length > 0 && (
+            <GlobalFilterSection filters={filters} className="mb-4" />
+          )}
+
+          {currentType === "holiday" ? (
+            <div
+              onScroll={handleListScroll}
+              className="flex-1 overflow-auto border rounded-md"
+              style={{ maxHeight: "calc(90vh - 150px)" }}
+            >
+              <table className="w-full caption-bottom text-sm">
+                <thead className="[&_tr]:border-b">
+                  <tr className="border-b transition-colors hover:bg-muted/50">
+                    {columns.map((col: any) => (
+                      <th
+                        key={col.accessorKey}
+                        className="h-12 bg-gray-100 text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0 whitespace-nowrap"
+                      >
+                        {col.header}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="[&_tr:last-child]:border-0">
+                  {loading && accumulatedData.length === 0 ? (
+                    Array.from({ length: 10 }).map((_, idx) => (
+                      <tr
+                        key={`skeleton-${idx}`}
+                        className="border-b transition-colors hover:bg-muted/50"
+                      >
+                        {columns.map((col: any) => (
+                          <td
+                            key={col.accessorKey}
+                            className="p-4 align-middle whitespace-nowrap"
+                          >
+                            <Skeleton className="h-4 w-full" />
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  ) : (
+                    <>
+                      {accumulatedData.map((item, idx) => (
+                        <tr
+                          key={item.id ?? idx}
+                          className="border-b transition-colors hover:bg-muted/50"
+                        >
+                          {columns.map((col: any) => (
+                            <td
+                              key={col.accessorKey}
+                              className="p-4 align-middle whitespace-nowrap"
+                            >
+                              {col.cell
+                                ? col.cell({
+                                    row: { original: item },
+                                  } as any)
+                                : item[col.accessorKey]}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                      {accumulatedData.length === 0 && !loading && (
+                        <tr>
+                          <td
+                            colSpan={columns.length}
+                            className="h-24 text-center align-middle"
+                          >
+                            No holidays found.
+                          </td>
+                        </tr>
+                      )}
+                    </>
+                  )}
+                </tbody>
+              </table>
+              {(loading || isFetching) && (
+                <div className="flex justify-center py-4">
+                  <span className="text-muted-foreground animate-pulse">
+                    Loading...
+                  </span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div style={{ minHeight: tableMinHeight }}>
+              <GlobalTable<any>
+                pageSize={listParams.pageSize}
+                currentPage={listParams.currentPage}
+                totalCount={totalCount ?? 0}
+                data={(listData as any)?.data ?? []}
+                onPaginationChange={handlePaginationChange}
+                columns={columns}
+                loading={loading}
+                isPaginationEnabled
+              />
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
