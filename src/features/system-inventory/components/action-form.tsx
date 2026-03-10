@@ -172,7 +172,7 @@ const OWNERSHIP_OPTIONS: Array<{
 
 const CONNECTION_OPTIONS: DropdownOption[] = [
   {
-    label: "Wired/USB",
+    label: "Wired",
     value: "wired",
   },
   {
