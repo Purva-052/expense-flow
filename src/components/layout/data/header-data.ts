@@ -10,7 +10,7 @@ export const URL_TO_TITLE_MAP: Record<string, string> = {
   "/profile": "Profile",
   "/project-type": "Project Types",
   "/inquiry": "Inquiry",
-  "/inquiry-type": "Inquiry Types",
+  "/inquiry-requirements": "Inquiry Requirements",
   "/server": "Servers",
   "/new-joinees": "To be Join",
   "/linode-server-dashboard": "Linode Server Dashboard",

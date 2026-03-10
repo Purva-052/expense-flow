@@ -235,6 +235,27 @@ const API = {
     update: "/system-inventory",
     delete: "/system-inventory",
   },
+  industry: {
+    list: "/industry",
+    create: "/industry",
+    update: "/industry",
+    delete: "/industry",
+    dropdown: "/industry/dropdown",
+  },
+  domain: {
+    list: "/domain",
+    create: "/domain",
+    update: "/domain",
+    delete: "/domain",
+    dropdown: "/domain/dropdown",
+  },
+  inquiry_types: {
+    list: "/inquiry-types",
+    create: "/inquiry-types",
+    update: "/inquiry-types",
+    delete: "/inquiry-types",
+    dropdown: "/inquiry-types/dropdown",
+  },
 };
 
 Object.freeze(API);

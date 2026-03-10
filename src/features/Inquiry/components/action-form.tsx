@@ -18,7 +18,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import { useGetInquiryType } from "@/features/Inquiry-type/services";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { InquirySchema, TInquirySchema } from "../schema";
@@ -26,6 +25,8 @@ import { INQUIRY_STATUS } from "@/utils/constant";
 import { PhoneInputField } from "@/components/shared/custom-phone-number-countrywise";
 import { useGetCountryDropdownList } from "@/features/clients/services";
 import { Input } from "@/components/ui/input";
+// import { useGetInquiryType } from "@/features/inquiry-types/services";
+import { useGetInquiryRequirement } from "@/features/Inquiry-requirements/services";
 
 interface Props {
   currentRow?: any;
@@ -60,9 +61,10 @@ export function InquiryActionForm({
     },
   });
 
-  const { data: typeList, isPending: loadingType }: any = useGetInquiryType({
-    pagination: false,
-  });
+  const { data: typeList, isPending: loadingType }: any =
+    useGetInquiryRequirement({
+      pagination: false,
+    });
   const { data: countryList, isPending: loadingCountry }: any =
     useGetCountryDropdownList();
   const inquiryOptions =

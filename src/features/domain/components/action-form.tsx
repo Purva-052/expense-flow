@@ -18,8 +18,8 @@ import {
 } from "@/components/ui/form";
 import CustomButton from "@/components/shared/custom-button";
 import { TProjectFormSchema } from "@/features/projects/schema";
-import { InquiryTypeSchema, TInquiryTypeSchema } from "../schema";
 import { Input } from "@/components/ui/input";
+import { DomainSchema, TDomainSchema } from "../schema";
 
 interface Props {
   currentRow?: any;
@@ -29,7 +29,7 @@ interface Props {
   onSubmit: (values: TProjectFormSchema) => void;
 }
 
-export function InquiryTypeActionForm({
+export function DomainForm({
   currentRow,
   open,
   onOpenChange,
@@ -38,14 +38,14 @@ export function InquiryTypeActionForm({
 }: Readonly<Props>) {
   const isEdit = !!currentRow;
 
-  const form = useForm<TInquiryTypeSchema>({
-    resolver: zodResolver(InquiryTypeSchema) as any,
+  const form = useForm<TDomainSchema>({
+    resolver: zodResolver(DomainSchema) as any,
     defaultValues: {
       name: currentRow?.name ?? "",
     },
   });
 
-  const onSubmit: SubmitHandler<TInquiryTypeSchema> = (values: any) => {
+  const onSubmit: SubmitHandler<TDomainSchema> = (values: any) => {
     onSubmitValues(values);
   };
 
@@ -61,14 +61,14 @@ export function InquiryTypeActionForm({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader className="text-left">
           <DialogTitle>
-            {isEdit ? "Edit Inquiry Type" : "Add Inquiry Type"}
+            {isEdit ? "Edit Domain Name" : "Add Domain Name"}
           </DialogTitle>
         </DialogHeader>
 
         <div className="-mr-4 h-fit w-full overflow-y-auto py-1">
           <Form {...form}>
             <form
-              id="inquiry-type-form"
+              id="domain-form"
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-4 p-0.5"
             >
@@ -78,10 +78,10 @@ export function InquiryTypeActionForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Inquiry Type name <span className="text-red-500">*</span>
+                      Domain Name <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter Inquiry Type name" {...field} />
+                      <Input placeholder="Enter Domain Name" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -92,11 +92,7 @@ export function InquiryTypeActionForm({
         </div>
 
         <DialogFooter>
-          <CustomButton
-            type="submit"
-            loading={loading}
-            form="inquiry-type-form"
-          >
+          <CustomButton type="submit" loading={loading} form="domain-form">
             Save Changes
           </CustomButton>
         </DialogFooter>

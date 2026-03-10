@@ -20,6 +20,7 @@ import {
   CalendarCheck,
   Command,
   Cpu,
+  Globe,
   // CpuIcon,
   HardDrive,
   Headset,
@@ -142,6 +143,36 @@ export const sidebarData: SidebarData = {
           icon: IconUsers,
           requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
+      ],
+    },
+    {
+      title: "Inquiry Management",
+      requiredRoles: [roles.ADMIN, roles.BDE, roles.PROJECT_MANAGER],
+      items: [
+        {
+          title: "Industry",
+          url: "/industry",
+          icon: IconLayersIntersect,
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+        },
+        {
+          title: "Domain",
+          url: "/domain",
+          icon: Globe,
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+        },
+        {
+          title: "Inquiry Types",
+          url: "/inquiry-types",
+          icon: IconLayersIntersect,
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+        },
+        // {
+        //   title: "To be Join",
+        //   url: "/new-joinees",
+        //   icon: IconUsers,
+        //   requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
+        // },
       ],
     },
     {
@@ -276,8 +307,8 @@ export const sidebarData: SidebarData = {
           allowUserID1: allowUserID1,
         },
         {
-          title: "Inquiry Types",
-          url: "/inquiry-type",
+          title: "Inquiry Requirements",
+          url: "/inquiry-requirements",
           icon: IconPencilSearch,
           requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
         },

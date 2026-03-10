@@ -1,22 +1,23 @@
 // src/features/coupons/components/ActionFormModal.tsx
 import { DeleteModal } from "@/components/model/delete-model";
-import { InquiryTypeActionForm } from "./action-form";
-import { useInquiryTypeStore } from "../stores/useInquiryTypeStore";
+import { useInquiryRequirementStore } from "../stores/useInquiryRequirementStore";
 import { TProjectFormSchema } from "@/features/projects/schema";
 import {
-  useCreateInquiryType,
-  useDeleteInquiryType,
-  useUpdateInquiryType,
+  useCreateInquiryRequirement,
+  useDeleteInquiryRequirement,
+  useUpdateInquiryRequirement,
 } from "../services";
+import { InquiryRequirementForm } from "./action-form";
 
 export function ActionFormModal() {
-  const { open, setOpen, currentRow, setCurrentRow } = useInquiryTypeStore();
+  const { open, setOpen, currentRow, setCurrentRow } =
+    useInquiryRequirementStore();
   const { mutateAsync: createMutate, isPending: isCreateLoading } =
-    useCreateInquiryType();
+    useCreateInquiryRequirement();
   const { mutateAsync: updateMutate, isPending: isUpdateLoading } =
-    useUpdateInquiryType(currentRow?.id || "");
+    useUpdateInquiryRequirement(currentRow?.id || "");
   const { mutateAsync: deleteMutate, isPending: isDeleteLoading } =
-    useDeleteInquiryType(currentRow?.id || "");
+    useDeleteInquiryRequirement(currentRow?.id || "");
 
   const handleCreate = (values: TProjectFormSchema) => {
     const payload = {
@@ -45,18 +46,18 @@ export function ActionFormModal() {
 
   return (
     <>
-      <InquiryTypeActionForm
-        key="add-inquiry-type"
+      <InquiryRequirementForm
+        key="add-inquiry-requirement"
         open={open === "add"}
         loading={isCreateLoading}
-        onOpenChange={(value) => setOpen(value ? "add" : null)}
+        onOpenChange={(value: any) => setOpen(value ? "add" : null)}
         onSubmit={handleCreate}
       />
 
       {currentRow && (
         <>
-          <InquiryTypeActionForm
-            key={`inquiry-type-edit-${currentRow.id}`}
+          <InquiryRequirementForm
+            key={`inquiry-requirement-edit-${currentRow.id}`}
             open={open === "edit"}
             onSubmit={handleEdit}
             loading={isUpdateLoading}
@@ -65,7 +66,7 @@ export function ActionFormModal() {
           />
           <DeleteModal
             onConfirm={handleDelete}
-            key={`inquiry-type-delete-${currentRow.id}`}
+            key={`inquiry-requirement-delete-${currentRow.id}`}
             isOpen={open === "delete"}
             onClose={handleCloseDialog}
             itemName={currentRow.name}
