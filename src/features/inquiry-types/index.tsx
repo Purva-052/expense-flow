@@ -5,10 +5,10 @@ import { GlobalTable } from "@/components/table/global-table";
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import TablePageHeader from "@/components/table/table-page-header";
 import { FilterConfig } from "@/components/table/table-toolbar";
-import { ActionFormModal } from "./components/action";
 import { columns } from "./components/columns";
 import { useInquiryTypeStore } from "./stores/useInquiryTypeStore";
 import { useGetInquiryType } from "./services";
+import { ActionFormModal } from "./components/actions";
 
 const InquiryTypePage = () => {
   const { open, setOpen } = useInquiryTypeStore();

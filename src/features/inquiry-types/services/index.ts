@@ -5,40 +5,43 @@ import usePostData from "@/hooks/use-post-data";
 import usePatchData from "@/hooks/use-patch-data";
 import useDeleteData from "@/hooks/use-delete-data";
 import { useInquiryTypeStore } from "../stores/useInquiryTypeStore";
-
-const GET_API_URL = API.project_modules.list;
+const GET_API_URL = API.inquiry_types.list;
 
 export const useCreateInquiryType = () => {
-  const { setOpen } = useInquiryTypeStore()
+  const { setOpen } = useInquiryTypeStore();
   return usePostData({
-    url: API.project_modules.create,
+    url: API.inquiry_types.create,
     refetchQueries: [GET_API_URL],
     onSuccess: () => {
-      setOpen(null)
+      setOpen(null);
     },
-  })
-}
+  });
+};
 
 export const useUpdateInquiryType = (id: string) => {
-  const { setOpen } = useInquiryTypeStore()
+  const { setOpen } = useInquiryTypeStore();
   return usePatchData({
-    url: `${API.project_modules.update}/${id}`,
+    url: `${API.inquiry_types.update}/${id}`,
     refetchQueries: [GET_API_URL],
     onSuccess: () => setOpen(null), // <-- ✅ correct place
-  })
-}
+  });
+};
 
 export const useGetInquiryType = (params?: any) => {
-  return useFetchData({ url: GET_API_URL, params })
-}
+  return useFetchData({ url: GET_API_URL, params });
+};
+
+export const useGetInquiryDropdownList = () => {
+  return useFetchData({ url: API.inquiry_types.dropdown });
+};
 
 export const useDeleteInquiryType = (id: string) => {
-  const { setOpen } = useInquiryTypeStore()
+  const { setOpen } = useInquiryTypeStore();
   return useDeleteData({
-    url: `${API.project_modules.delete}/${id}`,
+    url: `${API.inquiry_types.delete}/${id}`,
     refetchQueries: [GET_API_URL],
     onSuccess: () => {
-      setOpen(null)
+      setOpen(null);
     },
-  })
-}
+  });
+};

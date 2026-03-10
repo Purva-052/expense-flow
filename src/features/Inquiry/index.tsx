@@ -308,7 +308,7 @@ const InquiryPage = () => {
     },
     {
       accessorKey: "modules",
-      header: "Inquiry Type",
+      header: "Inquiry Requirement",
       cell: ({ row }) => {
         const modules = row.original?.modules ?? [];
         if (!modules || modules.length === 0) return "-";
