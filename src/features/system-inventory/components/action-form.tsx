@@ -176,7 +176,7 @@ const CONNECTION_OPTIONS: DropdownOption[] = [
     value: "wired",
   },
   {
-    label: "Wireless/USB",
+    label: "Wireless",
     value: "wireless",
   },
 ];
