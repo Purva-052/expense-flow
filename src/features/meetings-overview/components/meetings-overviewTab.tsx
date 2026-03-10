@@ -66,6 +66,7 @@ const MeetingsOverviewListing = ({
   refreshTick,
   isCoordinatorContext = false,
   projectOptions = [],
+  onSuccess,
 }: {
   projectId?: number | null;
   coordinatorId?: number | null;
@@ -77,6 +78,7 @@ const MeetingsOverviewListing = ({
   refreshTick: number;
   isCoordinatorContext?: boolean;
   projectOptions?: { value: string | number; label: string }[];
+  onSuccess?: () => void;
 }) => {
   const [meetings, setMeetings] = useState<any[]>([]);
   const [page, setPage] = useState(1);
@@ -129,6 +131,13 @@ const MeetingsOverviewListing = ({
     enabled: !isSelectionMissing,
   }) as any;
 
+  const handleRefresh = useCallback(() => {
+    setMeetings([]);
+    setPage(1);
+    setHasMore(true);
+    refetch();
+  }, [refetch]);
+
   const { mutate: deleteMeeting, isPending: isDeleting } =
     useDeleteInternalMeeting(() => {
       setIsDeleteDialogOpen(false);
@@ -136,6 +145,7 @@ const MeetingsOverviewListing = ({
       setMeetings((prev) =>
         prev.filter((meeting) => meeting.id !== meetingToDelete?.id)
       );
+      if (onSuccess) onSuccess();
     });
 
   useEffect(() => {
@@ -187,11 +197,9 @@ const MeetingsOverviewListing = ({
   );
 
   const handleMeetingUpdated = useCallback(() => {
-    setMeetings([]);
-    setPage(1);
-    setHasMore(true);
-    refetch();
-  }, [refetch]);
+    handleRefresh();
+    if (onSuccess) onSuccess();
+  }, [handleRefresh, onSuccess]);
 
   const resolveMeetingProjectId = useCallback(
     (meeting: any) => {
@@ -226,8 +234,8 @@ const MeetingsOverviewListing = ({
 
   useEffect(() => {
     if (!refreshTick || isSelectionMissing) return;
-    handleMeetingUpdated();
-  }, [refreshTick, handleMeetingUpdated, isSelectionMissing]);
+    handleRefresh();
+  }, [refreshTick, handleRefresh, isSelectionMissing]);
 
   if (isSelectionMissing) {
     return (
@@ -491,9 +499,29 @@ const MeetingsOverviewTab = ({
     setProjectHandlerSearch(search ?? undefined);
   };
 
+  // 1. Fetch Projects (Left Side)
+  const {
+    data: projectData,
+    isPending: projectsLoading,
+    refetch: refetchProjects,
+  }: any = useGetProjectsData({
+    pagination: false,
+    search: debouncedProjectSearch || search,
+    sortByMeeting: true,
+    // technologyId: technologyIds.length > 0 ? technologyIds : undefined,
+    status: "active",
+  });
+  const { data: allProjectsData, refetch: refetchAllProjects }: any =
+    useGetProjectsData({
+      pagination: false,
+      status: "active",
+    });
+
   const handleCreateMeetingSuccess = useCallback(() => {
     setMeetingsRefreshTick((prev) => prev + 1);
-  }, []);
+    refetchProjects();
+    refetchAllProjects();
+  }, [refetchProjects, refetchAllProjects]);
 
   const projectFilters: FilterConfig[] = [
     {
@@ -516,24 +544,6 @@ const MeetingsOverviewTab = ({
       className: "w-[250px]",
     },
   ];
-  // const [projectSearch, setProjectSearch] = useState<string | undefined>();
-
-  // const handleProjectSearch = (search: string | undefined) => {
-  //   setProjectSearch(search ?? undefined);
-  // };
-
-  // 1. Fetch Projects (Left Side)
-  const { data: projectData, isPending: projectsLoading }: any =
-    useGetProjectsData({
-      pagination: false,
-      search: debouncedProjectSearch || search,
-      // technologyId: technologyIds.length > 0 ? technologyIds : undefined,
-      status: "active",
-    });
-  const { data: allProjectsData }: any = useGetProjectsData({
-    pagination: false,
-    status: "active",
-  });
 
   const projectList = useMemo(
     () =>
@@ -756,6 +766,7 @@ const MeetingsOverviewTab = ({
                   emptyMessage="Select a project to view meetings"
                   dateRange={projectDateRange}
                   refreshTick={meetingsRefreshTick}
+                  onSuccess={handleCreateMeetingSuccess}
                 />
               </div>
             </Card>
@@ -845,6 +856,7 @@ const MeetingsOverviewTab = ({
                   refreshTick={meetingsRefreshTick}
                   isCoordinatorContext={true}
                   projectOptions={coordinatorProjectOptions}
+                  onSuccess={handleCreateMeetingSuccess}
                 />
               </div>
             </Card>
