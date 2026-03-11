@@ -27,4 +27,10 @@ export const URL_TO_TITLE_MAP: Record<string, string> = {
   "/storage": "Storage",
   "/monitor-size": "Monitor Sizes",
   "/brands": "Brands",
+  "/inbound-sources": "Inbound Sources",
+  "/industry": "Industries",
+  "/inquiry-channels": "Inquiry Channels",
+  "/inquiry-types": "Inquiry Types",
+  "/domain": "Domains",
+  "/outbound-sources": "Outbound Sources",
 };

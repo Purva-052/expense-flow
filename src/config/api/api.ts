@@ -256,6 +256,27 @@ const API = {
     delete: "/inquiry-types",
     dropdown: "/inquiry-types/dropdown",
   },
+  inquiry_source: {
+    list: "/inquiry-source",
+    create: "/inquiry-source",
+    update: "/inquiry-source",
+    delete: "/inquiry-source",
+    dropdown: "/inquiry-source/dropdown",
+  },
+  inbound_sources: {
+    list: "/inbound-source",
+    create: "/inbound-source",
+    update: "/inbound-source",
+    delete: "/inbound-source",
+    dropdown: "/inbound-source/dropdown",
+  },
+  outbound_sources: {
+    list: "/outbound-source",
+    create: "/outbound-source",
+    update: "/outbound-source",
+    delete: "/outbound-source",
+    dropdown: "/outbound-source/dropdown",
+  },
 };
 
 Object.freeze(API);
