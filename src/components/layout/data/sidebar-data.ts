@@ -17,15 +17,20 @@ import {
   IconClipboardCheck,
 } from "@tabler/icons-react";
 import {
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  Building2,
   CalendarCheck,
   Command,
   Cpu,
+  Flame,
   Globe,
   // CpuIcon,
   HardDrive,
   Headset,
   MemoryStick,
   Microchip,
+  Network,
   ScrollText,
   Tag,
 } from "lucide-react";
@@ -146,36 +151,6 @@ export const sidebarData: SidebarData = {
       ],
     },
     {
-      title: "Inquiry Management",
-      requiredRoles: [roles.ADMIN, roles.BDE, roles.PROJECT_MANAGER],
-      items: [
-        {
-          title: "Industry",
-          url: "/industry",
-          icon: IconLayersIntersect,
-          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
-        },
-        {
-          title: "Domain",
-          url: "/domain",
-          icon: Globe,
-          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
-        },
-        {
-          title: "Inquiry Types",
-          url: "/inquiry-types",
-          icon: IconLayersIntersect,
-          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
-        },
-        // {
-        //   title: "To be Join",
-        //   url: "/new-joinees",
-        //   icon: IconUsers,
-        //   requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
-        // },
-      ],
-    },
-    {
       title: "Operations",
       requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
       items: [
@@ -220,6 +195,55 @@ export const sidebarData: SidebarData = {
           icon: Cpu,
           requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
+      ],
+    },
+    {
+      title: "Inquiry Management",
+      requiredRoles: [roles.ADMIN, roles.BDE, roles.PROJECT_MANAGER],
+      isCollapsible: true,
+      items: [
+        {
+          title: "Industry",
+          url: "/industry",
+          icon: Building2,
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+        },
+        {
+          title: "Domain",
+          url: "/domain",
+          icon: Globe,
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+        },
+        {
+          title: "Inquiry Types",
+          url: "/inquiry-types",
+          icon: Flame,
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+        },
+        {
+          title: "Inquiry Channels",
+          url: "/inquiry-channels",
+          icon: Network,
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+        },
+        {
+          title: "Inbound Sources",
+          url: "/inbound-sources",
+          icon: ArrowDownToLine,
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+        },
+        {
+          title: "Outbound Sources",
+          url: "/outbound-sources",
+          icon: ArrowUpFromLine,
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+        },
+        // {
+        //   title: "To be Join",
+        //   url: "/new-joinees",
+        //   icon: IconUsers,
+        //   requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
+        // },
       ],
     },
     {
