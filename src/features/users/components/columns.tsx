@@ -84,6 +84,19 @@ export const columns: ColumnDef<any>[] = [
     },
   },
   {
+    accessorKey: "dateOfBirth",
+    header: "Joining Date",
+    cell: ({ row }) => {
+      if (!row.original.dateOfBirth) return "-";
+      const date = new Date(row.original.joiningDate);
+      return date.toLocaleDateString("en-IN", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    },
+  },
+  {
     accessorKey: "careerStartDate",
     header: "Career Start Date",
     cell: ({ row }) => {

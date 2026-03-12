@@ -61,7 +61,7 @@ export function InquiryCategoryActionForm({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader className="text-left">
           <DialogTitle>
-            {isEdit ? "Edit Inquiry Category" : "Add Inquiry Category"}
+            {isEdit ? "Edit Inquiry Channel" : "Add Inquiry Channel"}
           </DialogTitle>
         </DialogHeader>
 
@@ -78,7 +78,7 @@ export function InquiryCategoryActionForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Inquiry Category Name{" "}
+                      Inquiry Channel Name{" "}
                       <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>

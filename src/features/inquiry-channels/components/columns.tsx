@@ -54,13 +54,13 @@ export const columns: ColumnDef<any>[] = [
               View Inquiry Type
             </DropdownMenuItem> */}
             <DropdownMenuItem onClick={handleEdit}>
-              Edit Inquiry Category
+              Edit Inquiry Channel
             </DropdownMenuItem>
             <DropdownMenuItem
               className="text-red-600 focus:bg-red-50 focus:text-red-600"
               onClick={handleDelete}
             >
-              Delete Inquiry Category
+              Delete Inquiry Channel
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

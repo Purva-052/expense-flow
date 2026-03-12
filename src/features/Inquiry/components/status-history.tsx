@@ -94,9 +94,21 @@ const InquiryStatusHistoryComponent = ({
           <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex flex-col">
               <span className="font-medium text-foreground">
-                Source of Inquiry:
+                Inquiry Channel:
               </span>{" "}
-              <span>{Details?.sourceOfInquiry ?? "-"}</span>
+              <span>{Details?.inquirySource?.name ?? "-"}</span>
+            </div>
+          </div>
+          <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
+            <div className="flex flex-col">
+              <span className="font-medium text-foreground">Inquiry Type:</span>{" "}
+              <span>{Details?.inquiryType?.name ?? "-"}</span>
+            </div>
+          </div>
+          <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
+            <div className="flex flex-col">
+              <span className="font-medium text-foreground">Sales Person:</span>{" "}
+              <span>{Details?.salesPerson?.fullName ?? "-"}</span>
             </div>
           </div>
           <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
