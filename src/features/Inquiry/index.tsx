@@ -45,6 +45,10 @@ import { HistoryProjectModal } from "./components/history-modal";
 import { ViewInquiryModal } from "./components/view-model";
 import { useCreateInquiryStatus, useGetInquiry } from "./services";
 import { useInquiryStore } from "./stores/useInquiryStore";
+import { useGetUserDropdownList } from "../users/services";
+import { useGetInquiryCategoryDropdown } from "../inquiry-channels/services";
+import { useGetInquiryDropdownList } from "../inquiry-types/services";
+
 const InquiryPage = () => {
   const { open, setOpen } = useInquiryStore();
   const user = useAuthStore((state) => state.user);
@@ -52,10 +56,24 @@ const InquiryPage = () => {
   const [activeTab, setActiveTab] = useState("active");
 
   const { mutateAsync: InquiryStatusChange } = useCreateInquiryStatus();
+  const { data: usersList, isPending: usersListLoading }: any =
+    useGetUserDropdownList({
+      role: [roles.BDE],
+      status: "active",
+    });
+  const { data: channelList, isPending: loadingChannel }: any =
+    useGetInquiryCategoryDropdown();
+
+  const { data: inquirytypeList, isPending: loadingInquiryType }: any =
+    useGetInquiryDropdownList();
+
   const [listParams, setListParams] = useState({
     pageSize: 10,
     currentPage: 1,
     search: "",
+    salesPersonId: undefined,
+    inquiryTypeId: undefined,
+    inquirySourceId: undefined,
   });
 
   const apiParams = {
@@ -64,6 +82,9 @@ const InquiryPage = () => {
     search: listParams.search,
     pagination: true,
     status: activeTab,
+    salesPersonId: listParams.salesPersonId,
+    inquiryTypeId: listParams.inquiryTypeId,
+    inquirySourceId: listParams.inquirySourceId,
   };
 
   const tabTriggerClass =
@@ -96,6 +117,60 @@ const InquiryPage = () => {
       key: "search",
       value: listParams.search,
       onChange: handleSearch,
+    },
+    {
+      type: "select",
+      key: "salesPersonId",
+      placeholder: "Filter by Sales Person",
+      options: usersList?.data?.map((user: any) => ({
+        value: user.id,
+        label: user.fullName,
+      })),
+      value: listParams.salesPersonId,
+      onChange: (value: any) => {
+        setListParams({
+          ...listParams,
+          salesPersonId: value ?? undefined,
+          currentPage: 1,
+        });
+      },
+      isLoading: usersListLoading,
+    },
+    {
+      type: "select",
+      key: "inquiryTypeId",
+      placeholder: "Filter by Type",
+      options: inquirytypeList?.data?.map((p: any) => ({
+        value: p.id,
+        label: p.name,
+      })),
+      value: listParams.inquiryTypeId,
+      onChange: (value: any) => {
+        setListParams({
+          ...listParams,
+          inquiryTypeId: value ?? undefined,
+          currentPage: 1,
+        });
+      },
+      isLoading: loadingInquiryType,
+    },
+    {
+      type: "select",
+      key: "inquirySourceId",
+      placeholder: "Filter by Channel",
+      options: channelList?.data?.map((iq: any) => ({
+        value: iq.id,
+        label: iq.name,
+      })),
+      value: listParams.inquirySourceId,
+      onChange: (value: any) => {
+        setListParams({
+          ...listParams,
+          inquirySourceId: value ?? undefined,
+          currentPage: 1,
+        });
+      },
+      isLoading: loadingChannel,
     },
   ];
 
@@ -273,29 +348,63 @@ const InquiryPage = () => {
     );
   };
 
+  const inquiryTypeColors: Record<string, string> = {
+    hot: "bg-red-100 text-red-700 border-red-200",
+    warm: "bg-orange-100 text-orange-700 border-orange-200",
+    cold: "bg-blue-100 text-blue-700 border-blue-200",
+  };
+
+  const inquiryChannelColors: Record<string, string> = {
+    inbound: "bg-green-100 text-green-700 border-green-200",
+    outbound: "bg-yellow-100 text-yellow-700 border-yellow-200",
+  };
+
   const columns: ColumnDef<any>[] = [
     {
       accessorKey: "clientName",
       header: "Client Name",
     },
+    // {
+    //   accessorKey: "clientCompanyName",
+    //   header: "Client Company",
+    //   cell: ({ row }) => {
+    //     const clientCompany =
+    //       row.original?.clientCompanyName &&
+    //       row.original?.clientCompanyName?.trim() !== ""
+    //         ? row.original?.clientCompanyName
+    //         : "-";
+    //     return <span className="capitalize">{clientCompany}</span>;
+    //   },
+    // },
+    // {
+    //   accessorKey: "country.name",
+    //   header: "Country",
+    //   cell: ({ row }) => {
+    //     const country = row.original?.country?.name ?? "-";
+    //     return <span className="capitalize">{country}</span>;
+    //   },
+    // },
     {
-      accessorKey: "clientCompanyName",
-      header: "Client Company",
+      accessorKey: "inquiryDate",
+      header: "Inquiry Date",
+      // cell: ({ row }) => {
+      //   const inquiryDate = row.original?.inquiryDate ?? "-";
+      //   return <span className="capitalize">{inquiryDate}</span>;
+      // },
       cell: ({ row }) => {
-        const clientCompany =
-          row.original?.clientCompanyName &&
-          row.original?.clientCompanyName?.trim() !== ""
-            ? row.original?.clientCompanyName
-            : "-";
-        return <span className="capitalize">{clientCompany}</span>;
-      },
-    },
-    {
-      accessorKey: "country.name",
-      header: "Country",
-      cell: ({ row }) => {
-        const country = row.original?.country?.name ?? "-";
-        return <span className="capitalize">{country}</span>;
+        const inquiryDate = row.original?.inquiryDate ?? "-";
+        if (!inquiryDate) return <span className="text-sm">-</span>;
+
+        const date = new Date(inquiryDate);
+        return (
+          <span className="text-sm">
+            {date.toLocaleDateString("en-IN", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            })}
+          </span>
+        );
       },
     },
     {
@@ -304,6 +413,40 @@ const InquiryPage = () => {
       cell: ({ row }) => {
         const createdBy = row.original?.generatedByUser?.fullName ?? "-";
         return <span className="capitalize">{createdBy}</span>;
+      },
+    },
+    {
+      accessorKey: "salesPerson.fullName",
+      header: "Sales Person",
+      cell: ({ row }) => {
+        const createdBy = row.original?.salesPerson.fullName ?? "-";
+        return <span className="capitalize">{createdBy}</span>;
+      },
+    },
+    {
+      accessorKey: "inquiryType.name",
+      header: "Inquiry Type",
+      cell: ({ row }) => {
+        const type = row.original?.inquiryType?.name ?? "-";
+
+        const color =
+          inquiryTypeColors[type?.toLowerCase()] ??
+          "bg-gray-100 text-gray-700 border-gray-200";
+
+        return <Badge className={`border ${color}`}>{type}</Badge>;
+      },
+    },
+    {
+      accessorKey: "inquirySource.name",
+      header: "Inquiry Channel",
+      cell: ({ row }) => {
+        const channel = row.original?.inquirySource?.name ?? "-";
+
+        const color =
+          inquiryChannelColors[channel?.toLowerCase()] ??
+          "bg-gray-100 text-gray-700 border-gray-200";
+
+        return <Badge className={`border ${color}`}>{channel}</Badge>;
       },
     },
     {

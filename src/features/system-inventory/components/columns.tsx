@@ -12,17 +12,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useSystemInventoryStore } from "../stores/useSystemInventoryStore";
 
-const formatOwnership = (row: any) => {
-  const rawOwnership =
-    row?.systemOwnership ??
-    row?.system_ownership ??
-    row?.ownershipType ??
-    row?.ownership_type;
+// const formatOwnership = (row: any) => {
+//   const rawOwnership =
+//     row?.systemOwnership ??
+//     row?.system_ownership ??
+//     row?.ownershipType ??
+//     row?.ownership_type;
 
-  const formatted = String(rawOwnership ?? "").toLowerCase();
+//   const formatted = String(rawOwnership ?? "").toLowerCase();
 
-  return formatted.includes("personal") ? "Personal" : "Company Owned";
-};
+//   return formatted.includes("personal") ? "Personal" : "Company Owned";
+// };
 
 const getUserName = (row: any) => {
   return (
@@ -64,15 +64,15 @@ export const columns: ColumnDef<any>[] = [
       return <span className="text-sm">{userName}</span>;
     },
   },
-  {
-    id: "systemOwnership",
-    header: "System Ownership",
-    cell: ({ row }) => {
-      const ownershipLabel = formatOwnership(row.original);
+  // {
+  //   id: "systemOwnership",
+  //   header: "System Ownership",
+  //   cell: ({ row }) => {
+  //     const ownershipLabel = formatOwnership(row.original);
 
-      return <span className="text-sm">{ownershipLabel}</span>;
-    },
-  },
+  //     return <span className="text-sm">{ownershipLabel}</span>;
+  //   },
+  // },
   {
     id: "cpuProcessor.name",
     header: "Processor",

@@ -21,7 +21,7 @@ export function ActionFormModal() {
   const handleCreate = (values: TInboundSourceSchema) => {
     const payload = {
       name: values.name,
-      domainId: values.domainId,
+      // domainId: values.domainId,
     };
     createMutate(payload);
   };
@@ -29,7 +29,7 @@ export function ActionFormModal() {
   const handleEdit = (values: TInboundSourceSchema) => {
     const payload = {
       name: values.name,
-      domainId: values.domainId,
+      // domainId: values.domainId,
     };
     updateMutate(payload);
   };

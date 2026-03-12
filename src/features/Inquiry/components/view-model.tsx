@@ -48,7 +48,7 @@ export function ViewInquiryModal() {
 
   return (
     <Dialog open={open === "view"} onOpenChange={() => setOpen("")}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-[40vw] max-h-[80vh] overflow-auto">
         <DialogHeader>
           <DialogTitle>Inquiry Details</DialogTitle>
         </DialogHeader>
@@ -158,14 +158,15 @@ export function ViewInquiryModal() {
 
           <div className="flex justify-between">
             <span className="font-medium text-gray-700">
-              {currentRow?.inboundSource
+              {currentRow?.inquirySource?.name === "Inbound"
                 ? "Inbound Source:"
                 : "Outbound Source:"}
             </span>
+
             <span className="text-gray-900">
-              {currentRow?.inboundSource?.name ||
-                currentRow?.outboundSource?.name ||
-                "-"}
+              {currentRow?.inquirySource?.name === "Inbound"
+                ? currentRow?.inboundSource?.name || "-"
+                : currentRow?.outboundSource?.name || "-"}
             </span>
           </div>
           <Separator />
