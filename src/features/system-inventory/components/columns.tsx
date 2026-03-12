@@ -129,27 +129,46 @@ export const columns: ColumnDef<any>[] = [
       const inventory = row.original;
       const { setOpen, setCurrentRow } = useSystemInventoryStore();
 
+      const handleView = () => {
+        setOpen("view");
+        setCurrentRow(inventory);
+      };
+
       const handleEdit = () => {
         setOpen("edit");
         setCurrentRow(inventory);
       };
 
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleEdit}>
-              Edit Inventory
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-2">
+          {/* <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+            onClick={handleView}
+            title="View Inventory"
+          >
+            <Eye className="h-4 w-4" />
+          </Button> */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleView}>
+                View Inventory
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleEdit}>
+                Edit Inventory
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       );
     },
     enableSorting: false,

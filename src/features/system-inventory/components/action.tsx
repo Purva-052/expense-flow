@@ -11,6 +11,7 @@ import {
   buildSystemInventoryPayload,
   normalizeSystemInventoryRecord,
   SystemInventoryActionForm,
+  SystemInventoryViewForm,
   TSystemInventorySchema,
 } from "./action-form";
 // import { useAuthStore } from "@/stores/use-auth-store";
@@ -43,6 +44,7 @@ export function ActionFormModal({
 
   const recordId =
     currentRow?.id ?? currentRow?._id ?? currentRow?.inventoryId ?? "";
+  const userName = currentRow?.user?.name ?? "";
 
   const { mutateAsync: updateMutate, isPending: isUpdateLoading } =
     useUpdateSystemInventoryData(recordId);
@@ -72,35 +74,66 @@ export function ActionFormModal({
   }
 
   return (
-    <Dialog
-      open={open === "edit" && !!currentRow}
-      onOpenChange={(isOpen) => {
-        if (!isOpen) {
-          handleCloseDialog();
-        }
-      }}
-    >
-      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="text-left">
-          <DialogTitle>Edit System Inventory</DialogTitle>
-        </DialogHeader>
+    <>
+      <Dialog
+        open={open === "view" && !!currentRow}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            handleCloseDialog();
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="text-left">
+            <DialogTitle>
+              View System Inventory{userName ? ` - ${userName}` : ""}
+            </DialogTitle>
+          </DialogHeader>
 
-        <SystemInventoryActionForm
-          formId={`system-inventory-edit-${recordId}`}
-          initialValues={initialValues}
-          onSubmit={handleEdit}
-          loading={isUpdateLoading}
-          submitLabel="Save Changes"
-          processorList={processorList}
-          ramList={ramList}
-          storageList={storageList}
-          brandList={brandList}
-          headphoneBrandList={headphoneBrandList}
-          monitorSizeList={monitorSizeList}
-          dropdownLoading={dropdownLoading}
-          isAdmin={isAdmin}
-        />
-      </DialogContent>
-    </Dialog>
+          <SystemInventoryViewForm
+            inventory={currentRow}
+            processorList={processorList}
+            ramList={ramList}
+            storageList={storageList}
+            brandList={brandList}
+            headphoneBrandList={headphoneBrandList}
+            monitorSizeList={monitorSizeList}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={open === "edit" && !!currentRow}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            handleCloseDialog();
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="text-left">
+            <DialogTitle>
+              Edit System Inventory{userName ? ` - ${userName}` : ""}
+            </DialogTitle>
+          </DialogHeader>
+
+          <SystemInventoryActionForm
+            formId={`system-inventory-edit-${recordId}`}
+            initialValues={initialValues}
+            onSubmit={handleEdit}
+            loading={isUpdateLoading}
+            submitLabel="Save Changes"
+            processorList={processorList}
+            ramList={ramList}
+            storageList={storageList}
+            brandList={brandList}
+            headphoneBrandList={headphoneBrandList}
+            monitorSizeList={monitorSizeList}
+            dropdownLoading={dropdownLoading}
+            isAdmin={isAdmin}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
