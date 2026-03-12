@@ -91,12 +91,9 @@ export function InquiryActionForm({
     inquiryTypeId: toNumberOrUndefined(
       row?.inquiryType?.id ?? row?.inquiryTypeId
     ),
-    salesPersonId:
-      toNumberOrUndefined(
-        row?.salesPerson?.id ??
-          row?.salesPersonId ??
-          row?.salesPerson?.userId
-      ),
+    salesPersonId: toNumberOrUndefined(
+      row?.salesPerson?.id ?? row?.salesPersonId ?? row?.salesPerson?.userId
+    ),
     inquiryDate: row?.inquiryDate ? new Date(row?.inquiryDate) : undefined,
   });
 
@@ -181,12 +178,12 @@ export function InquiryActionForm({
         });
         return;
       }
-      if (!values.domainId) {
-        form.setError("domainId", {
-          message: "Domain is required",
-        });
-        return;
-      }
+      // if (!values.domainId) {
+      //   form.setError("domainId", {
+      //     message: "Domain is required",
+      //   });
+      //   return;
+      // }
     }
     if (selectedChannel?.name === "Outbound" && !values.outboundSourceId) {
       form.setError("outboundSourceId", {
@@ -362,7 +359,8 @@ export function InquiryActionForm({
                     render={() => (
                       <FormItem>
                         <FormLabel>
-                          Inbound Source <span className="text-red-500">*</span>
+                          Inbound Source
+                          {/* <span className="text-red-500">*</span> */}
                         </FormLabel>
                         <CustomDropDownSearchable
                           form={form}
@@ -387,7 +385,8 @@ export function InquiryActionForm({
                     render={() => (
                       <FormItem>
                         <FormLabel>
-                          Domain <span className="text-red-500">*</span>
+                          Domain
+                          {/* <span className="text-red-500">*</span> */}
                         </FormLabel>
                         <CustomDropDownSearchable
                           form={form}
@@ -415,7 +414,8 @@ export function InquiryActionForm({
                   render={() => (
                     <FormItem>
                       <FormLabel>
-                        Outbound Source <span className="text-red-500">*</span>
+                        Outbound Source
+                        {/* <span className="text-red-500">*</span> */}
                       </FormLabel>
                       <CustomDropDownSearchable
                         form={form}
@@ -441,7 +441,8 @@ export function InquiryActionForm({
                 render={() => (
                   <FormItem>
                     <FormLabel>
-                      Industry Type<span className="text-red-500">*</span>
+                      Industry Type
+                      {/* <span className="text-red-500">*</span> */}
                     </FormLabel>
                     <CustomDropDownSearchable
                       form={form}

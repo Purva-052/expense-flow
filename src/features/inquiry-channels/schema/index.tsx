@@ -5,9 +5,9 @@ export const InquiryCategorySchema = z.object({
     .string()
     .trim()
     .min(2, {
-      message: "Inquiry Category name must be at least 2 characters long.",
+      message: "Inquiry Channel name must be at least 2 characters long.",
     })
-    .max(50, { message: "Inquiry Category name cannot exceed 50 characters." }),
+    .max(50, { message: "Inquiry Channel name cannot exceed 50 characters." }),
 });
 
 export type TInquiryCategorySchema = z.infer<typeof InquiryCategorySchema>;

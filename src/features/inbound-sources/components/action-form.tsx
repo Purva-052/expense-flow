@@ -20,8 +20,6 @@ import CustomButton from "@/components/shared/custom-button";
 import { TProjectFormSchema } from "@/features/projects/schema";
 import { Input } from "@/components/ui/input";
 import { InboundSourceSchema, TInboundSourceSchema } from "../schema";
-import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
-import { useGetDomainDropdownList } from "@/features/domain/services";
 
 interface Props {
   currentRow?: any;
@@ -40,8 +38,8 @@ export function InboundSourceActionForm({
 }: Readonly<Props>) {
   const isEdit = !!currentRow;
 
-  const { data: domainList, isPending: loadingDomain }: any =
-    useGetDomainDropdownList();
+  // const { data: domainList, isPending: loadingDomain }: any =
+  //   useGetDomainDropdownList();
 
   const form = useForm<TInboundSourceSchema>({
     resolver: zodResolver(InboundSourceSchema) as any,
@@ -97,7 +95,7 @@ export function InboundSourceActionForm({
                 )}
               />
 
-              <CustomDropDownSearchable
+              {/* <CustomDropDownSearchable
                 form={form}
                 name="domainId"
                 label="Domain"
@@ -109,7 +107,7 @@ export function InboundSourceActionForm({
                 isLoading={loadingDomain}
                 sortOptions={false}
                 // disabled={!canEdit}
-              />
+              /> */}
             </form>
           </Form>
         </div>
