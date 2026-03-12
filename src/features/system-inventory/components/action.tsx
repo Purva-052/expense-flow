@@ -13,6 +13,7 @@ import {
   SystemInventoryActionForm,
   TSystemInventorySchema,
 } from "./action-form";
+// import { useAuthStore } from "@/stores/use-auth-store";
 
 interface Props {
   processorList?: unknown[];
@@ -22,6 +23,7 @@ interface Props {
   headphoneBrandList?: unknown[];
   monitorSizeList?: unknown[];
   dropdownLoading?: boolean;
+  isAdmin?: boolean;
 }
 
 export function ActionFormModal({
@@ -32,8 +34,12 @@ export function ActionFormModal({
   headphoneBrandList,
   monitorSizeList,
   dropdownLoading,
+  isAdmin,
 }: Readonly<Props>) {
-  const { open, setOpen, currentRow, setCurrentRow } = useSystemInventoryStore();
+  const { open, setOpen, currentRow, setCurrentRow } =
+    useSystemInventoryStore();
+  // const { user } = useAuthStore();
+  // const fullName = user?.user?.fullName || "";
 
   const recordId =
     currentRow?.id ?? currentRow?._id ?? currentRow?.inventoryId ?? "";
@@ -92,6 +98,7 @@ export function ActionFormModal({
           headphoneBrandList={headphoneBrandList}
           monitorSizeList={monitorSizeList}
           dropdownLoading={dropdownLoading}
+          isAdmin={isAdmin}
         />
       </DialogContent>
     </Dialog>
