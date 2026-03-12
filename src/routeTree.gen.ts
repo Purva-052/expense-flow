@@ -32,6 +32,7 @@ import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedProjectTypeIndexRouteImport } from './routes/_authenticated/project-type/index'
 import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authenticated/profile/index'
 import { Route as AuthenticatedProcessorIndexRouteImport } from './routes/_authenticated/processor/index'
+import { Route as AuthenticatedOutboundSourcesIndexRouteImport } from './routes/_authenticated/outbound-sources/index'
 import { Route as AuthenticatedNewJoineesIndexRouteImport } from './routes/_authenticated/new-joinees/index'
 import { Route as AuthenticatedMonitorSizeIndexRouteImport } from './routes/_authenticated/monitor-size/index'
 import { Route as AuthenticatedMeetingsOverviewIndexRouteImport } from './routes/_authenticated/meetings-overview/index'
@@ -39,9 +40,14 @@ import { Route as AuthenticatedLinodeServerDashboardIndexRouteImport } from './r
 import { Route as AuthenticatedLeaveManagementIndexRouteImport } from './routes/_authenticated/leave-management/index'
 import { Route as AuthenticatedInterviewsIndexRouteImport } from './routes/_authenticated/interviews/index'
 import { Route as AuthenticatedInquiryIndexRouteImport } from './routes/_authenticated/inquiry/index'
-import { Route as AuthenticatedInquiryTypeIndexRouteImport } from './routes/_authenticated/inquiry-type/index'
+import { Route as AuthenticatedInquiryTypesIndexRouteImport } from './routes/_authenticated/inquiry-types/index'
+import { Route as AuthenticatedInquiryRequirementsIndexRouteImport } from './routes/_authenticated/inquiry-requirements/index'
+import { Route as AuthenticatedInquiryChannelsIndexRouteImport } from './routes/_authenticated/inquiry-channels/index'
+import { Route as AuthenticatedIndustryIndexRouteImport } from './routes/_authenticated/industry/index'
+import { Route as AuthenticatedInboundSourcesIndexRouteImport } from './routes/_authenticated/inbound-sources/index'
 import { Route as AuthenticatedHeadphoneBrandIndexRouteImport } from './routes/_authenticated/headphone-brand/index'
 import { Route as AuthenticatedExtraWorkReportIndexRouteImport } from './routes/_authenticated/extra-work-report/index'
+import { Route as AuthenticatedDomainIndexRouteImport } from './routes/_authenticated/domain/index'
 import { Route as AuthenticatedDailyReportIndexRouteImport } from './routes/_authenticated/daily-report/index'
 import { Route as AuthenticatedConferenceRoomBookingIndexRouteImport } from './routes/_authenticated/conference-room-booking/index'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
@@ -174,6 +180,12 @@ const AuthenticatedProcessorIndexRoute =
     path: '/processor/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedOutboundSourcesIndexRoute =
+  AuthenticatedOutboundSourcesIndexRouteImport.update({
+    id: '/outbound-sources/',
+    path: '/outbound-sources/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedNewJoineesIndexRoute =
   AuthenticatedNewJoineesIndexRouteImport.update({
     id: '/new-joinees/',
@@ -216,10 +228,34 @@ const AuthenticatedInquiryIndexRoute =
     path: '/inquiry/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedInquiryTypeIndexRoute =
-  AuthenticatedInquiryTypeIndexRouteImport.update({
-    id: '/inquiry-type/',
-    path: '/inquiry-type/',
+const AuthenticatedInquiryTypesIndexRoute =
+  AuthenticatedInquiryTypesIndexRouteImport.update({
+    id: '/inquiry-types/',
+    path: '/inquiry-types/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedInquiryRequirementsIndexRoute =
+  AuthenticatedInquiryRequirementsIndexRouteImport.update({
+    id: '/inquiry-requirements/',
+    path: '/inquiry-requirements/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedInquiryChannelsIndexRoute =
+  AuthenticatedInquiryChannelsIndexRouteImport.update({
+    id: '/inquiry-channels/',
+    path: '/inquiry-channels/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedIndustryIndexRoute =
+  AuthenticatedIndustryIndexRouteImport.update({
+    id: '/industry/',
+    path: '/industry/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedInboundSourcesIndexRoute =
+  AuthenticatedInboundSourcesIndexRouteImport.update({
+    id: '/inbound-sources/',
+    path: '/inbound-sources/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedHeadphoneBrandIndexRoute =
@@ -232,6 +268,12 @@ const AuthenticatedExtraWorkReportIndexRoute =
   AuthenticatedExtraWorkReportIndexRouteImport.update({
     id: '/extra-work-report/',
     path: '/extra-work-report/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDomainIndexRoute =
+  AuthenticatedDomainIndexRouteImport.update({
+    id: '/domain/',
+    path: '/domain/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedDailyReportIndexRoute =
@@ -286,9 +328,14 @@ export interface FileRoutesByFullPath {
   '/clients/': typeof AuthenticatedClientsIndexRoute
   '/conference-room-booking/': typeof AuthenticatedConferenceRoomBookingIndexRoute
   '/daily-report/': typeof AuthenticatedDailyReportIndexRoute
+  '/domain/': typeof AuthenticatedDomainIndexRoute
   '/extra-work-report/': typeof AuthenticatedExtraWorkReportIndexRoute
   '/headphone-brand/': typeof AuthenticatedHeadphoneBrandIndexRoute
-  '/inquiry-type/': typeof AuthenticatedInquiryTypeIndexRoute
+  '/inbound-sources/': typeof AuthenticatedInboundSourcesIndexRoute
+  '/industry/': typeof AuthenticatedIndustryIndexRoute
+  '/inquiry-channels/': typeof AuthenticatedInquiryChannelsIndexRoute
+  '/inquiry-requirements/': typeof AuthenticatedInquiryRequirementsIndexRoute
+  '/inquiry-types/': typeof AuthenticatedInquiryTypesIndexRoute
   '/inquiry/': typeof AuthenticatedInquiryIndexRoute
   '/interviews/': typeof AuthenticatedInterviewsIndexRoute
   '/leave-management/': typeof AuthenticatedLeaveManagementIndexRoute
@@ -296,6 +343,7 @@ export interface FileRoutesByFullPath {
   '/meetings-overview/': typeof AuthenticatedMeetingsOverviewIndexRoute
   '/monitor-size/': typeof AuthenticatedMonitorSizeIndexRoute
   '/new-joinees/': typeof AuthenticatedNewJoineesIndexRoute
+  '/outbound-sources/': typeof AuthenticatedOutboundSourcesIndexRoute
   '/processor/': typeof AuthenticatedProcessorIndexRoute
   '/profile/': typeof AuthenticatedProfileIndexRoute
   '/project-type/': typeof AuthenticatedProjectTypeIndexRoute
@@ -326,9 +374,14 @@ export interface FileRoutesByTo {
   '/clients': typeof AuthenticatedClientsIndexRoute
   '/conference-room-booking': typeof AuthenticatedConferenceRoomBookingIndexRoute
   '/daily-report': typeof AuthenticatedDailyReportIndexRoute
+  '/domain': typeof AuthenticatedDomainIndexRoute
   '/extra-work-report': typeof AuthenticatedExtraWorkReportIndexRoute
   '/headphone-brand': typeof AuthenticatedHeadphoneBrandIndexRoute
-  '/inquiry-type': typeof AuthenticatedInquiryTypeIndexRoute
+  '/inbound-sources': typeof AuthenticatedInboundSourcesIndexRoute
+  '/industry': typeof AuthenticatedIndustryIndexRoute
+  '/inquiry-channels': typeof AuthenticatedInquiryChannelsIndexRoute
+  '/inquiry-requirements': typeof AuthenticatedInquiryRequirementsIndexRoute
+  '/inquiry-types': typeof AuthenticatedInquiryTypesIndexRoute
   '/inquiry': typeof AuthenticatedInquiryIndexRoute
   '/interviews': typeof AuthenticatedInterviewsIndexRoute
   '/leave-management': typeof AuthenticatedLeaveManagementIndexRoute
@@ -336,6 +389,7 @@ export interface FileRoutesByTo {
   '/meetings-overview': typeof AuthenticatedMeetingsOverviewIndexRoute
   '/monitor-size': typeof AuthenticatedMonitorSizeIndexRoute
   '/new-joinees': typeof AuthenticatedNewJoineesIndexRoute
+  '/outbound-sources': typeof AuthenticatedOutboundSourcesIndexRoute
   '/processor': typeof AuthenticatedProcessorIndexRoute
   '/profile': typeof AuthenticatedProfileIndexRoute
   '/project-type': typeof AuthenticatedProjectTypeIndexRoute
@@ -368,9 +422,14 @@ export interface FileRoutesById {
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
   '/_authenticated/conference-room-booking/': typeof AuthenticatedConferenceRoomBookingIndexRoute
   '/_authenticated/daily-report/': typeof AuthenticatedDailyReportIndexRoute
+  '/_authenticated/domain/': typeof AuthenticatedDomainIndexRoute
   '/_authenticated/extra-work-report/': typeof AuthenticatedExtraWorkReportIndexRoute
   '/_authenticated/headphone-brand/': typeof AuthenticatedHeadphoneBrandIndexRoute
-  '/_authenticated/inquiry-type/': typeof AuthenticatedInquiryTypeIndexRoute
+  '/_authenticated/inbound-sources/': typeof AuthenticatedInboundSourcesIndexRoute
+  '/_authenticated/industry/': typeof AuthenticatedIndustryIndexRoute
+  '/_authenticated/inquiry-channels/': typeof AuthenticatedInquiryChannelsIndexRoute
+  '/_authenticated/inquiry-requirements/': typeof AuthenticatedInquiryRequirementsIndexRoute
+  '/_authenticated/inquiry-types/': typeof AuthenticatedInquiryTypesIndexRoute
   '/_authenticated/inquiry/': typeof AuthenticatedInquiryIndexRoute
   '/_authenticated/interviews/': typeof AuthenticatedInterviewsIndexRoute
   '/_authenticated/leave-management/': typeof AuthenticatedLeaveManagementIndexRoute
@@ -378,6 +437,7 @@ export interface FileRoutesById {
   '/_authenticated/meetings-overview/': typeof AuthenticatedMeetingsOverviewIndexRoute
   '/_authenticated/monitor-size/': typeof AuthenticatedMonitorSizeIndexRoute
   '/_authenticated/new-joinees/': typeof AuthenticatedNewJoineesIndexRoute
+  '/_authenticated/outbound-sources/': typeof AuthenticatedOutboundSourcesIndexRoute
   '/_authenticated/processor/': typeof AuthenticatedProcessorIndexRoute
   '/_authenticated/profile/': typeof AuthenticatedProfileIndexRoute
   '/_authenticated/project-type/': typeof AuthenticatedProjectTypeIndexRoute
@@ -410,9 +470,14 @@ export interface FileRouteTypes {
     | '/clients/'
     | '/conference-room-booking/'
     | '/daily-report/'
+    | '/domain/'
     | '/extra-work-report/'
     | '/headphone-brand/'
-    | '/inquiry-type/'
+    | '/inbound-sources/'
+    | '/industry/'
+    | '/inquiry-channels/'
+    | '/inquiry-requirements/'
+    | '/inquiry-types/'
     | '/inquiry/'
     | '/interviews/'
     | '/leave-management/'
@@ -420,6 +485,7 @@ export interface FileRouteTypes {
     | '/meetings-overview/'
     | '/monitor-size/'
     | '/new-joinees/'
+    | '/outbound-sources/'
     | '/processor/'
     | '/profile/'
     | '/project-type/'
@@ -450,9 +516,14 @@ export interface FileRouteTypes {
     | '/clients'
     | '/conference-room-booking'
     | '/daily-report'
+    | '/domain'
     | '/extra-work-report'
     | '/headphone-brand'
-    | '/inquiry-type'
+    | '/inbound-sources'
+    | '/industry'
+    | '/inquiry-channels'
+    | '/inquiry-requirements'
+    | '/inquiry-types'
     | '/inquiry'
     | '/interviews'
     | '/leave-management'
@@ -460,6 +531,7 @@ export interface FileRouteTypes {
     | '/meetings-overview'
     | '/monitor-size'
     | '/new-joinees'
+    | '/outbound-sources'
     | '/processor'
     | '/profile'
     | '/project-type'
@@ -491,9 +563,14 @@ export interface FileRouteTypes {
     | '/_authenticated/clients/'
     | '/_authenticated/conference-room-booking/'
     | '/_authenticated/daily-report/'
+    | '/_authenticated/domain/'
     | '/_authenticated/extra-work-report/'
     | '/_authenticated/headphone-brand/'
-    | '/_authenticated/inquiry-type/'
+    | '/_authenticated/inbound-sources/'
+    | '/_authenticated/industry/'
+    | '/_authenticated/inquiry-channels/'
+    | '/_authenticated/inquiry-requirements/'
+    | '/_authenticated/inquiry-types/'
     | '/_authenticated/inquiry/'
     | '/_authenticated/interviews/'
     | '/_authenticated/leave-management/'
@@ -501,6 +578,7 @@ export interface FileRouteTypes {
     | '/_authenticated/meetings-overview/'
     | '/_authenticated/monitor-size/'
     | '/_authenticated/new-joinees/'
+    | '/_authenticated/outbound-sources/'
     | '/_authenticated/processor/'
     | '/_authenticated/profile/'
     | '/_authenticated/project-type/'
@@ -693,6 +771,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProcessorIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/outbound-sources/': {
+      id: '/_authenticated/outbound-sources/'
+      path: '/outbound-sources'
+      fullPath: '/outbound-sources/'
+      preLoaderRoute: typeof AuthenticatedOutboundSourcesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/new-joinees/': {
       id: '/_authenticated/new-joinees/'
       path: '/new-joinees'
@@ -742,11 +827,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInquiryIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/inquiry-type/': {
-      id: '/_authenticated/inquiry-type/'
-      path: '/inquiry-type'
-      fullPath: '/inquiry-type/'
-      preLoaderRoute: typeof AuthenticatedInquiryTypeIndexRouteImport
+    '/_authenticated/inquiry-types/': {
+      id: '/_authenticated/inquiry-types/'
+      path: '/inquiry-types'
+      fullPath: '/inquiry-types/'
+      preLoaderRoute: typeof AuthenticatedInquiryTypesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/inquiry-requirements/': {
+      id: '/_authenticated/inquiry-requirements/'
+      path: '/inquiry-requirements'
+      fullPath: '/inquiry-requirements/'
+      preLoaderRoute: typeof AuthenticatedInquiryRequirementsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/inquiry-channels/': {
+      id: '/_authenticated/inquiry-channels/'
+      path: '/inquiry-channels'
+      fullPath: '/inquiry-channels/'
+      preLoaderRoute: typeof AuthenticatedInquiryChannelsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/industry/': {
+      id: '/_authenticated/industry/'
+      path: '/industry'
+      fullPath: '/industry/'
+      preLoaderRoute: typeof AuthenticatedIndustryIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/inbound-sources/': {
+      id: '/_authenticated/inbound-sources/'
+      path: '/inbound-sources'
+      fullPath: '/inbound-sources/'
+      preLoaderRoute: typeof AuthenticatedInboundSourcesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/headphone-brand/': {
@@ -761,6 +874,13 @@ declare module '@tanstack/react-router' {
       path: '/extra-work-report'
       fullPath: '/extra-work-report/'
       preLoaderRoute: typeof AuthenticatedExtraWorkReportIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/domain/': {
+      id: '/_authenticated/domain/'
+      path: '/domain'
+      fullPath: '/domain/'
+      preLoaderRoute: typeof AuthenticatedDomainIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/daily-report/': {
@@ -814,9 +934,14 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedClientsIndexRoute: typeof AuthenticatedClientsIndexRoute
   AuthenticatedConferenceRoomBookingIndexRoute: typeof AuthenticatedConferenceRoomBookingIndexRoute
   AuthenticatedDailyReportIndexRoute: typeof AuthenticatedDailyReportIndexRoute
+  AuthenticatedDomainIndexRoute: typeof AuthenticatedDomainIndexRoute
   AuthenticatedExtraWorkReportIndexRoute: typeof AuthenticatedExtraWorkReportIndexRoute
   AuthenticatedHeadphoneBrandIndexRoute: typeof AuthenticatedHeadphoneBrandIndexRoute
-  AuthenticatedInquiryTypeIndexRoute: typeof AuthenticatedInquiryTypeIndexRoute
+  AuthenticatedInboundSourcesIndexRoute: typeof AuthenticatedInboundSourcesIndexRoute
+  AuthenticatedIndustryIndexRoute: typeof AuthenticatedIndustryIndexRoute
+  AuthenticatedInquiryChannelsIndexRoute: typeof AuthenticatedInquiryChannelsIndexRoute
+  AuthenticatedInquiryRequirementsIndexRoute: typeof AuthenticatedInquiryRequirementsIndexRoute
+  AuthenticatedInquiryTypesIndexRoute: typeof AuthenticatedInquiryTypesIndexRoute
   AuthenticatedInquiryIndexRoute: typeof AuthenticatedInquiryIndexRoute
   AuthenticatedInterviewsIndexRoute: typeof AuthenticatedInterviewsIndexRoute
   AuthenticatedLeaveManagementIndexRoute: typeof AuthenticatedLeaveManagementIndexRoute
@@ -824,6 +949,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMeetingsOverviewIndexRoute: typeof AuthenticatedMeetingsOverviewIndexRoute
   AuthenticatedMonitorSizeIndexRoute: typeof AuthenticatedMonitorSizeIndexRoute
   AuthenticatedNewJoineesIndexRoute: typeof AuthenticatedNewJoineesIndexRoute
+  AuthenticatedOutboundSourcesIndexRoute: typeof AuthenticatedOutboundSourcesIndexRoute
   AuthenticatedProcessorIndexRoute: typeof AuthenticatedProcessorIndexRoute
   AuthenticatedProfileIndexRoute: typeof AuthenticatedProfileIndexRoute
   AuthenticatedProjectTypeIndexRoute: typeof AuthenticatedProjectTypeIndexRoute
@@ -847,10 +973,17 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedConferenceRoomBookingIndexRoute:
     AuthenticatedConferenceRoomBookingIndexRoute,
   AuthenticatedDailyReportIndexRoute: AuthenticatedDailyReportIndexRoute,
+  AuthenticatedDomainIndexRoute: AuthenticatedDomainIndexRoute,
   AuthenticatedExtraWorkReportIndexRoute:
     AuthenticatedExtraWorkReportIndexRoute,
   AuthenticatedHeadphoneBrandIndexRoute: AuthenticatedHeadphoneBrandIndexRoute,
-  AuthenticatedInquiryTypeIndexRoute: AuthenticatedInquiryTypeIndexRoute,
+  AuthenticatedInboundSourcesIndexRoute: AuthenticatedInboundSourcesIndexRoute,
+  AuthenticatedIndustryIndexRoute: AuthenticatedIndustryIndexRoute,
+  AuthenticatedInquiryChannelsIndexRoute:
+    AuthenticatedInquiryChannelsIndexRoute,
+  AuthenticatedInquiryRequirementsIndexRoute:
+    AuthenticatedInquiryRequirementsIndexRoute,
+  AuthenticatedInquiryTypesIndexRoute: AuthenticatedInquiryTypesIndexRoute,
   AuthenticatedInquiryIndexRoute: AuthenticatedInquiryIndexRoute,
   AuthenticatedInterviewsIndexRoute: AuthenticatedInterviewsIndexRoute,
   AuthenticatedLeaveManagementIndexRoute:
@@ -861,6 +994,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedMeetingsOverviewIndexRoute,
   AuthenticatedMonitorSizeIndexRoute: AuthenticatedMonitorSizeIndexRoute,
   AuthenticatedNewJoineesIndexRoute: AuthenticatedNewJoineesIndexRoute,
+  AuthenticatedOutboundSourcesIndexRoute:
+    AuthenticatedOutboundSourcesIndexRoute,
   AuthenticatedProcessorIndexRoute: AuthenticatedProcessorIndexRoute,
   AuthenticatedProfileIndexRoute: AuthenticatedProfileIndexRoute,
   AuthenticatedProjectTypeIndexRoute: AuthenticatedProjectTypeIndexRoute,

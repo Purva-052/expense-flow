@@ -1,14 +1,12 @@
 /* eslint-disable react-refresh/only-export-components */
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Building2,
   Cpu,
   Headphones,
   Keyboard,
   Laptop,
   Monitor,
   Mouse,
-  UserRound,
 } from "lucide-react";
 import { ComponentType, ReactNode, useEffect, useMemo } from "react";
 import { SubmitHandler, useForm, useWatch } from "react-hook-form";
@@ -16,6 +14,7 @@ import z from "zod";
 import CustomButton from "@/components/shared/custom-button";
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Form,
   FormControl,
@@ -29,7 +28,7 @@ import { cn } from "@/lib/utils";
 
 type SelectValue = string | number | null | undefined;
 
-type OwnershipType = "company_owned" | "personal";
+type DeviceOwnershipType = "self" | "company";
 type ConnectionType = "wired" | "wireless";
 
 const selectValueSchema = z
@@ -37,34 +36,42 @@ const selectValueSchema = z
   .nullable()
   .optional();
 
+const deviceOwnershipSchema = z.enum(["self", "company"], {
+  errorMap: () => ({ message: "Ownership is required" }),
+});
+
 const systemInventorySchema = z
   .object({
-    ownershipType: z.enum(["company_owned", "personal"]),
-
     mouseEnabled: z.boolean(),
     mouseConnectionType: z.string().optional(),
+    mouseOwnershipType: deviceOwnershipSchema,
 
     keyboardEnabled: z.boolean(),
     keyboardConnectionType: z.string().optional(),
+    keyboardOwnershipType: deviceOwnershipSchema,
 
     cpuEnabled: z.boolean(),
     cpuProcessorId: selectValueSchema,
     cpuStorageId: selectValueSchema,
     cpuRamId: selectValueSchema,
+    cpuOwnershipType: deviceOwnershipSchema,
 
     laptopEnabled: z.boolean(),
     laptopBrandId: selectValueSchema,
     laptopProcessorId: selectValueSchema,
     laptopStorageId: selectValueSchema,
     laptopRamId: selectValueSchema,
+    laptopOwnershipType: deviceOwnershipSchema,
 
     monitorEnabled: z.boolean(),
     monitorBrandId: selectValueSchema,
     monitorSizeId: selectValueSchema,
+    monitorOwnershipType: deviceOwnershipSchema,
 
     headphoneEnabled: z.boolean(),
     headphoneBrandId: selectValueSchema,
     headphoneConnectionType: z.string().optional(),
+    headphoneOwnershipType: deviceOwnershipSchema,
 
     notes: z.string().max(500, "Notes cannot exceed 500 characters").optional(),
   })
@@ -127,6 +134,53 @@ const systemInventorySchema = z
         message: "RAM is required",
       });
     }
+
+    if (values.monitorEnabled && !hasValue(values.monitorBrandId)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["monitorBrandId"],
+        message: "Brand is required",
+      });
+    }
+
+    if (values.mouseEnabled && !hasValue(values.mouseConnectionType)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["mouseConnectionType"],
+        message: "Connection type is required",
+      });
+    }
+
+    if (values.keyboardEnabled && !hasValue(values.keyboardConnectionType)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["keyboardConnectionType"],
+        message: "Connection type is required",
+      });
+    }
+
+    if (values.headphoneEnabled && !hasValue(values.headphoneConnectionType)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["headphoneConnectionType"],
+        message: "Connection type is required",
+      });
+    }
+
+    if (
+      !values.mouseEnabled &&
+      !values.keyboardEnabled &&
+      !values.cpuEnabled &&
+      !values.laptopEnabled &&
+      !values.monitorEnabled &&
+      !values.headphoneEnabled
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["mouseEnabled"], // Arbitrary base path for the overall error
+        message: "Please select CPU/Computer or Laptop",
+      });
+    }
   });
 
 export type TSystemInventorySchema = z.infer<typeof systemInventorySchema>;
@@ -151,23 +205,22 @@ export interface SystemInventoryFormProps {
   headphoneBrandList?: unknown[];
   monitorSizeList?: unknown[];
   dropdownLoading?: boolean;
+  isAdmin?: boolean;
 }
 
-const OWNERSHIP_OPTIONS: Array<{
-  label: string;
-  value: OwnershipType;
-  icon: ComponentType<{ className?: string }>;
-}> = [
-  {
-    label: "Company Owned",
-    value: "company_owned",
-    icon: Building2,
-  },
-  {
-    label: "Personal",
-    value: "personal",
-    icon: UserRound,
-  },
+export interface SystemInventoryViewFormProps {
+  inventory?: unknown;
+  processorList?: unknown[];
+  ramList?: unknown[];
+  storageList?: unknown[];
+  brandList?: unknown[];
+  headphoneBrandList?: unknown[];
+  monitorSizeList?: unknown[];
+}
+
+const DEVICE_OWNERSHIP_OPTIONS: DropdownOption[] = [
+  { label: "Self", value: "self" },
+  { label: "Company", value: "company" },
 ];
 
 const CONNECTION_OPTIONS: DropdownOption[] = [
@@ -182,32 +235,36 @@ const CONNECTION_OPTIONS: DropdownOption[] = [
 ];
 
 export const DEFAULT_SYSTEM_INVENTORY_VALUES: TSystemInventorySchema = {
-  ownershipType: "company_owned",
-
-  mouseEnabled: true,
+  mouseEnabled: false,
   mouseConnectionType: "",
+  mouseOwnershipType: "company",
 
-  keyboardEnabled: true,
+  keyboardEnabled: false,
   keyboardConnectionType: "",
+  keyboardOwnershipType: "company",
 
-  cpuEnabled: true,
+  cpuEnabled: false,
   cpuProcessorId: undefined,
   cpuStorageId: undefined,
   cpuRamId: undefined,
+  cpuOwnershipType: "company",
 
-  laptopEnabled: true,
+  laptopEnabled: false,
   laptopBrandId: undefined,
   laptopProcessorId: undefined,
   laptopStorageId: undefined,
   laptopRamId: undefined,
+  laptopOwnershipType: "company",
 
-  monitorEnabled: true,
+  monitorEnabled: false,
   monitorBrandId: undefined,
   monitorSizeId: undefined,
+  monitorOwnershipType: "company",
 
-  headphoneEnabled: true,
+  headphoneEnabled: false,
   headphoneBrandId: undefined,
   headphoneConnectionType: "",
+  headphoneOwnershipType: "company",
 
   notes: "",
 };
@@ -218,16 +275,16 @@ const isObject = (value: unknown): value is Record<string, unknown> =>
 const pickDefined = (...values: unknown[]) =>
   values.find((value) => value !== undefined && value !== null);
 
-const normalizeOwnershipValue = (value: unknown): OwnershipType => {
+const normalizeDeviceOwnership = (value: unknown): DeviceOwnershipType => {
   const formatted = String(value ?? "")
     .trim()
     .toLowerCase();
 
-  if (formatted.includes("personal")) {
-    return "personal";
+  if (formatted === "self" || formatted === "personal") {
+    return "self";
   }
 
-  return "company_owned";
+  return "company";
 };
 
 const normalizeConnectionValue = (value: unknown): ConnectionType | "" => {
@@ -317,9 +374,15 @@ export const normalizeSystemInventoryRecord = (
     ? inventory.cpu
     : isObject(inventory.cpuComputer)
       ? inventory.cpuComputer
-      : null;
+      : isObject(inventory.cpuDetails)
+        ? inventory.cpuDetails
+        : null;
 
-  const laptop = isObject(inventory.laptop) ? inventory.laptop : null;
+  const laptop = isObject(inventory.laptop)
+    ? inventory.laptop
+    : isObject(inventory.laptopDetails)
+      ? inventory.laptopDetails
+      : null;
 
   const monitor = isObject(inventory.monitor)
     ? inventory.monitor
@@ -331,7 +394,9 @@ export const normalizeSystemInventoryRecord = (
     ? inventory.headphone
     : isObject(inventory.headphones)
       ? inventory.headphones
-      : null;
+      : isObject(inventory.headphoneDetails)
+        ? inventory.headphoneDetails
+        : null;
 
   const mouseConnectionType = normalizeConnectionValue(
     pickDefined(
@@ -457,20 +522,19 @@ export const normalizeSystemInventoryRecord = (
   );
 
   return {
-    ownershipType: normalizeOwnershipValue(
-      pickDefined(
-        inventory.systemOwnership,
-        inventory.system_ownership,
-        inventory.ownershipType,
-        inventory.ownership_type
-      )
-    ),
-
     mouseEnabled: normalizeBoolean(
       pickDefined(mouse?.enabled, mouse?.isEnabled, inventory.mouseEnabled),
-      Boolean(mouse || mouseConnectionType)
+      Boolean(mouse || mouseConnectionType || inventory.mouseOwnershipType)
     ),
     mouseConnectionType,
+    mouseOwnershipType: normalizeDeviceOwnership(
+      pickDefined(
+        mouse?.ownershipType,
+        mouse?.ownership_type,
+        inventory.mouseOwnershipType,
+        inventory.mouse_ownership_type
+      )
+    ),
 
     keyboardEnabled: normalizeBoolean(
       pickDefined(
@@ -478,17 +542,41 @@ export const normalizeSystemInventoryRecord = (
         keyboard?.isEnabled,
         inventory.keyboardEnabled
       ),
-      Boolean(keyboard || keyboardConnectionType)
+      Boolean(
+        keyboard || keyboardConnectionType || inventory.keyboardOwnershipType
+      )
     ),
     keyboardConnectionType,
+    keyboardOwnershipType: normalizeDeviceOwnership(
+      pickDefined(
+        keyboard?.ownershipType,
+        keyboard?.ownership_type,
+        inventory.keyboardOwnershipType,
+        inventory.keyboard_ownership_type
+      )
+    ),
 
     cpuEnabled: normalizeBoolean(
       pickDefined(cpu?.enabled, cpu?.isEnabled, inventory.cpuEnabled),
-      Boolean(cpu || cpuProcessorId || cpuStorageId || cpuRamId)
+      Boolean(
+        cpu ||
+          cpuProcessorId ||
+          cpuStorageId ||
+          cpuRamId ||
+          inventory.cpuOwnershipType
+      )
     ),
     cpuProcessorId,
     cpuStorageId,
     cpuRamId,
+    cpuOwnershipType: normalizeDeviceOwnership(
+      pickDefined(
+        cpu?.ownershipType,
+        cpu?.ownership_type,
+        inventory.cpuOwnershipType,
+        inventory.cpu_ownership_type
+      )
+    ),
 
     laptopEnabled: normalizeBoolean(
       pickDefined(laptop?.enabled, laptop?.isEnabled, inventory.laptopEnabled),
@@ -497,13 +585,22 @@ export const normalizeSystemInventoryRecord = (
           laptopBrandId ||
           laptopProcessorId ||
           laptopStorageId ||
-          laptopRamId
+          laptopRamId ||
+          inventory.laptopOwnershipType
       )
     ),
     laptopBrandId,
     laptopProcessorId,
     laptopStorageId,
     laptopRamId,
+    laptopOwnershipType: normalizeDeviceOwnership(
+      pickDefined(
+        laptop?.ownershipType,
+        laptop?.ownership_type,
+        inventory.laptopOwnershipType,
+        inventory.laptop_ownership_type
+      )
+    ),
 
     monitorEnabled: normalizeBoolean(
       pickDefined(
@@ -511,10 +608,23 @@ export const normalizeSystemInventoryRecord = (
         monitor?.isEnabled,
         inventory.monitorEnabled
       ),
-      Boolean(monitor || monitorBrandId || monitorSizeId)
+      Boolean(
+        monitor ||
+          monitorBrandId ||
+          monitorSizeId ||
+          inventory.monitorOwnershipType
+      )
     ),
     monitorBrandId,
     monitorSizeId,
+    monitorOwnershipType: normalizeDeviceOwnership(
+      pickDefined(
+        monitor?.ownershipType,
+        monitor?.ownership_type,
+        inventory.monitorOwnershipType,
+        inventory.monitor_ownership_type
+      )
+    ),
 
     headphoneEnabled: normalizeBoolean(
       pickDefined(
@@ -522,10 +632,23 @@ export const normalizeSystemInventoryRecord = (
         headphone?.isEnabled,
         inventory.headphoneEnabled
       ),
-      Boolean(headphone || headphoneBrandId || headphoneConnectionType)
+      Boolean(
+        headphone ||
+          headphoneBrandId ||
+          headphoneConnectionType ||
+          inventory.headphoneOwnershipType
+      )
     ),
     headphoneBrandId,
     headphoneConnectionType,
+    headphoneOwnershipType: normalizeDeviceOwnership(
+      pickDefined(
+        headphone?.ownershipType,
+        headphone?.ownership_type,
+        inventory.headphoneOwnershipType,
+        inventory.headphone_ownership_type
+      )
+    ),
 
     notes:
       typeof inventory.notes === "string"
@@ -557,18 +680,25 @@ const parseIdValue = (value: SelectValue) => {
 export const buildSystemInventoryPayload = (
   values: TSystemInventorySchema
 ) => ({
-  ownershipType: values.ownershipType,
   mouseConnectionType: values.mouseEnabled
     ? values.mouseConnectionType || null
     : null,
+  mouseOwnershipType: values.mouseEnabled ? values.mouseOwnershipType : null,
+
   keyboardConnectionType: values.keyboardEnabled
     ? values.keyboardConnectionType || null
     : null,
+  keyboardOwnershipType: values.keyboardEnabled
+    ? values.keyboardOwnershipType
+    : null,
+
   cpuProcessorId: values.cpuEnabled
     ? parseIdValue(values.cpuProcessorId)
     : null,
   cpuStorageId: values.cpuEnabled ? parseIdValue(values.cpuStorageId) : null,
   cpuRamId: values.cpuEnabled ? parseIdValue(values.cpuRamId) : null,
+  cpuOwnershipType: values.cpuEnabled ? values.cpuOwnershipType : null,
+
   laptopBrandId: values.laptopEnabled
     ? parseIdValue(values.laptopBrandId)
     : null,
@@ -579,18 +709,28 @@ export const buildSystemInventoryPayload = (
     ? parseIdValue(values.laptopStorageId)
     : null,
   laptopRamId: values.laptopEnabled ? parseIdValue(values.laptopRamId) : null,
+  laptopOwnershipType: values.laptopEnabled ? values.laptopOwnershipType : null,
+
   monitorBrandId: values.monitorEnabled
     ? parseIdValue(values.monitorBrandId)
     : null,
   monitorSizeId: values.monitorEnabled
     ? parseIdValue(values.monitorSizeId)
     : null,
+  monitorOwnershipType: values.monitorEnabled
+    ? values.monitorOwnershipType
+    : null,
+
   headphoneBrandId: values.headphoneEnabled
     ? parseIdValue(values.headphoneBrandId)
     : null,
   headphoneConnectionType: values.headphoneEnabled
     ? values.headphoneConnectionType || null
     : null,
+  headphoneOwnershipType: values.headphoneEnabled
+    ? values.headphoneOwnershipType
+    : null,
+
   notes: values.notes?.trim() || null,
 });
 
@@ -628,6 +768,34 @@ const mapDropdownOptions = (items: unknown[] | undefined): DropdownOption[] => {
     .filter((item): item is DropdownOption => item !== null);
 };
 
+/** Compact ownership + connection type row rendered inside a section */
+function OwnershipDropdown({
+  form,
+  name,
+  disabled,
+  className,
+}: Readonly<{
+  form: ReturnType<typeof useForm<TSystemInventorySchema>>;
+  name: keyof TSystemInventorySchema;
+  disabled?: boolean;
+  className?: string;
+}>) {
+  return (
+    <CustomDropDownSearchable
+      form={form}
+      name={name as string}
+      label="Ownership"
+      options={DEVICE_OWNERSHIP_OPTIONS}
+      placeholder="Select ownership"
+      disabled={disabled}
+      className={cn("max-w-[200px]", className)}
+      triggerClassName="h-9 w-full bg-[#f5f5f5]"
+      searchEnabled={false}
+      sortOptions={false}
+    />
+  );
+}
+
 function InventorySection({
   title,
   enabled,
@@ -662,6 +830,48 @@ function InventorySection({
         </span>
       </div>
       <div>{children}</div>
+    </div>
+  );
+}
+
+function InventoryViewSection({
+  title,
+  icon,
+  children,
+}: Readonly<{
+  title: string;
+  icon: ComponentType<{ className?: string }>;
+  children: ReactNode;
+}>) {
+  const Icon = icon;
+
+  return (
+    <div className="space-y-4 rounded-md border border-[#d9d9d9] bg-white p-4">
+      <div className="flex items-center gap-2">
+        <Icon className="h-4 w-4 text-muted-foreground" />
+        <span className="text-sm font-semibold">{title}</span>
+      </div>
+      <div>{children}</div>
+    </div>
+  );
+}
+
+function ViewField({
+  label,
+  value,
+}: Readonly<{
+  label: string;
+  value?: string | number | null;
+}>) {
+  const displayValue =
+    value === undefined || value === null || value === "" ? "-" : String(value);
+
+  return (
+    <div className="space-y-1">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <div className="flex h-9 items-center rounded-md border border-[#e5e5e5] bg-[#f5f5f5] px-3 text-sm">
+        {displayValue}
+      </div>
     </div>
   );
 }
@@ -749,54 +959,22 @@ export function SystemInventoryActionForm({
     onSubmit(values);
   };
 
-  return (
-    <Form {...form}>
-      <form
-        id={formId}
-        onSubmit={form.handleSubmit(submitForm)}
-        className="space-y-5"
-      >
-        <FormField
-          control={form.control}
-          name="ownershipType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-sm font-semibold">
-                System Ownership
-              </FormLabel>
-              <FormControl>
-                <div className="grid grid-cols-2 gap-3">
-                  {OWNERSHIP_OPTIONS.map((option) => {
-                    const Icon = option.icon;
-                    const selected = field.value === option.value;
+  const clearSectionErrors = (fields: (keyof TSystemInventorySchema)[]) => {
+    form.clearErrors(fields);
+    fields.forEach((field) => {
+      const defaultValue = DEFAULT_SYSTEM_INVENTORY_VALUES[field];
+      form.setValue(field, defaultValue as never, {
+        shouldDirty: true,
+        shouldTouch: false,
+        shouldValidate: false,
+      });
+    });
+  };
 
-                    return (
-                      <button
-                        type="button"
-                        key={option.value}
-                        onClick={() => field.onChange(option.value)}
-                        disabled={disabled}
-                        className={cn(
-                          "flex h-10 items-center justify-center gap-2 rounded-md border text-sm font-medium transition-colors",
-                          selected
-                            ? "border-[#f47a5b] bg-[#fff6f3] text-black"
-                            : "border-[#d9d9d9] bg-white text-muted-foreground",
-                          disabled && "cursor-not-allowed opacity-60"
-                        )}
-                      >
-                        <Icon className="h-4 w-4" />
-                        {option.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="space-y-4">
+  const renderSection = (name: keyof TSystemInventorySchema) => {
+    switch (name) {
+      case "mouseEnabled":
+        return (
           <FormField
             control={form.control}
             name="mouseEnabled"
@@ -805,24 +983,55 @@ export function SystemInventoryActionForm({
                 title="Mouse"
                 icon={Mouse}
                 enabled={field.value}
-                onEnabledChange={field.onChange}
+                onEnabledChange={(checked) => {
+                  field.onChange(checked);
+                  if (!checked) {
+                    clearSectionErrors([
+                      "mouseConnectionType",
+                      "mouseOwnershipType",
+                    ]);
+                  }
+                }}
                 disabled={disabled}
+                showAsterisk={mouseEnabled}
               >
-                <CustomDropDownSearchable
-                  form={form}
-                  name="mouseConnectionType"
-                  label="Connection Type"
-                  options={CONNECTION_OPTIONS}
-                  placeholder="Select connection type"
-                  disabled={disabled || !mouseEnabled || dropdownLoading}
-                  triggerClassName="h-9 max-w-[220px] bg-[#f5f5f5]"
-                  searchEnabled={false}
-                  sortOptions={false}
-                />
+                <div
+                  className={cn(
+                    "grid grid-cols-1 gap-3 md:grid-cols-2",
+                    !mouseEnabled && "opacity-50 pointer-events-none"
+                  )}
+                >
+                  <CustomDropDownSearchable
+                    form={form}
+                    name="mouseConnectionType"
+                    label={
+                      <span>
+                        Connection Type
+                        {mouseEnabled && (
+                          <span className="ml-1 text-red-500">*</span>
+                        )}
+                      </span>
+                    }
+                    options={CONNECTION_OPTIONS}
+                    placeholder="Select connection type"
+                    disabled={disabled || !mouseEnabled || dropdownLoading}
+                    className="max-w-[220px]"
+                    triggerClassName="h-9 bg-[#f5f5f5]"
+                    searchEnabled={false}
+                    sortOptions={false}
+                  />
+                  <OwnershipDropdown
+                    form={form}
+                    name="mouseOwnershipType"
+                    disabled={disabled || !mouseEnabled}
+                  />
+                </div>
               </InventorySection>
             )}
           />
-
+        );
+      case "keyboardEnabled":
+        return (
           <FormField
             control={form.control}
             name="keyboardEnabled"
@@ -831,24 +1040,55 @@ export function SystemInventoryActionForm({
                 title="Keyboard"
                 icon={Keyboard}
                 enabled={field.value}
-                onEnabledChange={field.onChange}
+                onEnabledChange={(checked) => {
+                  field.onChange(checked);
+                  if (!checked) {
+                    clearSectionErrors([
+                      "keyboardConnectionType",
+                      "keyboardOwnershipType",
+                    ]);
+                  }
+                }}
                 disabled={disabled}
+                showAsterisk={keyboardEnabled}
               >
-                <CustomDropDownSearchable
-                  form={form}
-                  name="keyboardConnectionType"
-                  label="Connection Type"
-                  options={CONNECTION_OPTIONS}
-                  placeholder="Select connection type"
-                  disabled={disabled || !keyboardEnabled || dropdownLoading}
-                  triggerClassName="h-9 max-w-[220px] bg-[#f5f5f5]"
-                  searchEnabled={false}
-                  sortOptions={false}
-                />
+                <div
+                  className={cn(
+                    "grid grid-cols-1 gap-3 md:grid-cols-2",
+                    !keyboardEnabled && "opacity-50 pointer-events-none"
+                  )}
+                >
+                  <CustomDropDownSearchable
+                    form={form}
+                    name="keyboardConnectionType"
+                    label={
+                      <span>
+                        Connection Type
+                        {keyboardEnabled && (
+                          <span className="ml-1 text-red-500">*</span>
+                        )}
+                      </span>
+                    }
+                    options={CONNECTION_OPTIONS}
+                    placeholder="Select connection type"
+                    disabled={disabled || !keyboardEnabled || dropdownLoading}
+                    className="max-w-[220px]"
+                    triggerClassName="h-9 bg-[#f5f5f5]"
+                    searchEnabled={false}
+                    sortOptions={false}
+                  />
+                  <OwnershipDropdown
+                    form={form}
+                    name="keyboardOwnershipType"
+                    disabled={disabled || !keyboardEnabled}
+                  />
+                </div>
               </InventorySection>
             )}
           />
-
+        );
+      case "cpuEnabled":
+        return (
           <FormField
             control={form.control}
             name="cpuEnabled"
@@ -857,64 +1097,86 @@ export function SystemInventoryActionForm({
                 title="CPU / Computer"
                 icon={Cpu}
                 enabled={field.value}
-                onEnabledChange={field.onChange}
+                onEnabledChange={(checked) => {
+                  field.onChange(checked);
+                  if (!checked) {
+                    clearSectionErrors([
+                      "cpuProcessorId",
+                      "cpuStorageId",
+                      "cpuRamId",
+                      "cpuOwnershipType",
+                    ]);
+                  }
+                }}
                 disabled={disabled}
                 showAsterisk={cpuEnabled}
               >
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-                  <CustomDropDownSearchable
+                <div className="space-y-3">
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                    <CustomDropDownSearchable
+                      form={form}
+                      name="cpuProcessorId"
+                      label={
+                        <span>
+                          Processor
+                          {cpuEnabled && (
+                            <span className="ml-1 text-red-500">*</span>
+                          )}
+                        </span>
+                      }
+                      options={processorOptions}
+                      placeholder="Select processor"
+                      disabled={disabled || !cpuEnabled || dropdownLoading}
+                      className="max-w-[300px]"
+                      triggerClassName="h-9 bg-[#f5f5f5]"
+                    />
+                    <CustomDropDownSearchable
+                      form={form}
+                      name="cpuStorageId"
+                      label={
+                        <span>
+                          Storage
+                          {cpuEnabled && (
+                            <span className="ml-1 text-red-500">*</span>
+                          )}
+                        </span>
+                      }
+                      options={storageOptions}
+                      placeholder="Select storage"
+                      disabled={disabled || !cpuEnabled || dropdownLoading}
+                      className="max-w-[300px]"
+                      triggerClassName="h-9 bg-[#f5f5f5]"
+                    />
+                    <CustomDropDownSearchable
+                      form={form}
+                      name="cpuRamId"
+                      label={
+                        <span>
+                          RAM
+                          {cpuEnabled && (
+                            <span className="ml-1 text-red-500">*</span>
+                          )}
+                        </span>
+                      }
+                      options={ramOptions}
+                      placeholder="Select RAM"
+                      disabled={disabled || !cpuEnabled || dropdownLoading}
+                      className="max-w-[300px]"
+                      triggerClassName="h-9 bg-[#f5f5f5]"
+                    />
+                  </div>
+                  <OwnershipDropdown
                     form={form}
-                    name="cpuProcessorId"
-                    label={
-                      <span>
-                        Processor
-                        {cpuEnabled && (
-                          <span className="ml-1 text-red-500">*</span>
-                        )}
-                      </span>
-                    }
-                    options={processorOptions}
-                    placeholder="Select processor"
-                    disabled={disabled || !cpuEnabled || dropdownLoading}
-                    triggerClassName="h-9 bg-[#f5f5f5]"
-                  />
-                  <CustomDropDownSearchable
-                    form={form}
-                    name="cpuStorageId"
-                    label={
-                      <span>
-                        Storage
-                        {cpuEnabled && (
-                          <span className="ml-1 text-red-500">*</span>
-                        )}
-                      </span>
-                    }
-                    options={storageOptions}
-                    placeholder="Select storage"
-                    disabled={disabled || !cpuEnabled || dropdownLoading}
-                    triggerClassName="h-9 bg-[#f5f5f5]"
-                  />
-                  <CustomDropDownSearchable
-                    form={form}
-                    name="cpuRamId"
-                    label={
-                      <span>
-                        RAM
-                        {cpuEnabled && (
-                          <span className="ml-1 text-red-500">*</span>
-                        )}
-                      </span>
-                    }
-                    options={ramOptions}
-                    placeholder="Select RAM"
-                    disabled={disabled || !cpuEnabled || dropdownLoading}
-                    triggerClassName="h-9 bg-[#f5f5f5]"
+                    name="cpuOwnershipType"
+                    disabled={disabled || !cpuEnabled}
                   />
                 </div>
               </InventorySection>
             )}
           />
-
+        );
+      case "laptopEnabled":
+        return (
           <FormField
             control={form.control}
             name="laptopEnabled"
@@ -923,80 +1185,104 @@ export function SystemInventoryActionForm({
                 title="Laptop"
                 icon={Laptop}
                 enabled={field.value}
-                onEnabledChange={field.onChange}
+                onEnabledChange={(checked) => {
+                  field.onChange(checked);
+                  if (!checked) {
+                    clearSectionErrors([
+                      "laptopBrandId",
+                      "laptopProcessorId",
+                      "laptopStorageId",
+                      "laptopRamId",
+                      "laptopOwnershipType",
+                    ]);
+                  }
+                }}
                 disabled={disabled}
                 showAsterisk={laptopEnabled}
               >
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                  <CustomDropDownSearchable
+                <div className="space-y-3">
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                    <CustomDropDownSearchable
+                      form={form}
+                      name="laptopBrandId"
+                      label={
+                        <span>
+                          Brand
+                          {laptopEnabled && (
+                            <span className="ml-1 text-red-500">*</span>
+                          )}
+                        </span>
+                      }
+                      options={brandOptions}
+                      placeholder="Select brand"
+                      disabled={disabled || !laptopEnabled || dropdownLoading}
+                      className="max-w-xs"
+                      triggerClassName="h-9 bg-[#f5f5f5]"
+                    />
+                    <CustomDropDownSearchable
+                      form={form}
+                      name="laptopProcessorId"
+                      label={
+                        <span>
+                          Processor
+                          {laptopEnabled && (
+                            <span className="ml-1 text-red-500">*</span>
+                          )}
+                        </span>
+                      }
+                      options={processorOptions}
+                      placeholder="Select processor"
+                      disabled={disabled || !laptopEnabled || dropdownLoading}
+                      className="max-w-xs"
+                      triggerClassName="h-9 bg-[#f5f5f5]"
+                    />
+                    <CustomDropDownSearchable
+                      form={form}
+                      name="laptopStorageId"
+                      label={
+                        <span>
+                          Storage
+                          {laptopEnabled && (
+                            <span className="ml-1 text-red-500">*</span>
+                          )}
+                        </span>
+                      }
+                      options={storageOptions}
+                      placeholder="Select storage"
+                      disabled={disabled || !laptopEnabled || dropdownLoading}
+                      className="max-w-xs"
+                      triggerClassName="h-9 bg-[#f5f5f5]"
+                    />
+                    <CustomDropDownSearchable
+                      form={form}
+                      name="laptopRamId"
+                      label={
+                        <span>
+                          RAM
+                          {laptopEnabled && (
+                            <span className="ml-1 text-red-500">*</span>
+                          )}
+                        </span>
+                      }
+                      options={ramOptions}
+                      placeholder="Select RAM"
+                      disabled={disabled || !laptopEnabled || dropdownLoading}
+                      className="max-w-xs"
+                      triggerClassName="h-9 bg-[#f5f5f5]"
+                    />
+                  </div>
+                  <OwnershipDropdown
                     form={form}
-                    name="laptopBrandId"
-                    label={
-                      <span>
-                        Brand
-                        {laptopEnabled && (
-                          <span className="ml-1 text-red-500">*</span>
-                        )}
-                      </span>
-                    }
-                    options={brandOptions}
-                    placeholder="Select brand"
-                    disabled={disabled || !laptopEnabled || dropdownLoading}
-                    triggerClassName="h-9 bg-[#f5f5f5]"
-                  />
-                  <CustomDropDownSearchable
-                    form={form}
-                    name="laptopProcessorId"
-                    label={
-                      <span>
-                        Processor
-                        {laptopEnabled && (
-                          <span className="ml-1 text-red-500">*</span>
-                        )}
-                      </span>
-                    }
-                    options={processorOptions}
-                    placeholder="Select processor"
-                    disabled={disabled || !laptopEnabled || dropdownLoading}
-                    triggerClassName="h-9 bg-[#f5f5f5]"
-                  />
-                  <CustomDropDownSearchable
-                    form={form}
-                    name="laptopStorageId"
-                    label={
-                      <span>
-                        Storage
-                        {laptopEnabled && (
-                          <span className="ml-1 text-red-500">*</span>
-                        )}
-                      </span>
-                    }
-                    options={storageOptions}
-                    placeholder="Select storage"
-                    disabled={disabled || !laptopEnabled || dropdownLoading}
-                    triggerClassName="h-9 bg-[#f5f5f5]"
-                  />
-                  <CustomDropDownSearchable
-                    form={form}
-                    name="laptopRamId"
-                    label={
-                      <span>
-                        RAM
-                        {laptopEnabled && (
-                          <span className="ml-1 text-red-500">*</span>
-                        )}
-                      </span>
-                    }
-                    options={ramOptions}
-                    placeholder="Select RAM"
-                    disabled={disabled || !laptopEnabled || dropdownLoading}
-                    triggerClassName="h-9 bg-[#f5f5f5]"
+                    name="laptopOwnershipType"
+                    disabled={disabled || !laptopEnabled}
                   />
                 </div>
               </InventorySection>
             )}
           />
-
+        );
+      case "monitorEnabled":
+        return (
           <FormField
             control={form.control}
             name="monitorEnabled"
@@ -1005,33 +1291,61 @@ export function SystemInventoryActionForm({
                 title="Monitor"
                 icon={Monitor}
                 enabled={field.value}
-                onEnabledChange={field.onChange}
+                onEnabledChange={(checked) => {
+                  field.onChange(checked);
+                  if (!checked) {
+                    clearSectionErrors([
+                      "monitorBrandId",
+                      "monitorSizeId",
+                      "monitorOwnershipType",
+                    ]);
+                  }
+                }}
                 disabled={disabled}
+                showAsterisk={monitorEnabled}
               >
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                  <CustomDropDownSearchable
+                <div className="space-y-3">
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                    <CustomDropDownSearchable
+                      form={form}
+                      name="monitorBrandId"
+                      label={
+                        <span>
+                          Brand
+                          {monitorEnabled && (
+                            <span className="ml-1 text-red-500">*</span>
+                          )}
+                        </span>
+                      }
+                      options={brandOptions}
+                      placeholder="Select brand"
+                      disabled={disabled || !monitorEnabled || dropdownLoading}
+                      className="max-w-xs"
+                      triggerClassName="h-9 bg-[#f5f5f5]"
+                    />
+                    <CustomDropDownSearchable
+                      form={form}
+                      name="monitorSizeId"
+                      label="Size"
+                      options={monitorSizeOptions}
+                      placeholder="Select size"
+                      disabled={disabled || !monitorEnabled || dropdownLoading}
+                      className="max-w-xs"
+                      triggerClassName="h-9 bg-[#f5f5f5]"
+                    />
+                  </div>
+                  <OwnershipDropdown
                     form={form}
-                    name="monitorBrandId"
-                    label="Brand"
-                    options={brandOptions}
-                    placeholder="Select brand"
-                    disabled={disabled || !monitorEnabled || dropdownLoading}
-                    triggerClassName="h-9 bg-[#f5f5f5]"
-                  />
-                  <CustomDropDownSearchable
-                    form={form}
-                    name="monitorSizeId"
-                    label="Size"
-                    options={monitorSizeOptions}
-                    placeholder="Select size"
-                    disabled={disabled || !monitorEnabled || dropdownLoading}
-                    triggerClassName="h-9 bg-[#f5f5f5]"
+                    name="monitorOwnershipType"
+                    disabled={disabled || !monitorEnabled}
                   />
                 </div>
               </InventorySection>
             )}
           />
-
+        );
+      case "headphoneEnabled":
+        return (
           <FormField
             control={form.control}
             name="headphoneEnabled"
@@ -1040,34 +1354,97 @@ export function SystemInventoryActionForm({
                 title="Headphones"
                 icon={Headphones}
                 enabled={field.value}
-                onEnabledChange={field.onChange}
+                onEnabledChange={(checked) => {
+                  field.onChange(checked);
+                  if (!checked) {
+                    clearSectionErrors([
+                      "headphoneBrandId",
+                      "headphoneConnectionType",
+                      "headphoneOwnershipType",
+                    ]);
+                  }
+                }}
                 disabled={disabled}
+                showAsterisk={headphoneEnabled}
               >
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                  <CustomDropDownSearchable
+                <div className="space-y-3">
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                    <CustomDropDownSearchable
+                      form={form}
+                      name="headphoneBrandId"
+                      label={
+                        <span>
+                          Brand
+                          {headphoneEnabled && (
+                            <span className="ml-1 text-red-500">*</span>
+                          )}
+                        </span>
+                      }
+                      options={headphoneBrandOptions}
+                      placeholder="Select brand"
+                      disabled={
+                        disabled || !headphoneEnabled || dropdownLoading
+                      }
+                      className="max-w-xs"
+                      triggerClassName="h-9 bg-[#f5f5f5]"
+                    />
+                    <CustomDropDownSearchable
+                      form={form}
+                      name="headphoneConnectionType"
+                      label={
+                        <span>
+                          Connection Type
+                          {headphoneEnabled && (
+                            <span className="ml-1 text-red-500">*</span>
+                          )}
+                        </span>
+                      }
+                      options={CONNECTION_OPTIONS}
+                      placeholder="Select connection type"
+                      disabled={
+                        disabled || !headphoneEnabled || dropdownLoading
+                      }
+                      className="max-w-xs"
+                      triggerClassName="h-9 bg-[#f5f5f5]"
+                      searchEnabled={false}
+                      sortOptions={false}
+                    />
+                  </div>
+                  <OwnershipDropdown
                     form={form}
-                    name="headphoneBrandId"
-                    label="Brand"
-                    options={headphoneBrandOptions}
-                    placeholder="Select brand"
-                    disabled={disabled || !headphoneEnabled || dropdownLoading}
-                    triggerClassName="h-9 bg-[#f5f5f5]"
-                  />
-                  <CustomDropDownSearchable
-                    form={form}
-                    name="headphoneConnectionType"
-                    label="Connection Type"
-                    options={CONNECTION_OPTIONS}
-                    placeholder="Select connection type"
-                    disabled={disabled || !headphoneEnabled || dropdownLoading}
-                    triggerClassName="h-9 bg-[#f5f5f5]"
-                    searchEnabled={false}
-                    sortOptions={false}
+                    name="headphoneOwnershipType"
+                    disabled={disabled || !headphoneEnabled}
                   />
                 </div>
               </InventorySection>
             )}
           />
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <Form {...form}>
+      <form
+        id={formId}
+        onSubmit={form.handleSubmit(submitForm)}
+        className="space-y-5"
+      >
+        <div className="space-y-4">
+          {renderSection("mouseEnabled")}
+          {renderSection("keyboardEnabled")}
+          {renderSection("cpuEnabled")}
+          {renderSection("laptopEnabled")}
+          {renderSection("monitorEnabled")}
+          {renderSection("headphoneEnabled")}
+
+          {form.formState.errors.mouseEnabled?.message && (
+            <p className="text-sm font-medium text-destructive">
+              {form.formState.errors.mouseEnabled.message}
+            </p>
+          )}
         </div>
 
         <FormField
@@ -1105,5 +1482,447 @@ export function SystemInventoryActionForm({
         )}
       </form>
     </Form>
+  );
+}
+
+export function SystemInventoryViewForm({
+  inventory,
+  processorList,
+  ramList,
+  storageList,
+  brandList,
+  headphoneBrandList,
+  monitorSizeList,
+}: Readonly<SystemInventoryViewFormProps>) {
+  const values = useMemo(
+    () => normalizeSystemInventoryRecord(inventory),
+    [inventory]
+  );
+
+  const processorOptions = useMemo(
+    () => mapDropdownOptions(processorList),
+    [processorList]
+  );
+  const ramOptions = useMemo(() => mapDropdownOptions(ramList), [ramList]);
+  const storageOptions = useMemo(
+    () => mapDropdownOptions(storageList),
+    [storageList]
+  );
+  const brandOptions = useMemo(
+    () => mapDropdownOptions(brandList),
+    [brandList]
+  );
+  const headphoneBrandOptions = useMemo(
+    () => mapDropdownOptions(headphoneBrandList),
+    [headphoneBrandList]
+  );
+  const monitorSizeOptions = useMemo(
+    () => mapDropdownOptions(monitorSizeList),
+    [monitorSizeList]
+  );
+
+  const resolveLabel = (
+    rawValue: unknown,
+    idValue: SelectValue,
+    options: DropdownOption[]
+  ) => {
+    const rawLabel = isObject(rawValue)
+      ? pickDefined(rawValue.name, rawValue.label, rawValue.title)
+      : rawValue;
+
+    if (typeof rawLabel === "string" && rawLabel.trim()) {
+      return rawLabel;
+    }
+
+    if (typeof rawLabel === "number") {
+      const option = options.find(
+        (item) => String(item.value) === String(rawLabel)
+      );
+
+      return option?.label ?? String(rawLabel);
+    }
+
+    if (idValue === null || idValue === undefined || idValue === "") {
+      return undefined;
+    }
+
+    const option = options.find(
+      (item) => String(item.value) === String(idValue)
+    );
+
+    return option?.label ?? String(idValue);
+  };
+
+  const resolveOptionLabel = (
+    value: SelectValue,
+    options: DropdownOption[]
+  ) => {
+    if (value === null || value === undefined || value === "") {
+      return undefined;
+    }
+
+    const option = options.find((item) => String(item.value) === String(value));
+
+    return option?.label ?? String(value);
+  };
+
+  const isOwnedBy = (
+    ownership: DeviceOwnershipType | null | undefined,
+    expected: DeviceOwnershipType
+  ) => ownership === expected;
+
+  const personalSections = [
+    values.mouseEnabled && isOwnedBy(values.mouseOwnershipType, "self") ? (
+      <InventoryViewSection key="mouse" title="Mouse" icon={Mouse}>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <ViewField
+            label="Connection Type"
+            value={resolveOptionLabel(
+              values.mouseConnectionType,
+              CONNECTION_OPTIONS
+            )}
+          />
+        </div>
+      </InventoryViewSection>
+    ) : null,
+    values.keyboardEnabled &&
+    isOwnedBy(values.keyboardOwnershipType, "self") ? (
+      <InventoryViewSection key="keyboard" title="Keyboard" icon={Keyboard}>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <ViewField
+            label="Connection Type"
+            value={resolveOptionLabel(
+              values.keyboardConnectionType,
+              CONNECTION_OPTIONS
+            )}
+          />
+        </div>
+      </InventoryViewSection>
+    ) : null,
+    values.cpuEnabled && isOwnedBy(values.cpuOwnershipType, "self") ? (
+      <InventoryViewSection key="cpu" title="CPU/Computer" icon={Cpu}>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <ViewField
+            label="Processor"
+            value={resolveLabel(
+              isObject(inventory) ? inventory.cpuProcessor : undefined,
+              values.cpuProcessorId,
+              processorOptions
+            )}
+          />
+          <ViewField
+            label="Storage"
+            value={resolveLabel(
+              isObject(inventory) ? inventory.cpuStorage : undefined,
+              values.cpuStorageId,
+              storageOptions
+            )}
+          />
+          <ViewField
+            label="RAM"
+            value={resolveLabel(
+              isObject(inventory) ? inventory.cpuRam : undefined,
+              values.cpuRamId,
+              ramOptions
+            )}
+          />
+        </div>
+      </InventoryViewSection>
+    ) : null,
+    values.laptopEnabled && isOwnedBy(values.laptopOwnershipType, "self") ? (
+      <InventoryViewSection key="laptop" title="Laptop" icon={Laptop}>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <ViewField
+            label="Brand"
+            value={resolveLabel(
+              isObject(inventory) ? inventory.laptopBrand : undefined,
+              values.laptopBrandId,
+              brandOptions
+            )}
+          />
+          <ViewField
+            label="Processor"
+            value={resolveLabel(
+              isObject(inventory) ? inventory.laptopProcessor : undefined,
+              values.laptopProcessorId,
+              processorOptions
+            )}
+          />
+          <ViewField
+            label="Storage"
+            value={resolveLabel(
+              isObject(inventory) ? inventory.laptopStorage : undefined,
+              values.laptopStorageId,
+              storageOptions
+            )}
+          />
+          <ViewField
+            label="RAM"
+            value={resolveLabel(
+              isObject(inventory) ? inventory.laptopRam : undefined,
+              values.laptopRamId,
+              ramOptions
+            )}
+          />
+        </div>
+      </InventoryViewSection>
+    ) : null,
+    values.monitorEnabled && isOwnedBy(values.monitorOwnershipType, "self") ? (
+      <InventoryViewSection key="monitor" title="Monitor" icon={Monitor}>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <ViewField
+            label="Brand"
+            value={resolveLabel(
+              isObject(inventory) ? inventory.monitorBrand : undefined,
+              values.monitorBrandId,
+              brandOptions
+            )}
+          />
+          <ViewField
+            label="Size"
+            value={resolveLabel(
+              isObject(inventory) ? inventory.monitorSize : undefined,
+              values.monitorSizeId,
+              monitorSizeOptions
+            )}
+          />
+        </div>
+      </InventoryViewSection>
+    ) : null,
+    values.headphoneEnabled &&
+    isOwnedBy(values.headphoneOwnershipType, "self") ? (
+      <InventoryViewSection
+        key="headphone"
+        title="Headphones"
+        icon={Headphones}
+      >
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <ViewField
+            label="Brand"
+            value={resolveLabel(
+              isObject(inventory) ? inventory.headphoneBrand : undefined,
+              values.headphoneBrandId,
+              headphoneBrandOptions
+            )}
+          />
+          <ViewField
+            label="Connection Type"
+            value={resolveOptionLabel(
+              values.headphoneConnectionType,
+              CONNECTION_OPTIONS
+            )}
+          />
+        </div>
+      </InventoryViewSection>
+    ) : null,
+  ].filter(Boolean);
+
+  const companySections = [
+    values.mouseEnabled && isOwnedBy(values.mouseOwnershipType, "company") ? (
+      <InventoryViewSection key="mouse" title="Mouse" icon={Mouse}>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <ViewField
+            label="Connection Type"
+            value={resolveOptionLabel(
+              values.mouseConnectionType,
+              CONNECTION_OPTIONS
+            )}
+          />
+        </div>
+      </InventoryViewSection>
+    ) : null,
+    values.keyboardEnabled &&
+    isOwnedBy(values.keyboardOwnershipType, "company") ? (
+      <InventoryViewSection key="keyboard" title="Keyboard" icon={Keyboard}>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <ViewField
+            label="Connection Type"
+            value={resolveOptionLabel(
+              values.keyboardConnectionType,
+              CONNECTION_OPTIONS
+            )}
+          />
+        </div>
+      </InventoryViewSection>
+    ) : null,
+    values.cpuEnabled && isOwnedBy(values.cpuOwnershipType, "company") ? (
+      <InventoryViewSection key="cpu" title="CPU/Computer" icon={Cpu}>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <ViewField
+            label="Processor"
+            value={resolveLabel(
+              isObject(inventory) ? inventory.cpuProcessor : undefined,
+              values.cpuProcessorId,
+              processorOptions
+            )}
+          />
+          <ViewField
+            label="Storage"
+            value={resolveLabel(
+              isObject(inventory) ? inventory.cpuStorage : undefined,
+              values.cpuStorageId,
+              storageOptions
+            )}
+          />
+          <ViewField
+            label="RAM"
+            value={resolveLabel(
+              isObject(inventory) ? inventory.cpuRam : undefined,
+              values.cpuRamId,
+              ramOptions
+            )}
+          />
+        </div>
+      </InventoryViewSection>
+    ) : null,
+    values.laptopEnabled && isOwnedBy(values.laptopOwnershipType, "company") ? (
+      <InventoryViewSection key="laptop" title="Laptop" icon={Laptop}>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <ViewField
+            label="Brand"
+            value={resolveLabel(
+              isObject(inventory) ? inventory.laptopBrand : undefined,
+              values.laptopBrandId,
+              brandOptions
+            )}
+          />
+          <ViewField
+            label="Processor"
+            value={resolveLabel(
+              isObject(inventory) ? inventory.laptopProcessor : undefined,
+              values.laptopProcessorId,
+              processorOptions
+            )}
+          />
+          <ViewField
+            label="Storage"
+            value={resolveLabel(
+              isObject(inventory) ? inventory.laptopStorage : undefined,
+              values.laptopStorageId,
+              storageOptions
+            )}
+          />
+          <ViewField
+            label="RAM"
+            value={resolveLabel(
+              isObject(inventory) ? inventory.laptopRam : undefined,
+              values.laptopRamId,
+              ramOptions
+            )}
+          />
+        </div>
+      </InventoryViewSection>
+    ) : null,
+    values.monitorEnabled &&
+    isOwnedBy(values.monitorOwnershipType, "company") ? (
+      <InventoryViewSection key="monitor" title="Monitor" icon={Monitor}>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <ViewField
+            label="Brand"
+            value={resolveLabel(
+              isObject(inventory) ? inventory.monitorBrand : undefined,
+              values.monitorBrandId,
+              brandOptions
+            )}
+          />
+          <ViewField
+            label="Size"
+            value={resolveLabel(
+              isObject(inventory) ? inventory.monitorSize : undefined,
+              values.monitorSizeId,
+              monitorSizeOptions
+            )}
+          />
+        </div>
+      </InventoryViewSection>
+    ) : null,
+    values.headphoneEnabled &&
+    isOwnedBy(values.headphoneOwnershipType, "company") ? (
+      <InventoryViewSection
+        key="headphone"
+        title="Headphones"
+        icon={Headphones}
+      >
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <ViewField
+            label="Brand"
+            value={resolveLabel(
+              isObject(inventory) ? inventory.headphoneBrand : undefined,
+              values.headphoneBrandId,
+              headphoneBrandOptions
+            )}
+          />
+          <ViewField
+            label="Connection Type"
+            value={resolveOptionLabel(
+              values.headphoneConnectionType,
+              CONNECTION_OPTIONS
+            )}
+          />
+        </div>
+      </InventoryViewSection>
+    ) : null,
+  ].filter(Boolean);
+
+  const defaultTab =
+    personalSections.length > 0
+      ? "personal"
+      : companySections.length > 0
+        ? "company"
+        : "personal";
+
+  const tabTriggerClass =
+    "flex items-center gap-2 rounded-[50px] !px-3 !py-2  transition-all " +
+    "data-[state=active]:bg-black data-[state=active]:text-white h-[35px]";
+
+  return (
+    <div className="space-y-6">
+      <Tabs defaultValue={defaultTab} className="w-full">
+        <TabsList className="bg-[#fdebef] rounded-full">
+          <TabsTrigger value="personal" className={tabTriggerClass}>
+            Personal
+          </TabsTrigger>
+          <TabsTrigger value="company" className={tabTriggerClass}>
+            Company
+          </TabsTrigger>
+        </TabsList>
+
+        <div className="mt-4 min-h-[200px] max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+          <TabsContent value="personal" className="mt-0">
+            <div className="space-y-4">
+              {personalSections.length > 0 ? (
+                personalSections
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  No personal inventory recorded.
+                </p>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="company" className="mt-0">
+            <div className="space-y-4">
+              {companySections.length > 0 ? (
+                companySections
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  No company inventory recorded.
+                </p>
+              )}
+            </div>
+          </TabsContent>
+        </div>
+      </Tabs>
+
+      <div className="space-y-2">
+        <div className="text-sm font-semibold">Notes</div>
+        <Textarea
+          readOnly
+          value={values.notes ?? ""}
+          placeholder="No additional notes."
+          className="min-h-[95px] resize-none bg-[#f5f5f5]"
+        />
+      </div>
+    </div>
   );
 }

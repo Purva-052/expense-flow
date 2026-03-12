@@ -14,6 +14,14 @@ export function ViewInquiryModal() {
   const { open, setOpen, currentRow } = useInquiryStore();
 
   if (open !== "view") return null;
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "-";
+    return new Date(dateString).toLocaleDateString("en-IN", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
 
   const statusOptions = [
     {
@@ -40,7 +48,7 @@ export function ViewInquiryModal() {
 
   return (
     <Dialog open={open === "view"} onOpenChange={() => setOpen("")}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-[40vw] max-h-[80vh] overflow-auto">
         <DialogHeader>
           <DialogTitle>Inquiry Details</DialogTitle>
         </DialogHeader>
@@ -100,6 +108,17 @@ export function ViewInquiryModal() {
           </div>
           <Separator />
           <div className="flex justify-between">
+            <span className="font-medium text-gray-700">
+              Client LinkedIn Profile:
+            </span>
+            <span className="text-gray-900">
+              {currentRow?.clientLinkedInProfile?.trim()
+                ? currentRow?.clientLinkedInProfile
+                : "-"}
+            </span>
+          </div>
+          <Separator />
+          <div className="flex justify-between">
             <span className="font-medium text-gray-700">Country:</span>
             <span className="text-gray-900">
               {currentRow?.country?.name ?? "-"}
@@ -108,16 +127,63 @@ export function ViewInquiryModal() {
           <Separator />
 
           <div className="flex justify-between">
-            <span className="font-medium text-gray-700">
-              Source Of Inquiry:
-            </span>
+            <span className="font-medium text-gray-700">Inquiry Channel:</span>
             <span className="text-gray-900">
-              {currentRow?.clientCompanyName?.trim()
-                ? currentRow?.sourceOfInquiry
+              {currentRow?.inquirySource?.name.trim()
+                ? currentRow?.inquirySource?.name
                 : "-"}
             </span>
           </div>
           <Separator />
+
+          <div className="flex justify-between">
+            <span className="font-medium text-gray-700">Inquiry Type:</span>
+            <span className="capitalize text-gray-900">
+              {currentRow?.inquiryType?.name.trim()
+                ? currentRow?.inquiryType?.name
+                : "-"}
+            </span>
+          </div>
+          <Separator />
+
+          <div className="flex justify-between">
+            <span className="font-medium text-gray-700">Inquiry Date:</span>
+            <span className="capitalize text-gray-900">
+              {currentRow?.inquiryDate
+                ? formatDate(currentRow?.inquiryDate)
+                : "-"}
+            </span>
+          </div>
+          <Separator />
+
+          <div className="flex justify-between">
+            <span className="font-medium text-gray-700">
+              {currentRow?.inquirySource?.name === "Inbound"
+                ? "Inbound Source:"
+                : "Outbound Source:"}
+            </span>
+
+            <span className="text-gray-900">
+              {currentRow?.inquirySource?.name === "Inbound"
+                ? currentRow?.inboundSource?.name || "-"
+                : currentRow?.outboundSource?.name || "-"}
+            </span>
+          </div>
+          <Separator />
+
+          {currentRow?.inquirySource?.name === "Inbound" && (
+            <>
+              <div className="flex justify-between">
+                <span className="font-medium text-gray-700">Domain Name:</span>
+                <span className="text-gray-900">
+                  {currentRow?.domain?.name.trim()
+                    ? currentRow?.domain?.name
+                    : "-"}
+                </span>
+              </div>
+              <Separator />
+            </>
+          )}
 
           <div className="flex justify-between">
             <span className="font-medium text-gray-700 w-24">Type:</span>

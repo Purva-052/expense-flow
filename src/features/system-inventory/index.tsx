@@ -227,13 +227,13 @@ const SystemInventoryPage = () => {
   //   }));
   // };
 
-  const handleStatusChange = (value: any) => {
-    setListParams({
-      ...listParams,
-      ownershipType: value ?? undefined,
-      currentPage: 1,
-    });
-  };
+  // const handleStatusChange = (value: any) => {
+  //   setListParams({
+  //     ...listParams,
+  //     ownershipType: value ?? undefined,
+  //     currentPage: 1,
+  //   });
+  // };
 
   const handlePaginationChange = (pagination: {
     pageIndex: number;
@@ -330,23 +330,23 @@ const SystemInventoryPage = () => {
       },
       isLoading: ramList,
     },
-    {
-      type: "select",
-      key: "ownershipType",
-      placeholder: "Filter by Ownership Type",
-      options: [
-        {
-          value: "company_owned",
-          label: "Company Owned",
-        },
-        {
-          value: "personal",
-          label: "Personal",
-        },
-      ],
-      value: listParams.ownershipType, // 👈 pre-selects if set
-      onChange: handleStatusChange,
-    },
+    // {
+    //   type: "select",
+    //   key: "ownershipType",
+    //   placeholder: "Filter by Ownership Type",
+    //   options: [
+    //     {
+    //       value: "company_owned",
+    //       label: "Company Owned",
+    //     },
+    //     {
+    //       value: "personal",
+    //       label: "Personal",
+    //     },
+    //   ],
+    //   value: listParams.ownershipType, // 👈 pre-selects if set
+    //   onChange: handleStatusChange,
+    // },
   ];
 
   if (isAdmin) {
@@ -378,6 +378,7 @@ const SystemInventoryPage = () => {
             headphoneBrandList={headphoneBrandList}
             monitorSizeList={monitorSizeList}
             dropdownLoading={dropdownLoading}
+            isAdmin={isAdmin}
           />
         )}
       </PageLayout>
@@ -417,6 +418,7 @@ const SystemInventoryPage = () => {
             headphoneBrandList={headphoneBrandList}
             monitorSizeList={monitorSizeList}
             dropdownLoading={dropdownLoading}
+            isAdmin={isAdmin}
           />
 
           {ownInventoryLoading && (

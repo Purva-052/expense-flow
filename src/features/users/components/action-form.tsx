@@ -110,6 +110,9 @@ export function UserActionForm({
             : null,
           status: currentRow?.status === "active",
           joining: currentRow?.joining ?? false, // ✅ FIXED
+          joiningDate: currentRow?.joiningDate
+            ? currentRow.joiningDate.slice(0, 10)
+            : null,
           // currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
           profilePicS3Key: currentRow?.profilePicUrl ?? "",
           file: null,
@@ -124,6 +127,7 @@ export function UserActionForm({
           dateOfBirth: null,
           status: true,
           joining: false,
+          joiningDate: null,
           password: "",
           profilePicS3Key: "",
           file: null,
@@ -164,6 +168,9 @@ export function UserActionForm({
           : null,
         status: currentRow?.status === "active",
         joining: currentRow?.joining ?? false,
+        joiningDate: currentRow?.joiningDate
+          ? currentRow.joiningDate.slice(0, 10)
+          : null,
         // currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
         profilePicS3Key: currentRow?.profilePicUrl ?? "",
         file: null,
@@ -511,6 +518,29 @@ export function UserActionForm({
                       <CustomDatePicker
                         control={form.control}
                         name="careerStartDate"
+                        label=""
+                      />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="joiningDate"
+                  render={({ fieldState }) => (
+                    <FormItem>
+                      <FormLabel
+                        className={cn(
+                          "flex items-center gap-1",
+                          fieldState.error && "text-red-500"
+                        )}
+                      >
+                        Joining Date
+                        <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <CustomDatePicker
+                        control={form.control}
+                        name="joiningDate"
                         label=""
                       />
                     </FormItem>

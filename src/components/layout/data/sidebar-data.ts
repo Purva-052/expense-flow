@@ -2,7 +2,6 @@ import { roles } from "@/utils/constant";
 import {
   IconAlignBoxBottomCenter,
   IconAugmentedReality,
-  IconBrandDatabricks,
   IconLayersIntersect,
   IconLayoutBoardFilled,
   IconMessage2Question,
@@ -17,24 +16,31 @@ import {
   IconClipboardCheck,
 } from "@tabler/icons-react";
 import {
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  Building2,
   CalendarCheck,
   Command,
   Cpu,
+  Flame,
+  Globe,
   // CpuIcon,
   HardDrive,
   Headset,
   MemoryStick,
   Microchip,
+  Network,
   ScrollText,
   Tag,
+  UserStar,
 } from "lucide-react";
 import { type SidebarData } from "../types";
-import { useAuthStore } from "@/stores/use-auth-store";
+// import { useAuthStore } from "@/stores/use-auth-store";
 
-const { user } = useAuthStore.getState();
-const userID = user?.user?.id;
+// const { user } = useAuthStore.getState();
+// const userID = user?.user?.id;
 
-const allowUserID1 = userID === 1 ? true : false;
+// const allowUserID1 = userID === 1 ? true : false;
 
 export const sidebarData: SidebarData = {
   user: {
@@ -192,6 +198,55 @@ export const sidebarData: SidebarData = {
       ],
     },
     {
+      title: "Inquiry Management",
+      requiredRoles: [roles.ADMIN, roles.BDE, roles.PROJECT_MANAGER],
+      isCollapsible: true,
+      items: [
+        {
+          title: "Industry",
+          url: "/industry",
+          icon: Building2,
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+        },
+        {
+          title: "Domain",
+          url: "/domain",
+          icon: Globe,
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+        },
+        {
+          title: "Inquiry Types",
+          url: "/inquiry-types",
+          icon: Flame,
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+        },
+        {
+          title: "Inquiry Channels",
+          url: "/inquiry-channels",
+          icon: Network,
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+        },
+        {
+          title: "Inbound Sources",
+          url: "/inbound-sources",
+          icon: ArrowDownToLine,
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+        },
+        {
+          title: "Outbound Sources",
+          url: "/outbound-sources",
+          icon: ArrowUpFromLine,
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+        },
+        // {
+        //   title: "To be Join",
+        //   url: "/new-joinees",
+        //   icon: IconUsers,
+        //   requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
+        // },
+      ],
+    },
+    {
       title: "System Inventory Management",
       requiredRoles: [roles.ADMIN],
       isCollapsible: true,
@@ -242,7 +297,7 @@ export const sidebarData: SidebarData = {
         {
           title: "Clients",
           url: "/clients",
-          icon: IconBrandDatabricks,
+          icon: UserStar,
           requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
         {
@@ -273,11 +328,12 @@ export const sidebarData: SidebarData = {
           title: "Inquiries",
           url: "/inquiry",
           icon: IconMessage2Question,
-          allowUserID1: allowUserID1,
+          // allowUserID1: allowUserID1,
+          requiredRoles: [roles.ADMIN],
         },
         {
-          title: "Inquiry Types",
-          url: "/inquiry-type",
+          title: "Inquiry Requirements",
+          url: "/inquiry-requirements",
           icon: IconPencilSearch,
           requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
         },
