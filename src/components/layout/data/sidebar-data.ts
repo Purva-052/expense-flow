@@ -35,12 +35,12 @@ import {
   Tag,
 } from "lucide-react";
 import { type SidebarData } from "../types";
-import { useAuthStore } from "@/stores/use-auth-store";
+// import { useAuthStore } from "@/stores/use-auth-store";
 
-const { user } = useAuthStore.getState();
-const userID = user?.user?.id;
+// const { user } = useAuthStore.getState();
+// const userID = user?.user?.id;
 
-const allowUserID1 = userID === 1 ? true : false;
+// const allowUserID1 = userID === 1 ? true : false;
 
 export const sidebarData: SidebarData = {
   user: {
@@ -328,7 +328,8 @@ export const sidebarData: SidebarData = {
           title: "Inquiries",
           url: "/inquiry",
           icon: IconMessage2Question,
-          allowUserID1: allowUserID1,
+          // allowUserID1: allowUserID1,
+          requiredRoles: [roles.ADMIN],
         },
         {
           title: "Inquiry Requirements",
