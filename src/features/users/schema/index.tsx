@@ -39,7 +39,10 @@ const baseUserSchema = z.object({
     .optional(),
   reportLogAccessIds: z.array(z.coerce.number()).optional(),
   careerStartDate: z.any().refine((val) => !isNaN(Date.parse(val)), {
-    message: "Invalid date format.",
+    message: "Career start date is required.",
+  }),
+  joiningDate: z.any().refine((val) => !isNaN(Date.parse(val)), {
+    message: "Joining date is required.",
   }),
   dateOfBirth: z.preprocess(
     normalizeOptionalDate,

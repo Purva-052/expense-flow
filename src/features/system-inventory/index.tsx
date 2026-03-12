@@ -378,6 +378,7 @@ const SystemInventoryPage = () => {
             headphoneBrandList={headphoneBrandList}
             monitorSizeList={monitorSizeList}
             dropdownLoading={dropdownLoading}
+            isAdmin={isAdmin}
           />
         )}
       </PageLayout>
@@ -417,6 +418,7 @@ const SystemInventoryPage = () => {
             headphoneBrandList={headphoneBrandList}
             monitorSizeList={monitorSizeList}
             dropdownLoading={dropdownLoading}
+            isAdmin={isAdmin}
           />
 
           {ownInventoryLoading && (
