@@ -134,6 +134,38 @@ const systemInventorySchema = z
       });
     }
 
+    if (values.monitorEnabled && !hasValue(values.monitorBrandId)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["monitorBrandId"],
+        message: "Brand is required",
+      });
+    }
+
+    if (values.mouseEnabled && !hasValue(values.mouseConnectionType)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["mouseConnectionType"],
+        message: "Connection type is required",
+      });
+    }
+
+    if (values.keyboardEnabled && !hasValue(values.keyboardConnectionType)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["keyboardConnectionType"],
+        message: "Connection type is required",
+      });
+    }
+
+    if (values.headphoneEnabled && !hasValue(values.headphoneConnectionType)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["headphoneConnectionType"],
+        message: "Connection type is required",
+      });
+    }
+
     if (
       !values.mouseEnabled &&
       !values.keyboardEnabled &&
@@ -856,6 +888,18 @@ export function SystemInventoryActionForm({
     onSubmit(values);
   };
 
+  const clearSectionErrors = (fields: (keyof TSystemInventorySchema)[]) => {
+    form.clearErrors(fields);
+    fields.forEach((field) => {
+      const defaultValue = DEFAULT_SYSTEM_INVENTORY_VALUES[field];
+      form.setValue(field, defaultValue as never, {
+        shouldDirty: true,
+        shouldTouch: false,
+        shouldValidate: false,
+      });
+    });
+  };
+
   const renderSection = (name: keyof TSystemInventorySchema) => {
     switch (name) {
       case "mouseEnabled":
@@ -868,8 +912,17 @@ export function SystemInventoryActionForm({
                 title="Mouse"
                 icon={Mouse}
                 enabled={field.value}
-                onEnabledChange={field.onChange}
+                onEnabledChange={(checked) => {
+                  field.onChange(checked);
+                  if (!checked) {
+                    clearSectionErrors([
+                      "mouseConnectionType",
+                      "mouseOwnershipType",
+                    ]);
+                  }
+                }}
                 disabled={disabled}
+                showAsterisk={mouseEnabled}
               >
                 <div
                   className={cn(
@@ -880,7 +933,14 @@ export function SystemInventoryActionForm({
                   <CustomDropDownSearchable
                     form={form}
                     name="mouseConnectionType"
-                    label="Connection Type"
+                    label={
+                      <span>
+                        Connection Type
+                        {mouseEnabled && (
+                          <span className="ml-1 text-red-500">*</span>
+                        )}
+                      </span>
+                    }
                     options={CONNECTION_OPTIONS}
                     placeholder="Select connection type"
                     disabled={disabled || !mouseEnabled || dropdownLoading}
@@ -909,8 +969,17 @@ export function SystemInventoryActionForm({
                 title="Keyboard"
                 icon={Keyboard}
                 enabled={field.value}
-                onEnabledChange={field.onChange}
+                onEnabledChange={(checked) => {
+                  field.onChange(checked);
+                  if (!checked) {
+                    clearSectionErrors([
+                      "keyboardConnectionType",
+                      "keyboardOwnershipType",
+                    ]);
+                  }
+                }}
                 disabled={disabled}
+                showAsterisk={keyboardEnabled}
               >
                 <div
                   className={cn(
@@ -921,7 +990,14 @@ export function SystemInventoryActionForm({
                   <CustomDropDownSearchable
                     form={form}
                     name="keyboardConnectionType"
-                    label="Connection Type"
+                    label={
+                      <span>
+                        Connection Type
+                        {keyboardEnabled && (
+                          <span className="ml-1 text-red-500">*</span>
+                        )}
+                      </span>
+                    }
                     options={CONNECTION_OPTIONS}
                     placeholder="Select connection type"
                     disabled={disabled || !keyboardEnabled || dropdownLoading}
@@ -950,7 +1026,17 @@ export function SystemInventoryActionForm({
                 title="CPU / Computer"
                 icon={Cpu}
                 enabled={field.value}
-                onEnabledChange={field.onChange}
+                onEnabledChange={(checked) => {
+                  field.onChange(checked);
+                  if (!checked) {
+                    clearSectionErrors([
+                      "cpuProcessorId",
+                      "cpuStorageId",
+                      "cpuRamId",
+                      "cpuOwnershipType",
+                    ]);
+                  }
+                }}
                 disabled={disabled}
                 showAsterisk={cpuEnabled}
               >
@@ -1028,7 +1114,18 @@ export function SystemInventoryActionForm({
                 title="Laptop"
                 icon={Laptop}
                 enabled={field.value}
-                onEnabledChange={field.onChange}
+                onEnabledChange={(checked) => {
+                  field.onChange(checked);
+                  if (!checked) {
+                    clearSectionErrors([
+                      "laptopBrandId",
+                      "laptopProcessorId",
+                      "laptopStorageId",
+                      "laptopRamId",
+                      "laptopOwnershipType",
+                    ]);
+                  }
+                }}
                 disabled={disabled}
                 showAsterisk={laptopEnabled}
               >
@@ -1123,15 +1220,32 @@ export function SystemInventoryActionForm({
                 title="Monitor"
                 icon={Monitor}
                 enabled={field.value}
-                onEnabledChange={field.onChange}
+                onEnabledChange={(checked) => {
+                  field.onChange(checked);
+                  if (!checked) {
+                    clearSectionErrors([
+                      "monitorBrandId",
+                      "monitorSizeId",
+                      "monitorOwnershipType",
+                    ]);
+                  }
+                }}
                 disabled={disabled}
+                showAsterisk={monitorEnabled}
               >
                 <div className="space-y-3">
                   <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                     <CustomDropDownSearchable
                       form={form}
                       name="monitorBrandId"
-                      label="Brand"
+                      label={
+                        <span>
+                          Brand
+                          {monitorEnabled && (
+                            <span className="ml-1 text-red-500">*</span>
+                          )}
+                        </span>
+                      }
                       options={brandOptions}
                       placeholder="Select brand"
                       disabled={disabled || !monitorEnabled || dropdownLoading}
@@ -1169,15 +1283,32 @@ export function SystemInventoryActionForm({
                 title="Headphones"
                 icon={Headphones}
                 enabled={field.value}
-                onEnabledChange={field.onChange}
+                onEnabledChange={(checked) => {
+                  field.onChange(checked);
+                  if (!checked) {
+                    clearSectionErrors([
+                      "headphoneBrandId",
+                      "headphoneConnectionType",
+                      "headphoneOwnershipType",
+                    ]);
+                  }
+                }}
                 disabled={disabled}
+                showAsterisk={headphoneEnabled}
               >
                 <div className="space-y-3">
                   <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                     <CustomDropDownSearchable
                       form={form}
                       name="headphoneBrandId"
-                      label="Brand"
+                      label={
+                        <span>
+                          Brand
+                          {headphoneEnabled && (
+                            <span className="ml-1 text-red-500">*</span>
+                          )}
+                        </span>
+                      }
                       options={headphoneBrandOptions}
                       placeholder="Select brand"
                       disabled={
@@ -1189,7 +1320,14 @@ export function SystemInventoryActionForm({
                     <CustomDropDownSearchable
                       form={form}
                       name="headphoneConnectionType"
-                      label="Connection Type"
+                      label={
+                        <span>
+                          Connection Type
+                          {headphoneEnabled && (
+                            <span className="ml-1 text-red-500">*</span>
+                          )}
+                        </span>
+                      }
                       options={CONNECTION_OPTIONS}
                       placeholder="Select connection type"
                       disabled={
@@ -1275,5 +1413,3 @@ export function SystemInventoryActionForm({
     </Form>
   );
 }
-
-

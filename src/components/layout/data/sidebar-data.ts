@@ -2,7 +2,6 @@ import { roles } from "@/utils/constant";
 import {
   IconAlignBoxBottomCenter,
   IconAugmentedReality,
-  IconBrandDatabricks,
   IconLayersIntersect,
   IconLayoutBoardFilled,
   IconMessage2Question,
@@ -33,6 +32,7 @@ import {
   Network,
   ScrollText,
   Tag,
+  UserStar,
 } from "lucide-react";
 import { type SidebarData } from "../types";
 // import { useAuthStore } from "@/stores/use-auth-store";
@@ -297,7 +297,7 @@ export const sidebarData: SidebarData = {
         {
           title: "Clients",
           url: "/clients",
-          icon: IconBrandDatabricks,
+          icon: UserStar,
           requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
         {
