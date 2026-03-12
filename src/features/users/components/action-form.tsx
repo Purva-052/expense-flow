@@ -517,6 +517,29 @@ export function UserActionForm({
                   )}
                 />
 
+                <FormField
+                  control={form.control}
+                  name="joiningDate"
+                  render={({ fieldState }) => (
+                    <FormItem>
+                      <FormLabel
+                        className={cn(
+                          "flex items-center gap-1",
+                          fieldState.error && "text-red-500"
+                        )}
+                      >
+                        Joining Date
+                        <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <CustomDatePicker
+                        control={form.control}
+                        name="joiningDate"
+                        label=""
+                      />
+                    </FormItem>
+                  )}
+                />
+
                 {/* ✅ Status Checkbox */}
                 <div className="flex gap-6">
                   <Controller

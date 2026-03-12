@@ -14,10 +14,20 @@ export const InquirySchema = z.object({
   clientCompanyName: z.string().trim().optional(),
   sourceOfInquiry: z.string().trim().optional(),
   clientEmailId: z.string().trim().email().optional().or(z.literal("")),
+  clientLinkedInProfile: z.string().trim().optional(),
   requirements: z
     .array(z.coerce.number())
     .min(1, { message: "Please select a type." }),
-
+  inquirySourceId: z.coerce.number().min(1, "Inquiry Channel is required"),
+  inboundSourceId: z.coerce.number().optional().nullable(),
+  domainId: z.coerce.number().optional().nullable(),
+  outboundSourceId: z.coerce.number().optional().nullable(),
+  industryId: z.coerce.number().optional().nullable(),
+  inquiryTypeId: z.coerce.number().min(1, "Inquiry type is required"),
+  salesPersonId: z.coerce.number().min(1, "Sales person is required"),
+  inquiryDate: z.coerce.date({
+    invalid_type_error: "Inquiry Date is required.",
+  }),
   status: z.string().nonempty({ message: "Please select a status." }),
 
   notes: z

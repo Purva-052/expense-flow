@@ -32,6 +32,15 @@ export function ActionFormModal() {
         clientCompanyName: values?.clientCompanyName,
         sourceOfInquiry: values?.sourceOfInquiry,
         clientEmailId: values?.clientEmailId,
+        inboundSourceId: values?.inboundSourceId,
+        outboundSourceId: values?.outboundSourceId,
+        domainId: values?.domainId,
+        industryId: values?.industryId,
+        inquiryTypeId: values?.inquiryTypeId,
+        salesPersonId: values?.salesPersonId,
+        inquirySourceId: values?.inquirySourceId,
+        clientLinkedInProfile: values?.clientLinkedInProfile,
+        inquiryDate: values?.inquiryDate,
       };
       const payload = Object.fromEntries(
         Object.entries(basePayload).filter(
@@ -49,6 +58,15 @@ export function ActionFormModal() {
         clientCompanyName: values?.clientCompanyName,
         sourceOfInquiry: values?.sourceOfInquiry,
         clientEmailId: values?.clientEmailId,
+        inboundSourceId: values?.inboundSourceId,
+        outboundSourceId: values?.outboundSourceId,
+        domainId: values?.domainId,
+        industryId: values?.industryId,
+        inquiryTypeId: values?.inquiryTypeId,
+        salesPersonId: values?.salesPersonId,
+        inquirySourceId: values?.inquirySourceId,
+        clientLinkedInProfile: values?.clientLinkedInProfile,
+        inquiryDate: values?.inquiryDate,
       };
       const payload = Object.fromEntries(
         Object.entries(basePayload).filter(

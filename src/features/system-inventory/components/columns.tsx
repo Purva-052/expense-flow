@@ -77,7 +77,11 @@ export const columns: ColumnDef<any>[] = [
     id: "cpuProcessor.name",
     header: "Processor",
     cell: ({ row }) => {
-      const processorLabel = (row.original.cpuProcessor?.name ?? "-").trim();
+      const processorLabel = (
+        (row.original.cpuProcessor?.name ||
+          row.original.laptopProcessor?.name) ??
+        "-"
+      ).trim();
 
       return <span className="text-sm">{processorLabel}</span>;
     },
@@ -86,7 +90,10 @@ export const columns: ColumnDef<any>[] = [
     id: "cpuRam.name",
     header: "Ram Size",
     cell: ({ row }) => {
-      const ramLabel = (row.original.cpuRam?.name ?? "-").trim();
+      const ramLabel = (
+        (row.original.cpuRam?.name || row.original.laptopRam?.name) ??
+        "-"
+      ).trim();
 
       return <span className="text-sm">{ramLabel}</span>;
     },
@@ -95,7 +102,10 @@ export const columns: ColumnDef<any>[] = [
     id: "cpuStorage.name",
     header: "Storage",
     cell: ({ row }) => {
-      const storageLabel = (row.original.cpuStorage?.name ?? "-").trim();
+      const storageLabel = (
+        (row.original.cpuStorage?.name || row.original.laptopStorage?.name) ??
+        "-"
+      ).trim();
 
       return <span className="text-sm">{storageLabel}</span>;
     },
