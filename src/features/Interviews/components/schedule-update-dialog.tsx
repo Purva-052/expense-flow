@@ -211,7 +211,7 @@ export const ScheduleUpdateDialog = ({
         interviewType: initialData.interviewType || "on_site",
         interviewUrl: initialData.interviewUrl || "",
         interviewStatus: initialData.status || "",
-        notes: initialData.notes || "",
+        notes: "",
       });
     }
   }, [initialData, open, form]);

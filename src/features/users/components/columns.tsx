@@ -84,10 +84,10 @@ export const columns: ColumnDef<any>[] = [
     },
   },
   {
-    accessorKey: "dateOfBirth",
+    accessorKey: "joiningDate",
     header: "Joining Date",
     cell: ({ row }) => {
-      if (!row.original.dateOfBirth) return "-";
+      if (!row.original.joiningDate) return "-";
       const date = new Date(row.original.joiningDate);
       return date.toLocaleDateString("en-IN", {
         year: "numeric",

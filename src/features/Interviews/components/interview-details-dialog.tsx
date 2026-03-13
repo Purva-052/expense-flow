@@ -511,16 +511,16 @@ export const InterviewDetailsDialog = ({
                     </div>
                   )}
                 </div>
-                {details.notes && (
+                {details.interviewerComments && (
                   <div className="mt-4 pt-4 border-t">
                     <div className="flex items-start gap-3">
                       <MessageSquare className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                       <div className="flex-1">
                         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                          Interviewer Comment
+                          Remark
                         </p>
                         <p className="text-sm text-muted-foreground leading-relaxed">
-                          {details.notes}
+                          {details.interviewerComments}
                         </p>
                       </div>
                     </div>
@@ -665,16 +665,16 @@ export const InterviewDetailsDialog = ({
                     </div>
                   </div>
                 </div>
-                {details.interviewerComments && (
+                {details.notes && (
                   <div className="mt-4 pt-4 border-t">
                     <div className="flex items-start gap-3">
                       <MessageSquare className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                       <div className="flex-1">
                         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                          Interviewer Comments
+                          Interviewer Comment
                         </p>
                         <p className="text-sm text-muted-foreground leading-relaxed">
-                          {details.interviewerComments}
+                          {details.notes}
                         </p>
                       </div>
                     </div>

@@ -38,7 +38,11 @@ export const useUpdateDailyReport = (id: string, onSuccess?: () => void) => {
 export const useCreateDailyReport = (onSuccess?: () => void) => {
   return usePostData({
     url: API.daily_report.create,
-    refetchQueries: [GET_DAILY_REPORT_LIST, API.daily_report.report_analytics],
+    refetchQueries: [
+      GET_DAILY_REPORT_LIST,
+      API.daily_report.report_analytics,
+      API.notifications.list,
+    ],
     onSuccess,
   });
 };
