@@ -141,7 +141,10 @@ export const InterviewForm = ({
           experience: Number(initialData.experienceInYears) || 0,
           currentCtc: Number(initialData.currentCtc) || 0,
           expectedCtc: Number(initialData.expectedCtc) || 0,
-          noticePeriod: initialData.noticePeriodInDays || 0,
+          noticePeriod:
+            initialData.noticePeriodInDays != null
+              ? String(initialData.noticePeriodInDays)
+              : "",
           interviewerName: initialData.interviewer?.id?.toString() || "",
           startTime: extractTime(initialData.interviewStart),
           endTime: extractTime(initialData.interviewEnd),
