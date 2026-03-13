@@ -836,7 +836,7 @@ export function SystemInventoryActionForm({
       <form
         id={formId}
         onSubmit={form.handleSubmit(submitForm)}
-        className="space-y-5"
+        className="space-y-5 overflow-auto"
       >
         <div className="space-y-4">
           {renderSection("mouseEnabled")}
