@@ -9,11 +9,11 @@ import { useUpdateSystemInventoryData } from "../services";
 import { useSystemInventoryStore } from "../stores/useSystemInventoryStore";
 import {
   buildSystemInventoryPayload,
-  normalizeSystemInventoryRecord,
   SystemInventoryActionForm,
-  SystemInventoryViewForm,
-  TSystemInventorySchema,
 } from "./action-form";
+import { normalizeSystemInventoryRecord } from "./helperFunction";
+import { TSystemInventorySchema } from "../schema";
+import { SystemInventoryViewForm } from "./view-form";
 // import { useAuthStore } from "@/stores/use-auth-store";
 
 interface Props {

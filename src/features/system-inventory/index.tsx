@@ -10,9 +10,7 @@ import { roles } from "@/utils/constant";
 import { ActionFormModal } from "./components/action";
 import {
   buildSystemInventoryPayload,
-  normalizeSystemInventoryRecord,
   SystemInventoryActionForm,
-  TSystemInventorySchema,
 } from "./components/action-form";
 import { columns } from "./components/columns";
 import {
@@ -27,6 +25,8 @@ import {
 } from "./services";
 import { useSystemInventoryStore } from "./stores/useSystemInventoryStore";
 import { useGetUserDropdownList } from "../users/services";
+import { normalizeSystemInventoryRecord } from "./components/helperFunction";
+import { TSystemInventorySchema } from "./schema";
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
