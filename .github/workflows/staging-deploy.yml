@@ -2,7 +2,8 @@ name: Devstree Project Management CI/CD
 
 on:
   push:
-    branches: [staging]
+    branches:
+      - staging
 
 jobs:
   deploy:
@@ -21,8 +22,8 @@ jobs:
         id: cache
         uses: actions/cache@v4
         with:
-        path: node_modules
-        key: ${{ runner.os }}-modules-${{ hashFiles('package-lock.json') }}
+          path: node_modules
+          key: ${{ runner.os }}-modules-${{ hashFiles('package-lock.json') }}
 
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
