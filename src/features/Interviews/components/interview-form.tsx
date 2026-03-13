@@ -89,9 +89,9 @@ export const InterviewForm = ({
     return `${h}:${m}`;
   };
 
-  const formatNoticePeriod = (days: number): string => {
-    return `${days} Days`;
-  };
+  // const formatNoticePeriod = (days: number): string => {
+  //   return `${days} Days`;
+  // };
   const nameInputRef = useRef<HTMLInputElement>(null);
   const baseStatuses = interviewStatuses;
   const ADD_STATUSES = ["technical_round", "practical_round", "hr_round"];
@@ -122,6 +122,7 @@ export const InterviewForm = ({
     return schema;
   }, [isEditMode, userRole]);
 
+  console.log("initialData: ", initialData);
   const form = useForm<InterviewFormValues>({
     resolver: zodResolver(activeSchema as any),
     mode: "onChange",
@@ -136,10 +137,14 @@ export const InterviewForm = ({
           location: initialData.location || "",
           link: initialData.link || "",
           notes: initialData.notes || "",
+          interviewerComments: initialData.interviewerComments || "",
           experience: Number(initialData.experienceInYears) || 0,
           currentCtc: Number(initialData.currentCtc) || 0,
           expectedCtc: Number(initialData.expectedCtc) || 0,
-          noticePeriod: formatNoticePeriod(initialData.noticePeriodInDays || 0),
+          noticePeriod:
+            initialData.noticePeriodInDays != null
+              ? String(initialData.noticePeriodInDays)
+              : "",
           interviewerName: initialData.interviewer?.id?.toString() || "",
           startTime: extractTime(initialData.interviewStart),
           endTime: extractTime(initialData.interviewEnd),
@@ -159,6 +164,7 @@ export const InterviewForm = ({
           location: "",
           link: "",
           notes: "",
+          interviewerComments: "",
           experience: 0,
           currentCtc: 0,
           expectedCtc: 0,
@@ -451,10 +457,11 @@ export const InterviewForm = ({
                     <FormField
                       control={form.control}
                       name="currentCtc"
-                      render={({ field }) => (
+                      render={({ field, fieldState }) => (
                         <FormItem>
                           <FormLabel className="text-sm ">
                             Current CTC
+                            <RequiredIndicator error={!!fieldState.error} />
                           </FormLabel>
                           <FormControl>
                             <Input
@@ -500,10 +507,11 @@ export const InterviewForm = ({
                     <FormField
                       control={form.control}
                       name="expectedCtc"
-                      render={({ field }) => (
+                      render={({ field, fieldState }) => (
                         <FormItem>
                           <FormLabel className="text-sm">
                             Expected CTC
+                            <RequiredIndicator error={!!fieldState.error} />
                           </FormLabel>
                           <FormControl>
                             <Input
@@ -618,6 +626,32 @@ export const InterviewForm = ({
                             }
                           }}
                         />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="col-span-12">
+                <FormField
+                  control={form.control}
+                  name="interviewerComments"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm">Remarks</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Textarea
+                            placeholder="Enter remarks regarding the candidate..."
+                            maxLength={100}
+                            className="w-full max-w-full resize-none break-all whitespace-pre-wrap overflow-y-auto overflow-x-hidden pr-14 pb-6 leading-relaxed min-h-80px"
+                            {...field}
+                          />
+                          <span className="absolute bottom-2 right-3 text-[10px] text-gray-400 pointer-events-none">
+                            {field.value?.length || 0}/100
+                          </span>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>

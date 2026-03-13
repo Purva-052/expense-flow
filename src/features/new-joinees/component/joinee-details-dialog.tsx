@@ -166,7 +166,7 @@ export const JoineeDetailsDialog = ({
             </p>
           </div>
           <div>
-            <h3 className="text-sm font-medium">Interviewer Comments</h3>
+            <h3 className="text-sm font-medium">Notes</h3>
             <p className="text-sm text-gray-600">{joinee.notes ?? "-"}</p>
           </div>
         </div>

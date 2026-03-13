@@ -2,7 +2,8 @@ name: Devstree Project Management CI/CD
 
 on:
   push:
-    branches: [staging]
+    branches:
+      - staging
 
 jobs:
   deploy:

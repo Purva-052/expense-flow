@@ -5,16 +5,16 @@ import { GlobalTable } from "@/components/table/global-table";
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import TablePageHeader from "@/components/table/table-page-header";
 import { FilterConfig } from "@/components/table/table-toolbar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
 import { ActionFormModal } from "./components/action";
 import {
   buildSystemInventoryPayload,
-  normalizeSystemInventoryRecord,
   SystemInventoryActionForm,
-  TSystemInventorySchema,
 } from "./components/action-form";
 import { columns } from "./components/columns";
+import { SystemInventoryViewForm } from "./components/view-form";
 import {
   useCreateSystemInventoryData,
   useGetBrandDropdown,
@@ -27,6 +27,8 @@ import {
 } from "./services";
 import { useSystemInventoryStore } from "./stores/useSystemInventoryStore";
 import { useGetUserDropdownList } from "../users/services";
+import { normalizeSystemInventoryRecord } from "./components/helperFunction";
+import { TSystemInventorySchema } from "./schema";
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
@@ -133,7 +135,7 @@ const SystemInventoryPage = () => {
     useGetSystemInventoryData(adminListParams, isAdmin);
 
   const { data: ownInventoryData, isPending: ownInventoryLoading } =
-    useGetSystemInventoryData(ownListParams, !isAdmin);
+    useGetSystemInventoryData(ownListParams, Boolean(currentUserId));
 
   const { mutateAsync: createMutate, isPending: isCreateLoading } =
     useCreateSystemInventoryData();
@@ -349,25 +351,92 @@ const SystemInventoryPage = () => {
     // },
   ];
 
+  const showReadonlyMessage = hasSubmitted;
+  const tabTriggerClass =
+    "flex items-center gap-2 rounded-[50px] !px-3 !py-2 transition-all " +
+    "data-[state=active]:bg-black data-[state=active]:text-white h-[35px]";
+
   if (isAdmin) {
     return (
       <PageLayout>
         <TablePageHeader title="System Inventory" showActionButton={false}>
-          Review submitted inventory and edit details from the actions column.
+          Manage your own inventory and review submitted inventory from the
+          team.
         </TablePageHeader>
 
-        <GlobalFilterSection filters={adminFilters} />
+        <Tabs defaultValue="own" className="w-full py-4">
+          <TabsList className="bg-[#fdebef] rounded-full">
+            <TabsTrigger value="own" className={tabTriggerClass}>
+              My Inventory
+            </TabsTrigger>
+            <TabsTrigger value="all" className={tabTriggerClass}>
+              All Inventory
+            </TabsTrigger>
+          </TabsList>
 
-        <GlobalTable
-          pageSize={listParams.pageSize}
-          currentPage={listParams.currentPage}
-          totalCount={totalCount}
-          data={adminRows}
-          onPaginationChange={handlePaginationChange}
-          columns={columns}
-          loading={adminListLoading}
-          isPaginationEnabled
-        />
+          <TabsContent value="own" className="mt-4">
+            <div className="">
+              {showReadonlyMessage && (
+                <div className="rounded-md border border-[#f0d69d] bg-[#fff8e8] px-3 py-2 text-sm text-[#8c6200] w-fit">
+                  Your inventory has already been submitted and is now locked.
+                  you can modify it from the all Inventory tab.
+                </div>
+              )}
+
+              <div className="mt-4 rounded-md border border-[#dddddd] bg-[#fdfdfd] p-4 max-w-4xl">
+                {hasSubmitted && ownRecord ? (
+                  <SystemInventoryViewForm
+                    inventory={ownRecord}
+                    processorList={processorList}
+                    ramList={ramList}
+                    storageList={storageList}
+                    brandList={brandList}
+                    headphoneBrandList={headphoneBrandList}
+                    monitorSizeList={monitorSizeList}
+                  />
+                ) : (
+                  <SystemInventoryActionForm
+                    formId="system-inventory-admin-form"
+                    initialValues={ownFormValues}
+                    onSubmit={handleCreateInventory}
+                    loading={isCreateLoading}
+                    disabled={ownInventoryLoading}
+                    submitLabel="Submit Inventory"
+                    processorList={processorList}
+                    ramList={ramList}
+                    storageList={storageList}
+                    brandList={brandList}
+                    headphoneBrandList={headphoneBrandList}
+                    monitorSizeList={monitorSizeList}
+                    dropdownLoading={dropdownLoading}
+                    isAdmin={isAdmin}
+                  />
+                )}
+
+                {ownInventoryLoading && (
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    Loading your previously submitted inventory...
+                  </p>
+                )}
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="all" className="mt-4">
+            <GlobalFilterSection filters={adminFilters} />
+
+            <GlobalTable
+              pageSize={listParams.pageSize}
+              currentPage={listParams.currentPage}
+              totalCount={totalCount}
+              data={adminRows}
+              onPaginationChange={handlePaginationChange}
+              columns={columns}
+              loading={adminListLoading}
+              isPaginationEnabled
+            />
+          </TabsContent>
+        </Tabs>
 
         {open && (
           <ActionFormModal
@@ -384,8 +453,6 @@ const SystemInventoryPage = () => {
       </PageLayout>
     );
   }
-
-  const showReadonlyMessage = hasSubmitted;
 
   return (
     <PageLayout>

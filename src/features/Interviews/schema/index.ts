@@ -3,19 +3,24 @@ import * as z from "zod";
 export const interviewFormSchema = z
   .object({
     /** 🔹 INTERNAL STEP FLAG */
-step: z.number().default(1),
+    step: z.number().default(1),
 
     // -----------------------------
     // Candidate Details
     // -----------------------------
     candidateName: z.string().trim().min(1, "Name is required"),
 
-    technology: z.any().refine(
-      (val) => val != null && val !== "" && String(val).trim().length > 0,
-      { message: "Technology is required" }
-    ),
+    technology: z
+      .any()
+      .refine(
+        (val) => val != null && val !== "" && String(val).trim().length > 0,
+        { message: "Technology is required" }
+      ),
 
-    email: z.string().min(1, "Email is required").email("Invalid email address"),
+    email: z
+      .string()
+      .min(1, "Email is required")
+      .email("Invalid email address"),
 
     phoneNumber: z
       .string()
@@ -43,6 +48,7 @@ step: z.number().default(1),
       }, "Must be a valid URL"),
 
     notes: z.string().trim().optional(),
+    interviewerComments: z.string().trim().optional(),
 
     experience: z.coerce
       .number()
