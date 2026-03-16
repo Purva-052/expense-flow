@@ -107,6 +107,7 @@ export function CustomDatePicker({
 
                 <div className="flex items-center space-x-2">
                   <span className="font-medium">{format(month, "MMMM")}</span>
+
                   <select
                     className="rounded-md border bg-transparent px-1 py-0.5 text-sm focus:outline-none"
                     value={month.getFullYear()}
@@ -117,13 +118,14 @@ export function CustomDatePicker({
                       setMonth(newDate);
                     }}
                   >
-                    {Array.from({ length: 61 }, (_, i) => 1970 + i).map(
-                      (year) => (
-                        <option key={year} value={year}>
-                          {year}
-                        </option>
-                      )
-                    )}
+                    {Array.from(
+                      { length: new Date().getFullYear() - 1930 + 1 },
+                      (_, i) => 1930 + i
+                    ).map((year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
                   </select>
                 </div>
 

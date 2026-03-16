@@ -6,6 +6,11 @@ export interface DailyReport {
     fullName: string;
     email: string;
   };
+  coordinator: {
+    email: string;
+    fullName: string;
+    id: number;
+  };
   project: {
     id: number;
     name: string;
