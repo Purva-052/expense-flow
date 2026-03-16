@@ -128,24 +128,28 @@ export const columns = (
       const { user } = useAuthStore();
       const today = format(new Date(), "yyyy-MM-dd");
       const isToday = reportDate === today;
-      const isCoodinator = row.original.coordinator?.id;
+      const coordinatorId = row.original.coordinator?.id;
       const userId = user?.user?.id;
+      const isCoordinator = userId === coordinatorId;
 
-      if (userId !== isCoodinator) {
-        return null;
-      }
+      const isAdminOrPm =
+        userRole === roleConstants.ADMIN ||
+        userRole === roleConstants.PROJECT_MANAGER;
+      const isTeamLead = userRole === roleConstants.TEAM_LEAD;
+      const isBdeOrDevToday =
+        (userRole === roleConstants.BDE ||
+          userRole === roleConstants.DEVELOPER) &&
+        isToday;
 
       const canEditOrDelete =
-        userRole === roleConstants.ADMIN ||
-        userRole === roleConstants.PROJECT_MANAGER ||
-        userRole === roleConstants.TEAM_LEAD ||
-        userId === isCoodinator ||
-        (userRole === roleConstants.BDE && isToday) ||
-        (userRole === roleConstants.DEVELOPER && isToday);
+        isAdminOrPm || isTeamLead || isCoordinator || isBdeOrDevToday;
 
       if (!canEditOrDelete) {
         return null;
       }
+      // if (!canEditOrDelete || ) {
+      //   return null;
+      // }
 
       return (
         <DropdownMenu>
