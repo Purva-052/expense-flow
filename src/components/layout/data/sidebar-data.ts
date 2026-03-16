@@ -101,6 +101,13 @@ export const sidebarData: SidebarData = {
           ],
         },
         {
+          title: "Inquiries",
+          url: "/inquiry",
+          icon: IconMessage2Question,
+          // allowUserID1: allowUserID1,
+          requiredRoles: [roles.ADMIN],
+        },
+        {
           title: "System Inventory",
           url: "/system-inventory",
           icon: IconReservedLine,
@@ -323,13 +330,6 @@ export const sidebarData: SidebarData = {
           url: "/project-type",
           icon: IconAlignBoxBottomCenter,
           requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
-        },
-        {
-          title: "Inquiries",
-          url: "/inquiry",
-          icon: IconMessage2Question,
-          // allowUserID1: allowUserID1,
-          requiredRoles: [roles.ADMIN],
         },
         {
           title: "Inquiry Requirements",
