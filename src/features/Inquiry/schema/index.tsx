@@ -65,6 +65,7 @@ export const InquirySchema = z.object({
 
   inquiryTypeId: requiredNumber("Inquiry type is required"),
   salesPersonId: requiredNumber("Sales person is required"),
+  coordinatorId: requiredNumber("Coordinator is required"),
 
   inquiryDate: z.preprocess(
     (val) => {

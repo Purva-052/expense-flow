@@ -110,7 +110,7 @@ const ProfileSkeleton = () => {
 
       <div className="max-w-6xl mx-auto px-6 -mt-8 space-y-8 pb-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
+          {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="p-4 bg-white rounded shadow-sm">
               <div className="h-4 bg-slate-200 rounded w-24 mb-3 animate-pulse" />
               <div className="h-5 bg-slate-300 rounded w-40 animate-pulse" />

@@ -37,7 +37,7 @@ import { INQUIRY_STATUS, roles } from "@/utils/constant";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod"; // Import zod
 import { ActionFormModal } from "./components/action";
@@ -74,6 +74,7 @@ const InquiryPage = () => {
     salesPersonId: undefined,
     inquiryTypeId: undefined,
     inquirySourceId: undefined,
+    coordinatorId: undefined,
   });
 
   const apiParams = {
@@ -85,6 +86,7 @@ const InquiryPage = () => {
     salesPersonId: listParams.salesPersonId,
     inquiryTypeId: listParams.inquiryTypeId,
     inquirySourceId: listParams.inquirySourceId,
+    coordinatorId: listParams.coordinatorId,
   };
 
   const tabTriggerClass =
@@ -109,6 +111,22 @@ const InquiryPage = () => {
       currentPage: newPagination.pageIndex + 1,
     });
   };
+
+  const coordinatorOptions = useMemo(() => {
+    if (!usersList?.data) return [];
+
+    const baseUsers = usersList.data.map((s: any) => ({
+      value: s.id,
+      label: s.fullName,
+    }));
+
+    const extraUsers = [
+      { value: 134, label: "Piyush Patel" },
+      { value: 1, label: "Jatin Vaghela" },
+    ];
+
+    return [...extraUsers, ...baseUsers];
+  }, [usersList]);
 
   const filters: FilterConfig[] = [
     {
@@ -171,6 +189,21 @@ const InquiryPage = () => {
         });
       },
       isLoading: loadingChannel,
+    },
+    {
+      type: "select",
+      key: "coordinatorId",
+      placeholder: "Filter by Coordinator",
+      options: coordinatorOptions,
+      value: listParams.coordinatorId,
+      onChange: (value: any) => {
+        setListParams({
+          ...listParams,
+          coordinatorId: value ?? undefined,
+          currentPage: 1,
+        });
+      },
+      isLoading: usersListLoading,
     },
   ];
 
@@ -409,10 +442,10 @@ const InquiryPage = () => {
       },
     },
     {
-      accessorKey: "generatedByUser",
-      header: "Created By",
+      accessorKey: "coordinatorId",
+      header: "Coordinator",
       cell: ({ row }) => {
-        const createdBy = row.original?.generatedByUser?.fullName ?? "-";
+        const createdBy = row.original?.coordinator?.fullName ?? "-";
         return <span className="capitalize">{createdBy}</span>;
       },
     },
@@ -420,7 +453,7 @@ const InquiryPage = () => {
       accessorKey: "salesPerson.fullName",
       header: "Sales Person",
       cell: ({ row }) => {
-        const createdBy = row.original?.salesPerson.fullName ?? "-";
+        const createdBy = row.original?.salesPerson?.fullName ?? "-";
         return <span className="capitalize">{createdBy}</span>;
       },
     },
