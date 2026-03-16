@@ -392,7 +392,8 @@ const InquiryPage = () => {
       //   return <span className="capitalize">{inquiryDate}</span>;
       // },
       cell: ({ row }) => {
-        const inquiryDate = row.original?.inquiryDate ?? "-";
+        const inquiryDate =
+          (row.original?.inquiryDate || row.original?.createdAt) ?? "-";
         if (!inquiryDate) return <span className="text-sm">-</span>;
 
         const date = new Date(inquiryDate);
