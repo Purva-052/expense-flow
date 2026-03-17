@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import type { SyntheticEvent } from "react";
 import { CalendarIcon, X } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -10,23 +10,34 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { format, isSameDay } from "date-fns";
+import type { DateRange, Matcher } from "react-day-picker";
 
-export default function DateRangeFilter({
-  placeholder,
-  onChange,
-  disabled,
-  className,
-}: {
+export default function DateRangeFilter(props: {
+  value?: DateRange | undefined;
   placeholder?: string;
-  onChange?: (val: { from: Date; to?: Date } | undefined) => void;
-  disabled?: any;
+  onChange?: (val: DateRange | undefined) => void;
+  disabled?: Matcher | Matcher[] | undefined;
   className?: string;
 }) {
-  const [date, setDate] = useState<{ from: Date; to?: Date } | undefined>();
+  const { value, placeholder, onChange, disabled, className } = props;
+  const isControlled = Object.prototype.hasOwnProperty.call(props, "value");
+  const normalizedValue = useMemo(
+    () => (value && (value.from || value.to) ? value : undefined),
+    [value?.from?.getTime(), value?.to?.getTime()]
+  );
+  const [date, setDate] = useState<DateRange | undefined>(
+    isControlled ? normalizedValue : undefined
+  );
   const [open, setOpen] = useState(false);
 
+  useEffect(() => {
+    if (isControlled) {
+      setDate(normalizedValue);
+    }
+  }, [isControlled, normalizedValue]);
+
   const handleClear = useCallback(
-    (e?: any) => {
+    (e?: SyntheticEvent) => {
       if (e && e.stopPropagation) {
         e.stopPropagation();
         e.preventDefault();
@@ -96,7 +107,7 @@ export default function DateRangeFilter({
         <Calendar
           mode="range"
           selected={date}
-          onSelect={(range: any) => {
+          onSelect={(range) => {
             let next = range;
             if (
               range?.from &&
@@ -107,8 +118,12 @@ export default function DateRangeFilter({
               next = { from: range.from, to: undefined };
             }
 
-            if (next?.from) next = { ...next, from: atLocalNoon(next.from) };
-            if (next?.to) next = { ...next, to: atLocalNoon(next.to) };
+            if (next && next.from) {
+              next = { ...next, from: atLocalNoon(next.from) };
+            }
+            if (next && next.to) {
+              next = { ...next, to: atLocalNoon(next.to) };
+            }
 
             setDate(next);
             if (onChange) onChange(next);

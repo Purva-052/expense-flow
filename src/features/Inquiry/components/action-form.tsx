@@ -94,6 +94,9 @@ export function InquiryActionForm({
     salesPersonId: toNumberOrUndefined(
       row?.salesPerson?.id ?? row?.salesPersonId ?? row?.salesPerson?.userId
     ),
+    coordinatorId: toNumberOrUndefined(
+      row?.coordinator?.id ?? row?.coordinatorId ?? row?.coordinator?.userId
+    ),
     inquiryDate: row?.inquiryDate ? new Date(row?.inquiryDate) : undefined,
   });
 
@@ -139,6 +142,12 @@ export function InquiryActionForm({
   const { data: salesPerson, isPending: salesPersonLoading }: any =
     useGetUserDropdownList({
       role: [roles.BDE],
+      status: "active",
+    });
+
+  const { data: coordinatorPerson, isPending: coordinatorPersonLoading }: any =
+    useGetUserDropdownList({
+      role: [roles.TEAM_LEAD, roles.PROJECT_MANAGER, roles.ADMIN],
       status: "active",
     });
 
@@ -194,6 +203,22 @@ export function InquiryActionForm({
     onSubmitValues(values);
   };
 
+  // const coordinatorOptions = useMemo(() => {
+  //   if (!salesPerson?.data) return [];
+
+  //   const baseUsers = salesPerson.data.map((s: any) => ({
+  //     value: s.id,
+  //     label: s.fullName,
+  //   }));
+
+  //   const extraUsers = [
+  //     { value: 134, label: "Piyush Patel" },
+  //     { value: 1, label: "Jatin Vaghela" },
+  //   ];
+
+  //   return [...extraUsers, ...baseUsers];
+  // }, [salesPerson]);
+
   return (
     <Dialog
       open={open}
@@ -207,7 +232,7 @@ export function InquiryActionForm({
     >
       <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-auto">
         <DialogHeader>
-          <DialogTitle>{isEdit ? "Edit Inquiry" : "Add Inquiry"}</DialogTitle>
+          <DialogTitle>{isEdit ? "Edit Lead" : "Add Lead"}</DialogTitle>
         </DialogHeader>
 
         <div className="h-fit w-full overflow-y-auto py-1">
@@ -492,7 +517,7 @@ export function InquiryActionForm({
                 render={() => (
                   <FormItem>
                     <FormLabel>
-                      Sales person<span className="text-red-500">*</span>
+                      Sales Person<span className="text-red-500">*</span>
                     </FormLabel>
                     <CustomDropDownSearchable
                       form={form}
@@ -506,6 +531,31 @@ export function InquiryActionForm({
                       placeholder="Select Sales person"
                       searchEnabled={false}
                       isLoading={salesPersonLoading}
+                    />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="coordinatorId"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>
+                      Coordinator<span className="text-red-500">*</span>
+                    </FormLabel>
+                    <CustomDropDownSearchable
+                      form={form}
+                      name="coordinatorId"
+                      label=""
+                      // multiple
+                      options={coordinatorPerson?.data?.map((s: any) => ({
+                        value: s.id,
+                        label: s.fullName,
+                      }))}
+                      placeholder="Select Coordinator"
+                      searchEnabled={true}
+                      isLoading={coordinatorPersonLoading}
                     />
                   </FormItem>
                 )}

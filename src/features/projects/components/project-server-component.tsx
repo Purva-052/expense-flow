@@ -38,7 +38,7 @@ const ProjectServerComponent = ({ projectId }: any) => {
               <div className="flex flex-col justify-center items-center py-16 gap-3 w-full">
                 <div className="w-10 h-10 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary" />
                 <span className="text-sm text-muted-foreground font-medium">
-                  Loading project history...
+                  Loading server details...
                 </span>
               </div>
             ) : projectServerList?.data?.length > 0 ? (

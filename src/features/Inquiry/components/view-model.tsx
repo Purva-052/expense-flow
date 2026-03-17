@@ -217,7 +217,7 @@ export function ViewInquiryModal() {
 
           <div>
             <span className="font-medium text-gray-700">Notes:</span>
-            <p className="mt-1 text-gray-900 whitespace-pre-line border rounded p-1 min-h-20">
+            <p className="mt-1 text-gray-900 whitespace-pre-line border rounded p-1 min-h-20 cursor-not-allowed">
               {currentRow?.notes}
             </p>
           </div>

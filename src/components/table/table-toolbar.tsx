@@ -71,7 +71,7 @@ export function DataTableToolbarCompact({
               options={filter.options ?? []}
               value={filter.value}
               placeholder={filter.placeholder ?? "Select..."}
-              onChange={(val: any) => filter.onChange?.(val ?? undefined)}
+              onChange={(val: any) => filter.onChange?.(val)}
               multiple={filter.multiple}
               className="w-full sm:w-[180px] min-w-0"
               disabled={filter.disable}
@@ -84,6 +84,7 @@ export function DataTableToolbarCompact({
             <DateRangeFilter
               key={filter.key}
               placeholder={filter.placeholder ?? "Pick a date range"}
+              value={filter.value}
               onChange={filter.onChange}
               disabled={filter.disable}
               className={filter.className}

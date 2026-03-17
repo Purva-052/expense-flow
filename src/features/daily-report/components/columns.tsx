@@ -17,6 +17,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 export const columns = (
   onEdit: (report: DailyReport) => void,
@@ -124,19 +125,31 @@ export const columns = (
         new Date(row.original.reportingDate),
         "yyyy-MM-dd"
       );
+      const { user } = useAuthStore();
       const today = format(new Date(), "yyyy-MM-dd");
       const isToday = reportDate === today;
+      const coordinatorId = row.original.coordinator?.id;
+      const userId = user?.user?.id;
+      const isCoordinator = userId === coordinatorId;
+
+      const isAdminOrPm =
+        userRole === roleConstants.ADMIN ||
+        userRole === roleConstants.PROJECT_MANAGER;
+      const isTeamLead = userRole === roleConstants.TEAM_LEAD;
+      const isBdeOrDevToday =
+        (userRole === roleConstants.BDE ||
+          userRole === roleConstants.DEVELOPER) &&
+        isToday;
 
       const canEditOrDelete =
-        userRole === roleConstants.ADMIN ||
-        userRole === roleConstants.PROJECT_MANAGER ||
-        userRole === roleConstants.TEAM_LEAD ||
-        (userRole === roleConstants.BDE && isToday) ||
-        (userRole === roleConstants.DEVELOPER && isToday);
+        isAdminOrPm || isTeamLead || isCoordinator || isBdeOrDevToday;
 
       if (!canEditOrDelete) {
         return null;
       }
+      // if (!canEditOrDelete || ) {
+      //   return null;
+      // }
 
       return (
         <DropdownMenu>

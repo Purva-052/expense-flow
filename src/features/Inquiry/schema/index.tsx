@@ -50,7 +50,18 @@ export const InquirySchema = z.object({
   sourceOfInquiry: z.string().trim().optional(),
 
   clientEmailId: z.string().trim().email().optional().or(z.literal("")),
-  clientLinkedInProfile: z.string().trim().optional(),
+  clientLinkedInProfile: z
+    .string()
+    .optional()
+    .refine((val) => {
+      if (!val || val.trim() === "") return true;
+      try {
+        new URL(val);
+        return true;
+      } catch {
+        return false;
+      }
+    }, "Must be a valid Profile URL"),
 
   requirements: z
     .array(z.coerce.number())
@@ -65,6 +76,7 @@ export const InquirySchema = z.object({
 
   inquiryTypeId: requiredNumber("Inquiry type is required"),
   salesPersonId: requiredNumber("Sales person is required"),
+  coordinatorId: requiredNumber("Coordinator is required"),
 
   inquiryDate: z.preprocess(
     (val) => {
