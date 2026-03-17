@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { DeleteModal } from "@/components/model/delete-model";
 import { AddHoursLogDialog } from "./milestone-list/add-hours-log-dialog";
 import API from "@/config/api/api";
+import type { DateRange } from "react-day-picker";
 
 const stripHtml = (html: string) => {
   const tmp = document.createElement("DIV");
@@ -111,7 +112,7 @@ const ProjectReportTable = ({ projectId }: { projectId?: string | number }) => {
     currentPage: 1,
     search: "",
     employeeId: "all" as string | undefined,
-    dateRange: undefined as { from: Date; to?: Date } | undefined,
+    dateRange: undefined as DateRange | undefined,
   });
 
   const [viewDescription, setViewDescription] = useState<string | null>(null);
@@ -288,9 +289,7 @@ const ProjectReportTable = ({ projectId }: { projectId?: string | number }) => {
     });
   };
 
-  const handleDateRangeChange = (
-    range: { from: Date; to?: Date } | undefined
-  ) => {
+  const handleDateRangeChange = (range: DateRange | undefined) => {
     setListParams({
       ...listParams,
       dateRange: range,
