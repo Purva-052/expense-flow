@@ -19,6 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { roles } from "@/utils/constant";
+import type { DateRange } from "react-day-picker";
 
 const stripHtml = (html: string) => {
   if (typeof window === "undefined") return html;
@@ -75,9 +76,7 @@ const HoursLogs = ({
   const [employeeId, setEmployeeId] = useState<string>(
     String(user?.user?.id || "")
   );
-  const [dateRange, setDateRange] = useState<
-    { from: Date; to?: Date } | undefined
-  >();
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
