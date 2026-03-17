@@ -75,3 +75,11 @@ export const formatTime = (value: any) => {
   if (isNaN(num)) return "0:00";
   return num.toFixed(2).replace(".", ":");
 };
+
+export const formatDate = (date?: Date) => {
+  if (!date) return undefined;
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+};

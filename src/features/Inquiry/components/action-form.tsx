@@ -36,7 +36,7 @@ import { useGetOutboundSourceDropdown } from "@/features/outbound-sources/servic
 import { useGetDomainDropdownList } from "@/features/domain/services";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 import { cn } from "@/lib/utils";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 
 interface Props {
   currentRow?: any;
@@ -145,6 +145,12 @@ export function InquiryActionForm({
       status: "active",
     });
 
+  const { data: coordinatorPerson, isPending: coordinatorPersonLoading }: any =
+    useGetUserDropdownList({
+      role: [roles.TEAM_LEAD, roles.PROJECT_MANAGER, roles.ADMIN],
+      status: "active",
+    });
+
   const inquiryChannelId = form.watch("inquirySourceId");
 
   const selectedChannel = channelList?.data?.find(
@@ -197,21 +203,21 @@ export function InquiryActionForm({
     onSubmitValues(values);
   };
 
-  const coordinatorOptions = useMemo(() => {
-    if (!salesPerson?.data) return [];
+  // const coordinatorOptions = useMemo(() => {
+  //   if (!salesPerson?.data) return [];
 
-    const baseUsers = salesPerson.data.map((s: any) => ({
-      value: s.id,
-      label: s.fullName,
-    }));
+  //   const baseUsers = salesPerson.data.map((s: any) => ({
+  //     value: s.id,
+  //     label: s.fullName,
+  //   }));
 
-    const extraUsers = [
-      { value: 134, label: "Piyush Patel" },
-      { value: 1, label: "Jatin Vaghela" },
-    ];
+  //   const extraUsers = [
+  //     { value: 134, label: "Piyush Patel" },
+  //     { value: 1, label: "Jatin Vaghela" },
+  //   ];
 
-    return [...extraUsers, ...baseUsers];
-  }, [salesPerson]);
+  //   return [...extraUsers, ...baseUsers];
+  // }, [salesPerson]);
 
   return (
     <Dialog
@@ -226,7 +232,7 @@ export function InquiryActionForm({
     >
       <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-auto">
         <DialogHeader>
-          <DialogTitle>{isEdit ? "Edit Inquiry" : "Add Inquiry"}</DialogTitle>
+          <DialogTitle>{isEdit ? "Edit Lead" : "Add Lead"}</DialogTitle>
         </DialogHeader>
 
         <div className="h-fit w-full overflow-y-auto py-1">
@@ -511,7 +517,7 @@ export function InquiryActionForm({
                 render={() => (
                   <FormItem>
                     <FormLabel>
-                      Sales person<span className="text-red-500">*</span>
+                      Sales Person<span className="text-red-500">*</span>
                     </FormLabel>
                     <CustomDropDownSearchable
                       form={form}
@@ -543,10 +549,13 @@ export function InquiryActionForm({
                       name="coordinatorId"
                       label=""
                       // multiple
-                      options={coordinatorOptions}
+                      options={coordinatorPerson?.data?.map((s: any) => ({
+                        value: s.id,
+                        label: s.fullName,
+                      }))}
                       placeholder="Select Coordinator"
-                      searchEnabled={false}
-                      isLoading={salesPersonLoading}
+                      searchEnabled={true}
+                      isLoading={coordinatorPersonLoading}
                     />
                   </FormItem>
                 )}

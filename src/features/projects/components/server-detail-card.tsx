@@ -101,6 +101,12 @@ const ServerDetailsCard = ({
 
         <div className="space-y-2 text-gray-600">
           <div className="flex justify-between items-center">
+            <span className="font-medium">Name:</span>
+            <span className="font-semibold text-gray-800 break-all">
+              {server?.name ?? "-"}
+            </span>
+          </div>
+          <div className="flex justify-between items-center">
             <span className="font-medium">Type:</span>
             <span
               className={`text-xs font-semibold px-2.5 py-0.5 rounded ${getTypeBadgeClasses(

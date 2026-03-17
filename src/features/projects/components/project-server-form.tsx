@@ -56,6 +56,7 @@ export function ProjectServerActionForm({
   const form = useForm<TProjectServerSchema>({
     resolver: zodResolver(ProjectServerSchema),
     defaultValues: {
+      name: currentRow?.name ?? "",
       url: currentRow?.url ?? "",
       port: `${currentRow?.port ? currentRow?.port : ""}`,
       type: currentRow?.type ?? "",
@@ -97,6 +98,20 @@ export function ProjectServerActionForm({
               /> */}
               <FormField
                 control={form.control}
+                name="name"
+                render={({ field }: any) => (
+                  <FormItem className="col-span-2">
+                    <FormLabel>Server Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Server Name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="url"
                 render={({ field }: any) => (
                   <FormItem className="col-span-2">
@@ -117,7 +132,7 @@ export function ProjectServerActionForm({
                 name="serverId"
                 label="Server"
                 options={serverListOptions}
-                placeholder="Select Status"
+                placeholder="Select Server"
                 searchEnabled={true}
                 isLoading={isServerListLoading}
               />

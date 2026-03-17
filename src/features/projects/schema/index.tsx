@@ -160,6 +160,7 @@ export const _documentListSchema = z.object({
 export type TProjectDocumentSchema = z.infer<typeof _documentListSchema>;
 
 export const ProjectServerSchema = z.object({
+  name: z.string().trim().optional(),
   url: z
     .string()
     .url({ message: "Please enter a valid URL like https://example.com" })

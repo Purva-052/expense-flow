@@ -26,6 +26,7 @@ export function ProjectServerActionFormModal({
 
   const handleSubmission = (values: any, type: string) => {
     const basePayload: any = {
+      name: values?.name,
       url: values?.url,
       port: values?.port,
       type: values?.type,
