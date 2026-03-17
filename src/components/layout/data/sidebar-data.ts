@@ -101,7 +101,7 @@ export const sidebarData: SidebarData = {
           ],
         },
         {
-          title: "Inquiries",
+          title: "Lead Management",
           url: "/inquiry",
           icon: IconMessage2Question,
           // allowUserID1: allowUserID1,

@@ -37,7 +37,7 @@ import { INQUIRY_STATUS, roles } from "@/utils/constant";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod"; // Import zod
 import { ActionFormModal } from "./components/action";
@@ -48,6 +48,8 @@ import { useInquiryStore } from "./stores/useInquiryStore";
 import { useGetUserDropdownList } from "../users/services";
 import { useGetInquiryCategoryDropdown } from "../inquiry-channels/services";
 import { useGetInquiryDropdownList } from "../inquiry-types/services";
+import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
+import { formatDate } from "@/utils/commonFunctions";
 
 const InquiryPage = () => {
   const { open, setOpen } = useInquiryStore();
@@ -61,21 +63,42 @@ const InquiryPage = () => {
       role: [roles.BDE],
       status: "active",
     });
+
+  const { data: coordinatorList, isPending: coordinatorLoading }: any =
+    useGetUserDropdownList({
+      role: [roles.TEAM_LEAD, roles.PROJECT_MANAGER, roles.ADMIN],
+      status: "active",
+    });
+
   const { data: channelList, isPending: loadingChannel }: any =
     useGetInquiryCategoryDropdown();
 
   const { data: inquirytypeList, isPending: loadingInquiryType }: any =
     useGetInquiryDropdownList();
 
-  const [listParams, setListParams] = useState({
-    pageSize: 10,
-    currentPage: 1,
-    search: "",
-    salesPersonId: undefined,
-    inquiryTypeId: undefined,
-    inquirySourceId: undefined,
-    coordinatorId: undefined,
+  const [queryParams, setQueryParams] = useQueryStates({
+    pageSize: parseAsInteger.withDefault(10),
+    currentPage: parseAsInteger.withDefault(1),
+    search: parseAsString.withDefault(""),
+    salesPersonId: parseAsInteger,
+    inquiryTypeId: parseAsInteger,
+    inquirySourceId: parseAsInteger,
+    coordinatorId: parseAsInteger,
+    fromDate: parseAsString,
+    toDate: parseAsString,
   });
+
+  const listParams = {
+    pageSize: queryParams.pageSize,
+    currentPage: queryParams.currentPage,
+    search: queryParams.search,
+    salesPersonId: queryParams.salesPersonId,
+    inquiryTypeId: queryParams.inquiryTypeId,
+    inquirySourceId: queryParams.inquirySourceId,
+    coordinatorId: queryParams.coordinatorId,
+    fromDate: queryParams.fromDate,
+    toDate: queryParams.toDate,
+  };
 
   const apiParams = {
     page: listParams.currentPage,
@@ -87,6 +110,8 @@ const InquiryPage = () => {
     inquiryTypeId: listParams.inquiryTypeId,
     inquirySourceId: listParams.inquirySourceId,
     coordinatorId: listParams.coordinatorId,
+    fromDate: listParams.fromDate,
+    toDate: listParams.toDate,
   };
 
   const tabTriggerClass =
@@ -98,35 +123,35 @@ const InquiryPage = () => {
   const totalCount = (listData as any)?.metadata?.totalCount;
 
   const handleSearch = (search: string | undefined) => {
-    setListParams({ ...listParams, search: search ?? "", currentPage: 1 });
+    setQueryParams({ ...queryParams, search: search ?? "", currentPage: 1 });
   };
 
   const handlePaginationChange = (newPagination: {
     pageIndex: number;
     pageSize: number;
   }) => {
-    setListParams({
-      ...listParams,
+    setQueryParams({
+      ...queryParams,
       pageSize: newPagination.pageSize,
       currentPage: newPagination.pageIndex + 1,
     });
   };
 
-  const coordinatorOptions = useMemo(() => {
-    if (!usersList?.data) return [];
+  // const coordinatorOptions = useMemo(() => {
+  //   if (!usersList?.data) return [];
 
-    const baseUsers = usersList.data.map((s: any) => ({
-      value: s.id,
-      label: s.fullName,
-    }));
+  //   const baseUsers = usersList.data.map((s: any) => ({
+  //     value: s.id,
+  //     label: s.fullName,
+  //   }));
 
-    const extraUsers = [
-      { value: 134, label: "Piyush Patel" },
-      { value: 1, label: "Jatin Vaghela" },
-    ];
+  //   const extraUsers = [
+  //     { value: 134, label: "Piyush Patel" },
+  //     { value: 1, label: "Jatin Vaghela" },
+  //   ];
 
-    return [...extraUsers, ...baseUsers];
-  }, [usersList]);
+  //   return [...extraUsers, ...baseUsers];
+  // }, [usersList]);
 
   const filters: FilterConfig[] = [
     {
@@ -135,6 +160,23 @@ const InquiryPage = () => {
       key: "search",
       value: listParams.search,
       onChange: handleSearch,
+    },
+    {
+      type: "dateRange",
+      key: "dateRange",
+      placeholder: "Filter by Inquiry Date",
+      disable: { after: new Date() },
+      value: {
+        from: listParams.fromDate ? new Date(listParams.fromDate) : undefined,
+        to: listParams.toDate ? new Date(listParams.toDate) : undefined,
+      },
+      onChange: (range: { from?: Date; to?: Date } | undefined) => {
+        setQueryParams({
+          fromDate: formatDate(range?.from) ?? null,
+          toDate: formatDate(range?.to) ?? null,
+          currentPage: 1,
+        });
+      },
     },
     {
       type: "select",
@@ -146,9 +188,9 @@ const InquiryPage = () => {
       })),
       value: listParams.salesPersonId,
       onChange: (value: any) => {
-        setListParams({
-          ...listParams,
-          salesPersonId: value ?? undefined,
+        setQueryParams({
+          // ...listParams,
+          salesPersonId: value ?? null,
           currentPage: 1,
         });
       },
@@ -164,9 +206,9 @@ const InquiryPage = () => {
       })),
       value: listParams.inquiryTypeId,
       onChange: (value: any) => {
-        setListParams({
-          ...listParams,
-          inquiryTypeId: value ?? undefined,
+        setQueryParams({
+          // ...listParams,
+          inquiryTypeId: value ?? null,
           currentPage: 1,
         });
       },
@@ -182,9 +224,9 @@ const InquiryPage = () => {
       })),
       value: listParams.inquirySourceId,
       onChange: (value: any) => {
-        setListParams({
-          ...listParams,
-          inquirySourceId: value ?? undefined,
+        setQueryParams({
+          // ...listParams,
+          inquirySourceId: value ?? null,
           currentPage: 1,
         });
       },
@@ -194,16 +236,19 @@ const InquiryPage = () => {
       type: "select",
       key: "coordinatorId",
       placeholder: "Filter by Coordinator",
-      options: coordinatorOptions,
+      options: coordinatorList?.data?.map((iq: any) => ({
+        value: iq.id,
+        label: iq.fullName,
+      })),
       value: listParams.coordinatorId,
       onChange: (value: any) => {
-        setListParams({
-          ...listParams,
-          coordinatorId: value ?? undefined,
+        setQueryParams({
+          // ...listParams,
+          coordinatorId: value ?? null,
           currentPage: 1,
         });
       },
-      isLoading: usersListLoading,
+      isLoading: coordinatorLoading,
     },
   ];
 
@@ -577,14 +622,14 @@ const InquiryPage = () => {
   return (
     <PageLayout>
       <TablePageHeader
-        title="Inquiry "
-        buttonText="Add Inquiry "
+        title="Inquiries / Lead Management"
+        buttonText="Add Lead"
         onButtonClick={handleAdd}
         showActionButton={
           userRole === roles.BDE || userRole === roles.ADMIN ? true : false
         }
       >
-        Manage your Inquiry here.
+        Manage your Leads here.
       </TablePageHeader>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <GlobalFilterSection
@@ -594,17 +639,17 @@ const InquiryPage = () => {
           extraItem={
             <TabsList className="bg-[#fdebef] rounded-full">
               <TabsTrigger value="active" className={tabTriggerClass}>
-                Active Inquiries
+                Active Leads
               </TabsTrigger>
               <TabsTrigger value="inactive" className={tabTriggerClass}>
-                Archive Inquiries
+                Archive Leads
               </TabsTrigger>
             </TabsList>
           }
         />
         <GlobalTable
-          pageSize={listParams.pageSize}
-          currentPage={listParams.currentPage}
+          pageSize={queryParams.pageSize}
+          currentPage={queryParams.currentPage}
           totalCount={totalCount ?? 0}
           data={(listData as any)?.data ?? []}
           onPaginationChange={handlePaginationChange}

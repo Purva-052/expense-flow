@@ -644,12 +644,12 @@ export const InterviewForm = ({
                         <div className="relative">
                           <Textarea
                             placeholder="Enter remarks regarding the candidate..."
-                            maxLength={100}
+                            maxLength={500}
                             className="w-full max-w-full resize-none break-all whitespace-pre-wrap overflow-y-auto overflow-x-hidden pr-14 pb-6 leading-relaxed min-h-80px"
                             {...field}
                           />
                           <span className="absolute bottom-2 right-3 text-[10px] text-gray-400 pointer-events-none">
-                            {field.value?.length || 0}/100
+                            {field.value?.length || 0}/500
                           </span>
                         </div>
                       </FormControl>
@@ -810,12 +810,12 @@ export const InterviewForm = ({
                         <div className="relative">
                           <Textarea
                             placeholder="Instructions or notes for the interviewer..."
-                            maxLength={100}
+                            maxLength={500}
                             className="w-full max-w-full resize-none break-all whitespace-pre-wrap overflow-y-auto overflow-x-hidden pr-14 pb-6 leading-relaxed min-h-80px"
                             {...field}
                           />
                           <span className="absolute bottom-2 right-3 text-[10px] text-gray-400 pointer-events-none">
-                            {field.value?.length || 0}/100
+                            {field.value?.length || 0}/500
                           </span>
                         </div>
                       </FormControl>
