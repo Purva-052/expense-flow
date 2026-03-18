@@ -25,7 +25,7 @@ import { useSystemInventoryStore } from "../stores/useSystemInventoryStore";
 // };
 
 const getUserName = (row: any) => {
-  return row?.employee?.name || "-";
+  return row?.employee?.name || row?.user?.name || "-";
 };
 
 // const formatDateValue = (value: unknown) => {
