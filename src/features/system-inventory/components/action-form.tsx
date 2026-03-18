@@ -42,6 +42,8 @@ export interface SystemInventoryFormProps {
   submitLabel?: string;
   hideSubmitButton?: boolean;
   formId?: string;
+  showEmployeeSelect?: boolean;
+  employeeOptions?: DropdownOption[];
   processorList?: unknown[];
   ramList?: unknown[];
   storageList?: unknown[];
@@ -94,6 +96,7 @@ export const DEFAULT_SYSTEM_INVENTORY_VALUES: TSystemInventorySchema = {
   headphoneConnectionType: "",
   headphoneOwnershipType: "company",
 
+  employeeId: undefined,
   notes: "",
 };
 
@@ -124,61 +127,73 @@ const parseIdValue = (value: SelectValue) => {
 };
 
 export const buildSystemInventoryPayload = (
-  values: TSystemInventorySchema
-) => ({
-  mouseConnectionType: values.mouseEnabled
-    ? values.mouseConnectionType || null
-    : null,
-  mouseOwnershipType: values.mouseEnabled ? values.mouseOwnershipType : null,
+  values: TSystemInventorySchema,
+  options?: { includeEmployeeId?: boolean }
+) => {
+  const payload: Record<string, unknown> = {
+    mouseConnectionType: values.mouseEnabled
+      ? values.mouseConnectionType || null
+      : null,
+    mouseOwnershipType: values.mouseEnabled ? values.mouseOwnershipType : null,
 
-  keyboardConnectionType: values.keyboardEnabled
-    ? values.keyboardConnectionType || null
-    : null,
-  keyboardOwnershipType: values.keyboardEnabled
-    ? values.keyboardOwnershipType
-    : null,
+    keyboardConnectionType: values.keyboardEnabled
+      ? values.keyboardConnectionType || null
+      : null,
+    keyboardOwnershipType: values.keyboardEnabled
+      ? values.keyboardOwnershipType
+      : null,
 
-  cpuProcessorId: values.cpuEnabled
-    ? parseIdValue(values.cpuProcessorId)
-    : null,
-  cpuStorageId: values.cpuEnabled ? parseIdValue(values.cpuStorageId) : null,
-  cpuRamId: values.cpuEnabled ? parseIdValue(values.cpuRamId) : null,
-  cpuOwnershipType: values.cpuEnabled ? values.cpuOwnershipType : null,
+    cpuProcessorId: values.cpuEnabled
+      ? parseIdValue(values.cpuProcessorId)
+      : null,
+    cpuStorageId: values.cpuEnabled ? parseIdValue(values.cpuStorageId) : null,
+    cpuRamId: values.cpuEnabled ? parseIdValue(values.cpuRamId) : null,
+    cpuOwnershipType: values.cpuEnabled ? values.cpuOwnershipType : null,
 
-  laptopBrandId: values.laptopEnabled
-    ? parseIdValue(values.laptopBrandId)
-    : null,
-  laptopProcessorId: values.laptopEnabled
-    ? parseIdValue(values.laptopProcessorId)
-    : null,
-  laptopStorageId: values.laptopEnabled
-    ? parseIdValue(values.laptopStorageId)
-    : null,
-  laptopRamId: values.laptopEnabled ? parseIdValue(values.laptopRamId) : null,
-  laptopOwnershipType: values.laptopEnabled ? values.laptopOwnershipType : null,
+    laptopBrandId: values.laptopEnabled
+      ? parseIdValue(values.laptopBrandId)
+      : null,
+    laptopProcessorId: values.laptopEnabled
+      ? parseIdValue(values.laptopProcessorId)
+      : null,
+    laptopStorageId: values.laptopEnabled
+      ? parseIdValue(values.laptopStorageId)
+      : null,
+    laptopRamId: values.laptopEnabled ? parseIdValue(values.laptopRamId) : null,
+    laptopOwnershipType: values.laptopEnabled ? values.laptopOwnershipType : null,
 
-  monitorBrandId: values.monitorEnabled
-    ? parseIdValue(values.monitorBrandId)
-    : null,
-  monitorSizeId: values.monitorEnabled
-    ? parseIdValue(values.monitorSizeId)
-    : null,
-  monitorOwnershipType: values.monitorEnabled
-    ? values.monitorOwnershipType
-    : null,
+    monitorBrandId: values.monitorEnabled
+      ? parseIdValue(values.monitorBrandId)
+      : null,
+    monitorSizeId: values.monitorEnabled
+      ? parseIdValue(values.monitorSizeId)
+      : null,
+    monitorOwnershipType: values.monitorEnabled
+      ? values.monitorOwnershipType
+      : null,
 
-  headphoneBrandId: values.headphoneEnabled
-    ? parseIdValue(values.headphoneBrandId)
-    : null,
-  headphoneConnectionType: values.headphoneEnabled
-    ? values.headphoneConnectionType || null
-    : null,
-  headphoneOwnershipType: values.headphoneEnabled
-    ? values.headphoneOwnershipType
-    : null,
+    headphoneBrandId: values.headphoneEnabled
+      ? parseIdValue(values.headphoneBrandId)
+      : null,
+    headphoneConnectionType: values.headphoneEnabled
+      ? values.headphoneConnectionType || null
+      : null,
+    headphoneOwnershipType: values.headphoneEnabled
+      ? values.headphoneOwnershipType
+      : null,
 
-  notes: values.notes?.trim() || null,
-});
+    notes: values.notes?.trim() || null,
+  };
+
+  if (options?.includeEmployeeId) {
+    const employeeId = parseIdValue(values.employeeId);
+    if (employeeId !== null && employeeId !== undefined && employeeId !== "") {
+      payload.employeeId = employeeId;
+    }
+  }
+
+  return payload;
+};
 
 export const mapDropdownOptions = (
   items: unknown[] | undefined
@@ -290,6 +305,8 @@ export function SystemInventoryActionForm({
   submitLabel = "Submit Inventory",
   hideSubmitButton,
   formId = "system-inventory-form",
+  showEmployeeSelect = false,
+  employeeOptions = [],
   processorList,
   ramList,
   storageList,
@@ -362,6 +379,17 @@ export function SystemInventoryActionForm({
   );
 
   const submitForm: SubmitHandler<TSystemInventorySchema> = (values) => {
+    const hasValue = (value: SelectValue | string | undefined) =>
+      !(value === null || value === undefined || value === "");
+
+    if (showEmployeeSelect && !hasValue(values.employeeId)) {
+      form.setError("employeeId", {
+        type: "manual",
+        message: "Employee is required",
+      });
+      return;
+    }
+
     onSubmit(values);
   };
 
@@ -838,6 +866,30 @@ export function SystemInventoryActionForm({
         onSubmit={form.handleSubmit(submitForm)}
         className="space-y-5 overflow-auto"
       >
+        {showEmployeeSelect && (
+          <div className="space-y-1">
+            <CustomDropDownSearchable
+              form={form}
+              name="employeeId"
+              label={
+                <span>
+                  Employee <span className="text-red-500">*</span>
+                </span>
+              }
+              options={employeeOptions}
+              placeholder="Select employee"
+              disabled={disabled || dropdownLoading}
+              className="max-w-sm"
+              triggerClassName="h-9 bg-[#f5f5f5]"
+            />
+            {form.formState.errors.employeeId?.message && (
+              <p className="text-sm font-medium text-destructive">
+                {form.formState.errors.employeeId.message}
+              </p>
+            )}
+          </div>
+        )}
+
         <div className="space-y-4">
           {renderSection("mouseEnabled")}
           {renderSection("keyboardEnabled")}

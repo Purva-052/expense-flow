@@ -76,8 +76,10 @@ export const InquirySchema = z.object({
 
   inquiryTypeId: requiredNumber("Inquiry type is required"),
   salesPersonId: requiredNumber("Sales person is required"),
-  coordinatorId: requiredNumber("Coordinator is required"),
-
+  coordinatorId: z.preprocess((val) => {
+    if (val === "" || val === null || val === undefined) return null;
+    return Number(val);
+  }, z.number().nullable()),
   inquiryDate: z.preprocess(
     (val) => {
       if (!val) return undefined;

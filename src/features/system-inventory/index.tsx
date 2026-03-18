@@ -6,6 +6,7 @@ import GlobalFilterSection from "@/components/table/global-table-filter";
 import TablePageHeader from "@/components/table/table-page-header";
 import { FilterConfig } from "@/components/table/table-toolbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
 import { ActionFormModal } from "./components/action";
@@ -77,7 +78,7 @@ const getInventoryOwnerId = (inventory: any) => {
 };
 
 const SystemInventoryPage = () => {
-  const { open } = useSystemInventoryStore();
+  const { open, setOpen, setCurrentRow } = useSystemInventoryStore();
   const user = useAuthStore((state) => state.user);
 
   const userRole = user?.user?.role ?? user?.role;
@@ -171,6 +172,15 @@ const SystemInventoryPage = () => {
   const monitorSizeList = useMemo(
     () => extractDataArray(monitorSizeDropdown),
     [monitorSizeDropdown]
+  );
+
+  const employeeOptions = useMemo(
+    () =>
+      usersList?.data?.map((user: any) => ({
+        value: user.id,
+        label: user.fullName,
+      })) ?? [],
+    [usersList]
   );
 
   const dropdownLoading =
@@ -423,6 +433,17 @@ const SystemInventoryPage = () => {
           </TabsContent>
 
           <TabsContent value="all" className="mt-4">
+            <div className="mb-3 flex justify-end">
+              <Button
+                onClick={() => {
+                  setCurrentRow(null);
+                  setOpen("create");
+                }}
+              >
+                Add Inventory
+              </Button>
+            </div>
+
             <GlobalFilterSection filters={adminFilters} />
 
             <GlobalTable
@@ -448,6 +469,7 @@ const SystemInventoryPage = () => {
             monitorSizeList={monitorSizeList}
             dropdownLoading={dropdownLoading}
             isAdmin={isAdmin}
+            employeeOptions={employeeOptions}
           />
         )}
       </PageLayout>
