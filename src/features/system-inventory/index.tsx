@@ -375,17 +375,29 @@ const SystemInventoryPage = () => {
         </TablePageHeader>
 
         <Tabs defaultValue="own" className="w-full py-4">
-          <TabsList className="bg-[#fdebef] rounded-full">
-            <TabsTrigger value="own" className={tabTriggerClass}>
-              My Inventory
-            </TabsTrigger>
-            <TabsTrigger value="all" className={tabTriggerClass}>
-              All Inventory
-            </TabsTrigger>
-          </TabsList>
+          <div className="flex items-center justify-between">
+            <TabsList className="bg-[#fdebef] rounded-full">
+              <TabsTrigger value="own" className={tabTriggerClass}>
+                My Inventory
+              </TabsTrigger>
+              <TabsTrigger value="all" className={tabTriggerClass}>
+                All Inventory
+              </TabsTrigger>
+            </TabsList>
 
+            <Button
+              onClick={() => {
+                setCurrentRow(null);
+                setOpen("create");
+              }}
+            >
+              Add Inventory
+            </Button>
+          </div>
+
+          {/* OWN TAB */}
           <TabsContent value="own" className="mt-4">
-            <div className="">
+            <div>
               {showReadonlyMessage && (
                 <div className="rounded-md border border-[#f0d69d] bg-[#fff8e8] px-3 py-2 text-sm text-[#8c6200] w-fit">
                   Your inventory has already been submitted and is now locked.
@@ -432,18 +444,8 @@ const SystemInventoryPage = () => {
             </div>
           </TabsContent>
 
+          {/* ALL TAB */}
           <TabsContent value="all" className="mt-4">
-            <div className="mb-3 flex justify-end">
-              <Button
-                onClick={() => {
-                  setCurrentRow(null);
-                  setOpen("create");
-                }}
-              >
-                Add Inventory
-              </Button>
-            </div>
-
             <GlobalFilterSection filters={adminFilters} />
 
             <GlobalTable
@@ -459,6 +461,7 @@ const SystemInventoryPage = () => {
           </TabsContent>
         </Tabs>
 
+        {/* MODAL */}
         {open && (
           <ActionFormModal
             processorList={processorList}
