@@ -44,6 +44,7 @@ export const systemInventorySchema = z
     headphoneConnectionType: z.string().optional(),
     headphoneOwnershipType: deviceOwnershipSchema,
 
+    employeeId: selectValueSchema,
     notes: z.string().max(500, "Notes cannot exceed 500 characters").optional(),
   })
   .superRefine((values, ctx) => {
