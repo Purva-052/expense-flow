@@ -36,7 +36,7 @@ import { useGetOutboundSourceDropdown } from "@/features/outbound-sources/servic
 import { useGetDomainDropdownList } from "@/features/domain/services";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 import { cn } from "@/lib/utils";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 interface Props {
   currentRow?: any;
@@ -94,9 +94,11 @@ export function InquiryActionForm({
     salesPersonId: toNumberOrUndefined(
       row?.salesPerson?.id ?? row?.salesPersonId ?? row?.salesPerson?.userId
     ),
-    coordinatorId: toNumberOrUndefined(
-      row?.coordinator?.id ?? row?.coordinatorId ?? row?.coordinator?.userId
-    ),
+    coordinatorId: row
+      ? toNumberOrNull(
+          row?.coordinator?.id ?? row?.coordinatorId ?? row?.coordinator?.userId
+        )
+      : null,
     inquiryDate: row?.inquiryDate ? new Date(row?.inquiryDate) : undefined,
   });
 
@@ -200,24 +202,27 @@ export function InquiryActionForm({
       });
       return;
     }
-    onSubmitValues(values);
+    onSubmitValues({
+      ...values,
+      coordinatorId: values.coordinatorId ?? null,
+    });
   };
 
-  // const coordinatorOptions = useMemo(() => {
-  //   if (!salesPerson?.data) return [];
+  const salesPersonOptions = useMemo(() => {
+    if (!salesPerson?.data) return [];
 
-  //   const baseUsers = salesPerson.data.map((s: any) => ({
-  //     value: s.id,
-  //     label: s.fullName,
-  //   }));
+    const baseUsers = salesPerson.data.map((s: any) => ({
+      value: s.id,
+      label: s.fullName,
+    }));
 
-  //   const extraUsers = [
-  //     { value: 134, label: "Piyush Patel" },
-  //     { value: 1, label: "Jatin Vaghela" },
-  //   ];
+    const extraUsers = [
+      { value: 134, label: "Piyush Patel" },
+      { value: 1, label: "Jatin Vaghela" },
+    ];
 
-  //   return [...extraUsers, ...baseUsers];
-  // }, [salesPerson]);
+    return [...extraUsers, ...baseUsers];
+  }, [salesPerson]);
 
   return (
     <Dialog
@@ -524,10 +529,7 @@ export function InquiryActionForm({
                       name="salesPersonId"
                       label=""
                       // multiple
-                      options={salesPerson?.data?.map((s: any) => ({
-                        value: s.id,
-                        label: s.fullName,
-                      }))}
+                      options={salesPersonOptions}
                       placeholder="Select Sales person"
                       searchEnabled={false}
                       isLoading={salesPersonLoading}
@@ -541,9 +543,7 @@ export function InquiryActionForm({
                 name="coordinatorId"
                 render={() => (
                   <FormItem>
-                    <FormLabel>
-                      Coordinator<span className="text-red-500">*</span>
-                    </FormLabel>
+                    <FormLabel>Coordinator</FormLabel>
                     <CustomDropDownSearchable
                       form={form}
                       name="coordinatorId"

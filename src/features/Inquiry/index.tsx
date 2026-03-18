@@ -165,7 +165,7 @@ const InquiryPage = () => {
       type: "dateRange",
       key: "dateRange",
       placeholder: "Filter by Inquiry Date",
-      disable: { after: new Date() },
+      // disable: { after: new Date() },
       value: {
         from: listParams.fromDate ? new Date(listParams.fromDate) : undefined,
         to: listParams.toDate ? new Date(listParams.toDate) : undefined,

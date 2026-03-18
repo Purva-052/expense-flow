@@ -5,10 +5,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useUpdateSystemInventoryData } from "../services";
+import {
+  useCreateSystemInventoryData,
+  useUpdateSystemInventoryData,
+} from "../services";
 import { useSystemInventoryStore } from "../stores/useSystemInventoryStore";
 import {
   buildSystemInventoryPayload,
+  DEFAULT_SYSTEM_INVENTORY_VALUES,
   SystemInventoryActionForm,
 } from "./action-form";
 import { normalizeSystemInventoryRecord } from "./helperFunction";
@@ -25,6 +29,7 @@ interface Props {
   monitorSizeList?: unknown[];
   dropdownLoading?: boolean;
   isAdmin?: boolean;
+  employeeOptions?: { label: string; value: string | number }[];
 }
 
 export function ActionFormModal({
@@ -36,6 +41,7 @@ export function ActionFormModal({
   monitorSizeList,
   dropdownLoading,
   isAdmin,
+  employeeOptions,
 }: Readonly<Props>) {
   const { open, setOpen, currentRow, setCurrentRow } =
     useSystemInventoryStore();
@@ -44,10 +50,13 @@ export function ActionFormModal({
 
   const recordId =
     currentRow?.id ?? currentRow?._id ?? currentRow?.inventoryId ?? "";
-  const userName = currentRow?.user?.name ?? "";
+  const userName = currentRow?.employee?.name ?? "";
 
   const { mutateAsync: updateMutate, isPending: isUpdateLoading } =
     useUpdateSystemInventoryData(recordId);
+
+  const { mutateAsync: createMutate, isPending: isCreateLoading } =
+    useCreateSystemInventoryData();
 
   const initialValues = useMemo(
     () => normalizeSystemInventoryRecord(currentRow),
@@ -62,16 +71,18 @@ export function ActionFormModal({
     updateMutate(buildSystemInventoryPayload(values));
   };
 
+  const handleCreate = (values: TSystemInventorySchema) => {
+    createMutate(
+      buildSystemInventoryPayload(values, { includeEmployeeId: true })
+    );
+  };
+
   const handleCloseDialog = () => {
     setOpen(null);
     setTimeout(() => {
       setCurrentRow(null);
     }, 300);
   };
-
-  if (!currentRow) {
-    return null;
-  }
 
   return (
     <>
@@ -98,6 +109,39 @@ export function ActionFormModal({
             brandList={brandList}
             headphoneBrandList={headphoneBrandList}
             monitorSizeList={monitorSizeList}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={open === "create"}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            handleCloseDialog();
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="text-left">
+            <DialogTitle>Add System Inventory</DialogTitle>
+          </DialogHeader>
+
+          <SystemInventoryActionForm
+            formId="system-inventory-create"
+            initialValues={DEFAULT_SYSTEM_INVENTORY_VALUES}
+            onSubmit={handleCreate}
+            loading={isCreateLoading}
+            submitLabel="Add Inventory"
+            showEmployeeSelect
+            employeeOptions={employeeOptions}
+            processorList={processorList}
+            ramList={ramList}
+            storageList={storageList}
+            brandList={brandList}
+            headphoneBrandList={headphoneBrandList}
+            monitorSizeList={monitorSizeList}
+            dropdownLoading={dropdownLoading}
+            isAdmin={isAdmin}
           />
         </DialogContent>
       </Dialog>
