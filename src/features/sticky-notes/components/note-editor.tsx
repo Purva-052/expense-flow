@@ -1,19 +1,5 @@
 import { useState } from "react";
-import { CKEditor } from "@ckeditor/ckeditor5-react";
-import {
-  ClassicEditor,
-  Bold,
-  Essentials,
-  Italic,
-  Paragraph,
-  Undo,
-  Heading,
-  // Link,
-  List,
-  TodoList,
-  Underline,
-} from "ckeditor5";
-import "ckeditor5/ckeditor5.css";
+import { TiptapEditor } from "@/components/shared/tiptap-editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Save } from "lucide-react";
@@ -50,7 +36,6 @@ export const NoteEditor = ({
     color: initialData?.color ?? "yellow",
     isPublic: initialData?.isPublic ?? false,
   });
-  const [editorReady, setEditorReady] = useState(false);
 
   const colorObj = COLORS.find((c) => c.id === formData.color) || COLORS[0];
 
@@ -100,44 +85,24 @@ export const NoteEditor = ({
             className="bg-transparent border-none text-lg font-bold placeholder:text-gray-400 focus-visible:ring-0 p-0 h-auto"
           />
         </div>
-        <div className="bg-transparent border-none min-h-[200px] text-gray-700 ck-editor-custom">
-          <CKEditor
-            //@ts-ignore
-            editor={ClassicEditor}
-            data={formData.content}
-            onReady={() => setEditorReady(true)}
-            onChange={(_, editor) => {
-              const data = editor.getData();
-              setFormData({ ...formData, content: data });
-            }}
-            disabled={!editorReady}
-            config={{
-              plugins: [
-                Essentials,
-                Paragraph,
-                Heading,
-                Bold,
-                Italic,
-                Underline,
-                List,
-                TodoList,
-                Undo,
-              ],
-              toolbar: [
-                "bold",
-                "italic",
-                "underline",
-                "|",
-                "bulletedList",
-                "numberedList",
-                "todoList",
-                "|",
-                "undo",
-                "redo",
-              ],
-              placeholder: "Type your note here...",
-              licenseKey: "GPL",
-            }}
+        <div className="min-h-[200px] border-none bg-transparent text-gray-700">
+          <TiptapEditor
+            value={formData.content}
+            onChange={(content) => setFormData({ ...formData, content })}
+            placeholder="Type your note here..."
+            className="border-none bg-transparent shadow-none"
+            minHeightClassName="min-h-[200px]"
+            editorClassName="text-gray-700"
+            toolbar={[
+              "bold",
+              "italic",
+              "underline",
+              "bulletList",
+              "orderedList",
+              "taskList",
+              "undo",
+              "redo",
+            ]}
           />
         </div>
         <div className="flex items-center justify-end mt-4 pt-4 border-t border-black/5">

@@ -1,6 +1,6 @@
 import { TiptapEditor } from "@/components/shared/tiptap-editor";
 
-interface WorkDescriptionEditorProps {
+interface MeetingRichTextEditorProps {
   value: string;
   onChange: (data: string) => void;
   placeholder?: string;
@@ -8,21 +8,35 @@ interface WorkDescriptionEditorProps {
   disabled?: boolean;
 }
 
-export const WorkDescriptionEditor = ({
+const MEETING_TOOLBAR = [
+  "underline",
+  "italic",
+  "bold",
+  "heading1",
+  "heading2",
+  "bulletList",
+  "orderedList",
+  "undo",
+  "redo",
+] as const;
+
+export const MeetingRichTextEditor = ({
   value,
   onChange,
-  placeholder = "Type your description here...",
+  placeholder = "Type here...",
   className,
   disabled = false,
-}: WorkDescriptionEditorProps) => {
+}: MeetingRichTextEditorProps) => {
   return (
     <TiptapEditor
       value={value}
       onChange={onChange}
       placeholder={placeholder}
-      hideToolbarWhenDisabled
       className={className}
       disabled={disabled}
+      toolbar={[...MEETING_TOOLBAR]}
+      hideToolbarWhenDisabled
+      minHeightClassName="min-h-[220px]"
     />
   );
 };
