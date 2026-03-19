@@ -83,3 +83,13 @@ export const formatDate = (date?: Date) => {
   const dd = String(date.getDate()).padStart(2, "0");
   return `${yyyy}-${mm}-${dd}`;
 };
+
+export const formatNumber = (value: number | string | null | undefined) => {
+  if (value === null || value === undefined || value === "") return "";
+
+  const num = Number(value);
+
+  if (isNaN(num)) return "";
+
+  return Number(num.toFixed(2)).toString();
+};

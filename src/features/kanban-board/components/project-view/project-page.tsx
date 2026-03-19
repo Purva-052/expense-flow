@@ -151,10 +151,30 @@ const ProjectPage = ({
   }, [activeTab]);
 
   useEffect(() => {
-    const { clientId, managerId, priority, isPinned } = listParams;
+    const {
+      clientId,
+      handlerId,
+      priority,
+      search,
+      projectTypeId,
+      technologyId,
+      isProduct,
+      isPinned,
+    } = listParams;
+
     localStorage.setItem(
       FILTER_STORAGE_KEY,
-      JSON.stringify({ clientId, managerId, priority, isPinned })
+      JSON.stringify({
+        clientId,
+        handlerId,
+        managerId: handlerId,
+        priority,
+        search,
+        projectTypeId,
+        technologyId,
+        isProduct,
+        isPinned,
+      })
     );
   }, [listParams, FILTER_STORAGE_KEY]);
 

@@ -40,6 +40,7 @@ export function ActionFormModal() {
         salesPersonId: values?.salesPersonId,
         coordinatorId: values?.coordinatorId ?? null,
         inquirySourceId: values?.inquirySourceId,
+        approximateHours: Number(values?.approximateHours),
         clientLinkedInProfile: values?.clientLinkedInProfile,
         inquiryDate: values?.inquiryDate,
       };
@@ -66,6 +67,7 @@ export function ActionFormModal() {
         inquiryTypeId: values?.inquiryTypeId,
         salesPersonId: values?.salesPersonId,
         coordinatorId: values?.coordinatorId ?? null,
+        approximateHours: Number(values?.approximateHours),
         inquirySourceId: values?.inquirySourceId,
         clientLinkedInProfile: values?.clientLinkedInProfile,
         inquiryDate: values?.inquiryDate,
