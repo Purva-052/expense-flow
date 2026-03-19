@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { useInquiryStore } from "../stores/useInquiryStore";
 import { INQUIRY_STATUS } from "@/utils/constant";
 import { Badge } from "@/components/ui/badge";
+import { formatNumber } from "@/utils/commonFunctions";
 
 export function ViewInquiryModal() {
   const { open, setOpen, currentRow } = useInquiryStore();
@@ -122,6 +123,16 @@ export function ViewInquiryModal() {
             <span className="font-medium text-gray-700">Country:</span>
             <span className="text-gray-900">
               {currentRow?.country?.name ?? "-"}
+            </span>
+          </div>
+          <Separator />
+
+          <div className="flex justify-between">
+            <span className="font-medium text-gray-700">
+              Approximate Hours:
+            </span>
+            <span className="text-gray-900">
+              {formatNumber(currentRow?.approximateHours) ?? "-"}
             </span>
           </div>
           <Separator />
