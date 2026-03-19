@@ -46,6 +46,7 @@ const API = {
     project_milestone_list: "/project-milestones",
     delete_milestone: "/project-milestones",
     update_milestone: "/project-milestones",
+    export_csv: "/projects/export",
   },
   project_types: {
     list: "/project-types",

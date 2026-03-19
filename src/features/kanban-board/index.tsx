@@ -19,6 +19,11 @@ import { useGetClientsDropdownList } from "../clients/services";
 import TablePageHeader from "@/components/table/table-page-header";
 import { ActionFormModal } from "../projects/components/action";
 import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
+import { useExportCSV } from "./services";
+import { toast } from "sonner";
 
 const ProjectBoard = () => {
   const [activeTab, setActiveTab] = useState("project_details");
@@ -33,6 +38,9 @@ const ProjectBoard = () => {
   const user = useAuthStore((state) => state.user);
   const userRole = user?.user?.role;
   const userId = user?.user?.id;
+  const { mutate: exportCSV, isPending: exportCSVLoading } = useExportCSV();
+  const canExportCSV =
+    userRole === roles.ADMIN || userRole === roles.PROJECT_MANAGER;
 
   // if (userRole === roles.BDE) {
   //   return <InquiryPage />;
@@ -106,6 +114,66 @@ const ProjectBoard = () => {
 
   const { data: clientsList, isPending: clientListLoading }: any =
     useGetClientsDropdownList();
+
+  const handleExportCSV = () => {
+    const savedFilters =
+      typeof window !== "undefined"
+        ? localStorage.getItem(PROJECT_DETAILS_FILTER_STORAGE_KEY)
+        : null;
+
+    let parsedFilters: Record<string, any> = {};
+    if (savedFilters) {
+      try {
+        parsedFilters = JSON.parse(savedFilters);
+      } catch {
+        parsedFilters = {};
+      }
+    }
+
+    const rawParams = {
+      handlerId: parsedFilters?.handlerId ?? parsedFilters?.managerId,
+      search: parsedFilters?.search,
+      clientId: parsedFilters?.clientId,
+      technologyId: parsedFilters?.technologyId,
+      priority: parsedFilters?.priority,
+      projectTypeId: parsedFilters?.projectTypeId,
+      isProduct: parsedFilters?.isProduct,
+    };
+
+    const payload = Object.fromEntries(
+      Object.entries(rawParams).filter(
+        ([, value]) => value !== "" && value !== null && value !== undefined
+      )
+    );
+
+    exportCSV(payload, {
+      onSuccess: (response: any) => {
+        const fileBlob = response?.blob;
+        const filename =
+          response?.filename ||
+          `projects_export_${format(new Date(), "yyyy-MM-dd")}.csv`;
+
+        if (fileBlob) {
+          const fileUrl = URL.createObjectURL(fileBlob);
+          const link = document.createElement("a");
+          link.href = fileUrl;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(fileUrl);
+          toast.success("CSV export generated successfully");
+        } else {
+          console.error("No file URL found in response:", response);
+          toast.error("Failed to generate CSV file");
+        }
+      },
+      onError: (error: Error) => {
+        console.error("CSV export failed:", error);
+        // toast.error(error.message || "Failed to generate CSV file");
+      },
+    });
+  };
 
   const handleAdd = () => {
     setOpen("add");
@@ -221,6 +289,19 @@ const ProjectBoard = () => {
                     // title="Projects"
                     buttonText="Add Project"
                     onButtonClick={handleAdd}
+                    actions={
+                      canExportCSV ? (
+                        <Button
+                          onClick={handleExportCSV}
+                          disabled={exportCSVLoading}
+                        >
+                          <Download />
+                          {exportCSVLoading
+                            ? "Exporting csv ..."
+                            : "Export CSV"}
+                        </Button>
+                      ) : null
+                    }
                   >
                     {open && (
                       <ActionFormModal
