@@ -688,7 +688,7 @@ export const useExportCSV = () => {
         );
 
         const contentDisposition = response.headers["content-disposition"];
-        let filename = `projects_export_${new Date().toISOString().split("T")[0]}.csv`;
+        let filename = `projects_export_${new Date().toISOString().split("T")[0]}.xlsx`;
 
         if (contentDisposition) {
           const filenameMatch = contentDisposition.match(

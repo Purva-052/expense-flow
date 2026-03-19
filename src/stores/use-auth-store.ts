@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/store/auth-store.ts
 import { LoginUser } from "@/features/auth/sign-in/types";
+import { PROJECT_DETAILS_FILTER_STORAGE_KEY } from "@/utils/constant";
 import Cookies from "js-cookie";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -31,6 +32,7 @@ export const useAuthStore = create<AuthState>()(
           user: null,
           isAuthenticated: false,
         }));
+        localStorage.removeItem(PROJECT_DETAILS_FILTER_STORAGE_KEY);
         Cookies.remove("token");
       },
       verify: (data: any) =>
