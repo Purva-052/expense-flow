@@ -10,6 +10,7 @@ interface TablePageHeaderProps {
   onButtonClick?: () => void;
   showActionButton?: boolean;
   showActionButtonIcon?: boolean;
+  actions?: React.ReactNode;
 }
 
 const TablePageHeader = ({
@@ -20,6 +21,7 @@ const TablePageHeader = ({
   ActionButtonIcon = null,
   showActionButton = true,
   showActionButtonIcon = true,
+  actions,
 }: Readonly<TablePageHeaderProps>) => {
   return (
     <div className="flex items-center justify-between">
@@ -27,15 +29,16 @@ const TablePageHeader = ({
         <PageTitle>{title}</PageTitle>
         <span className="text-sm font-normal text-[#848485]">{children}</span>
       </div>
-      {showActionButton && (
-        <div>
+      <div className="flex items-center gap-2">
+        {actions}
+        {showActionButton && (
           <Button onClick={onButtonClick}>
             {showActionButtonIcon &&
               (ActionButtonIcon ? ActionButtonIcon : <Plus />)}
             {buttonText}
           </Button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

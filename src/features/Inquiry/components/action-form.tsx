@@ -491,8 +491,8 @@ export function InquiryActionForm({
                   control={form.control}
                   name="industryId"
                   render={() => (
-                    <FormItem>
-                      <FormLabel>
+                    <FormItem className="flex flex-col">
+                      <FormLabel className="min-h-[15px] flex items-center">
                         Industry / Domain Type
                         {/* <span className="text-red-500">*</span> */}
                       </FormLabel>
@@ -566,8 +566,10 @@ export function InquiryActionForm({
                   control={form.control}
                   name="coordinatorId"
                   render={() => (
-                    <FormItem>
-                      <FormLabel>Coordinator</FormLabel>
+                    <FormItem className="flex flex-col">
+                      <FormLabel className="min-h-[15px] flex items-center">
+                        Coordinator
+                      </FormLabel>
                       <CustomDropDownSearchable
                         form={form}
                         name="coordinatorId"
