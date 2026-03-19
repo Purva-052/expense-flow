@@ -151,7 +151,7 @@ const ProjectBoard = () => {
         const fileBlob = response?.blob;
         const filename =
           response?.filename ||
-          `projects_export_${format(new Date(), "yyyy-MM-dd")}.csv`;
+          `projects_export_${format(new Date(), "yyyy-MM-dd")}.xlsx`;
 
         if (fileBlob) {
           const fileUrl = URL.createObjectURL(fileBlob);
