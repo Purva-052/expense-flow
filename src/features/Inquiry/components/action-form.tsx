@@ -469,11 +469,13 @@ export function InquiryActionForm({
                   name="domainId"
                   render={() => (
                     <FormItem className="flex flex-col">
-                      <FormLabel className="min-h-[20px]">Domain</FormLabel>
+                      <FormLabel className="min-h-[20px]">
+                        Devstree Domain
+                      </FormLabel>
                       <CustomDropDownSearchable
                         form={form}
                         name="domainId"
-                        placeholder="Select Domain"
+                        placeholder="Select Devstree Domain"
                         searchEnabled={false}
                         isLoading={loadingDomain}
                         options={domainList?.data?.map((dm: any) => ({
