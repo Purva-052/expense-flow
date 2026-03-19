@@ -37,6 +37,7 @@ import { useGetDomainDropdownList } from "@/features/domain/services";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 import { cn } from "@/lib/utils";
 import { useEffect, useMemo } from "react";
+import { formatNumber } from "@/utils/commonFunctions";
 
 interface Props {
   currentRow?: any;
@@ -100,6 +101,7 @@ export function InquiryActionForm({
         )
       : null,
     inquiryDate: row?.inquiryDate ? new Date(row?.inquiryDate) : undefined,
+    approximateHours: formatNumber(row?.approximateHours),
   });
 
   const form = useForm<TInquirySchema>({
@@ -326,12 +328,33 @@ export function InquiryActionForm({
                 />
               </div>
 
-              <TextInputField
-                control={form.control}
-                name="clientLinkedInProfile"
-                label="Client LinkedIn Profile"
-                placeholder="Enter client linkedIn profile"
-              />
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+                <TextInputField
+                  control={form.control}
+                  name="clientLinkedInProfile"
+                  label="Client LinkedIn Profile"
+                  placeholder="Enter client linkedIn profile"
+                />
+                <FormField
+                  control={form.control}
+                  name="approximateHours"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Approximate Hours</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          placeholder="Enter Approximate hours"
+                          {...field}
+                          disabled={loading}
+                          className="w-full"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <PhoneInputField
                 form={form}
@@ -356,210 +379,214 @@ export function InquiryActionForm({
                 placeholder="Enter source of inquiry"
               /> */}
 
-              <FormField
-                control={form.control}
-                name="inquirySourceId"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>
-                      Inquiry Channel <span className="text-red-500">*</span>
-                    </FormLabel>
-                    <CustomDropDownSearchable
-                      form={form}
-                      name="inquirySourceId"
-                      label=""
-                      // multiple
-                      options={channelList?.data?.map((d: any) => ({
-                        value: d.id,
-                        label: d.name,
-                      }))}
-                      placeholder="Select Inquiry Channel"
-                      searchEnabled={false}
-                      isLoading={loadingChannel}
-                    />
-                  </FormItem>
+              <div
+                className={cn(
+                  "grid gap-3 sm:gap-4",
+                  selectedChannel ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"
                 )}
-              />
+              >
+                {/* Inquiry Channel */}
+                <FormField
+                  control={form.control}
+                  name="inquirySourceId"
+                  render={() => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel className="min-h-[20px] flex items-center gap-1">
+                        Inquiry Channel <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <CustomDropDownSearchable
+                        form={form}
+                        name="inquirySourceId"
+                        placeholder="Select Inquiry Channel"
+                        searchEnabled={false}
+                        isLoading={loadingChannel}
+                        options={channelList?.data?.map((d: any) => ({
+                          value: d.id,
+                          label: d.name,
+                        }))}
+                      />
+                    </FormItem>
+                  )}
+                />
 
-              {selectedChannel?.name === "Inbound" && (
-                <>
+                {/* Inbound Source */}
+                {selectedChannel?.name === "Inbound" && (
                   <FormField
                     control={form.control}
                     name="inboundSourceId"
                     render={() => (
-                      <FormItem>
-                        <FormLabel>
+                      <FormItem className="flex flex-col">
+                        <FormLabel className="min-h-[20px]">
                           Inbound Source
-                          {/* <span className="text-red-500">*</span> */}
                         </FormLabel>
                         <CustomDropDownSearchable
                           form={form}
                           name="inboundSourceId"
-                          label=""
-                          // multiple
+                          placeholder="Select Inbound Source"
+                          searchEnabled={false}
+                          isLoading={loadingInbound}
                           options={inboundList?.data?.map((i: any) => ({
                             value: i?.id,
                             label: i?.name,
                           }))}
-                          placeholder="Select Inbound Source"
-                          searchEnabled={false}
-                          isLoading={loadingInbound}
                         />
                       </FormItem>
                     )}
                   />
+                )}
 
+                {/* Outbound Source */}
+                {selectedChannel?.name === "Outbound" && (
                   <FormField
                     control={form.control}
-                    name="domainId"
+                    name="outboundSourceId"
                     render={() => (
-                      <FormItem>
-                        <FormLabel>
-                          Domain
-                          {/* <span className="text-red-500">*</span> */}
+                      <FormItem className="flex flex-col">
+                        <FormLabel className="min-h-[20px]">
+                          Outbound Source
                         </FormLabel>
                         <CustomDropDownSearchable
                           form={form}
-                          name="domainId"
-                          label=""
-                          // multiple
-                          options={domainList?.data?.map((dm: any) => ({
-                            value: dm?.id,
-                            label: dm?.name,
-                          }))}
-                          placeholder="Select Domain"
+                          name="outboundSourceId"
+                          placeholder="Select Outbound Source"
                           searchEnabled={false}
-                          isLoading={loadingDomain}
+                          isLoading={loadingOutbound}
+                          options={outboundList?.data?.map((i: any) => ({
+                            value: i?.id,
+                            label: i?.name,
+                          }))}
                         />
                       </FormItem>
                     )}
                   />
-                </>
-              )}
+                )}
+              </div>
 
-              {selectedChannel?.name === "Outbound" && (
+              {/* ✅ Domain (ONLY for Inbound → full width next row) */}
+              {selectedChannel?.name === "Inbound" && (
                 <FormField
                   control={form.control}
-                  name="outboundSourceId"
+                  name="domainId"
                   render={() => (
-                    <FormItem>
-                      <FormLabel>
-                        Outbound Source
-                        {/* <span className="text-red-500">*</span> */}
-                      </FormLabel>
+                    <FormItem className="flex flex-col">
+                      <FormLabel className="min-h-[20px]">Domain</FormLabel>
                       <CustomDropDownSearchable
                         form={form}
-                        name="outboundSourceId"
-                        label=""
-                        // multiple
-                        options={outboundList?.data?.map((i: any) => ({
-                          value: i?.id,
-                          label: i?.name,
-                        }))}
-                        placeholder="Select Outbound Source"
+                        name="domainId"
+                        placeholder="Select Domain"
                         searchEnabled={false}
-                        isLoading={loadingOutbound}
+                        isLoading={loadingDomain}
+                        options={domainList?.data?.map((dm: any) => ({
+                          value: dm?.id,
+                          label: dm?.name,
+                        }))}
                       />
                     </FormItem>
                   )}
                 />
               )}
 
-              <FormField
-                control={form.control}
-                name="industryId"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>
-                      Industry Type
-                      {/* <span className="text-red-500">*</span> */}
-                    </FormLabel>
-                    <CustomDropDownSearchable
-                      form={form}
-                      name="industryId"
-                      label=""
-                      // multiple
-                      options={industryList?.data?.map((ind: any) => ({
-                        value: ind.id,
-                        label: ind.name,
-                      }))}
-                      placeholder="Select Industry Type"
-                      searchEnabled={false}
-                      isLoading={loadingIndustry}
-                    />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="industryId"
+                  render={() => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel className="min-h-[15px] flex items-center">
+                        Industry / Domain Type
+                        {/* <span className="text-red-500">*</span> */}
+                      </FormLabel>
+                      <CustomDropDownSearchable
+                        form={form}
+                        name="industryId"
+                        label=""
+                        // multiple
+                        options={industryList?.data?.map((ind: any) => ({
+                          value: ind.id,
+                          label: ind.name,
+                        }))}
+                        placeholder="Select Domain Type"
+                        searchEnabled={false}
+                        isLoading={loadingIndustry}
+                      />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="inquiryTypeId"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>
-                      Inquiry Type<span className="text-red-500">*</span>
-                    </FormLabel>
-                    <CustomDropDownSearchable
-                      form={form}
-                      name="inquiryTypeId"
-                      label=""
-                      // multiple
-                      options={inquirytypeList?.data?.map((iq: any) => ({
-                        value: iq.id,
-                        label: iq.name,
-                      }))}
-                      placeholder="Select Inquiry Type"
-                      searchEnabled={false}
-                      isLoading={loadingInquiryType}
-                    />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="inquiryTypeId"
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>
+                        Inquiry Type<span className="text-red-500">*</span>
+                      </FormLabel>
+                      <CustomDropDownSearchable
+                        form={form}
+                        name="inquiryTypeId"
+                        label=""
+                        // multiple
+                        options={inquirytypeList?.data?.map((iq: any) => ({
+                          value: iq.id,
+                          label: iq.name,
+                        }))}
+                        placeholder="Select Inquiry Type"
+                        searchEnabled={false}
+                        isLoading={loadingInquiryType}
+                      />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-              <FormField
-                control={form.control}
-                name="salesPersonId"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>
-                      Sales Person<span className="text-red-500">*</span>
-                    </FormLabel>
-                    <CustomDropDownSearchable
-                      form={form}
-                      name="salesPersonId"
-                      label=""
-                      // multiple
-                      options={salesPersonOptions}
-                      placeholder="Select Sales person"
-                      searchEnabled={false}
-                      isLoading={salesPersonLoading}
-                    />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="salesPersonId"
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>
+                        Sales Person<span className="text-red-500">*</span>
+                      </FormLabel>
+                      <CustomDropDownSearchable
+                        form={form}
+                        name="salesPersonId"
+                        label=""
+                        // multiple
+                        options={salesPersonOptions}
+                        placeholder="Select Sales person"
+                        searchEnabled={false}
+                        isLoading={salesPersonLoading}
+                      />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="coordinatorId"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>Coordinator</FormLabel>
-                    <CustomDropDownSearchable
-                      form={form}
-                      name="coordinatorId"
-                      label=""
-                      // multiple
-                      options={coordinatorPerson?.data?.map((s: any) => ({
-                        value: s.id,
-                        label: s.fullName,
-                      }))}
-                      placeholder="Select Coordinator"
-                      searchEnabled={true}
-                      isLoading={coordinatorPersonLoading}
-                    />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="coordinatorId"
+                  render={() => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel className="min-h-[15px] flex items-center">
+                        Coordinator
+                      </FormLabel>
+                      <CustomDropDownSearchable
+                        form={form}
+                        name="coordinatorId"
+                        label=""
+                        // multiple
+                        options={coordinatorPerson?.data?.map((s: any) => ({
+                          value: s.id,
+                          label: s.fullName,
+                        }))}
+                        placeholder="Select Coordinator"
+                        searchEnabled={true}
+                        isLoading={coordinatorPersonLoading}
+                      />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               {/* Type Dropdown */}
               {/* </div> */}

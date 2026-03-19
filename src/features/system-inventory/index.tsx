@@ -148,6 +148,7 @@ const SystemInventoryPage = () => {
         roles.ADMIN,
         roles.PROJECT_MANAGER,
         roles.DEVELOPER,
+        roles.BDE,
       ],
       status: "active",
     });

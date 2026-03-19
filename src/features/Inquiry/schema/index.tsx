@@ -98,6 +98,7 @@ export const InquirySchema = z.object({
     .trim()
     .max(500, { message: "Notes cannot exceed 500 characters." })
     .optional(),
+  approximateHours: z.string().trim().optional(),
 });
 
 export type TInquirySchema = z.infer<typeof InquirySchema>;
