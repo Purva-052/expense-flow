@@ -10,7 +10,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useGetNotificationsList } from "@/features/users/services";
-import { useAuthStore } from "@/stores/use-auth-store";
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -36,7 +35,6 @@ export function NotificationModal() {
   const { data: notificationsResponse } = useGetNotificationsList({
     isRead: true,
   });
-  const { user } = useAuthStore();
   const unreadCount = useMemo(
     () => extractUnreadCount(notificationsResponse),
     [notificationsResponse]
@@ -52,10 +50,6 @@ export function NotificationModal() {
         openPendingReports: "true",
         openPendingReportsAt: String(Date.now()),
       });
-      const userId = user?.user?.id;
-      if (userId != null) {
-        params.set("userId", String(userId));
-      }
       navigate({
         to: `/daily-report?${params.toString()}`,
       });
