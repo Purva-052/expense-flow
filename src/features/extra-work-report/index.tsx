@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
 import PageLayout from "@/components/layout/layout-provider";
 import { GlobalTable } from "@/components/table/global-table";
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import TablePageHeader from "@/components/table/table-page-header";
 import { FilterConfig } from "@/components/table/table-toolbar";
+import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import { ActionFormModal } from "./components/action";
 import { columns } from "./components/columns";
 import { ViewTransactionModal } from "./components/view-model";
@@ -13,18 +13,29 @@ import { useGetExtraWorkData } from "./services";
 import { useGetProjectSDropdownList } from "../Project-type/services";
 import { useGetUserDropdownList } from "../users/services";
 import { roles } from "@/utils/constant";
+import { formatDate } from "@/utils/commonFunctions";
 
 const ExtraWorkReport = () => {
   const { open, setOpen } = useExtraWorkStore();
-  const [listParams, setListParams] = useState({
-    pageSize: 10,
-    currentPage: 1,
-    search: "",
-    projectId: undefined as number | undefined,
-    employeeId: undefined as number | undefined,
-    startDate: undefined as string | undefined,
-    endDate: undefined as string | undefined,
+  const [queryParams, setQueryParams] = useQueryStates({
+    pageSize: parseAsInteger.withDefault(10),
+    currentPage: parseAsInteger.withDefault(1),
+    search: parseAsString.withDefault(""),
+    projectId: parseAsInteger,
+    employeeId: parseAsInteger,
+    startDate: parseAsString,
+    endDate: parseAsString,
   });
+
+  const listParams = {
+    pageSize: queryParams.pageSize,
+    currentPage: queryParams.currentPage,
+    search: queryParams.search,
+    projectId: queryParams.projectId ?? undefined,
+    employeeId: queryParams.employeeId ?? undefined,
+    startDate: queryParams.startDate ?? undefined,
+    endDate: queryParams.endDate ?? undefined,
+  };
 
   const apiParams = {
     page: listParams.currentPage,
@@ -35,16 +46,6 @@ const ExtraWorkReport = () => {
     employeeId: listParams.employeeId,
     fromDate: listParams.startDate,
     toDate: listParams.endDate,
-  };
-
-  const formatDate = (date?: Date) => {
-    if (!date) return undefined;
-
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, "0");
-    const dd = String(date.getDate()).padStart(2, "0");
-
-    return `${yyyy}-${mm}-${dd}`;
   };
 
   const { data: listData, isPending: loading } = useGetExtraWorkData(apiParams);
@@ -65,15 +66,14 @@ const ExtraWorkReport = () => {
   const totalCount = (listData as any)?.metadata?.totalCount;
 
   const handleSearch = (search: string | undefined) => {
-    setListParams({ ...listParams, search: search ?? "", currentPage: 1 });
+    setQueryParams({ search: search ?? "", currentPage: 1 });
   };
 
   const handlePaginationChange = (newPagination: {
     pageIndex: number;
     pageSize: number;
   }) => {
-    setListParams({
-      ...listParams,
+    setQueryParams({
       pageSize: newPagination.pageSize,
       currentPage: newPagination.pageIndex + 1,
     });
@@ -96,10 +96,9 @@ const ExtraWorkReport = () => {
         to: listParams.endDate ? new Date(listParams.endDate) : undefined,
       },
       onChange: (range: { from?: Date; to?: Date } | undefined) => {
-        setListParams({
-          ...listParams,
-          startDate: formatDate(range?.from) ?? undefined,
-          endDate: formatDate(range?.to) ?? undefined,
+        setQueryParams({
+          startDate: formatDate(range?.from) ?? null,
+          endDate: formatDate(range?.to) ?? null,
           currentPage: 1,
         });
       },
@@ -114,9 +113,8 @@ const ExtraWorkReport = () => {
       })),
       value: listParams.projectId?.toString(),
       onChange: (value: any) => {
-        setListParams({
-          ...listParams,
-          projectId: value ? Number(value) : undefined,
+        setQueryParams({
+          projectId: value ? Number(value) : null,
           currentPage: 1,
         });
       },
@@ -132,9 +130,8 @@ const ExtraWorkReport = () => {
       })),
       value: listParams.employeeId?.toString(),
       onChange: (value: any) => {
-        setListParams({
-          ...listParams,
-          employeeId: value ? Number(value) : undefined,
+        setQueryParams({
+          employeeId: value ? Number(value) : null,
           currentPage: 1,
         });
       },

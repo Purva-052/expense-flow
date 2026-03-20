@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
+import { useEffect, useRef } from "react";
 import PageLayout from "@/components/layout/layout-provider";
 import { GlobalTable } from "@/components/table/global-table";
 import GlobalFilterSection from "@/components/table/global-table-filter";
@@ -14,20 +14,39 @@ import { useGetTechnologyDropdownList } from "../technology/services";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roleLabels, roles } from "@/utils/constant";
 import { ViewUserProfileModal } from "../profile/components/view-user-modal";
+import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 
 const UsersPage = () => {
   const { open, setOpen } = useUsersStore();
   const user = useAuthStore((state) => state.user);
   const UserRole = user?.user?.role;
   const isNewJoinee = location.pathname.includes("/New-joinees");
-  const [listParams, setListParams] = useState({
-    pageSize: 10,
-    currentPage: 1,
-    search: "",
-    role: undefined,
-    technologyId: null,
-    status: "active",
+  const [queryParams, setQueryParams] = useQueryStates({
+    pageSize: parseAsInteger.withDefault(10),
+    currentPage: parseAsInteger.withDefault(1),
+    search: parseAsString.withDefault(""),
+    role: parseAsString,
+    status: parseAsString,
+    technologyId: parseAsInteger,
   });
+
+  const listParams = {
+    pageSize: queryParams.pageSize,
+    currentPage: queryParams.currentPage,
+    search: queryParams.search,
+    role: queryParams.role,
+    status: queryParams.status ?? undefined,
+    technologyId: queryParams.technologyId,
+  };
+
+  // const [listParams, setQueryParams] = useState({
+  //   pageSize: 10,
+  //   currentPage: 1,
+  //   search: "",
+  //   role: undefined,
+  //   technologyId: null,
+  //   status: "active",
+  // });
 
   const apiParams = {
     page: listParams.currentPage,
@@ -38,6 +57,15 @@ const UsersPage = () => {
     technologyId: listParams.technologyId,
     status: listParams.status,
   };
+
+  const didInitStatus = useRef(false);
+  useEffect(() => {
+    if (didInitStatus.current) return;
+    didInitStatus.current = true;
+    if (queryParams.status == null) {
+      setQueryParams({ status: "active" });
+    }
+  }, [queryParams.status, setQueryParams]);
 
   const { data: listData, isPending: loading } = useGetUsersList({
     ...apiParams,
@@ -53,14 +81,14 @@ const UsersPage = () => {
   const totalCount = (listData as any)?.metadata?.totalCount;
 
   const handleSearch = (search: string | undefined) => {
-    setListParams({ ...listParams, search: search ?? "", currentPage: 1 });
+    setQueryParams({ ...listParams, search: search ?? "", currentPage: 1 });
   };
 
   const handlePaginationChange = (newPagination: {
     pageIndex: number;
     pageSize: number;
   }) => {
-    setListParams({
+    setQueryParams({
       ...listParams,
       pageSize: newPagination.pageSize,
       currentPage: newPagination.pageIndex + 1,
@@ -68,7 +96,7 @@ const UsersPage = () => {
   };
 
   const handleTechnologyChange = (value: any) => {
-    setListParams({
+    setQueryParams({
       ...listParams,
       technologyId: value ?? null,
       currentPage: 1,
@@ -76,16 +104,16 @@ const UsersPage = () => {
   };
 
   const handleRoleChange = (value: any) => {
-    setListParams({
+    setQueryParams({
       ...listParams,
-      role: value ?? undefined,
+      role: value ?? null,
       currentPage: 1,
     });
   };
   const handleStatusChange = (value: any) => {
-    setListParams({
+    setQueryParams({
       ...listParams,
-      status: value ?? undefined,
+      status: value ?? null,
       currentPage: 1,
     });
   };

@@ -40,6 +40,7 @@ import GlobalFilterSection from "@/components/table/global-table-filter";
 import { useGetProjectSDropdownList } from "../Project-type/services";
 import { Button } from "@/components/ui/button";
 import { getDateRange } from "@/utils/commonFunctions";
+import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 
 // --- MAIN PAGE COMPONENT ---
 const ConferenceRoomBookingPage = () => {
@@ -70,11 +71,20 @@ const ConferenceRoomBookingPage = () => {
   );
   const [timeZone, setTimeZone] = useState<string>("");
 
-  const [listParams, setListParams] = useState({
-    pageSize: 10,
-    currentPage: 1,
-    projectId: undefined,
+  const [queryParams, setQueryParams] = useQueryStates({
+    pageSize: parseAsInteger.withDefault(10),
+    currentPage: parseAsInteger.withDefault(1),
+    search: parseAsString.withDefault(""),
+    projectId: parseAsInteger,
   });
+
+  const listParams = {
+    pageSize: queryParams.pageSize,
+    currentPage: queryParams.currentPage,
+    search: queryParams.search,
+    projectId: queryParams.projectId ?? undefined,
+  };
+
   const [headerDate, setHeaderDate] = useState<Date | null>(null);
 
   const apiParams = {
@@ -338,7 +348,7 @@ const ConferenceRoomBookingPage = () => {
   };
 
   const handleProjectChange = (value: any) => {
-    setListParams({
+    setQueryParams({
       ...listParams,
       projectId: value ?? null,
       currentPage: 1,

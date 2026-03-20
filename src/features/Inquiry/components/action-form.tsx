@@ -328,33 +328,14 @@ export function InquiryActionForm({
                 />
               </div>
 
-              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-                <TextInputField
-                  control={form.control}
-                  name="clientLinkedInProfile"
-                  label="Client LinkedIn Profile"
-                  placeholder="Enter client linkedIn profile"
-                />
-                <FormField
-                  control={form.control}
-                  name="approximateHours"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Approximate Hours</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="text"
-                          placeholder="Enter Approximate hours"
-                          {...field}
-                          disabled={loading}
-                          className="w-full"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              {/* <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2"> */}
+              <TextInputField
+                control={form.control}
+                name="clientLinkedInProfile"
+                label="Client LinkedIn Profile"
+                placeholder="Enter client linkedIn profile"
+              />
+              {/* </div> */}
 
               <PhoneInputField
                 form={form}
@@ -615,29 +596,52 @@ export function InquiryActionForm({
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="inquiryDate"
-                render={({ fieldState }) => (
-                  <FormItem>
-                    <FormLabel
-                      className={cn(
-                        "flex items-center gap-1",
-                        fieldState.error && "text-red-500"
-                      )}
-                    >
-                      Inquiry Date
-                      <span className="text-red-500">*</span>
-                    </FormLabel>
-                    <CustomDatePicker
-                      control={form.control}
-                      name="inquiryDate"
-                      label=""
-                      // disabled={!canEdit}
-                    />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="inquiryDate"
+                  render={({ fieldState }) => (
+                    <FormItem>
+                      <FormLabel
+                        className={cn(
+                          "flex items-center gap-1",
+                          fieldState.error && "text-red-500"
+                        )}
+                      >
+                        Inquiry Date
+                        <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <CustomDatePicker
+                        control={form.control}
+                        name="inquiryDate"
+                        label=""
+                        // disabled={!canEdit}
+                      />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="approximateHours"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel className="min-h-[15px] flex items-center">
+                        Estimate Hours
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          placeholder="Enter Approximate hours"
+                          {...field}
+                          disabled={loading}
+                          className="w-full"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               {!isEdit && (
                 <>
