@@ -92,7 +92,9 @@ export default function DailyReportPage() {
 
     setReportType(nextType);
     setStatsUserId(
-      search.userId ? String(search.userId).replace(/^"+|"+$/g, "") : undefined
+      search.userId != null
+        ? String(search.userId).replace(/^"+|"+$/g, "")
+        : undefined
     );
     setStatsOpen(true);
   }, [
