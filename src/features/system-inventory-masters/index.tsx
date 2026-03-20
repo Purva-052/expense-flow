@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import PageLayout from "@/components/layout/layout-provider";
 import { GlobalTable } from "@/components/table/global-table";
 import GlobalFilterSection from "@/components/table/global-table-filter";
@@ -13,6 +13,7 @@ import {
 } from "./constants";
 import { useGetSystemInventoryTypes } from "./services";
 import { useSystemInventoryMasterStore } from "./stores/useSystemInventoryMasterStore";
+import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 
 interface Props {
   masterType?: SystemInventoryMasterType;
@@ -22,11 +23,18 @@ const SystemInventoryPage = ({ masterType = "processor" }: Readonly<Props>) => {
   const { open, setOpen } = useSystemInventoryMasterStore();
   const config = SYSTEM_INVENTORY_MASTER_CONFIG[masterType];
   const columns = useMemo(() => getColumns(config), [config]);
-  const [listParams, setListParams] = useState({
-    pageSize: 10,
-    currentPage: 1,
-    search: "",
+
+  const [queryParams, setQueryParams] = useQueryStates({
+    pageSize: parseAsInteger.withDefault(10),
+    currentPage: parseAsInteger.withDefault(1),
+    search: parseAsString.withDefault(""),
   });
+
+  const listParams = {
+    pageSize: queryParams.pageSize,
+    currentPage: queryParams.currentPage,
+    search: queryParams.search,
+  };
 
   const apiParams = {
     page: listParams.currentPage,
@@ -43,14 +51,14 @@ const SystemInventoryPage = ({ masterType = "processor" }: Readonly<Props>) => {
   const totalCount = (listData as any)?.metadata?.totalCount;
 
   const handleSearch = (search: string | undefined) => {
-    setListParams({ ...listParams, search: search ?? "", currentPage: 1 });
+    setQueryParams({ ...listParams, search: search ?? "", currentPage: 1 });
   };
 
   const handlePaginationChange = (newPagination: {
     pageIndex: number;
     pageSize: number;
   }) => {
-    setListParams({
+    setQueryParams({
       ...listParams,
       pageSize: newPagination.pageSize,
       currentPage: newPagination.pageIndex + 1,

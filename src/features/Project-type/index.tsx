@@ -1,22 +1,29 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
 import PageLayout from "@/components/layout/layout-provider";
 import { GlobalTable } from "@/components/table/global-table";
-import GlobalFilterSection from "@/components/table/global-table-filter";
+// import GlobalFilterSection from "@/components/table/global-table-filter";
 import TablePageHeader from "@/components/table/table-page-header";
-import { FilterConfig } from "@/components/table/table-toolbar";
+// import { FilterConfig } from "@/components/table/table-toolbar";
 import { ActionFormModal } from "./components/action";
 import { columns } from "./components/columns";
 import { useProjectTypeStore } from "./stores/useProjectTypeStore";
 import { useGetProjectTypes } from "./services";
+import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 
 const ProjectTypePage = () => {
   const { open, setOpen } = useProjectTypeStore();
-  const [listParams, setListParams] = useState({
-    pageSize: 10,
-    currentPage: 1,
-    search: "",
+
+  const [queryParams, setQueryParams] = useQueryStates({
+    pageSize: parseAsInteger.withDefault(10),
+    currentPage: parseAsInteger.withDefault(1),
+    search: parseAsString.withDefault(""),
   });
+
+  const listParams = {
+    currentPage: queryParams.currentPage,
+    pageSize: queryParams.pageSize,
+    search: queryParams.search,
+  };
 
   const apiParams = {
     page: listParams.currentPage,
@@ -29,30 +36,30 @@ const ProjectTypePage = () => {
 
   const totalCount = (listData as any)?.metadata?.totalCount;
 
-  const handleSearch = (search: string | undefined) => {
-    setListParams({ ...listParams, search: search ?? "", currentPage: 1 });
-  };
+  // const handleSearch = (search: string | undefined) => {
+  //   setQueryParams({ ...listParams, search: search ?? "", currentPage: 1 });
+  // };
 
   const handlePaginationChange = (newPagination: {
     pageIndex: number;
     pageSize: number;
   }) => {
-    setListParams({
+    setQueryParams({
       ...listParams,
       pageSize: newPagination.pageSize,
       currentPage: newPagination.pageIndex + 1,
     });
   };
 
-  const filters: FilterConfig[] = [
-    {
-      type: "search",
-      placeholder: "Search by name ...",
-      key: "search",
-      value: listParams.search,
-      onChange: handleSearch,
-    },
-  ];
+  // const filters: FilterConfig[] = [
+  //   {
+  //     type: "search",
+  //     placeholder: "Search by name ...",
+  //     key: "search",
+  //     value: listParams.search,
+  //     onChange: handleSearch,
+  //   },
+  // ];
 
   const handleAdd = () => {
     setOpen("add");
@@ -67,17 +74,19 @@ const ProjectTypePage = () => {
       >
         Manage your Project types here.
       </TablePageHeader>
-      <GlobalFilterSection filters={filters ?? []} />
-      <GlobalTable
-        pageSize={listParams.pageSize}
-        currentPage={listParams.currentPage}
-        totalCount={totalCount ?? 0}
-        data={(listData as any)?.data ?? []}
-        onPaginationChange={handlePaginationChange}
-        columns={columns}
-        loading={loading}
-        isPaginationEnabled
-      />
+      <div className="mt-4">
+        {/* <GlobalFilterSection filters={filters ?? []} /> */}
+        <GlobalTable
+          pageSize={listParams.pageSize}
+          currentPage={listParams.currentPage}
+          totalCount={totalCount ?? 0}
+          data={(listData as any)?.data ?? []}
+          onPaginationChange={handlePaginationChange}
+          columns={columns}
+          loading={loading}
+          isPaginationEnabled
+        />
+      </div>
       {open && <ActionFormModal />}
     </PageLayout>
   );

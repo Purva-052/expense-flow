@@ -10,16 +10,26 @@ import { FilterType } from "./types";
 import { Card, CardContent } from "@/components/ui/card";
 import { CalendarClock, DollarSign, Ghost, CheckCircle2 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 
 const LinodeDashboard = () => {
   const [filter, setFilter] = useState<FilterType>(FilterType.ALL);
-  const [listParams, setListParams] = useState({
-    pageSize: 10,
-    currentPage: 1,
-    search: "",
-    status: undefined as string | undefined,
-    region: undefined as string | undefined,
+
+  const [queryParams, setQueryParams] = useQueryStates({
+    pageSize: parseAsInteger.withDefault(10),
+    currentPage: parseAsInteger.withDefault(1),
+    search: parseAsString.withDefault(""),
+    status: parseAsString,
+    region: parseAsString,
   });
+
+  const listParams = {
+    pageSize: queryParams.pageSize,
+    currentPage: queryParams.currentPage,
+    search: queryParams.search,
+    status: queryParams.status,
+    region: queryParams.region,
+  };
 
   // API parameters to send to backend
   const apiParams = {
@@ -56,14 +66,14 @@ const LinodeDashboard = () => {
 
   // --- HANDLERS ---
   const handleSearch = (search: string | undefined) => {
-    setListParams({ ...listParams, search: search ?? "", currentPage: 1 });
+    setQueryParams({ ...listParams, search: search ?? "", currentPage: 1 });
   };
 
   const handlePaginationChange = (newPagination: {
     pageIndex: number;
     pageSize: number;
   }) => {
-    setListParams({
+    setQueryParams({
       ...listParams,
       pageSize: newPagination.pageSize,
       currentPage: newPagination.pageIndex + 1,
@@ -71,15 +81,15 @@ const LinodeDashboard = () => {
   };
 
   const handleStatusChange = (value: any) => {
-    setListParams({
+    setQueryParams({
       ...listParams,
-      status: value ?? undefined,
+      status: value ?? null,
       currentPage: 1,
     });
   };
 
   // const handleRegionChange = (region: string | undefined) => {
-  //   setListParams({
+  //   setQueryParams({
   //     ...listParams,
   //     region: region ?? "",
   //     currentPage: 1,
@@ -164,7 +174,7 @@ const LinodeDashboard = () => {
             }`}
             onClick={() => {
               setFilter(FilterType.ZOMBIE);
-              setListParams({ ...listParams, currentPage: 1 });
+              setQueryParams({ ...listParams, currentPage: 1 });
             }}
           >
             <CardContent className="p-6 relative overflow-hidden">
@@ -249,7 +259,7 @@ const LinodeDashboard = () => {
               key={tab.value}
               onClick={() => {
                 setFilter(tab.value);
-                setListParams({ ...listParams, currentPage: 1 });
+                setQueryParams({ ...listParams, currentPage: 1 });
               }}
               className={`flex-1 md:flex-none px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 whitespace-nowrap ${
                 filter === tab.value
@@ -266,7 +276,7 @@ const LinodeDashboard = () => {
           value={filter}
           onValueChange={(val) => {
             setFilter(val as FilterType);
-            setListParams({ ...listParams, currentPage: 1 });
+            setQueryParams({ ...listParams, currentPage: 1 });
           }}
           className="w-full"
         >

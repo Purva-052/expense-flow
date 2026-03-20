@@ -40,6 +40,7 @@ import GlobalFilterSection from "@/components/table/global-table-filter";
 import { roles } from "@/utils/constant";
 import { getDateRange } from "@/utils/commonFunctions";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { parseAsInteger, useQueryStates } from "nuqs";
 
 // --- MAIN PAGE COMPONENT ---
 const InterviewsPage = () => {
@@ -71,26 +72,20 @@ const InterviewsPage = () => {
   );
   const [timeZone, setTimeZone] = useState<string>("");
 
-  const [listParams, setListParams] = useState({
-    pageSize: 10,
-    currentPage: 1,
-    // search: "",
-    // clientId: undefined,
-    // priority: undefined,
-    // handlerId: undefined,
-    // projectTypeId: undefined,
-    technologyId: undefined,
+  const [queryParams, setQueryParams] = useQueryStates({
+    pageSize: parseAsInteger.withDefault(10),
+    currentPage: parseAsInteger.withDefault(1),
+    technologyId: parseAsInteger,
   });
+
+  const listParams = {
+    pageSize: queryParams.pageSize,
+    currentPage: queryParams.currentPage,
+    technologyId: queryParams.technologyId,
+  };
 
   const apiParams = {
     page: listParams.currentPage,
-    // limit: listParams.pageSize,
-    // search: listParams.search,
-    // pagination: true,
-    // clientId: listParams.clientId,
-    // priority: listParams.priority,
-    // handlerId: listParams.handlerId,
-    // projectTypeId: listParams.projectTypeId,
     technologyId: listParams.technologyId,
   };
 
@@ -447,7 +442,7 @@ const InterviewsPage = () => {
   };
 
   const handleTechnologyChange = (value: any) => {
-    setListParams({
+    setQueryParams({
       ...listParams,
       technologyId: value ?? null,
       currentPage: 1,

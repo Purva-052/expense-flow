@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
 import PageLayout from "@/components/layout/layout-provider";
 import { GlobalTable } from "@/components/table/global-table";
 import GlobalFilterSection from "@/components/table/global-table-filter";
@@ -12,19 +11,44 @@ import { useToolsStore } from "./stores";
 import { useGetToolsData } from "./services";
 import { useGetUserDropdownList } from "../users/services";
 import { roles } from "@/utils/constant";
+import { formatDate } from "@/utils/commonFunctions";
+import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 
 const ToolsManagementPage = () => {
   const { open, setOpen } = useToolsStore();
-  const [listParams, setListParams] = useState({
-    pageSize: 10,
-    currentPage: 1,
-    search: "",
-    purchasedFromDate: undefined as string | undefined,
-    purchasedToDate: undefined as string | undefined,
-    expiryFromDate: undefined as string | undefined,
-    expiryToDate: undefined as string | undefined,
-    purchasedBy: undefined as number | undefined,
+
+  const [queryParams, setQueryParams] = useQueryStates({
+    pageSize: parseAsInteger.withDefault(10),
+    currentPage: parseAsInteger.withDefault(1),
+    search: parseAsString.withDefault(""),
+    purchasedFromDate: parseAsString,
+    purchasedToDate: parseAsString,
+    expiryFromDate: parseAsString,
+    expiryToDate: parseAsString,
+    purchasedBy: parseAsInteger,
   });
+
+  const listParams = {
+    pageSize: queryParams.pageSize,
+    currentPage: queryParams.currentPage,
+    search: queryParams.search,
+    purchasedFromDate: queryParams.purchasedFromDate ?? undefined,
+    purchasedToDate: queryParams.purchasedToDate ?? undefined,
+    expiryFromDate: queryParams.expiryFromDate ?? undefined,
+    expiryToDate: queryParams.expiryToDate ?? undefined,
+    purchasedBy: queryParams.purchasedBy ?? undefined,
+  };
+
+  // const [listParams, setQueryParams] = useState({
+  //   pageSize: 10,
+  //   currentPage: 1,
+  //   search: "",
+  //   purchasedFromDate: undefined as string | undefined,
+  //   purchasedToDate: undefined as string | undefined,
+  //   expiryFromDate: undefined as string | undefined,
+  //   expiryToDate: undefined as string | undefined,
+  //   purchasedBy: undefined as number | undefined,
+  // });
 
   const apiParams = {
     page: listParams.currentPage,
@@ -36,14 +60,6 @@ const ToolsManagementPage = () => {
     expiryFromDate: listParams.expiryFromDate,
     expiryToDate: listParams.expiryToDate,
     purchasedBy: listParams.purchasedBy,
-  };
-
-  const formatDate = (date?: Date) => {
-    if (!date) return undefined;
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, "0");
-    const dd = String(date.getDate()).padStart(2, "0");
-    return `${yyyy}-${mm}-${dd}`;
   };
 
   const { data: listData, isPending: loading } = useGetToolsData(apiParams);
@@ -62,14 +78,14 @@ const ToolsManagementPage = () => {
   const totalCount = (listData as any)?.metadata?.totalCount;
 
   const handleSearch = (search: string | undefined) => {
-    setListParams({ ...listParams, search: search ?? "", currentPage: 1 });
+    setQueryParams({ ...listParams, search: search ?? "", currentPage: 1 });
   };
 
   const handlePaginationChange = (newPagination: {
     pageIndex: number;
     pageSize: number;
   }) => {
-    setListParams({
+    setQueryParams({
       ...listParams,
       pageSize: newPagination.pageSize,
       currentPage: newPagination.pageIndex + 1,
@@ -95,9 +111,9 @@ const ToolsManagementPage = () => {
       })),
       value: listParams.purchasedBy?.toString(),
       onChange: (value: any) => {
-        setListParams({
+        setQueryParams({
           ...listParams,
-          purchasedBy: value ? Number(value) : undefined,
+          purchasedBy: value ? Number(value) : null,
           currentPage: 1,
         });
       },
@@ -117,10 +133,10 @@ const ToolsManagementPage = () => {
           : undefined,
       },
       onChange: (range: { from?: Date; to?: Date } | undefined) => {
-        setListParams({
+        setQueryParams({
           ...listParams,
-          purchasedFromDate: formatDate(range?.from) ?? undefined,
-          purchasedToDate: formatDate(range?.to) ?? undefined,
+          purchasedFromDate: formatDate(range?.from) ?? null,
+          purchasedToDate: formatDate(range?.to) ?? null,
           currentPage: 1,
         });
       },
@@ -139,10 +155,10 @@ const ToolsManagementPage = () => {
           : undefined,
       },
       onChange: (range: { from?: Date; to?: Date } | undefined) => {
-        setListParams({
+        setQueryParams({
           ...listParams,
-          expiryFromDate: formatDate(range?.from) ?? undefined,
-          expiryToDate: formatDate(range?.to) ?? undefined,
+          expiryFromDate: formatDate(range?.from) ?? null,
+          expiryToDate: formatDate(range?.to) ?? null,
           currentPage: 1,
         });
       },
