@@ -23,7 +23,7 @@ export const useGetConferenceRoomBooking = (params?: {
   timezone?: string;
   startDate?: string;
   endDate?: string;
-  projectId?: string;
+  projectId?: any;
 }) => {
   return useFetchData({
     url: ConferenceRoom_list,
