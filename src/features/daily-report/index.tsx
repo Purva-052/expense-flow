@@ -25,22 +25,48 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { ReportsStatsDialog } from "./components/reports-stats-dialog";
 import { Clock, AlertCircle, CalendarDays } from "lucide-react";
+import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
+import { formatDate } from "@/utils/commonFunctions";
 
 export default function DailyReportPage() {
   const search = useSearch({ from: "/_authenticated/daily-report/" });
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const [listParams, setListParams] = useState({
-    pageSize: 10,
-    currentPage: 1,
-    search: "",
-    projectId: undefined,
-    projectMilestoneId: undefined,
-    taskId: undefined,
-    employeeId: undefined,
-    fromDate: undefined as string | undefined,
-    toDate: undefined as string | undefined,
+  const [queryParams, setQueryParams] = useQueryStates({
+    pageSize: parseAsInteger.withDefault(10),
+    currentPage: parseAsInteger.withDefault(1),
+    search: parseAsString.withDefault(""),
+    projectId: parseAsInteger,
+    projectMilestoneId: parseAsInteger,
+    taskId: parseAsInteger,
+    employeeId: parseAsInteger,
+    startDate: parseAsString,
+    fromDate: parseAsString,
+    toDate: parseAsString,
   });
+
+  const listParams = {
+    pageSize: queryParams.pageSize,
+    currentPage: queryParams.currentPage,
+    search: queryParams.search,
+    projectId: queryParams.projectId ?? undefined,
+    projectMilestoneId: queryParams.projectMilestoneId ?? undefined,
+    taskId: queryParams.taskId ?? undefined,
+    employeeId: queryParams.employeeId ?? undefined,
+    fromDate: queryParams.fromDate ?? undefined,
+    toDate: queryParams.toDate ?? undefined,
+  };
+  // const [listParams, setQueryParams] = useState({
+  //   pageSize: 10,
+  //   currentPage: 1,
+  //   search: "",
+  //   projectId: undefined,
+  //   projectMilestoneId: undefined,
+  //   taskId: undefined,
+  //   employeeId: undefined,
+  //   fromDate: undefined as string | undefined,
+  //   toDate: undefined as string | undefined,
+  // });
 
   const [editReport, setEditReport] = useState<DailyReport | null>(null);
   const [editOpen, setEditOpen] = useState(false);
@@ -157,23 +183,15 @@ export default function DailyReportPage() {
       !!listParams.projectMilestoneId
     );
 
-  const formatDate = (date?: Date) => {
-    if (!date) return undefined;
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, "0");
-    const dd = String(date.getDate()).padStart(2, "0");
-    return `${yyyy}-${mm}-${dd}`;
-  };
-
   const handleSearch = (search: string | undefined) => {
-    setListParams({ ...listParams, search: search ?? "", currentPage: 1 });
+    setQueryParams({ ...listParams, search: search ?? "", currentPage: 1 });
   };
 
   const handlePaginationChange = (newPagination: {
     pageIndex: number;
     pageSize: number;
   }) => {
-    setListParams({
+    setQueryParams({
       ...listParams,
       pageSize: newPagination.pageSize,
       currentPage: newPagination.pageIndex + 1,
@@ -198,10 +216,9 @@ export default function DailyReportPage() {
         to: listParams.toDate ? new Date(listParams.toDate) : undefined,
       },
       onChange: (range: { from?: Date; to?: Date } | undefined) => {
-        setListParams({
-          ...listParams,
-          fromDate: formatDate(range?.from),
-          toDate: formatDate(range?.to),
+        setQueryParams({
+          fromDate: formatDate(range?.from) ?? null,
+          toDate: formatDate(range?.to) ?? null,
           currentPage: 1,
         });
       },
@@ -216,9 +233,8 @@ export default function DailyReportPage() {
       })),
       value: listParams.projectId,
       onChange: (value: any) => {
-        setListParams({
-          ...listParams,
-          projectId: value ?? undefined,
+        setQueryParams({
+          projectId: value ?? null,
           currentPage: 1,
         });
       },
@@ -234,9 +250,8 @@ export default function DailyReportPage() {
       })),
       value: listParams.projectMilestoneId,
       onChange: (value: any) => {
-        setListParams({
-          ...listParams,
-          projectMilestoneId: value ?? undefined,
+        setQueryParams({
+          projectMilestoneId: value ?? null,
           currentPage: 1,
         });
       },
@@ -252,9 +267,8 @@ export default function DailyReportPage() {
       })),
       value: listParams.taskId,
       onChange: (value: any) => {
-        setListParams({
-          ...listParams,
-          taskId: value ?? undefined,
+        setQueryParams({
+          taskId: value ?? null,
           currentPage: 1,
         });
       },
@@ -270,9 +284,8 @@ export default function DailyReportPage() {
       })),
       value: listParams.employeeId,
       onChange: (value: any) => {
-        setListParams({
-          ...listParams,
-          employeeId: value ?? undefined,
+        setQueryParams({
+          employeeId: value ?? null,
           currentPage: 1,
         });
       },

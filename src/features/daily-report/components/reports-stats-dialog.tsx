@@ -6,16 +6,31 @@ import {
 } from "@/components/ui/dialog";
 import { GlobalTable } from "@/components/table/global-table";
 import { useGetReportDetails } from "../services";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type UIEvent } from "react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import { FilterConfig } from "@/components/table/table-toolbar";
+import { formatDate } from "@/utils/commonFunctions";
+import { useGetUserDropdownList } from "@/features/users/services";
+import { roles } from "@/utils/constant";
+import { useAuthStore } from "@/stores/use-auth-store";
+
+type ReportType = "pending" | "incomplete" | "holiday" | null;
+
+interface ListParams {
+  pageSize: number;
+  currentPage: number;
+  search: string;
+  fromDate?: string;
+  toDate?: string;
+  userId?: string;
+}
 
 interface ReportsStatsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  type: "pending" | "incomplete" | "holiday" | null;
+  type: ReportType;
   reportingDate?: string;
   userId?: string;
 }
@@ -27,8 +42,16 @@ export function ReportsStatsDialog({
   reportingDate,
   userId,
 }: ReportsStatsDialogProps) {
-  const [currentType, setCurrentType] = useState<any>(type);
-  const [listParams, setListParams] = useState(() => {
+  const { user } = useAuthStore();
+  const userRole = String(user?.user?.role ?? user?.role ?? "");
+  const canFilterByEmployee = [
+    roles.TEAM_LEAD,
+    roles.PROJECT_MANAGER,
+    roles.ADMIN,
+  ].includes(userRole);
+
+  const [currentType, setCurrentType] = useState<ReportType>(type);
+  const [listParams, setListParams] = useState<ListParams>(() => {
     const isHoliday = type === "holiday";
     return {
       pageSize: isHoliday ? 100 : 10,
@@ -42,6 +65,16 @@ export function ReportsStatsDialog({
 
   const [accumulatedData, setAccumulatedData] = useState<any[]>([]);
   const [hasMore, setHasMore] = useState(true);
+  const { data: usersList, isPending: usersListLoading }: any =
+    useGetUserDropdownList({
+      role: [
+        roles.TEAM_LEAD,
+        // roles.ADMIN,
+        // roles.PROJECT_MANAGER,
+        roles.DEVELOPER,
+      ],
+      status: "active",
+    });
 
   useEffect(() => {
     if (type) {
@@ -66,7 +99,7 @@ export function ReportsStatsDialog({
     isPending: loading,
     isFetching,
   } = useGetReportDetails({
-    type: currentType!,
+    type: currentType ?? "",
     fromDate: listParams.fromDate,
     toDate: listParams.toDate,
     search: listParams.search,
@@ -111,7 +144,7 @@ export function ReportsStatsDialog({
     });
   };
 
-  const handleListScroll = (event: React.UIEvent<HTMLDivElement>) => {
+  const handleListScroll = (event: UIEvent<HTMLDivElement>) => {
     const target = event.currentTarget;
     const reachedBottom =
       target.scrollTop + target.clientHeight >= target.scrollHeight - 50;
@@ -122,14 +155,6 @@ export function ReportsStatsDialog({
         currentPage: prev.currentPage + 1,
       }));
     }
-  };
-
-  const formatDate = (date?: Date) => {
-    if (!date) return undefined;
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, "0");
-    const dd = String(date.getDate()).padStart(2, "0");
-    return `${yyyy}-${mm}-${dd}`;
   };
 
   const filters: FilterConfig[] =
@@ -170,6 +195,29 @@ export function ReportsStatsDialog({
               setAccumulatedData([]);
             },
           },
+          ...(canFilterByEmployee
+            ? [
+                {
+                  type: "select",
+                  key: "userId",
+                  placeholder: "Filter by Employee",
+                  options: usersList?.data?.map((user: any) => ({
+                    value: user.id,
+                    label: user.fullName,
+                  })),
+                  value: listParams.userId,
+                  onChange: (value: any) => {
+                    setListParams({
+                      ...listParams,
+                      userId: value ?? undefined,
+                      currentPage: 1,
+                    });
+                    setAccumulatedData([]);
+                  },
+                  isLoading: usersListLoading,
+                },
+              ]
+            : []),
         ]
       : [];
 

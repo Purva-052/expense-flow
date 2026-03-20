@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
+// import { useState } from "react";
 import PageLayout from "@/components/layout/layout-provider";
 import { GlobalTable } from "@/components/table/global-table";
 import GlobalFilterSection from "@/components/table/global-table-filter";
@@ -17,20 +17,46 @@ import {
   TransactionTypeOptions,
 } from "@/utils/constant";
 import { useGetUserDropdownList } from "../users/services";
+import { formatDate } from "@/utils/commonFunctions";
+import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 
 const TransactionPage = () => {
   const { open, setOpen } = useTransactionStore();
-  const [listParams, setListParams] = useState({
-    pageSize: 10,
-    currentPage: 1,
-    search: "",
-    projectId: undefined,
-    transactionType: undefined,
-    subscriptionCycle: undefined,
-    userId: undefined,
-    transactionStartDate: undefined as string | undefined,
-    transactionEndDate: undefined as string | undefined,
+
+  const [queryParams, setQueryParams] = useQueryStates({
+    pageSize: parseAsInteger.withDefault(10),
+    currentPage: parseAsInteger.withDefault(1),
+    search: parseAsString.withDefault(""),
+    projectId: parseAsInteger,
+    transactionType: parseAsString,
+    subscriptionCycle: parseAsString,
+    userId: parseAsInteger,
+    transactionStartDate: parseAsString,
+    transactionEndDate: parseAsString,
   });
+
+  const listParams = {
+    pageSize: queryParams.pageSize,
+    currentPage: queryParams.currentPage,
+    search: queryParams.search,
+    projectId: queryParams.projectId ?? undefined,
+    transactionType: queryParams.transactionType ?? undefined,
+    subscriptionCycle: queryParams.subscriptionCycle ?? undefined,
+    userId: queryParams.userId ?? undefined,
+    transactionStartDate: queryParams.transactionStartDate ?? undefined,
+    transactionEndDate: queryParams.transactionEndDate ?? undefined,
+  };
+  // const [listParams, setQueryParams] = useState({
+  //   pageSize: 10,
+  //   currentPage: 1,
+  //   search: "",
+  //   projectId: undefined,
+  //   transactionType: undefined,
+  //   subscriptionCycle: undefined,
+  //   userId: undefined,
+  //   transactionStartDate: undefined as string | undefined,
+  //   transactionEndDate: undefined as string | undefined,
+  // });
 
   const apiParams = {
     page: listParams.currentPage,
@@ -45,18 +71,8 @@ const TransactionPage = () => {
     transactionEndDate: listParams.transactionEndDate,
   };
 
-  const formatDate = (date?: Date) => {
-    if (!date) return undefined;
-
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, "0");
-    const dd = String(date.getDate()).padStart(2, "0");
-
-    return `${yyyy}-${mm}-${dd}`;
-  };
-
   const handleProjectChange = (value: any) => {
-    setListParams({
+    setQueryParams({
       ...listParams,
       projectId: value ?? null,
       currentPage: 1,
@@ -75,14 +91,14 @@ const TransactionPage = () => {
     });
 
   const handleSearch = (search: string | undefined) => {
-    setListParams({ ...listParams, search: search ?? "", currentPage: 1 });
+    setQueryParams({ ...listParams, search: search ?? "", currentPage: 1 });
   };
 
   const handlePaginationChange = (newPagination: {
     pageIndex: number;
     pageSize: number;
   }) => {
-    setListParams({
+    setQueryParams({
       ...listParams,
       pageSize: newPagination.pageSize,
       currentPage: newPagination.pageIndex + 1,
@@ -110,10 +126,10 @@ const TransactionPage = () => {
           : undefined,
       },
       onChange: (range: { from?: Date; to?: Date } | undefined) => {
-        setListParams({
+        setQueryParams({
           ...listParams,
-          transactionStartDate: formatDate(range?.from) ?? undefined,
-          transactionEndDate: formatDate(range?.to) ?? undefined,
+          transactionStartDate: formatDate(range?.from) ?? null,
+          transactionEndDate: formatDate(range?.to) ?? null,
           currentPage: 1,
         });
       },
@@ -136,7 +152,7 @@ const TransactionPage = () => {
       options: TransactionTypeOptions,
       value: listParams.transactionType,
       onChange: (value: any) => {
-        setListParams({
+        setQueryParams({
           ...listParams,
           transactionType: value ?? null,
           currentPage: 1,
@@ -151,7 +167,7 @@ const TransactionPage = () => {
       options: SubscriptionTypeOptions,
       value: listParams.subscriptionCycle,
       onChange: (value: any) => {
-        setListParams({
+        setQueryParams({
           ...listParams,
           subscriptionCycle: value ?? null,
           currentPage: 1,
@@ -168,7 +184,7 @@ const TransactionPage = () => {
       }),
       value: listParams.userId,
       onChange: (value: any) => {
-        setListParams({
+        setQueryParams({
           ...listParams,
           userId: value ?? null,
           currentPage: 1,

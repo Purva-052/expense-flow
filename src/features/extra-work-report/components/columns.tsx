@@ -89,7 +89,7 @@ export const columns: ColumnDef<any>[] = [
     accessorKey: "taskDescription",
     header: "Task Description",
     cell: ({ row }) => {
-      const taskDescription = row.original.taskDescription;
+      const taskDescription = row.original.taskDescription ?? "-";
 
       if (!taskDescription) {
         return <span className="text-sm">-</span>;

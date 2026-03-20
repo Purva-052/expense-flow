@@ -297,7 +297,7 @@ const ProjectBoard = () => {
                         >
                           <Download />
                           {exportCSVLoading
-                            ? "Exporting csv ..."
+                            ? "Exporting CSV ..."
                             : "Export CSV"}
                         </Button>
                       ) : null

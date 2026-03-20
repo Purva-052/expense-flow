@@ -1,17 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
-import { CKEditor } from "@ckeditor/ckeditor5-react";
-import {
-  ClassicEditor,
-  Bold,
-  Essentials,
-  Paragraph,
-  Undo,
-  Heading,
-  List,
-  TodoList,
-} from "ckeditor5";
-
-import "ckeditor5/ckeditor5.css";
+import { MeetingRichTextEditor } from "@/components/shared/meeting-rich-text-editor";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -131,7 +119,6 @@ export function InternalMeetingDialog({
   onSuccess,
   projectDisplayName,
 }: InternalMeetingDialogProps) {
-  const [editorReady, setEditorReady] = useState(false);
   const [editorDirty, setEditorDirty] = useState(false);
   const { data: usersList, isPending: usersListLoading }: any =
     useGetUserDropdownList({
@@ -389,7 +376,7 @@ export function InternalMeetingDialog({
                 )}
               />
 
-              {/* Description Field with CKEditor - Full Width */}
+              {/* Description Field - Full Width */}
               <FormField
                 control={form.control}
                 name="description"
@@ -400,69 +387,15 @@ export function InternalMeetingDialog({
                       <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
-                      <div className="rounded-md border border-input bg-background ck-editor-lg">
-                        <CKEditor
-                          //@ts-ignore
-                          editor={ClassicEditor}
-                          data={field.value}
-                          onChange={(_, editor) => {
-                            const data = editor.getData();
-                            field.onChange(data);
-                            if (isEditMode) setEditorDirty(true);
-                          }}
-                          onReady={() => {
-                            setEditorReady(true);
-                          }}
-                          disabled={loading || !editorReady || isViewOnly}
-                          config={{
-                            plugins: [
-                              Essentials,
-                              Paragraph,
-                              Heading,
-                              Bold,
-                              List,
-                              TodoList,
-                              Undo,
-                            ],
-                            toolbar: [
-                              "heading",
-                              "|",
-                              "bold",
-                              "|",
-                              "bulletedList",
-                              "numberedList",
-                              "todoList",
-                              "|",
-                              "blockQuote",
-                              "|",
-                              "undo",
-                              "redo",
-                            ],
-                            heading: {
-                              options: [
-                                {
-                                  model: "paragraph",
-                                  title: "Paragraph",
-                                  class: "ck-heading_paragraph",
-                                },
-                                {
-                                  model: "heading1",
-                                  view: "h1",
-                                  title: "Heading 1",
-                                  class: "ck-heading_heading1",
-                                },
-                                {
-                                  model: "heading2",
-                                  view: "h2",
-                                  title: "Heading 2",
-                                  class: "ck-heading_heading2",
-                                },
-                              ],
-                            },
-                            licenseKey: "GPL",
-                          }}
-                        />
-                      </div>
+                      <MeetingRichTextEditor
+                        value={field.value}
+                        onChange={(data) => {
+                          field.onChange(data);
+                          if (isEditMode) setEditorDirty(true);
+                        }}
+                        placeholder="Enter meeting discussion points..."
+                        disabled={loading || isViewOnly}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

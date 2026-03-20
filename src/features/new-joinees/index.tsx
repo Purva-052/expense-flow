@@ -23,7 +23,8 @@ import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useDeleteInterview } from "../Interviews/services";
 import { Button } from "@/components/ui/button";
-import { getDateRange } from "@/utils/commonFunctions";
+import { formatDate, getDateRange } from "@/utils/commonFunctions";
+import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 
 const NewJoineesPage = () => {
   const { open, setOpen, setCurrentRow } = useNewJoineeStore();
@@ -48,21 +49,36 @@ const NewJoineesPage = () => {
     return Intl.DateTimeFormat().resolvedOptions().timeZone;
   });
 
-  const [listParams, setListParams] = useState({
-    pageSize: 10,
-    currentPage: 1,
-    search: "",
-    technologyId: null,
-    status: undefined,
+  const [queryParams, setQueryParams] = useQueryStates({
+    pageSize: parseAsInteger.withDefault(10),
+    currentPage: parseAsInteger.withDefault(1),
+    search: parseAsString.withDefault(""),
+    technologyId: parseAsInteger,
+    status: parseAsInteger,
   });
 
-  // Format current calendar date as YYYY-MM-DD
-  const formatCurrentDate = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
+  const listParams = {
+    pageSize: queryParams.pageSize,
+    currentPage: queryParams.currentPage,
+    search: queryParams.search,
+    technologyId: queryParams.technologyId,
+    status: queryParams.status,
   };
+  // const [listParams, setQueryParams] = useState({
+  //   pageSize: 10,
+  //   currentPage: 1,
+  //   search: "",
+  //   technologyId: null,
+  //   status: undefined,
+  // });
+
+  // Format current calendar date as YYYY-MM-DD
+  // const formatCurrentDate = (date: Date): string => {
+  //   const year = date.getFullYear();
+  //   const month = String(date.getMonth() + 1).padStart(2, "0");
+  //   const day = String(date.getDate()).padStart(2, "0");
+  //   return `${year}-${month}-${day}`;
+  // };
 
   // Calculate date range based on current view for API
   // const getDateRange = () => {
@@ -96,8 +112,8 @@ const NewJoineesPage = () => {
     technologyId: listParams.technologyId,
     status: listParams.status,
     timezone: timeZone,
-    startDate: formatCurrentDate(dateRange.start),
-    endDate: formatCurrentDate(dateRange.end),
+    startDate: formatDate(dateRange.start),
+    endDate: formatDate(dateRange.end),
   };
 
   const { data: listData } = useGetNewJoineesList(apiParams);
@@ -145,7 +161,7 @@ const NewJoineesPage = () => {
     );
 
   const handleTechnologyChange = (value: any) => {
-    setListParams({
+    setQueryParams({
       ...listParams,
       technologyId: value ?? null,
       currentPage: 1,
