@@ -149,11 +149,17 @@ export function DailyReportDialog({
   const { data: reportData, isPending: isReportLoading }: any =
     useGetDailyReportById(isEdit ? String(report?.id || "") : "");
 
-  const fetchedReport = Array.isArray(reportData?.data)
-    ? reportData.data.find(
-        (item: any) => String(item.id) === String(report?.id)
-      ) || reportData.data[0]
-    : reportData?.data;
+  const reportPayload =
+    reportData && typeof reportData === "object" && "data" in reportData
+      ? reportData.data
+      : reportData;
+
+  const fetchedReport = Array.isArray(reportPayload)
+    ? reportPayload.find((item: any) => String(item.id) === String(report?.id))
+      || reportPayload[0]
+    : reportPayload;
+
+  const activeReport = fetchedReport || report;
 
   const { mutate: updateReport, isPending: isUpdating } = useUpdateDailyReport(
     String(report?.id),
@@ -190,19 +196,19 @@ export function DailyReportDialog({
 
   useEffect(() => {
     if (open) {
-      if (isEdit && fetchedReport) {
+      if (isEdit && activeReport) {
         // Parse time safely
-        const { h, m } = parseTimeSpent(fetchedReport.timeSpent);
+        const { h, m } = parseTimeSpent(activeReport.timeSpent);
         form.reset({
-          reportingDate: new Date(fetchedReport.reportingDate),
-          employeeName: String(fetchedReport.employee?.id || ""),
-          projectId: String(fetchedReport.project?.id || ""),
-          milestoneId: String(fetchedReport.milestone?.id || ""),
-          taskId: String(fetchedReport.task?.id || ""),
-          taskDescription: fetchedReport.taskDescription || "",
+          reportingDate: new Date(activeReport.reportingDate),
+          employeeName: String(activeReport.employee?.id || ""),
+          projectId: String(activeReport.project?.id || ""),
+          milestoneId: String(activeReport.milestone?.id || ""),
+          taskId: String(activeReport.task?.id || ""),
+          taskDescription: activeReport.taskDescription || "",
           hours: h,
           minutes: m,
-          remark: fetchedReport.remark || "",
+          remark: activeReport.remark || "",
         });
       } else if (!isEdit) {
         form.reset({
@@ -222,7 +228,7 @@ export function DailyReportDialog({
         });
       }
     }
-  }, [open, isEdit, fetchedReport, initialData, user, form]);
+  }, [open, isEdit, activeReport, initialData, user, form]);
 
   const watchProjectId = form.watch("projectId");
   const watchMilestoneId = form.watch("milestoneId");
@@ -312,7 +318,7 @@ export function DailyReportDialog({
         ) : (
           <Form {...form}>
             <form
-              key={fetchedReport?.id || "form-key"}
+              key={activeReport?.id || "form-key"}
               onSubmit={form.handleSubmit(onSubmit)}
               className="flex flex-col flex-1 min-h-0"
             >
@@ -350,7 +356,7 @@ export function DailyReportDialog({
                               <Input
                                 value={
                                   isEdit
-                                    ? fetchedReport?.employee?.fullName || ""
+                                    ? activeReport?.employee?.fullName || ""
                                     : user?.user?.fullName || ""
                                 }
                                 disabled
@@ -484,7 +490,7 @@ export function DailyReportDialog({
                                 Hours <span className="text-red-500">*</span>
                               </FormLabel>
                               <Select
-                                key={`hours-${field.value}-${fetchedReport?.id || "new"}`}
+                                key={`hours-${field.value}-${activeReport?.id || "new"}`}
                                 onValueChange={field.onChange}
                                 value={field.value}
                               >
@@ -516,7 +522,7 @@ export function DailyReportDialog({
                                 Minutes <span className="text-red-500">*</span>
                               </FormLabel>
                               <Select
-                                key={`minutes-${field.value}-${fetchedReport?.id || "new"}`}
+                                key={`minutes-${field.value}-${activeReport?.id || "new"}`}
                                 onValueChange={field.onChange}
                                 value={field.value}
                               >
