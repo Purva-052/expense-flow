@@ -10,6 +10,7 @@ import {
   useGetProjectMilestonesList,
   useGetTasksDropdownList,
   useGetReportsAnalytics,
+  useExportCSV,
 } from "./services";
 import { columns } from "./components/columns";
 import { useGetProjectSDropdownList } from "../Project-type/services";
@@ -24,9 +25,11 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { ReportsStatsDialog } from "./components/reports-stats-dialog";
-import { Clock, AlertCircle, CalendarDays } from "lucide-react";
+import { Clock, AlertCircle, CalendarDays, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import { formatDate } from "@/utils/commonFunctions";
+import { format } from "date-fns";
 
 export default function DailyReportPage() {
   const search = useSearch({ from: "/_authenticated/daily-report/" });
@@ -151,6 +154,14 @@ export default function DailyReportPage() {
 
   const { data: listData, isPending: loading } =
     useGetDailyReportList(apiParams);
+  const userRole = user?.user?.role;
+
+  const { mutate: exportCSV, isPending: exportCSVLoading } = useExportCSV();
+
+  const canExportCSV =
+    userRole === roles.ADMIN ||
+    userRole === roles.PROJECT_MANAGER ||
+    userRole === roles.TEAM_LEAD;
 
   const totalCount = (listData as any)?.metadata?.totalCount;
 
@@ -184,6 +195,43 @@ export default function DailyReportPage() {
         : undefined,
       !!listParams.projectMilestoneId
     );
+
+  const handleExportCSV = () => {
+    // Use apiParams directly instead of localStorage
+    const payload = Object.fromEntries(
+      Object.entries(apiParams).filter(
+        ([, value]) => value !== "" && value !== null && value !== undefined
+      )
+    );
+
+    exportCSV(payload, {
+      onSuccess: (response: any) => {
+        const fileBlob = response?.blob;
+        const filename =
+          response?.filename ||
+          `daily_reports_export_${format(new Date(), "yyyy-MM-dd")}.xlsx`;
+
+        if (fileBlob) {
+          const fileUrl = URL.createObjectURL(fileBlob);
+          const link = document.createElement("a");
+          link.href = fileUrl;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(fileUrl);
+          toast.success("CSV export generated successfully");
+        } else {
+          console.error("No file URL found in response:", response);
+          toast.error("Failed to generate CSV file");
+        }
+      },
+      onError: (error: Error) => {
+        console.error("CSV export failed:", error);
+        // toast.error(error.message || "Failed to generate CSV file");
+      },
+    });
+  };
 
   const handleSearch = (search: string | undefined) => {
     setQueryParams({ ...listParams, search: search ?? "", currentPage: 1 });
@@ -433,27 +481,43 @@ export default function DailyReportPage() {
           Get list of daily report logs
         </TablePageHeader> */}
 
-        <GlobalFilterSection
-          filters={filters.filter((f) => {
-            if (f.key === "milestoneId" && !listParams.projectId) {
-              return false;
-            }
-            if (f.key === "taskId" && !listParams.projectMilestoneId) {
-              return false;
-            }
-            if (f.key === "employeeId") {
-              const userRole = String(
-                user?.user?.role?.name || user?.user?.role
-              ).toLowerCase();
-              return (
-                userRole === roles.ADMIN ||
-                userRole === roles.TEAM_LEAD ||
-                userRole === roles.PROJECT_MANAGER
-              );
-            }
-            return true;
-          })}
-        />
+        <div className="relative">
+          <div className="pr-44">
+            <GlobalFilterSection
+              filters={filters.filter((f) => {
+                if (f.key === "milestoneId" && !listParams.projectId) {
+                  return false;
+                }
+                if (f.key === "taskId" && !listParams.projectMilestoneId) {
+                  return false;
+                }
+                if (f.key === "employeeId") {
+                  const userRole = String(
+                    user?.user?.role?.name || user?.user?.role
+                  ).toLowerCase();
+                  return (
+                    userRole === roles.ADMIN ||
+                    userRole === roles.TEAM_LEAD ||
+                    userRole === roles.PROJECT_MANAGER
+                  );
+                }
+                return true;
+              })}
+            />
+          </div>
+          {canExportCSV && (
+            <div className="absolute right-0 top-0 z-10">
+              <Button
+                onClick={handleExportCSV}
+                disabled={exportCSVLoading}
+                className="whitespace-nowrap p-5"
+              >
+                <Download className="w-4 h-4 mr-1" />
+                {exportCSVLoading ? "Exporting CSV..." : "Export CSV"}
+              </Button>
+            </div>
+          )}
+        </div>
         <GlobalTable<DailyReport>
           pageSize={listParams.pageSize}
           currentPage={listParams.currentPage}
