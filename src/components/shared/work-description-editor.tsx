@@ -23,6 +23,8 @@ export const WorkDescriptionEditor = ({
       hideToolbarWhenDisabled
       className={className}
       disabled={disabled}
+      minHeightClassName="min-h-[220px]"
+      editorClassName="max-h-[60vh] overflow-y-auto"
     />
   );
 };

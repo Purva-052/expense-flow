@@ -7,6 +7,8 @@ import {
 import { GlobalTable } from "@/components/table/global-table";
 import { useGetReportDetails } from "../services";
 import { useEffect, useState, type UIEvent } from "react";
+import { ArrowUp, ArrowDown } from "lucide-react";
+import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import GlobalFilterSection from "@/components/table/global-table-filter";
@@ -62,6 +64,10 @@ export function ReportsStatsDialog({
       userId: userId || undefined,
     };
   });
+  const [sortField, setSortField] = useState<
+    "fullName" | "reportingDate" | null
+  >(null);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   const [accumulatedData, setAccumulatedData] = useState<any[]>([]);
   const [hasMore, setHasMore] = useState(true);
@@ -91,6 +97,9 @@ export function ReportsStatsDialog({
       });
       setAccumulatedData([]);
       setHasMore(true);
+      // Reset sorting when type changes
+      setSortField(null);
+      setSortOrder("asc");
     }
   }, [type, reportingDate, userId]);
 
@@ -131,7 +140,41 @@ export function ReportsStatsDialog({
     }
   }, [listData, listParams.currentPage, listParams.pageSize]);
 
-  const totalCount = (listData as any)?.metadata?.totalCount;
+  const handleSort = (field: "fullName" | "reportingDate") => {
+    if (sortField === field) {
+      // Toggle sort order if same field
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      // Set new field with ascending order
+      setSortField(field);
+      setSortOrder("asc");
+    }
+  };
+
+  const getSortedData = (data: any[]) => {
+    if (!sortField) return data;
+
+    const sorted = [...data].sort((a, b) => {
+      let aVal = a[sortField];
+      let bVal = b[sortField];
+
+      if (sortField === "reportingDate") {
+        aVal = new Date(aVal).getTime();
+        bVal = new Date(bVal).getTime();
+      } else if (sortField === "fullName") {
+        aVal = String(aVal).toLowerCase();
+        bVal = String(bVal).toLowerCase();
+      }
+
+      if (aVal < bVal) return sortOrder === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return sorted;
+  };
+
+  const sortedAccumulatedData = getSortedData(accumulatedData);
 
   const handlePaginationChange = (newPagination: {
     pageIndex: number;
@@ -221,16 +264,66 @@ export function ReportsStatsDialog({
         ]
       : [];
 
-  const columns =
+  const columns: ColumnDef<any>[] =
     currentType === "pending"
       ? [
           {
             accessorKey: "fullName",
-            header: "Employee Name",
+            header: () => (
+              <div className="flex items-center gap-2">
+                <span>Employee Name</span>
+                <div
+                  className="flex flex-col gap-0 cursor-pointer"
+                  onClick={() => handleSort("fullName")}
+                >
+                  <ArrowUp
+                    size={12}
+                    className={`${
+                      sortField === "fullName" && sortOrder === "asc"
+                        ? "text-blue-600"
+                        : "text-gray-300 hover:text-gray-600"
+                    }`}
+                  />
+                  <ArrowDown
+                    size={12}
+                    className={`-mt-1 ${
+                      sortField === "fullName" && sortOrder === "desc"
+                        ? "text-blue-600"
+                        : "text-gray-300 hover:text-gray-600"
+                    }`}
+                  />
+                </div>
+              </div>
+            ),
           },
           {
             accessorKey: "reportingDate",
-            header: "Reporting Date",
+            header: () => (
+              <div className="flex items-center gap-2">
+                <span>Reporting Date</span>
+                <div
+                  className="flex flex-col gap-0 cursor-pointer"
+                  onClick={() => handleSort("reportingDate")}
+                >
+                  <ArrowUp
+                    size={12}
+                    className={`${
+                      sortField === "reportingDate" && sortOrder === "asc"
+                        ? "text-blue-600"
+                        : "text-gray-300 hover:text-gray-600"
+                    }`}
+                  />
+                  <ArrowDown
+                    size={12}
+                    className={`-mt-1 ${
+                      sortField === "reportingDate" && sortOrder === "desc"
+                        ? "text-blue-600"
+                        : "text-gray-300 hover:text-gray-600"
+                    }`}
+                  />
+                </div>
+              </div>
+            ),
             cell: ({ row }: any) =>
               format(new Date(row.original.reportingDate), "dd/MM/yyyy"),
           },
@@ -292,11 +385,61 @@ export function ReportsStatsDialog({
         : [
             {
               accessorKey: "fullName",
-              header: "Employee Name",
+              header: () => (
+                <div className="flex items-center gap-2">
+                  <span>Employee Name</span>
+                  <div
+                    className="flex flex-col gap-0 cursor-pointer"
+                    onClick={() => handleSort("fullName")}
+                  >
+                    <ArrowUp
+                      size={12}
+                      className={`${
+                        sortField === "fullName" && sortOrder === "asc"
+                          ? "text-blue-600"
+                          : "text-gray-300 hover:text-gray-600"
+                      }`}
+                    />
+                    <ArrowDown
+                      size={12}
+                      className={`-mt-1 ${
+                        sortField === "fullName" && sortOrder === "desc"
+                          ? "text-blue-600"
+                          : "text-gray-300 hover:text-gray-600"
+                      }`}
+                    />
+                  </div>
+                </div>
+              ),
             },
             {
               accessorKey: "reportingDate",
-              header: "Reporting Date",
+              header: () => (
+                <div className="flex items-center gap-2">
+                  <span>Reporting Date</span>
+                  <div
+                    className="flex flex-col gap-0 cursor-pointer"
+                    onClick={() => handleSort("reportingDate")}
+                  >
+                    <ArrowUp
+                      size={12}
+                      className={`${
+                        sortField === "reportingDate" && sortOrder === "asc"
+                          ? "text-blue-600"
+                          : "text-gray-300 hover:text-gray-600"
+                      }`}
+                    />
+                    <ArrowDown
+                      size={12}
+                      className={`-mt-1 ${
+                        sortField === "reportingDate" && sortOrder === "desc"
+                          ? "text-blue-600"
+                          : "text-gray-300 hover:text-gray-600"
+                      }`}
+                    />
+                  </div>
+                </div>
+              ),
               cell: ({ row }: any) =>
                 format(new Date(row.original.reportingDate), "dd/MM/yyyy"),
             },
@@ -319,6 +462,7 @@ export function ReportsStatsDialog({
   const PAGINATION_HEIGHT = 52;
   const tableMinHeight =
     HEADER_HEIGHT + ROW_HEIGHT * listParams.pageSize + PAGINATION_HEIGHT;
+  const totalCount = (listData as any)?.metadata?.totalCount;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -374,7 +518,7 @@ export function ReportsStatsDialog({
                     ))
                   ) : (
                     <>
-                      {accumulatedData.map((item, idx) => (
+                      {sortedAccumulatedData.map((item, idx) => (
                         <tr
                           key={item.id ?? idx}
                           className="border-b transition-colors hover:bg-muted/50"
@@ -421,7 +565,7 @@ export function ReportsStatsDialog({
                 pageSize={listParams.pageSize}
                 currentPage={listParams.currentPage}
                 totalCount={totalCount ?? 0}
-                data={(listData as any)?.data ?? []}
+                data={getSortedData((listData as any)?.data ?? [])}
                 onPaginationChange={handlePaginationChange}
                 columns={columns}
                 loading={loading}
