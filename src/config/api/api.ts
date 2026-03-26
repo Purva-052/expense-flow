@@ -134,6 +134,7 @@ const API = {
     delete: "/daily-reports",
     report_details: "/daily-reports/reports-stats",
     report_analytics: "/daily-reports/reports-counts",
+    export_csv: "/daily-reports/export-report",
   },
   extra_hours: {
     create: "/extra-hours",
