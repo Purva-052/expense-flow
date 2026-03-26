@@ -47,6 +47,7 @@ interface TiptapEditorProps {
   toolbar?: ToolbarFeature[];
   minHeightClassName?: string;
   editorClassName?: string;
+  contentWrapperClassName?: string;
   hideToolbarWhenDisabled?: boolean;
 }
 
@@ -69,6 +70,7 @@ export const TiptapEditor = ({
   toolbar = DEFAULT_TOOLBAR,
   minHeightClassName = "min-h-[160px]",
   editorClassName,
+  contentWrapperClassName,
   hideToolbarWhenDisabled = false,
 }: TiptapEditorProps) => {
   const hasHeadings =
@@ -388,7 +390,9 @@ export const TiptapEditor = ({
           {toolbarItems}
         </div>
       ) : null}
-      <EditorContent editor={editor} />
+      <div className={cn("min-h-0", contentWrapperClassName)}>
+        <EditorContent editor={editor} />
+      </div>
     </div>
   );
 };

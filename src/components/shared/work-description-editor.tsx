@@ -24,7 +24,8 @@ export const WorkDescriptionEditor = ({
       className={className}
       disabled={disabled}
       minHeightClassName="min-h-[220px]"
-      editorClassName="max-h-[60vh] overflow-y-auto"
+      contentWrapperClassName="max-h-[320px] overflow-y-auto"
+      editorClassName="min-h-[220px]"
     />
   );
 };
