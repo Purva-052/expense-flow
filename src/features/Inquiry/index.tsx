@@ -42,6 +42,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod"; // Import zod
 import { ActionFormModal } from "./components/action";
 import { HistoryProjectModal } from "./components/history-modal";
+import { ViewNoteModal } from "./components/view-note-modal";
 import { ViewInquiryModal } from "./components/view-model";
 import { useCreateInquiryStatus, useGetInquiry } from "./services";
 import { useInquiryStore } from "./stores/useInquiryStore";
@@ -575,6 +576,10 @@ const InquiryPage = () => {
           setOpen("view");
           setCurrentRow(inquiry);
         };
+        const handleViewNote = () => {
+          setOpen("view-note");
+          setCurrentRow(inquiry);
+        };
         const handleViewHistory = () => {
           setOpen("history");
 
@@ -594,6 +599,9 @@ const InquiryPage = () => {
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleView}>
                 View Inquiry
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleViewNote}>
+                View Note
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleViewHistory}>
                 View history
@@ -660,6 +668,7 @@ const InquiryPage = () => {
       </Tabs>
       {open && <ActionFormModal />}
       <ViewInquiryModal />
+      <ViewNoteModal />
       <HistoryProjectModal />
     </PageLayout>
   );
