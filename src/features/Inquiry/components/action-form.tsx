@@ -685,20 +685,19 @@ export function InquiryActionForm({
                       </FormItem>
                     )}
                   />
-
-                  <div className="flex flex-col space-y-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      Notes
-                    </label>
-                    <Textarea
-                      {...form.register("notes")}
-                      placeholder="Enter additional notes"
-                      rows={3}
-                      className="resize-none"
-                    />
-                  </div>
                 </>
               )}
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Notes
+                </label>
+                <Textarea
+                  {...form.register("notes")}
+                  placeholder="Enter additional notes"
+                  rows={6}
+                  className="resize-none"
+                />
+              </div>
             </form>
           </Form>
         </div>
