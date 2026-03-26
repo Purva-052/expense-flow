@@ -37,6 +37,7 @@ export const MeetingRichTextEditor = ({
       toolbar={[...MEETING_TOOLBAR]}
       hideToolbarWhenDisabled
       minHeightClassName="min-h-[220px]"
+      editorClassName="max-h-[60vh] overflow-y-auto"
     />
   );
 };
