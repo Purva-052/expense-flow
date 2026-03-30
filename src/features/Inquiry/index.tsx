@@ -42,7 +42,6 @@ import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod"; // Import zod
 import { ActionFormModal } from "./components/action";
 import { HistoryProjectModal } from "./components/history-modal";
-import { ViewNoteModal } from "./components/view-note-modal";
 import { ViewInquiryModal } from "./components/view-model";
 import { useCreateInquiryStatus, useGetInquiry } from "./services";
 import { useInquiryStore } from "./stores/useInquiryStore";
@@ -51,6 +50,7 @@ import { useGetInquiryCategoryDropdown } from "../inquiry-channels/services";
 import { useGetInquiryDropdownList } from "../inquiry-types/services";
 import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import { formatDate } from "@/utils/commonFunctions";
+import { ViewNoteModal } from "./components/view-note-modal";
 
 const InquiryPage = () => {
   const { open, setOpen } = useInquiryStore();
@@ -576,13 +576,14 @@ const InquiryPage = () => {
           setOpen("view");
           setCurrentRow(inquiry);
         };
-        const handleViewNote = () => {
-          setOpen("view-note");
-          setCurrentRow(inquiry);
-        };
         const handleViewHistory = () => {
           setOpen("history");
 
+          setCurrentRow(inquiry);
+        };
+
+        const handleViewNote = () => {
+          setOpen("view-note");
           setCurrentRow(inquiry);
         };
 
@@ -628,7 +629,7 @@ const InquiryPage = () => {
   ];
 
   return (
-    <PageLayout>
+    <PageLayout className="h-[calc(100vh-100px)] overflow-y-auto flex flex-col">
       <TablePageHeader
         title="Inquiries / Lead Management"
         buttonText="Add Lead"
