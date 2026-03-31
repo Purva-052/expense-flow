@@ -160,6 +160,7 @@ export const sidebarData: SidebarData = {
     {
       title: "Operations",
       requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
+      allowUserIDs: [169, 170, 171, 175, 174],
       items: [
         {
           title: "Conference Room Booking",
@@ -177,6 +178,7 @@ export const sidebarData: SidebarData = {
           url: "/transactions-logs",
           icon: ScrollText,
           requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER, roles.TEAM_LEAD],
+          allowUserIDs: [169, 170, 171, 175, 174],
         },
         {
           title: "Tools Management",

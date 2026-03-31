@@ -28,7 +28,7 @@ export function ViewNoteModal() {
             value={currentRow?.notes ?? ""}
             disabled
             rows={10}
-            className="resize-none"
+            className="resize-none border-gray-500 shadow-lg shadow-gray-500  h-auto min-h-[150px]"
           />
         </div>
       </DialogContent>

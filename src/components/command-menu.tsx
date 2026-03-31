@@ -20,11 +20,54 @@ import {
 } from "@/components/ui/command";
 import { sidebarData } from "./layout/data/sidebar-data";
 import { ScrollArea } from "./ui/scroll-area";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 export function CommandMenu() {
   const navigate = useNavigate();
   const { setTheme } = useTheme();
   const { open, setOpen } = useSearch();
+  const { user } = useAuthStore();
+  const role = user?.user?.role || "";
+  const id = user?.user?.id;
+
+  const hasSidebarAccess = React.useCallback(
+    (item: {
+      requiredRoles?: string[];
+      allowUserID1?: boolean;
+      allowUserIDs?: number[];
+    }) => {
+      const hasRoleAccess = item.requiredRoles?.includes(role) ?? false;
+      const hasIDAccess = item.allowUserID1 && id === 1;
+      const hasUserIDsAccess = item.allowUserIDs?.includes(id) ?? false;
+
+      return hasRoleAccess || hasIDAccess || hasUserIDsAccess;
+    },
+    [id, role]
+  );
+
+  const filteredNavGroups = React.useMemo(
+    () =>
+      sidebarData.navGroups
+        .filter((group) => {
+          if (!group.requiredRoles && !group.allowUserIDs) return true;
+          return hasSidebarAccess(group);
+        })
+        .map((group) => ({
+          ...group,
+          items: group.items
+            .filter((item) => hasSidebarAccess(item))
+            .map((item) => {
+              if (!item.items) return item;
+
+              return {
+                ...item,
+                items: item.items.filter((subItem) => hasSidebarAccess(subItem)),
+              };
+            }),
+        }))
+        .filter((group) => group.items.length > 0),
+    [hasSidebarAccess]
+  );
 
   const runCommand = React.useCallback(
     (command: () => unknown) => {
@@ -40,7 +83,7 @@ export function CommandMenu() {
       <CommandList>
         <ScrollArea type="hover" className="h-72 pr-1">
           <CommandEmpty>No data found.</CommandEmpty>
-          {sidebarData.navGroups.map((group) => (
+          {filteredNavGroups.map((group) => (
             <CommandGroup key={group.title} heading={group.title}>
               {group.items.map((navItem, i) => {
                 if (navItem.url)
