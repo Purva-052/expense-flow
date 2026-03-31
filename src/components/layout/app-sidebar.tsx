@@ -13,50 +13,42 @@ import { sidebarData } from "./data/sidebar-data";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useAuthStore();
+  const role = user?.user?.role || "";
+  const id = user?.user?.id;
+
+  const hasSidebarAccess = (item: {
+    requiredRoles?: string[];
+    allowUserID1?: boolean;
+    allowUserIDs?: number[];
+  }) => {
+    const hasRoleAccess = item.requiredRoles?.includes(role) ?? false;
+    const hasIDAccess = item.allowUserID1 && id === 1;
+    const hasUserIDsAccess = item.allowUserIDs?.includes(id) ?? false;
+
+    return hasRoleAccess || hasIDAccess || hasUserIDsAccess;
+  };
 
   const filteredNavGroups = sidebarData.navGroups
-    // Filter entire groups by role if group has requiredRoles
     .filter((group: any) => {
-      if (!group.requiredRoles) return true;
-
-      return group.requiredRoles.includes(user?.user?.role || "");
+      if (!group.requiredRoles && !group.allowUserIDs) return true;
+      return hasSidebarAccess(group);
     })
-    // Also filter items inside groups by role
     .map((group) => ({
       ...group,
       items: group.items
-        .filter((item: any) => {
-          const role = user?.user?.role || "";
-          const id = user?.user?.id;
-
-          // Condition 1: role match
-          const hasRoleAccess = item.requiredRoles?.includes(role);
-
-          // Condition 2: user ID is 1 (if allowed)
-          const hasIDAccess = item.allowUserID1 && id === 1;
-
-          return hasRoleAccess || hasIDAccess;
-        })
+        .filter((item: any) => hasSidebarAccess(item))
         .map((item: any) => {
-          // If item has sub-items, filter them too
           if (item.items && Array.isArray(item.items)) {
             return {
               ...item,
-              items: item.items.filter((subItem: any) => {
-                const role = user?.user?.role || "";
-                const id = user?.user?.id;
-
-                const hasRoleAccess = subItem.requiredRoles?.includes(role);
-                const hasIDAccess = subItem.allowUserID1 && id === 1;
-
-                return hasRoleAccess || hasIDAccess;
-              }),
+              items: item.items.filter((subItem: any) =>
+                hasSidebarAccess(subItem)
+              ),
             };
           }
           return item;
         }),
     }))
-    // Remove empty groups (in case all items got filtered out)
     .filter((group) => group.items.length > 0);
 
   return (
