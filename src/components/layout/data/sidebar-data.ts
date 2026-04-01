@@ -101,6 +101,16 @@ export const sidebarData: SidebarData = {
           ],
         },
         {
+          title: "Project Analytics",
+          url: "/projects-analytics",
+          icon: IconReportAnalytics,
+          requiredRoles: [
+            roles.ADMIN,
+            roles.TEAM_LEAD,
+            roles.PROJECT_MANAGER,
+          ],
+        },
+        {
           title: "Lead Management",
           url: "/inquiry",
           icon: IconMessage2Question,

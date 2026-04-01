@@ -279,6 +279,9 @@ const API = {
     delete: "/outbound-source",
     dropdown: "/outbound-source/dropdown",
   },
+  projects_analytics:{
+    list:"/projects/analytics/planned-vs-actual",
+  }
 };
 
 Object.freeze(API);
