@@ -21,7 +21,6 @@ import {
   BriefcaseBusiness,
   CalendarClock,
   CheckCircle2,
-  Clock3,
   FolderKanban,
   Timer,
 } from "lucide-react";
