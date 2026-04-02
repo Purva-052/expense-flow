@@ -9,7 +9,6 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
-  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -115,15 +114,23 @@ const formatHours = (value: number) =>
     minimumFractionDigits: value % 1 === 0 ? 0 : 2,
   }).format(value);
 
+const CHART_HEIGHT = 420;
+const CHART_MIN_COLUMN_WIDTH = 72;
+const CHART_BASE_MIN_WIDTH = 960;
+const CHART_LEGEND_ITEMS = [
+  { key: "plannedHours", label: "Planned Hours", color: "#2563eb" },
+  { key: "actualHours", label: "Actual Hours", color: "#111827" },
+] as const;
+
 const CLICKABLE_SUMMARY_KEYS = [
-  "total",
   "critical",
   "healthy",
   "on_track",
   // "not_started",
 ] as const;
 
-type SummaryFilterKey = (typeof CLICKABLE_SUMMARY_KEYS)[number];
+type ClickableKey = (typeof CLICKABLE_SUMMARY_KEYS)[number];
+type SummaryFilterKey = "total" | ClickableKey;
 
 const ProjectAnalyticsPage = () => {
   const [selectedProjectId, setSelectedProjectId] = useState<string>("all");
@@ -202,6 +209,10 @@ const ProjectAnalyticsPage = () => {
     (sum, item) => sum + item.actualHours,
     0
   );
+  const chartContentWidth = Math.max(
+    CHART_BASE_MIN_WIDTH,
+    chartProjects.length * CHART_MIN_COLUMN_WIDTH
+  );
 
   const selectedProject = projectItems.find(
     (item) => String(item.projectId) === selectedProjectId
@@ -253,11 +264,16 @@ const ProjectAnalyticsPage = () => {
                       key={key}
                       className={cn(
                         "border-slate-200 px-0 py-0 transition-all hover:shadow-md",
-                        "cursor-pointer",
+                        CLICKABLE_SUMMARY_KEYS.includes(key as ClickableKey) &&
+                          "cursor-pointer",
                         selectedHealthFilter === key &&
                           config.selectedCardClassName
                       )}
-                      onClick={() => setSelectedHealthFilter(key)}
+                      onClick={
+                        CLICKABLE_SUMMARY_KEYS.includes(key as ClickableKey)
+                          ? () => setSelectedHealthFilter(key as ClickableKey)
+                          : undefined
+                      }
                     >
                       <CardContent className="p-5">
                         <div className="mb-4 flex items-start justify-between gap-3">
@@ -336,13 +352,13 @@ const ProjectAnalyticsPage = () => {
                       value={selectedProjectId || "all"}
                       onChange={(value) => setSelectedProjectId(value ?? "all")}
                       placeholder="All Projects"
-                      className="min-w-[220px] sm:w-[280px]"
+                      className="min-w-55 sm:w-70"
                       maxHeight={320}
                       allowClear={false}
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 sm:min-w-[220px]">
+                  <div className="grid grid-cols-2 gap-3 sm:min-w-55">
                     <MetricPill
                       label="Planned"
                       value={`${formatHours(totalPlannedHours)} hrs`}
@@ -360,80 +376,88 @@ const ProjectAnalyticsPage = () => {
               <CardContent className="space-y-4">
                 {chartProjects.length > 0 ? (
                   <>
-                    <div className="h-[420px] w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                          data={chartProjects}
-                          margin={{ top: 12, right: 12, left: 12, bottom: 12 }}
-                          barGap={10}
-                        >
-                          <CartesianGrid
-                            strokeDasharray="3 3"
-                            vertical={false}
-                            stroke="#e2e8f0"
-                          />
-                          <XAxis
-                            dataKey="projectName"
-                            tick={{ fontSize: 12 }}
-                            tickLine={false}
-                            axisLine={false}
-                            interval={0}
-                            angle={chartProjects.length > 6 ? -20 : 0}
-                            textAnchor={
-                              chartProjects.length > 6 ? "end" : "middle"
-                            }
-                            height={chartProjects.length > 6 ? 70 : 40}
-                          />
-                          <YAxis
-                            tick={{ fontSize: 12 }}
-                            tickLine={false}
-                            axisLine={false}
-                            tickFormatter={(value) => `${value}h`}
-                          />
-                          <Tooltip
-                            cursor={{ fill: "#f8fafc" }}
-                            formatter={(value: number, name: string) => [
-                              `${formatHours(value)} hrs`,
-                              name === "plannedHours"
-                                ? "Planned Hours"
-                                : "Actual Hours",
-                            ]}
-                            labelFormatter={(label) => `Project: ${label}`}
-                          />
-                          <Legend
-                            formatter={(value) =>
-                              value === "plannedHours"
-                                ? "Planned Hours"
-                                : "Actual Hours"
-                            }
-                          />
-                          <Bar
-                            dataKey="plannedHours"
-                            name="plannedHours"
-                            fill="#2563eb"
-                            radius={[8, 8, 0, 0]}
-                            maxBarSize={42}
-                          />
-                          <Bar
-                            dataKey="actualHours"
-                            name="actualHours"
-                            radius={[8, 8, 0, 0]}
-                            maxBarSize={42}
+                    <div className="w-full overflow-x-auto pb-2">
+                      <div style={{ width: chartContentWidth, height: CHART_HEIGHT }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            data={chartProjects}
+                            margin={{ top: 12, right: 12, left: 12, bottom: 12 }}
+                            barGap={10}
                           >
-                            {chartProjects.map((item: ProjectAnalyticsItem) => (
-                              <Cell
-                                key={`actual-${item.projectId}`}
-                                fill={
-                                  HEALTH_COLORS[item.projectHealth] ?? "#64748b"
-                                }
-                              />
-                            ))}
-                          </Bar>
-                        </BarChart>
-                      </ResponsiveContainer>
+                            <CartesianGrid
+                              strokeDasharray="3 3"
+                              vertical={false}
+                              stroke="#e2e8f0"
+                            />
+                            <XAxis
+                              dataKey="projectName"
+                              tick={{ fontSize: 12 }}
+                              tickLine={false}
+                              axisLine={false}
+                              interval={0}
+                              angle={chartProjects.length > 6 ? -20 : 0}
+                              textAnchor={
+                                chartProjects.length > 6 ? "end" : "middle"
+                              }
+                              height={chartProjects.length > 6 ? 70 : 40}
+                            />
+                            <YAxis
+                              tick={{ fontSize: 12 }}
+                              tickLine={false}
+                              axisLine={false}
+                              tickFormatter={(value) => `${value}h`}
+                            />
+                            <Tooltip
+                              cursor={{ fill: "#f8fafc" }}
+                              formatter={(value: number, name: string) => [
+                                `${formatHours(value)} hrs`,
+                                name === "plannedHours"
+                                  ? "Planned Hours"
+                                  : "Actual Hours",
+                              ]}
+                              labelFormatter={(label) => `Project: ${label}`}
+                            />
+                            <Bar
+                              dataKey="plannedHours"
+                              name="plannedHours"
+                              fill="#2563eb"
+                              radius={[8, 8, 0, 0]}
+                              maxBarSize={42}
+                            />
+                            <Bar
+                              dataKey="actualHours"
+                              name="actualHours"
+                              radius={[8, 8, 0, 0]}
+                              maxBarSize={42}
+                            >
+                              {chartProjects.map((item: ProjectAnalyticsItem) => (
+                                <Cell
+                                  key={`actual-${item.projectId}`}
+                                  fill={
+                                    HEALTH_COLORS[item.projectHealth] ??
+                                    "#64748b"
+                                  }
+                                />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                    <div className="flex items-center justify-center gap-6 text-sm font-medium text-slate-700">
+                      {CHART_LEGEND_ITEMS.map((item) => (
+                        <div key={item.key} className="flex items-center gap-2">
+                          <span
+                            className="h-3 w-3 rounded-sm"
+                            style={{ backgroundColor: item.color }}
+                          />
+                          <span>{item.label}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                       <span className="font-medium text-slate-700">
                         Actual hour color indicates project health:
                       </span>
@@ -449,10 +473,10 @@ const ProjectAnalyticsPage = () => {
                           {health.replace("_", " ")}
                         </span>
                       ))}
-                    </div>
+                    </div> */}
                   </>
                 ) : (
-                  <div className="flex h-[320px] items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 text-sm text-muted-foreground">
+                  <div className="flex h-80 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 text-sm text-muted-foreground">
                     No analytics data found for the selected project.
                   </div>
                 )}
@@ -488,7 +512,7 @@ const MetricPill = ({
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
             {label} Hours
           </p>
-          <p className="mt-1.5 text-xl font-bold tracking-tight text-slate-900">
+          <p className="mt-1.5 text-sm font-bold tracking-tight text-slate-900">
             {value}
           </p>
         </div>
@@ -538,13 +562,13 @@ const ProjectAnalyticsSkeleton = () => {
             <div className="h-4 w-80 animate-pulse rounded bg-slate-200" />
           </div>
           <div className="flex gap-3">
-            <div className="h-10 w-[280px] animate-pulse rounded bg-slate-200" />
-            <div className="h-10 w-[120px] animate-pulse rounded bg-slate-200" />
-            <div className="h-10 w-[120px] animate-pulse rounded bg-slate-200" />
+            <div className="h-10 w-70 animate-pulse rounded bg-slate-200" />
+            <div className="h-10 w-30 animate-pulse rounded bg-slate-200" />
+            <div className="h-10 w-30 animate-pulse rounded bg-slate-200" />
           </div>
         </CardHeader>
         <CardContent>
-          <div className="h-[420px] w-full animate-pulse rounded-xl bg-slate-100" />
+          <div className="h-105 w-full animate-pulse rounded-xl bg-slate-100" />
         </CardContent>
       </Card>
     </div>
