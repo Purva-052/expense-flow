@@ -77,7 +77,6 @@ const ProjectDocumentComponent = ({ projectId }: any) => {
   // const isDeveloperView = Role === roles.DEVELOPER;
 
   const userOptions = [
-    { label: "All Users", value: "all" },
     ...((usersResponse as any)?.data?.map((u: any) => ({
       label: u.fullName,
       value: String(u.id),
@@ -93,12 +92,12 @@ const ProjectDocumentComponent = ({ projectId }: any) => {
     });
   };
 
-  const handleUserChange = (userId: string) => {
-    setDocumentListParams({
-      ...documentListParams,
-      createdBy: userId === "all" ? undefined : userId,
+  const handleUserChange = (userId?: string | null) => {
+    setDocumentListParams((prev: any) => ({
+      ...prev,
+      createdBy: userId || undefined,
       page: 1,
-    });
+    }));
   };
 
   const handleDateRangeChange = (
@@ -136,7 +135,7 @@ const ProjectDocumentComponent = ({ projectId }: any) => {
       type: "select",
       placeholder: "Created By",
       key: "createdBy",
-      value: documentListParams.createdBy || "all",
+      value: documentListParams.createdBy,
       options: userOptions,
       onChange: handleUserChange,
       isLoading: usersLoading,

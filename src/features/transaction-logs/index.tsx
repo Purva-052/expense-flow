@@ -12,6 +12,7 @@ import { useTransactionStore } from "./stores";
 import { useGetTransactionData } from "./services";
 import { useGetProjectSDropdownList } from "../Project-type/services";
 import {
+  ACCOUNTANT_USER_IDS,
   roles,
   SubscriptionTypeOptions,
   TransactionTypeOptions,
@@ -89,6 +90,10 @@ const TransactionPage = () => {
       role: [roles.TEAM_LEAD, roles.ADMIN, roles.PROJECT_MANAGER],
       status: "active",
     });
+
+  const filteredUsersList = usersList?.data?.filter(
+    (user: any) => !ACCOUNTANT_USER_IDS.includes(Number(user?.id))
+  );
 
   const handleSearch = (search: string | undefined) => {
     setQueryParams({ ...listParams, search: search ?? "", currentPage: 1 });
@@ -179,7 +184,7 @@ const TransactionPage = () => {
       type: "select",
       key: "userId",
       placeholder: "Filter by User",
-      options: usersList?.data.map((user: any) => {
+      options: filteredUsersList?.map((user: any) => {
         return { value: user.id, label: user.fullName };
       }),
       value: listParams.userId,

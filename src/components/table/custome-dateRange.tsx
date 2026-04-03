@@ -61,7 +61,7 @@ export default function DateRangeFilter(props: {
         <Button
           variant={"outline"}
           className={cn(
-            "w-[260px] justify-between text-left font-normal rounded-2xl",
+            "w-[260px] justify-between text-left font-normal rounded-2xl hover:bg-transparent hover:text-inherit",
             !date && "text-muted-foreground",
             className
           )}
@@ -105,6 +105,7 @@ export default function DateRangeFilter(props: {
 
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
+          className="date-range-calendar"
           mode="range"
           selected={date}
           onSelect={(range) => {

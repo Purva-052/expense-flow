@@ -18,10 +18,16 @@ import {
 import {
   ArrowDownToLine,
   ArrowUpFromLine,
+  BarChart3,
+  BriefcaseBusiness,
   Building2,
   CalendarCheck,
+  ClipboardList,
+  ClockPlus,
   Command,
+  Contact,
   Cpu,
+  Database,
   Flame,
   Globe,
   // CpuIcon,
@@ -30,6 +36,7 @@ import {
   MemoryStick,
   Microchip,
   Network,
+  Plane,
   ScrollText,
   Tag,
   UserStar,
@@ -91,7 +98,7 @@ export const sidebarData: SidebarData = {
         {
           title: "Daily Report",
           url: "/daily-report",
-          icon: IconReportAnalytics,
+          icon: ClipboardList,
           requiredRoles: [
             roles.ADMIN,
             roles.TEAM_LEAD,
@@ -103,7 +110,7 @@ export const sidebarData: SidebarData = {
         {
           title: "Project Analytics",
           url: "/projects-analytics",
-          icon: IconReportAnalytics,
+          icon: BarChart3,
           requiredRoles: [
             roles.ADMIN,
             roles.TEAM_LEAD,
@@ -113,14 +120,14 @@ export const sidebarData: SidebarData = {
         {
           title: "Lead Management",
           url: "/inquiry",
-          icon: IconMessage2Question,
+          icon: BriefcaseBusiness,
           // allowUserID1: allowUserID1,
           requiredRoles: [roles.ADMIN],
         },
         {
           title: "System Inventory",
           url: "/system-inventory",
-          icon: IconReservedLine,
+          icon: Database,
           requiredRoles: [
             roles.ADMIN,
             roles.TEAM_LEAD,
@@ -132,13 +139,13 @@ export const sidebarData: SidebarData = {
         {
           title: "Extra Work Report",
           url: "/extra-work-report",
-          icon: IconReport,
+          icon: ClockPlus,
           requiredRoles: [roles.ADMIN],
         },
         {
           title: "Leave Management",
           url: "/leave-management",
-          icon: IconClipboardCheck,
+          icon: Plane,
           requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
         {
