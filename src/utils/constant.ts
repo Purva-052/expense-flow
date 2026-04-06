@@ -166,4 +166,6 @@ export const CurrencyType = [
   },
 ];
 
+export const ACCOUNTANT_USER_IDS = [169, 170, 171, 174, 175];
+
 export const PROJECT_DETAILS_FILTER_STORAGE_KEY = "project_details_filters";

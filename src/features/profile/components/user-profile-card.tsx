@@ -45,6 +45,8 @@ import {
   X,
   Check,
   Mail,
+  LayoutGrid,
+  List,
 } from "lucide-react";
 import { useEffect, useState, useRef, useMemo } from "react";
 import { toast } from "sonner";
@@ -559,14 +561,12 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
     }
   };
 
-  const handleProjectViewToggle = async (checked: boolean) => {
-    const newViewType = checked ? "list" : "grid";
-    setProjectViewType(newViewType);
-    localStorage.setItem("projectViewType", newViewType);
+  const handleProjectViewToggle = async (view: "grid" | "list") => {
+    setProjectViewType(view);
+    localStorage.setItem("projectViewType", view);
 
-    // Update user profile with new preference
     try {
-      await updateProfile({ projectViewType: newViewType });
+      await updateProfile({ projectViewType: view });
     } catch (error) {
       console.error("Failed to update project view preference", error);
     }
@@ -1205,12 +1205,30 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
                       : "Projects displayed in a compact list layout"}
                   </p>
                 </div>
-                <Switch
-                  id="project-view-toggle"
-                  checked={projectViewType === "list"}
-                  onCheckedChange={handleProjectViewToggle}
-                  disabled={isUpdating}
-                />
+                <div className="flex items-center gap-2">
+                  <LayoutGrid
+                    className={`h-5 w-5 ${
+                      projectViewType === "grid"
+                        ? "text-primary"
+                        : "text-muted-foreground"
+                    }`}
+                  />
+
+                  <Switch
+                    checked={projectViewType === "grid"}
+                    onCheckedChange={(val) =>
+                      handleProjectViewToggle(val ? "grid" : "list")
+                    }
+                  />
+
+                  <List
+                    className={`h-5 w-5 ${
+                      projectViewType === "list"
+                        ? "text-primary"
+                        : "text-muted-foreground"
+                    }`}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>

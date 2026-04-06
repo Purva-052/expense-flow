@@ -45,7 +45,7 @@ export const NoteCard = ({
     }
     onView(note);
   };
-
+  const isPublic = note.isPublic === true || note.isPublic === "true";
   return (
     <div
       onClick={handleCardClick}
@@ -63,19 +63,22 @@ export const NoteCard = ({
                 {note.title}
               </h4>
             )}
-            {note.isPublic && (
-              <Badge
-                variant="outline"
-                className="h-5 px-1.5 text-[10px] font-bold bg-black/5 border-none text-gray-600 flex gap-1 items-center"
-              >
-                {note.isPublic ? (
-                  <Globe className="w-2.5 h-2.5" />
-                ) : (
-                  <Lock className="w-2.5 h-2.5" />
-                )}
-                {note.isPublic ? "PUBLIC" : "PRIVATE"}
-              </Badge>
-            )}
+
+            <Badge
+              className={`h-5 px-2 text-[10px] font-semibold flex gap-1 items-center
+    ${
+      isPublic
+        ? "bg-green-100 text-green-700 border-green-300"
+        : "bg-gray-200 text-gray-600 border-gray-300"
+    }`}
+            >
+              {isPublic ? (
+                <Globe className="w-3 h-3" />
+              ) : (
+                <Lock className="w-3 h-3" />
+              )}
+              {isPublic ? "Public" : "Private"}
+            </Badge>
           </div>
         </div>
         <div

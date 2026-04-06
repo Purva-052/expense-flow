@@ -4,6 +4,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import GlobalFilterSection from "@/components/table/global-table-filter";
+import { ProjectCardSkeleton } from "@/components/layout/project-card-skeleton";
 import { FilterConfig } from "@/components/table/table-toolbar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +14,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Switch } from "@/components/ui/switch";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useGetClientsDropdownList } from "@/features/clients/services";
 import {
   useGetProjectPriorityDropdownList,
@@ -54,7 +56,7 @@ import { useGetProjectTypesDropdownList } from "@/features/Project-type/services
 import { useGetTechnologyDropdownList } from "@/features/technology/services";
 import { cn } from "@/lib/utils";
 import { capitalizeFirstLetter } from "@/utils/commonFunctions";
-import { roles } from "@/utils/constant";
+import { ACCOUNTANT_USER_IDS, roles } from "@/utils/constant";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CustomMultiSelect } from "@/components/shared/custom-multiselect";
 
@@ -76,6 +78,8 @@ const Board = ({
   activeTab,
   onTotalCountChange,
 }: any) => {
+  const projectSkeletonCount = 4;
+  const resourceSkeletonCount = 4;
   const isInactiveTab = activeTab === "Archive Projects" ? true : false;
 
   const { user } = useAuthStore();
@@ -159,7 +163,14 @@ const Board = ({
 
   const groupedDevelopers: GroupedDevelopers = useMemo(() => {
     if (!AllDevelopersResponse?.data) return [];
-    return AllDevelopersResponse.data;
+    return AllDevelopersResponse.data
+      .map((group: any) => ({
+        ...group,
+        resources: (group.resources ?? []).filter(
+          (dev: any) => !ACCOUNTANT_USER_IDS.includes(Number(dev?.id))
+        ),
+      }))
+      .filter((group: any) => group.resources.length > 0);
   }, [AllDevelopersResponse]);
 
   const allDeveloperIds = useMemo(() => {
@@ -458,11 +469,15 @@ const Board = ({
               className="min-h-[18rem] lg:min-h-0 lg:h-full space-y-4 overflow-y-auto overflow-x-hidden p-2 [scrollbar-gutter:stable] rounded-md border"
             >
               {projectListLoading || LoadingProjectType ? (
-                <div className="flex flex-col justify-center items-center py-10 gap-3">
-                  <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
-                  <span className="text-sm text-muted-foreground">
-                    Loading Projects...
-                  </span>
+                <div className="space-y-4">
+                  {Array.from({ length: projectSkeletonCount }).map(
+                    (_, index) => (
+                      <ProjectCardSkeleton
+                        key={`project-skeleton-${index}`}
+                        view="board"
+                      />
+                    )
+                  )}
                 </div>
               ) : projectList?.length ? (
                 projectList?.map((p: any) => (
@@ -518,8 +533,13 @@ const Board = ({
                 </div>
               )}
               {isFetchingNextPage && (
-                <div className="flex justify-center items-center py-4">
-                  <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
+                <div className="space-y-4 py-2">
+                  {Array.from({ length: 2 }).map((_, index) => (
+                    <ProjectCardSkeleton
+                      key={`project-fetch-skeleton-${index}`}
+                      view="board"
+                    />
+                  ))}
                 </div>
               )}
               <div ref={loadMoreRef} className="h-2" />
@@ -591,11 +611,23 @@ const Board = ({
                   {/* Content: Takes remaining space (flex-1) and scrolls (overflow-y-auto) */}
                   <CardContent className="flex-1 min-h-0 overflow-y-auto pr-2 [scrollbar-gutter:stable]">
                     {AllDevelopersLoading ? (
-                      <div className="flex flex-col justify-center items-center py-10 gap-3">
-                        <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
-                        <span className="text-sm text-muted-foreground">
-                          Loading developers...
-                        </span>
+                      <div className="space-y-2">
+                        {Array.from({ length: resourceSkeletonCount }).map(
+                          (_, index) => (
+                            <div
+                              key={`resource-skeleton-${index}`}
+                              className="rounded-md border bg-secondary/50 px-2 py-3"
+                            >
+                              <div className="flex items-center justify-between p-2">
+                                <div className="flex items-center gap-3">
+                                  <Skeleton className="h-4 w-28" />
+                                  <Skeleton className="h-5 w-8 rounded-full" />
+                                </div>
+                                <Skeleton className="h-5 w-5 rounded-full" />
+                              </div>
+                            </div>
+                          )
+                        )}
                       </div>
                     ) : groupedDevelopers?.length > 0 ? (
                       <SortableContext
