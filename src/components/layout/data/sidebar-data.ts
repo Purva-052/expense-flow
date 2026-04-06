@@ -11,9 +11,9 @@ import {
   IconTool,
   IconUsers,
   // IconUserScreen,
-  IconReportAnalytics,
-  IconReport,
-  IconClipboardCheck,
+  // IconReportAnalytics,
+  // IconReport,
+  // IconClipboardCheck,
 } from "@tabler/icons-react";
 import {
   ArrowDownToLine,
@@ -25,7 +25,7 @@ import {
   ClipboardList,
   ClockPlus,
   Command,
-  Contact,
+  // Contact,
   Cpu,
   Database,
   Flame,
