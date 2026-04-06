@@ -34,7 +34,7 @@ export const NoteEditor = ({
     title: initialData?.title ?? "",
     content: initialData?.content ?? "",
     color: initialData?.color ?? "yellow",
-    isPublic: initialData?.isPublic ?? false,
+    isPublic: initialData?.isPublic ?? true,
   });
 
   const colorObj = COLORS.find((c) => c.id === formData.color) || COLORS[0];
@@ -65,14 +65,26 @@ export const NoteEditor = ({
             >
               {formData.isPublic ? "Public" : "Private"}
             </Label>
-            <Switch
-              id="privacy-toggle"
-              checked={formData.isPublic}
-              onCheckedChange={(checked) =>
-                setFormData({ ...formData, isPublic: checked })
-              }
-              className="data-[state=checked]:bg-primary"
-            />
+            <div className="flex items-center gap-3">
+              <Switch
+                id="privacy-toggle"
+                checked={formData.isPublic}
+                onCheckedChange={(checked) =>
+                  setFormData({ ...formData, isPublic: checked })
+                }
+              />
+
+              <span
+                className={cn(
+                  "text-xs font-semibold px-2 py-1 rounded-full",
+                  formData.isPublic
+                    ? "bg-green-100 text-green-700"
+                    : "bg-gray-200 text-gray-600"
+                )}
+              >
+                {formData.isPublic ? "Public" : "Private"}
+              </span>
+            </div>
           </div>
         </div>
         <div className="mb-4">

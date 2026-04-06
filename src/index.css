@@ -14,7 +14,7 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.14 0 285.86);
   --primary: #e80339;
-  --primary-gradient: linear-gradient(135deg, #e80339, #000);
+  --primary-gradient: linear-gradient(135deg, #f87171, #e11d48);
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0 0 0);
@@ -493,4 +493,51 @@ body[data-scroll-locked] {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.date-range-calendar {
+  --range-middle-bg: color-mix(in srgb, var(--primary) 18%, white);
+}
+
+.date-range-calendar .day-range-start,
+.date-range-calendar .day-range-end {
+  background: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+  border-radius: 0.375rem !important;
+}
+
+.date-range-calendar .day-range-middle {
+  background: var(--range-middle-bg) !important;
+  color: var(--primary) !important;
+  border-radius: 0 !important;
+}
+
+.date-range-calendar .day-range-start.day-range-end {
+  border-radius: 0.375rem !important;
+}
+
+.date-range-calendar .day-range-start:not(.day-range-end) {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+.date-range-calendar .day-range-end:not(.day-range-start) {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+
+.date-range-calendar button:hover {
+  background: transparent !important;
+  color: inherit !important;
+}
+
+.date-range-calendar .day-range-start:hover,
+.date-range-calendar .day-range-end:hover {
+  background: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}
+
+.date-range-calendar .day-range-middle:hover {
+  background: var(--range-middle-bg) !important;
+  color: var(--primary) !important;
 }

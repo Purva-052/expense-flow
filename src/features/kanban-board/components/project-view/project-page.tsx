@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import GlobalFilterSection from "@/components/table/global-table-filter";
+import { ProjectCardSkeleton } from "@/components/layout/project-card-skeleton";
 import { FilterConfig } from "@/components/table/table-toolbar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +13,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Collapsible,
   CollapsibleContent,
@@ -59,7 +61,11 @@ import { useGetProjectTypesDropdownList } from "@/features/Project-type/services
 import { useGetTechnologyDropdownList } from "@/features/technology/services";
 import { cn } from "@/lib/utils";
 import { capitalizeFirstLetter } from "@/utils/commonFunctions";
-import { roles, PROJECT_DETAILS_FILTER_STORAGE_KEY } from "@/utils/constant";
+import {
+  ACCOUNTANT_USER_IDS,
+  roles,
+  PROJECT_DETAILS_FILTER_STORAGE_KEY,
+} from "@/utils/constant";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CustomMultiSelect } from "@/components/shared/custom-multiselect";
 // import { Skeleton } from "@/components/ui/skeleton";
@@ -74,6 +80,8 @@ const ProjectPage = ({
   onTotalCountChange,
   activeTab: initialActiveTab = "project_details",
 }: any) => {
+  const projectSkeletonCount = 6;
+  const resourceSkeletonCount = 4;
   const [activeTab] = useState(initialActiveTab);
   const isInactiveTab = activeTab === "Archive Projects" ? true : false;
 
@@ -196,7 +204,14 @@ const ProjectPage = ({
 
   const groupedDevelopers: GroupedDevelopers = useMemo(() => {
     if (!AllDevelopersResponse?.data) return [];
-    return AllDevelopersResponse.data;
+    return AllDevelopersResponse.data
+      .map((group: any) => ({
+        ...group,
+        resources: (group.resources ?? []).filter(
+          (dev: any) => !ACCOUNTANT_USER_IDS.includes(Number(dev?.id))
+        ),
+      }))
+      .filter((group: any) => group.resources.length > 0);
   }, [AllDevelopersResponse]);
 
   const allDeveloperIds = useMemo(() => {
@@ -513,6 +528,15 @@ const ProjectPage = ({
     );
   }, [technologies]);
 
+  const projectSkeletons = Array.from({ length: projectSkeletonCount }).map(
+    (_, index) => (
+      <ProjectCardSkeleton
+        key={`project-skeleton-${view}-${index}`}
+        view={view}
+      />
+    )
+  );
+
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-4">
       {!isBdeView && (
@@ -567,12 +591,28 @@ const ProjectPage = ({
             className={`space-y-4 !h-full overflow-y-auto overflow-x-hidden p-2 [scrollbar-gutter:stable] rounded-md`}
           >
             {projectListLoading || LoadingProjectType ? (
-              <div className="flex flex-col justify-center items-center py-10 gap-3">
-                <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
-                <span className="text-sm text-muted-foreground">
-                  Loading Projects...
-                </span>
-              </div>
+              view === "grid" ? (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
+                  {projectSkeletons}
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <div className="min-w-[860px] flex flex-col gap-0 border rounded-lg bg-white overflow-hidden">
+                    <div className="flex items-center gap-4 px-6 py-3 bg-gray-50 border-b text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                      <div className="w-1 shrink-0" />
+                      <div className="flex-1 min-w-0">Project</div>
+                      <div className="w-32 shrink-0 text-center">Status</div>
+                      <div className="w-48 shrink-0">Progress</div>
+                      <div className="w-28 shrink-0">Deadline</div>
+                      <div className="w-24 shrink-0">Team</div>
+                      <div className="w-[64px] shrink-0 text-right pr-4">
+                        Actions
+                      </div>
+                    </div>
+                    {projectSkeletons}
+                  </div>
+                </div>
+              )
             ) : projectList?.length ? (
               view === "grid" ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
@@ -826,9 +866,27 @@ const ProjectPage = ({
               </div>
             )}
             {isFetchingNextPage && (
-              <div className="flex justify-center items-center py-4">
-                <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
-              </div>
+              view === "grid" ? (
+                <div className="grid grid-cols-1 gap-4 py-2 md:grid-cols-2 2xl:grid-cols-3">
+                  {Array.from({ length: 3 }).map((_, index) => (
+                    <ProjectCardSkeleton
+                      key={`project-fetch-skeleton-grid-${index}`}
+                      view="grid"
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="overflow-x-auto py-2">
+                  <div className="min-w-[860px] flex flex-col gap-0 border rounded-lg bg-white overflow-hidden">
+                    {Array.from({ length: 3 }).map((_, index) => (
+                      <ProjectCardSkeleton
+                        key={`project-fetch-skeleton-list-${index}`}
+                        view="list"
+                      />
+                    ))}
+                  </div>
+                </div>
+              )
             )}
             <div ref={loadMoreRef} className="h-2" />
           </div>
@@ -908,11 +966,23 @@ const ProjectPage = ({
                 {/* FIX 4: 'flex-1' fills remaining space. 'min-h-0' is REQUIRED for scrolling in nested flex. Removed fixed 'h-[50dvh]' */}
                 <CardContent className="flex-1 min-h-0 overflow-y-auto pr-2 [scrollbar-gutter:stable]">
                   {AllDevelopersLoading ? (
-                    <div className="flex flex-col justify-center items-center py-10 gap-3">
-                      <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary/50 border-t-primary"></div>
-                      <span className="text-sm text-muted-foreground">
-                        Loading...
-                      </span>
+                    <div className="space-y-2">
+                      {Array.from({ length: resourceSkeletonCount }).map(
+                        (_, index) => (
+                          <div
+                            key={`resource-skeleton-${index}`}
+                            className="rounded-md border bg-secondary/50 px-2 py-3"
+                          >
+                            <div className="flex items-center justify-between p-2">
+                              <div className="flex items-center gap-3">
+                                <Skeleton className="h-4 w-28" />
+                                <Skeleton className="h-5 w-8 rounded-full" />
+                              </div>
+                              <Skeleton className="h-5 w-5 rounded-full" />
+                            </div>
+                          </div>
+                        )
+                      )}
                     </div>
                   ) : groupedDevelopers?.length > 0 ? (
                     <SortableContext
