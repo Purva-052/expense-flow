@@ -38,14 +38,193 @@ import { StickyNotesTab } from "@/features/sticky-notes/components/sticky-notes-
 import { useHoursLogStore } from "../../stores/useHoursLogStore";
 import { AddHoursLogDialog } from "./milestone-list/add-hours-log-dialog";
 
+// Skeleton Components for each tab
+const OverviewSkeleton = () => (
+  <div className="space-y-6 pt-4">
+    {/* Info Grid */}
+    <div className="border rounded-lg p-4 space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8">
+        {Array.from({ length: 9 }).map((_, i) => (
+          <div key={i} className="flex flex-col gap-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-6 w-32" />
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* Developers Section */}
+    <div className="border rounded-lg p-4 space-y-4">
+      <Skeleton className="h-6 w-48" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-48 w-full rounded-lg" />
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+const MilestoneSkeleton = () => (
+  <div className="space-y-6 pt-4">
+    {/* Action Buttons */}
+    <div className="flex gap-2 flex-wrap">
+      <Skeleton className="h-10 w-32" />
+      <Skeleton className="h-10 w-32" />
+      <Skeleton className="h-10 w-32" />
+    </div>
+
+    {/* Milestone Tabs */}
+    <div className="border-t-2 p-2">
+      <div className="flex gap-2 pb-4 overflow-x-auto">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-8 w-24 rounded-full" />
+        ))}
+      </div>
+
+      {/* Milestone Content */}
+      <div className="space-y-4 mt-4">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Skeleton key={i} className="h-16 w-full rounded-lg" />
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+const ReportSkeleton = () => (
+  <div className="space-y-6 pt-4">
+    {/* Filters Row */}
+    <div className="flex gap-2 flex-wrap">
+      <Skeleton className="h-10 w-48 rounded-full" />
+      <Skeleton className="h-10 w-32 rounded-full" />
+      <Skeleton className="h-10 w-40 rounded-full" />
+    </div>
+
+    {/* Table Skeleton */}
+    <div className="border rounded-lg overflow-hidden">
+      {/* Table Header */}
+      <div className="bg-gray-50 p-4 grid grid-cols-5 gap-4 border-b">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Skeleton key={i} className="h-4 w-24" />
+        ))}
+      </div>
+
+      {/* Table Rows */}
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div
+          key={i}
+          className="p-4 grid grid-cols-5 gap-4 border-b last:border-b-0"
+        >
+          {Array.from({ length: 5 }).map((_, j) => (
+            <Skeleton key={j} className="h-4 w-20" />
+          ))}
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const DocumentSkeleton = () => (
+  <div className="space-y-6 pt-4">
+    {/* Filters Row */}
+    <div className="flex gap-2 flex-wrap">
+      <Skeleton className="h-10 w-64 rounded-full" />
+      <Skeleton className="h-10 w-32 rounded-full" />
+      <Skeleton className="h-10 w-40 rounded-full" />
+    </div>
+
+    {/* Documents List/Table */}
+    <div className="space-y-2">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div
+          key={i}
+          className="border rounded-lg p-4 flex justify-between items-center"
+        >
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-48" />
+            <Skeleton className="h-3 w-32" />
+          </div>
+          <Skeleton className="h-6 w-6" />
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const ServerSkeleton = () => (
+  <div className="space-y-4 pt-4">
+    {/* Header with Add Button */}
+    <div className="flex justify-between items-center mb-4">
+      <Skeleton className="h-6 w-32" />
+      <Skeleton className="h-10 w-24" />
+    </div>
+
+    {/* Server Cards Grid */}
+    <div className="flex gap-6 flex-wrap">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <Skeleton key={i} className="h-56 w-80 rounded-lg" />
+      ))}
+    </div>
+  </div>
+);
+
+const MeetingSkeleton = () => (
+  <div className="space-y-6 pt-4">
+    {/* Filters Row */}
+    <div className="flex gap-2 flex-wrap">
+      <Skeleton className="h-10 w-48 rounded-full" />
+      <Skeleton className="h-10 w-32 rounded-full" />
+      <Skeleton className="h-10 w-32" />
+    </div>
+
+    {/* Meetings Table/List */}
+    <div className="border rounded-lg overflow-hidden">
+      {/* Table Header */}
+      <div className="bg-gray-50 p-4 grid grid-cols-4 gap-4 border-b">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-4 w-24" />
+        ))}
+      </div>
+
+      {/* Table Rows */}
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div
+          key={i}
+          className="p-4 grid grid-cols-4 gap-4 border-b last:border-b-0"
+        >
+          {Array.from({ length: 4 }).map((_, j) => (
+            <Skeleton key={j} className="h-4 w-20" />
+          ))}
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const StickyNotesSkeleton = () => (
+  <div className="space-y-4 pt-4">
+    {/* Filters/Header */}
+    <div className="flex gap-2 flex-wrap mb-4">
+      <Skeleton className="h-10 w-48 rounded-full" />
+      <Skeleton className="h-10 w-24" />
+    </div>
+
+    {/* Sticky Notes Grid */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <Skeleton key={i} className="h-48 w-full rounded-lg" />
+      ))}
+    </div>
+  </div>
+);
+
 export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
   // const { user } = useAuthStore();
   // const Role = user?.user?.role;
   // const isDeveloperView = Role === roles.DEVELOPER;
   const { data: projectDetailsResponse, refetch: refetchProjectDetails } =
-    useGetProjectsDetailData(
-    projectId?.toString()
-  );
+    useGetProjectsDetailData(projectId?.toString());
   const project = (projectDetailsResponse as any)?.data;
   const [activeMainTab, setActiveMainTab] = useState("overview");
   const [isChangingTab, setIsChangingTab] = useState(false);
@@ -57,31 +236,32 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
     return () => clearTimeout(timer);
   }, [activeMainTab]);
 
-  const TabContentSkeleton = () => (
-    <div className="space-y-6 pt-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Skeleton className="h-32 w-full rounded-xl" />
-        <Skeleton className="h-32 w-full rounded-xl" />
-        <Skeleton className="h-32 w-full rounded-xl" />
-      </div>
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-1/4" />
-        <div className="rounded-md border p-6 space-y-4">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="flex gap-4">
-              <Skeleton className="h-4 flex-1" />
-              <Skeleton className="h-4 flex-1" />
-              <Skeleton className="h-4 w-20" />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-
   const tabTriggerClass =
     "flex items-center gap-2 rounded-[50px] px-3 py-2  transition-all " +
     "data-[state=active]:bg-black data-[state=active]:text-white";
+
+  const getSkeletonForTab = (tabName: string) => {
+    switch (tabName) {
+      case "overview":
+        return <OverviewSkeleton />;
+      case "milestone":
+        return <MilestoneSkeleton />;
+      case "report":
+        return <ReportSkeleton />;
+      case "doc":
+        return <DocumentSkeleton />;
+      case "server":
+        return <ServerSkeleton />;
+      case "client":
+        return <MeetingSkeleton />;
+      case "internal_meeting":
+        return <MeetingSkeleton />;
+      case "sticky_notes":
+        return <StickyNotesSkeleton />;
+      default:
+        return <OverviewSkeleton />;
+    }
+  };
 
   return (
     <DrawerContent className="h-full w-full !max-w-[1100px] overflow-y-auto overflow-x-hidden ml-auto">
@@ -151,7 +331,7 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
 
           <div className="overflow-y-auto h-[calc(100vh-160px)] sm:h-[calc(100vh-131px)] pr-2">
             {isChangingTab ? (
-              <TabContentSkeleton />
+              getSkeletonForTab(activeMainTab)
             ) : (
               <>
                 <TabsContent value="overview">
