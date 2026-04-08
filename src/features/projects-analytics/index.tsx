@@ -119,7 +119,7 @@ const CHART_MIN_COLUMN_WIDTH = 72;
 const CHART_BASE_MIN_WIDTH = 960;
 const CHART_LEGEND_ITEMS = [
   { key: "plannedHours", label: "Planned Hours", color: "#2563eb" },
-  { key: "actualHours", label: "Actual Hours", color: "#111827" },
+  { key: "actualHours", label: "Actual Hours", color: "#10B981" },
 ] as const;
 
 const CLICKABLE_SUMMARY_KEYS = [
@@ -377,11 +377,21 @@ const ProjectAnalyticsPage = () => {
                 {chartProjects.length > 0 ? (
                   <>
                     <div className="w-full overflow-x-auto pb-2">
-                      <div style={{ width: chartContentWidth, height: CHART_HEIGHT }}>
+                      <div
+                        style={{
+                          width: chartContentWidth,
+                          height: CHART_HEIGHT,
+                        }}
+                      >
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart
                             data={chartProjects}
-                            margin={{ top: 12, right: 12, left: 12, bottom: 12 }}
+                            margin={{
+                              top: 12,
+                              right: 12,
+                              left: 12,
+                              bottom: 12,
+                            }}
                             barGap={10}
                           >
                             <CartesianGrid
@@ -430,15 +440,17 @@ const ProjectAnalyticsPage = () => {
                               radius={[8, 8, 0, 0]}
                               maxBarSize={42}
                             >
-                              {chartProjects.map((item: ProjectAnalyticsItem) => (
-                                <Cell
-                                  key={`actual-${item.projectId}`}
-                                  fill={
-                                    HEALTH_COLORS[item.projectHealth] ??
-                                    "#64748b"
-                                  }
-                                />
-                              ))}
+                              {chartProjects.map(
+                                (item: ProjectAnalyticsItem) => (
+                                  <Cell
+                                    key={`actual-${item.projectId}`}
+                                    fill={
+                                      HEALTH_COLORS[item.projectHealth] ??
+                                      "#64748b"
+                                    }
+                                  />
+                                )
+                              )}
                             </Bar>
                           </BarChart>
                         </ResponsiveContainer>

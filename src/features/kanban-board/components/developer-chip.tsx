@@ -55,6 +55,11 @@ export const formatExperience = (
     months += 12;
   }
 
+  if (months === 12) {
+    years += 1;
+    months = 0;
+  }
+
   if (months < 0) months += 12;
 
   // 🔹 Less than 1 year → show only months
