@@ -50,6 +50,7 @@ import { useGetInquiryCategoryDropdown } from "../inquiry-channels/services";
 import { useGetInquiryDropdownList } from "../inquiry-types/services";
 import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import { formatDate } from "@/utils/commonFunctions";
+import { ViewNoteModal } from "./components/view-note-modal";
 
 const InquiryPage = () => {
   const { open, setOpen } = useInquiryStore();
@@ -454,16 +455,18 @@ const InquiryPage = () => {
     //     return <span className="capitalize">{clientCompany}</span>;
     //   },
     // },
-    // {
-    //   accessorKey: "country.name",
-    //   header: "Country",
-    //   cell: ({ row }) => {
-    //     const country = row.original?.country?.name ?? "-";
-    //     return <span className="capitalize">{country}</span>;
-    //   },
-    // },
     {
-      accessorKey: "inquiryDate",
+      id: "country",
+      accessorFn: (row) => row?.country?.name ?? "",
+      header: "Country",
+      cell: ({ row }) => {
+        const country = row.original?.country?.name ?? "-";
+        return <span className="capitalize">{country}</span>;
+      },
+    },
+    {
+      id: "inquiryDate",
+      accessorFn: (row) => row?.inquiryDate || row?.createdAt || "",
       header: "Inquiry Date",
       // cell: ({ row }) => {
       //   const inquiryDate = row.original?.inquiryDate ?? "-";
@@ -487,7 +490,8 @@ const InquiryPage = () => {
       },
     },
     {
-      accessorKey: "coordinatorId",
+      id: "coordinator",
+      accessorFn: (row) => row?.coordinator?.fullName ?? "",
       header: "Coordinator",
       cell: ({ row }) => {
         const createdBy = row.original?.coordinator?.fullName ?? "-";
@@ -495,7 +499,8 @@ const InquiryPage = () => {
       },
     },
     {
-      accessorKey: "salesPerson.fullName",
+      id: "salesPerson",
+      accessorFn: (row) => row?.salesPerson?.fullName ?? "",
       header: "Sales Person",
       cell: ({ row }) => {
         const createdBy = row.original?.salesPerson?.fullName ?? "-";
@@ -505,6 +510,7 @@ const InquiryPage = () => {
     {
       accessorKey: "inquiryType.name",
       header: "Inquiry Type",
+      enableSorting: false,
       cell: ({ row }) => {
         const type = row.original?.inquiryType?.name ?? "-";
 
@@ -516,10 +522,14 @@ const InquiryPage = () => {
       },
     },
     {
-      accessorKey: "inquirySource.name",
-      header: "Inquiry Channel",
+      accessorKey: "source",
+      header: "Inquiry Source",
+      enableSorting: false,
       cell: ({ row }) => {
-        const channel = row.original?.inquirySource?.name ?? "-";
+        const channel =
+          row.original?.outboundSource?.name ||
+          row.original?.inboundSource?.name ||
+          "-";
 
         const color =
           inquiryChannelColors[channel?.toLowerCase()] ??
@@ -531,6 +541,7 @@ const InquiryPage = () => {
     {
       accessorKey: "modules",
       header: "Inquiry Requirement",
+      enableSorting: false,
       cell: ({ row }) => {
         const modules = row.original?.modules ?? [];
         if (!modules || modules.length === 0) return "-";
@@ -550,6 +561,7 @@ const InquiryPage = () => {
     {
       accessorKey: "status",
       header: "Status",
+      enableSorting: false,
       cell: StatusCell,
     },
     {
@@ -581,6 +593,11 @@ const InquiryPage = () => {
           setCurrentRow(inquiry);
         };
 
+        const handleViewNote = () => {
+          setOpen("view-note");
+          setCurrentRow(inquiry);
+        };
+
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -594,6 +611,9 @@ const InquiryPage = () => {
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleView}>
                 View Inquiry
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleViewNote}>
+                View Note
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleViewHistory}>
                 View history
@@ -620,7 +640,7 @@ const InquiryPage = () => {
   ];
 
   return (
-    <PageLayout>
+    <PageLayout className="h-[calc(100vh-100px)] overflow-y-auto flex flex-col">
       <TablePageHeader
         title="Inquiries / Lead Management"
         buttonText="Add Lead"
@@ -656,10 +676,12 @@ const InquiryPage = () => {
           columns={columns}
           loading={loading}
           isPaginationEnabled
+          enableSorting
         />
       </Tabs>
       {open && <ActionFormModal />}
       <ViewInquiryModal />
+      <ViewNoteModal />
       <HistoryProjectModal />
     </PageLayout>
   );

@@ -71,6 +71,7 @@ export function ActionFormModal() {
         inquirySourceId: values?.inquirySourceId,
         clientLinkedInProfile: values?.clientLinkedInProfile,
         inquiryDate: values?.inquiryDate,
+        notes: values?.notes,
       };
       const payload = Object.fromEntries(
         Object.entries(basePayload).filter(

@@ -49,6 +49,11 @@ export const formatExperience = (
     months += 12;
   }
 
+  if (months === 12) {
+    years += 1;
+    months = 0;
+  }
+
   if (months < 0) months += 12;
 
   // 🔹 Less than 1 year → show only months
@@ -80,6 +85,8 @@ const statusColorMap: any = {
   stop: "bg-red-100 text-red-700",
   completed: "bg-emerald-100 text-emerald-700",
 };
+
+const TECHNOLOGIES_VISIBLE_COUNT = 7;
 
 const OverviewProject = ({
   projectId,
@@ -118,6 +125,9 @@ const OverviewProject = ({
   // );
 
   const project = (projectDetailsResponse as any)?.data;
+  const technologies = project?.technologies ?? [];
+  const visibleTechnologies = technologies.slice(0, TECHNOLOGIES_VISIBLE_COUNT);
+  const hiddenTechnologies = technologies.slice(TECHNOLOGIES_VISIBLE_COUNT);
 
   const handleAfterDeveloperChange = () => {
     refetchProjectDetails();
@@ -270,19 +280,57 @@ const OverviewProject = ({
               </div>
               <div className="text-base text-gray-800 pl-6">
                 <div className="flex flex-wrap gap-2">
-                  {project.technologies?.length > 0 ? (
-                    project.technologies.map((tech: any) => (
-                      <span
-                        key={tech.id}
-                        className="px-2.5 py-1 text-xs font-medium rounded-md text-white border"
-                        style={{
-                          backgroundColor: tech.color || "#94a3b8",
-                          borderColor: tech.color || "#94a3b8",
-                        }}
-                      >
-                        {tech.name}
-                      </span>
-                    ))
+                  {technologies.length > 0 ? (
+                    <>
+                      {visibleTechnologies.map((tech: any) => (
+                        <span
+                          key={tech.id}
+                          className="px-2.5 py-1 text-xs font-medium rounded-md text-white border"
+                          style={{
+                            backgroundColor: tech.color || "#94a3b8",
+                            borderColor: tech.color || "#94a3b8",
+                          }}
+                        >
+                          {tech.name}
+                        </span>
+                      ))}
+                      {hiddenTechnologies.length > 0 ? (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-200"
+                              >
+                                +{hiddenTechnologies.length}
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs p-3">
+                              <div className="space-y-2">
+                                <p className="border-b pb-1 text-xs font-semibold">
+                                  Other Technologies
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                  {hiddenTechnologies.map((tech: any) => (
+                                    <span
+                                      key={tech.id}
+                                      className="px-2.5 py-1 text-xs font-medium rounded-md text-white border"
+                                      style={{
+                                        backgroundColor:
+                                          tech.color || "#94a3b8",
+                                        borderColor: tech.color || "#94a3b8",
+                                      }}
+                                    >
+                                      {tech.name}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      ) : null}
+                    </>
                   ) : (
                     <span className="text-sm text-muted-foreground">
                       No technologies listed.

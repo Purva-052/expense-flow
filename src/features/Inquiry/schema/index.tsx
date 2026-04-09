@@ -35,7 +35,11 @@ const optionalNumber = () =>
   }, z.number().nullable().optional());
 
 export const InquirySchema = z.object({
-  projectName: z.string().trim().optional(),
+  projectName: z
+    .string()
+    .trim()
+    .max(50, { message: "Project name cannot exceed 50 characters." })
+    .optional(),
 
   clientName: z
     .string()

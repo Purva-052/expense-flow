@@ -27,7 +27,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { SearchX } from "lucide-react";
+import { ArrowDown, ArrowUp, SearchX } from "lucide-react";
 import { useState } from "react";
 
 interface GlobalTableProps<TData> {
@@ -40,6 +40,7 @@ interface GlobalTableProps<TData> {
   isPaginationEnabled?: boolean;
   loading?: boolean;
   scrollY?: string;
+  enableSorting?: boolean;
 }
 
 export function GlobalTable<TData>({
@@ -52,6 +53,7 @@ export function GlobalTable<TData>({
   isPaginationEnabled = true,
   loading = false,
   scrollY = "55dvh",
+  enableSorting = false,
 }: Readonly<GlobalTableProps<TData>>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -80,6 +82,8 @@ export function GlobalTable<TData>({
       onPaginationChange(newPagination);
     },
     manualPagination: true,
+    enableSorting,
+    enableSortingRemoval: false,
     pageCount: Math.ceil((totalCount ?? 0) / (pageSize ?? 10)),
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -104,18 +108,53 @@ export function GlobalTable<TData>({
                   className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
                 >
                   {headerGroup.headers.map((header: any) => {
+                    const canSort =
+                      enableSorting &&
+                      header.column.getCanSort() &&
+                      !header.isPlaceholder;
+                    const sortState = header.column.getIsSorted();
+
                     return (
                       <th
                         key={header.id}
                         className={`h-12 !bg-gray-100 text-black z-50 border-b   px-4 text-left align-middle font-medium  sticky top-0`}
                         style={{ width: header.getSize?.() }}
                       >
-                        <div className="flex items-center gap-1.5  whitespace-nowrap">
-                          {flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                        </div>
+                        {canSort ? (
+                          <button
+                            type="button"
+                            onClick={header.column.getToggleSortingHandler()}
+                            className="flex items-center gap-1.5 whitespace-nowrap transition-opacity hover:opacity-80"
+                          >
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                            <span className="flex flex-col items-center justify-center leading-none">
+                              <ArrowUp
+                                className={`h-3 w-3 ${
+                                  sortState === "asc"
+                                    ? "text-black"
+                                    : "text-gray-400"
+                                }`}
+                              />
+                              <ArrowDown
+                                className={`-mt-1 h-3 w-3 ${
+                                  sortState === "desc"
+                                    ? "text-black"
+                                    : "text-gray-400"
+                                }`}
+                              />
+                            </span>
+                          </button>
+                        ) : (
+                          <div className="flex items-center gap-1.5 whitespace-nowrap">
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                          </div>
+                        )}
                       </th>
                     );
                   })}

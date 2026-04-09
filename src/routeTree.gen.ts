@@ -29,6 +29,7 @@ import { Route as AuthenticatedStorageIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedServerIndexRouteImport } from './routes/_authenticated/server/index'
 import { Route as AuthenticatedRamTypesIndexRouteImport } from './routes/_authenticated/ram-types/index'
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects/index'
+import { Route as AuthenticatedProjectsAnalyticsIndexRouteImport } from './routes/_authenticated/projects-analytics/index'
 import { Route as AuthenticatedProjectTypeIndexRouteImport } from './routes/_authenticated/project-type/index'
 import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authenticated/profile/index'
 import { Route as AuthenticatedProcessorIndexRouteImport } from './routes/_authenticated/processor/index'
@@ -160,6 +161,12 @@ const AuthenticatedProjectsIndexRoute =
   AuthenticatedProjectsIndexRouteImport.update({
     id: '/projects/',
     path: '/projects/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProjectsAnalyticsIndexRoute =
+  AuthenticatedProjectsAnalyticsIndexRouteImport.update({
+    id: '/projects-analytics/',
+    path: '/projects-analytics/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedProjectTypeIndexRoute =
@@ -347,6 +354,7 @@ export interface FileRoutesByFullPath {
   '/processor/': typeof AuthenticatedProcessorIndexRoute
   '/profile/': typeof AuthenticatedProfileIndexRoute
   '/project-type/': typeof AuthenticatedProjectTypeIndexRoute
+  '/projects-analytics/': typeof AuthenticatedProjectsAnalyticsIndexRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
   '/ram-types/': typeof AuthenticatedRamTypesIndexRoute
   '/server/': typeof AuthenticatedServerIndexRoute
@@ -393,6 +401,7 @@ export interface FileRoutesByTo {
   '/processor': typeof AuthenticatedProcessorIndexRoute
   '/profile': typeof AuthenticatedProfileIndexRoute
   '/project-type': typeof AuthenticatedProjectTypeIndexRoute
+  '/projects-analytics': typeof AuthenticatedProjectsAnalyticsIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
   '/ram-types': typeof AuthenticatedRamTypesIndexRoute
   '/server': typeof AuthenticatedServerIndexRoute
@@ -441,6 +450,7 @@ export interface FileRoutesById {
   '/_authenticated/processor/': typeof AuthenticatedProcessorIndexRoute
   '/_authenticated/profile/': typeof AuthenticatedProfileIndexRoute
   '/_authenticated/project-type/': typeof AuthenticatedProjectTypeIndexRoute
+  '/_authenticated/projects-analytics/': typeof AuthenticatedProjectsAnalyticsIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
   '/_authenticated/ram-types/': typeof AuthenticatedRamTypesIndexRoute
   '/_authenticated/server/': typeof AuthenticatedServerIndexRoute
@@ -489,6 +499,7 @@ export interface FileRouteTypes {
     | '/processor/'
     | '/profile/'
     | '/project-type/'
+    | '/projects-analytics/'
     | '/projects/'
     | '/ram-types/'
     | '/server/'
@@ -535,6 +546,7 @@ export interface FileRouteTypes {
     | '/processor'
     | '/profile'
     | '/project-type'
+    | '/projects-analytics'
     | '/projects'
     | '/ram-types'
     | '/server'
@@ -582,6 +594,7 @@ export interface FileRouteTypes {
     | '/_authenticated/processor/'
     | '/_authenticated/profile/'
     | '/_authenticated/project-type/'
+    | '/_authenticated/projects-analytics/'
     | '/_authenticated/projects/'
     | '/_authenticated/ram-types/'
     | '/_authenticated/server/'
@@ -748,6 +761,13 @@ declare module '@tanstack/react-router' {
       path: '/projects'
       fullPath: '/projects/'
       preLoaderRoute: typeof AuthenticatedProjectsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/projects-analytics/': {
+      id: '/_authenticated/projects-analytics/'
+      path: '/projects-analytics'
+      fullPath: '/projects-analytics/'
+      preLoaderRoute: typeof AuthenticatedProjectsAnalyticsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/project-type/': {
@@ -953,6 +973,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProcessorIndexRoute: typeof AuthenticatedProcessorIndexRoute
   AuthenticatedProfileIndexRoute: typeof AuthenticatedProfileIndexRoute
   AuthenticatedProjectTypeIndexRoute: typeof AuthenticatedProjectTypeIndexRoute
+  AuthenticatedProjectsAnalyticsIndexRoute: typeof AuthenticatedProjectsAnalyticsIndexRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
   AuthenticatedRamTypesIndexRoute: typeof AuthenticatedRamTypesIndexRoute
   AuthenticatedServerIndexRoute: typeof AuthenticatedServerIndexRoute
@@ -999,6 +1020,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProcessorIndexRoute: AuthenticatedProcessorIndexRoute,
   AuthenticatedProfileIndexRoute: AuthenticatedProfileIndexRoute,
   AuthenticatedProjectTypeIndexRoute: AuthenticatedProjectTypeIndexRoute,
+  AuthenticatedProjectsAnalyticsIndexRoute:
+    AuthenticatedProjectsAnalyticsIndexRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
   AuthenticatedRamTypesIndexRoute: AuthenticatedRamTypesIndexRoute,
   AuthenticatedServerIndexRoute: AuthenticatedServerIndexRoute,

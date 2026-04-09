@@ -11,17 +11,23 @@ import {
   IconTool,
   IconUsers,
   // IconUserScreen,
-  IconReportAnalytics,
-  IconReport,
-  IconClipboardCheck,
+  // IconReportAnalytics,
+  // IconReport,
+  // IconClipboardCheck,
 } from "@tabler/icons-react";
 import {
   ArrowDownToLine,
   ArrowUpFromLine,
+  BarChart3,
+  BriefcaseBusiness,
   Building2,
   CalendarCheck,
+  ClipboardList,
+  ClockPlus,
   Command,
+  // Contact,
   Cpu,
+  Database,
   Flame,
   Globe,
   // CpuIcon,
@@ -30,6 +36,7 @@ import {
   MemoryStick,
   Microchip,
   Network,
+  Plane,
   ScrollText,
   Tag,
   UserStar,
@@ -91,7 +98,7 @@ export const sidebarData: SidebarData = {
         {
           title: "Daily Report",
           url: "/daily-report",
-          icon: IconReportAnalytics,
+          icon: ClipboardList,
           requiredRoles: [
             roles.ADMIN,
             roles.TEAM_LEAD,
@@ -101,16 +108,26 @@ export const sidebarData: SidebarData = {
           ],
         },
         {
+          title: "Project Analytics",
+          url: "/projects-analytics",
+          icon: BarChart3,
+          requiredRoles: [
+            roles.ADMIN,
+            roles.TEAM_LEAD,
+            roles.PROJECT_MANAGER,
+          ],
+        },
+        {
           title: "Lead Management",
           url: "/inquiry",
-          icon: IconMessage2Question,
+          icon: BriefcaseBusiness,
           // allowUserID1: allowUserID1,
           requiredRoles: [roles.ADMIN],
         },
         {
           title: "System Inventory",
           url: "/system-inventory",
-          icon: IconReservedLine,
+          icon: Database,
           requiredRoles: [
             roles.ADMIN,
             roles.TEAM_LEAD,
@@ -122,13 +139,13 @@ export const sidebarData: SidebarData = {
         {
           title: "Extra Work Report",
           url: "/extra-work-report",
-          icon: IconReport,
+          icon: ClockPlus,
           requiredRoles: [roles.ADMIN],
         },
         {
           title: "Leave Management",
           url: "/leave-management",
-          icon: IconClipboardCheck,
+          icon: Plane,
           requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
         {
@@ -160,6 +177,7 @@ export const sidebarData: SidebarData = {
     {
       title: "Operations",
       requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
+      allowUserIDs: [169, 170, 171, 175, 174],
       items: [
         {
           title: "Conference Room Booking",
@@ -177,6 +195,7 @@ export const sidebarData: SidebarData = {
           url: "/transactions-logs",
           icon: ScrollText,
           requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER, roles.TEAM_LEAD],
+          allowUserIDs: [169, 170, 171, 175, 174],
         },
         {
           title: "Tools Management",
