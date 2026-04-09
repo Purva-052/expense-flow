@@ -344,8 +344,8 @@ const ProjectAnalyticsPage = () => {
 
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                   <div className="grid gap-1">
-                    <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                      Filter by project
+                    <span className="text-xs font-medium tracking-wide text-muted-foreground">
+                      Filter by Project
                     </span>
                     <SimpleDropDownSearchable
                       options={projectOptions}
@@ -354,7 +354,7 @@ const ProjectAnalyticsPage = () => {
                       placeholder="All Projects"
                       className="min-w-55 sm:w-70"
                       maxHeight={320}
-                      allowClear={false}
+                      allowClear={selectedProjectId !== "all"}
                     />
                   </div>
 
