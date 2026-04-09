@@ -25,8 +25,9 @@ import {
   useCreateManualMilestone,
   useUpdateMileStone,
   useDeleteMilestone,
+  useGetMilestoneTasks,
 } from "../../services";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import API from "@/config/api/api";
 import {
@@ -66,6 +67,23 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+const EDIT_TASKS_PAGE_SIZE = 100;
+
+const normalizeMilestoneTasks = (milestoneData: any) => {
+  const baseTasks = Array.isArray(milestoneData?.tasks)
+    ? milestoneData.tasks
+    : Array.isArray(milestoneData?.data?.tasks)
+      ? milestoneData.data.tasks
+      : [];
+
+  return baseTasks.map((task: any) => ({
+    id: task.id,
+    taskName: task.taskName,
+    estimatedTime: task.estimatedTime,
+    status: task.status,
+  }));
+};
+
 interface AddManualMilestoneProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -88,6 +106,11 @@ export function AddManualMilestone({
   const queryClient = useQueryClient();
   const [taskToDelete, setTaskToDelete] = useState<any>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [editTasksPage, setEditTasksPage] = useState(1);
+  const [allEditTasks, setAllEditTasks] = useState<any[]>([]);
+  const [hasMoreEditTasks, setHasMoreEditTasks] = useState(false);
+  const hasInitializedEditForm = useRef(false);
+  const hydratedMilestoneIdRef = useRef<number | string | null>(null);
 
   // --- API HOOKS ---
   const { mutate: createMilestone, isPending: isCreating } =
@@ -106,6 +129,17 @@ export function AddManualMilestone({
   const { mutate: deleteTaskFromAPI, isPending: isDeletingTask } =
     useDeleteMilestone();
 
+  const isEditMode = Boolean(initialData?.id);
+  const editTaskParams = useMemo(
+    () => ({
+      page: editTasksPage,
+      limit: EDIT_TASKS_PAGE_SIZE,
+    }),
+    [editTasksPage]
+  );
+  const { data: editTaskDataResponse, isLoading: isLoadingEditTasks } =
+    useGetMilestoneTasks(initialData?.id, editTaskParams, open && isEditMode);
+
   // --- FORM SETUP ---
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -123,6 +157,25 @@ export function AddManualMilestone({
     control: form.control,
     name: "tasks",
   });
+
+  const editTaskMetadata = editTaskDataResponse?.metadata;
+  const currentEditPageTasks = useMemo(
+    () =>
+      normalizeMilestoneTasks(
+        editTaskDataResponse?.data || editTaskDataResponse
+      ),
+    [editTaskDataResponse]
+  );
+
+  const sourceTasks = useMemo(() => {
+    if (allEditTasks.length > 0) return allEditTasks;
+    return initialData?.tasks || [];
+  }, [allEditTasks, initialData?.tasks]);
+
+  const isHydratingEditTasks =
+    open &&
+    isEditMode &&
+    (isLoadingEditTasks || hasMoreEditTasks || allEditTasks.length === 0);
 
   // --- REAL-TIME CALCULATION LOGIC (UPDATED) ---
 
@@ -181,38 +234,122 @@ export function AddManualMilestone({
 
   // --- INITIAL DATA LOADING ---
   useEffect(() => {
-    if (open) {
-      if (initialData) {
-        form.reset({
-          name:
-            initialData.name ||
-            initialData.milestoneName ||
-            initialData.milestone_name ||
-            "",
-          estimatedTime: initialData.estimatedTime || "",
-          status: initialData.status || "pending",
-          orderNumber: initialData.orderNumber
-            ? initialData.orderNumber
-            : initialData.order_number
-              ? initialData.order_number
-              : 0,
-          tasks: initialData.tasks?.map((t: any) => ({
-            taskId: t.id,
-            taskName: t.taskName,
-            estimatedTime: t.estimatedTime,
-          })) || [{ taskName: "", estimatedTime: "" }],
-        });
-      } else {
-        form.reset({
-          name: "",
-          estimatedTime: "",
-          status: "pending",
-          orderNumber: 0,
-          tasks: [{ taskName: "", estimatedTime: "" }],
-        });
-      }
+    if (!open) {
+      hydratedMilestoneIdRef.current = null;
+      hasInitializedEditForm.current = false;
+      if (editTasksPage !== 1) setEditTasksPage(1);
+      if (allEditTasks.length > 0) setAllEditTasks([]);
+      if (hasMoreEditTasks) setHasMoreEditTasks(false);
+      return;
     }
-  }, [open, initialData, form]);
+
+    if (!initialData) {
+      form.reset({
+        name: "",
+        estimatedTime: "",
+        status: "pending",
+        orderNumber: 0,
+        tasks: [{ taskName: "", estimatedTime: "" }],
+      });
+      hasInitializedEditForm.current = true;
+      return;
+    }
+
+    if (hasInitializedEditForm.current || isHydratingEditTasks) {
+      return;
+    }
+
+    form.reset({
+      name:
+        initialData.name ||
+        initialData.milestoneName ||
+        initialData.milestone_name ||
+        "",
+      estimatedTime: initialData.estimatedTime || "",
+      status: initialData.status || "pending",
+      orderNumber: initialData.orderNumber
+        ? initialData.orderNumber
+        : initialData.order_number
+          ? initialData.order_number
+          : 0,
+      tasks: sourceTasks.map((t: any) => ({
+        taskId: t.id,
+        taskName: t.taskName,
+        estimatedTime: t.estimatedTime,
+      })) || [{ taskName: "", estimatedTime: "" }],
+    });
+    hasInitializedEditForm.current = true;
+  }, [
+    open,
+    initialData,
+    form,
+    isHydratingEditTasks,
+    sourceTasks,
+    editTasksPage,
+    allEditTasks.length,
+    hasMoreEditTasks,
+  ]);
+
+  useEffect(() => {
+    if (!open || !isEditMode) return;
+    if (hydratedMilestoneIdRef.current === initialData?.id) return;
+
+    hydratedMilestoneIdRef.current = initialData?.id;
+    if (editTasksPage !== 1) setEditTasksPage(1);
+    if (allEditTasks.length > 0) setAllEditTasks([]);
+    if (!hasMoreEditTasks) setHasMoreEditTasks(true);
+    hasInitializedEditForm.current = false;
+  }, [
+    open,
+    isEditMode,
+    initialData?.id,
+    editTasksPage,
+    allEditTasks.length,
+    hasMoreEditTasks,
+  ]);
+
+  useEffect(() => {
+    if (!editTaskDataResponse || !isEditMode || !open) return;
+
+    const currentPage = editTaskMetadata?.page ?? editTasksPage;
+
+    // Ignore stale responses while the next page request is already in flight.
+    if (currentPage !== editTasksPage) return;
+
+    setAllEditTasks((prev) => {
+      if (editTasksPage === 1) return currentEditPageTasks;
+
+      const merged = [...prev, ...currentEditPageTasks];
+      return merged.filter(
+        (task, index, self) =>
+          index === self.findIndex((item) => item.id === task.id)
+      );
+    });
+
+    const totalPages = editTaskMetadata?.totalPages;
+    const total = editTaskMetadata?.total;
+
+    const nextHasMore = totalPages
+      ? currentPage < totalPages
+      : typeof total === "number"
+        ? currentPage * EDIT_TASKS_PAGE_SIZE < total
+        : currentEditPageTasks.length >= EDIT_TASKS_PAGE_SIZE;
+
+    setHasMoreEditTasks(nextHasMore);
+
+    if (nextHasMore) {
+      setEditTasksPage((prev) => prev + 1);
+    }
+  }, [
+    editTaskDataResponse,
+    isEditMode,
+    open,
+    editTaskMetadata?.page,
+    editTaskMetadata?.total,
+    editTaskMetadata?.totalPages,
+    editTasksPage,
+    currentEditPageTasks,
+  ]);
 
   const handleDeleteTask = (task: any, index: number) => {
     if (task.taskId) {
@@ -265,7 +402,7 @@ export function AddManualMilestone({
       };
 
       const initialTasks =
-        initialData.tasks?.map((t: any) => ({
+        sourceTasks.map((t: any) => ({
           taskId: t.id,
           taskName: t.taskName,
           estimatedTime: t.estimatedTime,
@@ -442,9 +579,15 @@ export function AddManualMilestone({
                   </Button>
                 </div>
 
+                {isEditMode && isHydratingEditTasks && (
+                  <div className="text-sm text-muted-foreground">
+                    Loading all milestone tasks...
+                  </div>
+                )}
+
                 {fields.map((item: any, index: number) => {
                   const isExistingTask = !!item.taskId;
-                  const taskStatus = initialData?.tasks?.find(
+                  const taskStatus = sourceTasks.find(
                     (t: any) => t.id === item.taskId
                   )?.status;
 
@@ -468,10 +611,7 @@ export function AddManualMilestone({
                                 <Input
                                   {...field}
                                   placeholder="Task name"
-                                  disabled={
-                                    initialData?.tasks[index]?.status ===
-                                    "completed"
-                                  }
+                                  disabled={taskStatus === "completed"}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -495,10 +635,7 @@ export function AddManualMilestone({
                                 <Input
                                   {...field}
                                   placeholder="e.g. 1h 30m"
-                                  disabled={
-                                    initialData?.tasks[index]?.status ===
-                                    "completed"
-                                  }
+                                  disabled={taskStatus === "completed"}
                                 />
                               </FormControl>
                               <FormMessage />

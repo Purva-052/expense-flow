@@ -292,11 +292,12 @@ export const ActiveMilestoneContent = ({
     return {
       ...base,
       id: milestoneId,
+      tasks: allTasks.length > 0 ? allTasks : base.tasks,
       estimatedTime: base.estimatedTime || "0.00",
       actualTime: base.actualTime || "0.00",
       weightageHours: base.weightageHours || base.weightageTime || "0.00",
     };
-  }, [milestone, milestoneId]);
+  }, [allTasks, milestone, milestoneId]);
 
   if (isLoading && allTasks.length === 0) {
     return (
