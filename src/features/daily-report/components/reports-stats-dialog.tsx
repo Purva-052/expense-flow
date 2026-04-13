@@ -103,6 +103,13 @@ export function ReportsStatsDialog({
     }
   }, [type, reportingDate, userId]);
 
+  const sortByParam =
+    sortField === "fullName"
+      ? "name"
+      : sortField === "reportingDate"
+        ? "date"
+        : undefined;
+
   const {
     data: listData,
     isPending: loading,
@@ -115,6 +122,8 @@ export function ReportsStatsDialog({
     userId: listParams.userId,
     page: listParams.currentPage,
     limit: listParams.pageSize,
+    sortBy: sortByParam,
+    sortOrder: sortByParam ? sortOrder : undefined,
   });
 
   useEffect(() => {
@@ -141,14 +150,17 @@ export function ReportsStatsDialog({
   }, [listData, listParams.currentPage, listParams.pageSize]);
 
   const handleSort = (field: "fullName" | "reportingDate") => {
-    if (sortField === field) {
-      // Toggle sort order if same field
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      // Set new field with ascending order
-      setSortField(field);
-      setSortOrder("asc");
-    }
+    const nextSortOrder =
+      sortField === field ? (sortOrder === "asc" ? "desc" : "asc") : "asc";
+
+    setSortField(field);
+    setSortOrder(nextSortOrder);
+    setAccumulatedData([]);
+    setHasMore(true);
+    setListParams((prev) => ({
+      ...prev,
+      currentPage: 1,
+    }));
   };
 
   const getSortedData = (data: any[]) => {
