@@ -93,6 +93,8 @@ export const useGetReportsAnalytics = () => {
 
 export const useGetReportDetails = (params: {
   type: string;
+  sortBy?: "date" | "name";
+  sortOrder?: "asc" | "desc";
   [key: string]: any;
 }) => {
   return useFetchData({
