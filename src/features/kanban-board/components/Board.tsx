@@ -56,7 +56,7 @@ import { useGetProjectTypesDropdownList } from "@/features/Project-type/services
 import { useGetTechnologyDropdownList } from "@/features/technology/services";
 import { cn } from "@/lib/utils";
 import { capitalizeFirstLetter } from "@/utils/commonFunctions";
-import { ACCOUNTANT_USER_IDS, roles } from "@/utils/constant";
+import { roles } from "@/utils/constant";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CustomMultiSelect } from "@/components/shared/custom-multiselect";
 
@@ -166,9 +166,7 @@ const Board = ({
     return AllDevelopersResponse.data
       .map((group: any) => ({
         ...group,
-        resources: (group.resources ?? []).filter(
-          (dev: any) => !ACCOUNTANT_USER_IDS.includes(Number(dev?.id))
-        ),
+        resources: group.resources ?? [],
       }))
       .filter((group: any) => group.resources.length > 0);
   }, [AllDevelopersResponse]);

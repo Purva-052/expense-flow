@@ -61,11 +61,7 @@ import { useGetProjectTypesDropdownList } from "@/features/Project-type/services
 import { useGetTechnologyDropdownList } from "@/features/technology/services";
 import { cn } from "@/lib/utils";
 import { capitalizeFirstLetter } from "@/utils/commonFunctions";
-import {
-  ACCOUNTANT_USER_IDS,
-  roles,
-  PROJECT_DETAILS_FILTER_STORAGE_KEY,
-} from "@/utils/constant";
+import { roles, PROJECT_DETAILS_FILTER_STORAGE_KEY } from "@/utils/constant";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CustomMultiSelect } from "@/components/shared/custom-multiselect";
 // import { Skeleton } from "@/components/ui/skeleton";
@@ -187,6 +183,7 @@ const ProjectPage = ({
   }, [listParams, FILTER_STORAGE_KEY]);
 
   const resourcePayload = {
+    pagination: false,
     ...(activeTabResource === "available"
       ? { available: showAllDevelopers ? undefined : true }
       : {}),
@@ -207,9 +204,7 @@ const ProjectPage = ({
     return AllDevelopersResponse.data
       .map((group: any) => ({
         ...group,
-        resources: (group.resources ?? []).filter(
-          (dev: any) => !ACCOUNTANT_USER_IDS.includes(Number(dev?.id))
-        ),
+        resources: group.resources ?? [],
       }))
       .filter((group: any) => group.resources.length > 0);
   }, [AllDevelopersResponse]);
@@ -865,8 +860,8 @@ const ProjectPage = ({
                 </p>
               </div>
             )}
-            {isFetchingNextPage && (
-              view === "grid" ? (
+            {isFetchingNextPage &&
+              (view === "grid" ? (
                 <div className="grid grid-cols-1 gap-4 py-2 md:grid-cols-2 2xl:grid-cols-3">
                   {Array.from({ length: 3 }).map((_, index) => (
                     <ProjectCardSkeleton
@@ -886,8 +881,7 @@ const ProjectPage = ({
                     ))}
                   </div>
                 </div>
-              )
-            )}
+              ))}
             <div ref={loadMoreRef} className="h-2" />
           </div>
 
