@@ -122,7 +122,6 @@ export const InterviewForm = ({
     return schema;
   }, [isEditMode, userRole]);
 
-  console.log("initialData: ", initialData);
   const form = useForm<InterviewFormValues>({
     resolver: zodResolver(activeSchema as any),
     mode: "onChange",
