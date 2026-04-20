@@ -165,8 +165,15 @@ export default function DailyReportPage() {
 
   const totalCount = (listData as any)?.metadata?.totalCount;
 
+  const isDeveloperOrBDE =
+    userRole === roles.DEVELOPER || userRole === roles.BDE;
+
   const { data: projectsList, isPending: projectsListLoading }: any =
-    useGetProjectSDropdownList();
+    useGetProjectSDropdownList(
+      isDeveloperOrBDE
+        ? { includeAll: false, developerId: user?.user?.id }
+        : { includeAll: true }
+    );
 
   const { data: usersList, isPending: usersListLoading }: any =
     useGetUserDropdownList({
@@ -481,8 +488,8 @@ export default function DailyReportPage() {
           Get list of daily report logs
         </TablePageHeader> */}
 
-        <div className="relative">
-          <div className="pr-44">
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-start">
+          <div>
             <GlobalFilterSection
               filters={filters.filter((f) => {
                 if (f.key === "milestoneId" && !listParams.projectId) {
@@ -506,16 +513,20 @@ export default function DailyReportPage() {
             />
           </div>
           {canExportCSV && (
-            <div className="absolute right-0 top-0 z-10">
-              <Button
-                onClick={handleExportCSV}
-                disabled={exportCSVLoading}
-                className="whitespace-nowrap p-5"
-              >
-                <Download className="w-4 h-4 mr-1" />
-                {exportCSVLoading ? "Exporting CSV..." : "Export CSV"}
-              </Button>
-            </div>
+            <Button
+              onClick={handleExportCSV}
+              disabled={exportCSVLoading}
+              className="whitespace-nowrap h-10 px-5 my-4"
+            >
+              {exportCSVLoading ? (
+                "Exporting..."
+              ) : (
+                <>
+                  <Download className="w-4 h-4 mr-2" />
+                  Export CSV
+                </>
+              )}
+            </Button>
           )}
         </div>
         <GlobalTable<DailyReport>
