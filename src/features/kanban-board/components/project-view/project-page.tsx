@@ -191,22 +191,36 @@ const ProjectPage = ({
     technologyId: selectedTech.length > 0 ? selectedTech : undefined,
   };
 
-  const {
-    data: AllDevelopersResponse,
-    isPending: AllDevelopersLoading,
-    refetch: AllDevelopersRefetch,
-  }: any = activeTabResource !== "available"
-    ? useGetAllBecomingAvailableDevelopers(resourcePayload)
-    : useGetAllDevelopers(resourcePayload);
+  const availableDevelopers = useGetAllDevelopers(
+    resourcePayload,
+    activeTabResource === "available" && !isDeveloperView && !isBdeView
+  );
+
+  const becomingAvailableDevelopers = useGetAllBecomingAvailableDevelopers(
+    resourcePayload,
+    activeTabResource !== "available" && !isDeveloperView && !isBdeView
+  );
+
+  const AllDevelopersResponse =
+    activeTabResource === "available"
+      ? availableDevelopers.data
+      : becomingAvailableDevelopers.data;
+  const AllDevelopersLoading =
+    activeTabResource === "available"
+      ? availableDevelopers.isPending
+      : becomingAvailableDevelopers.isPending;
+  const AllDevelopersRefetch =
+    activeTabResource === "available"
+      ? availableDevelopers.refetch
+      : becomingAvailableDevelopers.refetch;
 
   const groupedDevelopers: GroupedDevelopers = useMemo(() => {
-    if (!AllDevelopersResponse?.data) return [];
-    return AllDevelopersResponse.data
-      .map((group: any) => ({
-        ...group,
-        resources: group.resources ?? [],
-      }))
-      .filter((group: any) => group.resources.length > 0);
+    if (!AllDevelopersResponse || !Array.isArray(AllDevelopersResponse))
+      return [];
+    return AllDevelopersResponse.map((group: any) => ({
+      ...group,
+      resources: group.resources ?? [],
+    })).filter((group: any) => group.resources.length > 0);
   }, [AllDevelopersResponse]);
 
   const allDeveloperIds = useMemo(() => {

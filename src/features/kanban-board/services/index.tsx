@@ -42,13 +42,17 @@ export const useGetProjectHistoryData = (
   });
 };
 
-export const useGetAllDevelopers = (params?: any) => {
-  return useFetchData({ url: GET_ALL_DEVELOPER_API_URL, params });
+export const useGetAllDevelopers = (params?: any, enabled?: boolean) => {
+  return useFetchData({ url: GET_ALL_DEVELOPER_API_URL, params, enabled });
 };
-export const useGetAllBecomingAvailableDevelopers = (params?: any) => {
+export const useGetAllBecomingAvailableDevelopers = (
+  params?: any,
+  enabled?: boolean
+) => {
   return useFetchData({
     url: GET_BECOMEING_AVAILABLE_DEVELOPER_API_URL,
     params,
+    enabled,
   });
 };
 
