@@ -215,12 +215,51 @@ const ProjectPage = ({
       : becomingAvailableDevelopers.refetch;
 
   const groupedDevelopers: GroupedDevelopers = useMemo(() => {
-    if (!AllDevelopersResponse || !Array.isArray(AllDevelopersResponse))
-      return [];
-    return AllDevelopersResponse.map((group: any) => ({
-      ...group,
-      resources: group.resources ?? [],
-    })).filter((group: any) => group.resources.length > 0);
+    const developersResponse = Array.isArray(AllDevelopersResponse)
+      ? AllDevelopersResponse
+      : Array.isArray((AllDevelopersResponse as any)?.data)
+        ? (AllDevelopersResponse as any).data
+        : Array.isArray((AllDevelopersResponse as any)?.data?.data)
+          ? (AllDevelopersResponse as any).data.data
+          : [];
+
+    if (!developersResponse.length) return [];
+
+    const isGroupedResponse = developersResponse.some((item: any) =>
+      Array.isArray(item?.resources)
+    );
+
+    if (isGroupedResponse) {
+      return developersResponse
+        .map((group: any) => ({
+          ...group,
+          technologyName:
+            group.technologyName ?? group.technology?.name ?? "Other",
+          technologyColor: group.technologyColor ?? group.technology?.color,
+          resources: group.resources ?? [],
+        }))
+        .filter((group: any) => group.resources.length > 0);
+    }
+
+    const groupedByTechnology = developersResponse.reduce(
+      (groups: Record<string, any>, developer: any) => {
+        const technologyName = developer?.technology?.name ?? "Other";
+
+        if (!groups[technologyName]) {
+          groups[technologyName] = {
+            technologyName,
+            technologyColor: developer?.technology?.color,
+            resources: [],
+          };
+        }
+
+        groups[technologyName].resources.push(developer);
+        return groups;
+      },
+      {}
+    );
+
+    return Object.values(groupedByTechnology);
   }, [AllDevelopersResponse]);
 
   const allDeveloperIds = useMemo(() => {
