@@ -119,7 +119,7 @@ export function CustomDatePicker({
                     }}
                   >
                     {Array.from(
-                      { length: new Date().getFullYear() - 1930 + 1 },
+                      { length: new Date().getFullYear() - 1930 + 1 + 10 },
                       (_, i) => 1930 + i
                     ).map((year) => (
                       <option key={year} value={year}>
