@@ -34,6 +34,7 @@ const ProjectBoard = () => {
   const [archiveProjectCount, setArchiveProjectCount] = useState<number | null>(
     null
   );
+  const [resourceCount, setResourceCount] = useState<number | null>(null);
   const [certificateCount, _] = useState<number | null>(null);
   const user = useAuthStore((state) => state.user);
   const userRole = user?.user?.role;
@@ -236,6 +237,10 @@ const ProjectBoard = () => {
                         className={tabTriggerClass}
                       >
                         Resources
+                        {activeTab === "resources" &&
+                          resourceCount !== null && (
+                            <Badge className="ml-1">{resourceCount}</Badge>
+                          )}
                       </TabsTrigger>
                     )}
                     {userRole !== roles.BDE && (
@@ -347,6 +352,7 @@ const ProjectBoard = () => {
                   technologies={technologies}
                   techLoading={techLoading}
                   activeTab={activeTab}
+                  onTotalCountChange={setResourceCount}
                 />
               </TabsContent>
 
