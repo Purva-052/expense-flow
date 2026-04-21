@@ -29,7 +29,12 @@ import { ResourceCard } from "./resource-card";
 import { ViewUserModal } from "@/features/users/components/view-model";
 import { useGetSkillsList } from "@/features/profile/services";
 
-const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
+const ResourceTab = ({
+  technologies,
+  activeTab,
+  techLoading,
+  onTotalCountChange,
+}: any) => {
   const isProjectHandler = activeTab === "Project Coordinator";
   const [selectedTech, setSelectedTech] = useState<Array<string | number>>([]);
   const [selectedSkill, setSelectedSkill] = useState<Array<string | number>>(
@@ -123,6 +128,17 @@ const ResourceTab = ({ technologies, activeTab, techLoading }: any) => {
         user.role !== roles.ADMIN && user.role !== roles.PROJECT_MANAGER
     );
   }, [isProjectHandler, userDetails]);
+
+  // Update parent with total count
+  useEffect(() => {
+    if (onTotalCountChange) {
+      if (activeTab === "resources" && selectedTech.length > 0) {
+        onTotalCountChange(filteredUserDetails.length);
+      } else {
+        onTotalCountChange(null);
+      }
+    }
+  }, [filteredUserDetails.length, onTotalCountChange, selectedTech.length, activeTab]);
 
   const handleTechnologyChange = (value: any) => {
     const val = value ?? null;
