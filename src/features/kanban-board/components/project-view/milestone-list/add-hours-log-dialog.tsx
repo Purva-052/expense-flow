@@ -70,6 +70,15 @@ const parseTime = (time: string | null) => {
   return { hours: String(parseInt(time)), minutes: "0" };
 };
 
+const MIN_DESCRIPTION_LENGTH = 3;
+
+const getPlainTextDescription = (value: string) =>
+  value
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
 interface AddHoursLogDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -108,10 +117,12 @@ export const AddHoursLogDialog = ({
   const [hours, setHours] = useState("0");
   const [minutes, setMinutes] = useState("0");
   const [description, setDescription] = useState("");
+  const [hasTriedSave, setHasTriedSave] = useState(false);
   const { mutate: updateMilestone } = useUpdateMileStone();
 
   useEffect(() => {
     if (open) {
+      setHasTriedSave(false);
       if (initialData) {
         setDate(new Date(initialData.date));
         setDescription(initialData.description);
@@ -153,6 +164,15 @@ export const AddHoursLogDialog = ({
   );
 
   const isPending = isCreating || isUpdating;
+  const plainDescription = getPlainTextDescription(description);
+  const isDescriptionValid =
+    plainDescription.length >= MIN_DESCRIPTION_LENGTH;
+  const descriptionError =
+    hasTriedSave && !isDescriptionValid
+      ? plainDescription.length === 0
+        ? "Work description is required."
+        : `Work description must be at least ${MIN_DESCRIPTION_LENGTH} characters.`
+      : "";
   const handleDateSelect = (selectedDate?: Date) => {
     // Keep a valid selected date; do not allow calendar clear on repeated clicks.
     if (selectedDate) {
@@ -161,7 +181,9 @@ export const AddHoursLogDialog = ({
   };
 
   const handleSave = () => {
-    if (!description || (hours === "0" && minutes === "0")) {
+    setHasTriedSave(true);
+
+    if (!isDescriptionValid || (hours === "0" && minutes === "0")) {
       return;
     }
 
@@ -295,6 +317,9 @@ export const AddHoursLogDialog = ({
               value={description}
               onChange={setDescription}
             />
+            {descriptionError && (
+              <p className="text-sm text-destructive">{descriptionError}</p>
+            )}
           </div>
 
           <div className="flex justify-end gap-3 mt-2">
@@ -309,7 +334,9 @@ export const AddHoursLogDialog = ({
               className="bg-[#e11d48] hover:bg-[#be123c] text-white min-w-[100px]"
               onClick={handleSave}
               disabled={
-                isPending || !description || (hours === "0" && minutes === "0")
+                isPending ||
+                !isDescriptionValid ||
+                (hours === "0" && minutes === "0")
               }
             >
               {isPending ? (
