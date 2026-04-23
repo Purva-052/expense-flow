@@ -132,6 +132,19 @@ const parseTimeSpent = (time: any) => {
   return { h, m };
 };
 
+const formatReportDate = (date?: Date | string | null) => {
+  if (!date) return "";
+
+  const parsedDate = date instanceof Date ? date : new Date(date);
+  if (Number.isNaN(parsedDate.getTime())) return "";
+
+  const yyyy = parsedDate.getFullYear();
+  const mm = String(parsedDate.getMonth() + 1).padStart(2, "0");
+  const dd = String(parsedDate.getDate()).padStart(2, "0");
+
+  return `${yyyy}-${mm}-${dd}`;
+};
+
 // --- MAIN COMPONENT ---
 export function DailyReportDialog({
   open,
@@ -232,6 +245,10 @@ export function DailyReportDialog({
 
   const watchProjectId = form.watch("projectId");
   const watchMilestoneId = form.watch("milestoneId");
+  const watchReportingDate = form.watch("reportingDate");
+  const watchTaskDescription = form.watch("taskDescription");
+  const watchHours = form.watch("hours");
+  const watchMinutes = form.watch("minutes");
 
   const { data: milestonesList, isPending: milestonesLoading }: any =
     useGetProjectMilestonesList(
@@ -280,6 +297,18 @@ export function DailyReportDialog({
 
   const isLoading = isEdit && isReportLoading;
   const isSubmitting = isUpdating || isCreating;
+  const parsedActiveTime = parseTimeSpent(activeReport?.timeSpent);
+  const hasTrackedChanges =
+    !isEdit ||
+    Boolean(
+      activeReport &&
+      (formatReportDate(watchReportingDate) !==
+        formatReportDate(activeReport.reportingDate) ||
+        String(watchTaskDescription || "") !==
+          String(activeReport.taskDescription || "") ||
+        String(watchHours || "0") !== parsedActiveTime.h ||
+        String(watchMinutes || "00") !== parsedActiveTime.m)
+    );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -323,7 +352,7 @@ export function DailyReportDialog({
               className="flex flex-col flex-1 min-h-0"
             >
               {/* ✅ ONLY THIS AREA SCROLLS */}
-              <ScrollArea className="flex-1 min-h-0 px-6 py-4">
+              <ScrollArea className="flex-1 min-h-0 overflow-y-auto px-6 py-4">
                 {isDescriptionOnly ? (
                   <div className="space-y-4">
                     <WorkDescriptionEditor
@@ -570,7 +599,7 @@ export function DailyReportDialog({
               </ScrollArea>
 
               {/* FOOTER */}
-              <div className="px-6 py-4 border-t flex justify-end gap-2 bg-white shrink-0">
+              <div className="px-6 py-4 border-t flex justify-end gap-2 bg-white shrink-0 rounded-bl-lg rounded-br-lg">
                 {isView || isDescriptionOnly ? (
                   <Button
                     type="button"
@@ -588,7 +617,10 @@ export function DailyReportDialog({
                     >
                       Cancel
                     </Button>
-                    <Button type="submit" disabled={isSubmitting}>
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting || !hasTrackedChanges}
+                    >
                       {isSubmitting && (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       )}
