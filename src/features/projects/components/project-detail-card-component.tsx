@@ -49,7 +49,7 @@ const ProjectDetails = ({ projectDetails }: any) => {
   const data = projectDetails?.data;
 
   return (
-    <div className="bg-white p-6  rounded-lg shadow-md border border-gray-200 ">
+    <div className="bg-card p-6 rounded-lg shadow-md border ">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 mb-4 border-b">
         <div>

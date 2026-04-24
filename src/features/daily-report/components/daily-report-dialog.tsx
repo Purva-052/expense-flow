@@ -360,7 +360,7 @@ export function DailyReportDialog({
                                     : user?.user?.fullName || ""
                                 }
                                 disabled
-                                className="bg-gray-100"
+                                className="bg-muted"
                               />
                             </FormControl>
                           </FormItem>
@@ -570,7 +570,7 @@ export function DailyReportDialog({
               </ScrollArea>
 
               {/* FOOTER */}
-              <div className="px-6 py-4 border-t flex justify-end gap-2 bg-white shrink-0">
+              <div className="px-6 py-4 border-t flex justify-end gap-2 bg-background shrink-0">
                 {isView || isDescriptionOnly ? (
                   <Button
                     type="button"

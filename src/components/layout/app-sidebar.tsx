@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Link } from "@tanstack/react-router";
 import sidebarLogo from "@/assets/devstree-black-square.svg";
+import darkLogo from "@/assets/devstree-squre-white-text-logo.svg";
 import { useAuthStore } from "@/stores/use-auth-store";
 import {
   Sidebar,
@@ -53,12 +54,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="icon" variant="sidebar" {...props}>
-      <SidebarHeader className="cursor-pointer p-2  !shadow-sm ">
+      <SidebarHeader className="cursor-pointer p-2 border-b bg-card">
         <Link to="/">
           <img
-            className="h-12 w-full group-data-[state=collapsed]:h-10"
+            className='h-12 w-full group-data-[state=collapsed]:h-10 dark:hidden'
             src={sidebarLogo}
-            alt="Resource Logo"
+            alt='Resource Logo'
+          />
+          <img
+            className='h-12 w-full group-data-[state=collapsed]:h-10 hidden dark:block'
+            src={darkLogo}
+            alt='Resource Logo'
           />
         </Link>
       </SidebarHeader>

@@ -47,7 +47,7 @@ const ServerDetailsCard = ({
   return (
     <TooltipProvider>
       <div
-        className={`group relative bg-white shadow-md rounded-lg p-6 border-l-4 m-1 ${
+        className={`group relative bg-card shadow-md rounded-lg p-6 border-l-4 m-1 ${
           isActive ? "border-green-500" : "border-red-500"
         }`}
       >

@@ -191,7 +191,7 @@ export function ForgotPasswordForm({
                   <FormControl>
                     <Input
                       placeholder="name@example.com"
-                      className="bg-white text-black"
+                      className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
                       {...field}
                     />
                   </FormControl>
@@ -235,27 +235,27 @@ export function ForgotPasswordForm({
                       <InputOTPGroup>
                         <InputOTPSlot
                           index={0}
-                          className="h-11 w-11 border-gray-300 bg-white text-black"
+                          className="h-11 w-11 border-white/20 bg-white/10 text-white"
                         />
                         <InputOTPSlot
                           index={1}
-                          className="h-11 w-11 border-gray-300 bg-white text-black"
+                          className="h-11 w-11 border-white/20 bg-white/10 text-white"
                         />
                         <InputOTPSlot
                           index={2}
-                          className="h-11 w-11 border-gray-300 bg-white text-black"
+                          className="h-11 w-11 border-white/20 bg-white/10 text-white"
                         />
                         <InputOTPSlot
                           index={3}
-                          className="h-11 w-11 border-gray-300 bg-white text-black"
+                          className="h-11 w-11 border-white/20 bg-white/10 text-white"
                         />
                         <InputOTPSlot
                           index={4}
-                          className="h-11 w-11 border-gray-300 bg-white text-black"
+                          className="h-11 w-11 border-white/20 bg-white/10 text-white"
                         />
                         <InputOTPSlot
                           index={5}
-                          className="h-11 w-11 border-gray-300 bg-white text-black"
+                          className="h-11 w-11 border-white/20 bg-white/10 text-white"
                         />
                       </InputOTPGroup>
                     </InputOTP>
@@ -276,7 +276,7 @@ export function ForgotPasswordForm({
             <Button
               type="button"
               variant="outline"
-              className="text-black"
+              className="text-white border-white/20 hover:bg-white/10"
               onClick={handleResendOtp}
               disabled={isSendingOtp || resendCooldown > 0}
             >
@@ -306,7 +306,7 @@ export function ForgotPasswordForm({
                   <FormControl>
                     <PasswordInput
                       placeholder="Enter new password"
-                      className="text-black"
+                      className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
                       {...field}
                     />
                   </FormControl>
@@ -324,7 +324,7 @@ export function ForgotPasswordForm({
                   <FormControl>
                     <PasswordInput
                       placeholder="Confirm new password"
-                      className="text-black"
+                      className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
                       {...field}
                     />
                   </FormControl>

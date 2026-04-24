@@ -180,15 +180,20 @@ const ProjectBoard = () => {
     setOpen("add");
   };
   const tabTriggerClass =
-    "flex items-center gap-2 rounded-[50px] !px-3 !py-2  transition-all " +
-    "data-[state=active]:bg-black data-[state=active]:text-white h-[35px]";
+    "flex items-center gap-2 rounded-[50px] !px-3 !py-2 transition-all h-[35px] " +
+    "text-foreground/70 hover:text-foreground " +
+    // Light: active tab = deep brand-adjacent dark bg with white text
+    "data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-sm " +
+    // Dark: active tab = primary red accent with white text for maximum contrast
+    "dark:text-muted-foreground dark:hover:text-foreground " +
+    "dark:data-[state=active]:bg-primary dark:data-[state=active]:text-white dark:data-[state=active]:shadow-[0_2px_8px_oklch(0_0_0/0.5)]";
 
   return (
     <>
       {/* {userRole === roles.BDE ? (
         <InquiryPage />
       ) : ( */}
-      <Main className="flex flex-col bg-[#f9fafb] 2xl:h-[100dvh] 2xl:min-h-0 2xl:overflow-hidden">
+      <Main className="flex flex-col bg-background 2xl:h-[100dvh] 2xl:min-h-0 2xl:overflow-hidden">
         <div className="flex-1 min-h-0 flex flex-col gap-4">
           {userRole === roles.DEVELOPER ? (
             <Tabs
@@ -214,7 +219,7 @@ const ProjectBoard = () => {
 
               <div className="flex flex-wrap items-start justify-between gap-3 min-w-0">
                 <div className="min-w-0 max-w-full overflow-x-auto">
-                  <TabsList className="flex w-max min-w-max flex-nowrap bg-[#fdebef] rounded-full h-auto">
+                  <TabsList className="flex w-max min-w-max flex-nowrap rounded-full h-auto bg-rose-50 border border-rose-100 dark:bg-secondary dark:border-white/10">
                     <TabsTrigger
                       value="project_details"
                       className={tabTriggerClass}
