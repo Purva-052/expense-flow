@@ -18,7 +18,7 @@ const AdminLogin = () => {
   }
 
   return (
-    <div className="relative flex min-h-screen bg-gray-900 text-white">
+    <div className="dark relative flex min-h-screen bg-gray-900 text-white font-sans">
       {/* Full-screen background elements */}
       <div
         className="absolute inset-0"

@@ -39,7 +39,7 @@ export const LoginForm = () => {
           label="Email"
           placeholder="admin@company.com"
           control={form.control}
-          className="bg-white text-black"
+          className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
           name="email"
         />
         <FormPasswordField

@@ -14,7 +14,7 @@ export function ProjectCardSkeleton({
     return (
       <div
         className={cn(
-          "min-w-[860px] bg-white border-b py-4 px-6 flex items-center gap-4",
+          "min-w-[860px] bg-card border-b py-4 px-6 flex items-center gap-4",
           className
         )}
       >
@@ -54,7 +54,7 @@ export function ProjectCardSkeleton({
     return (
       <div
         className={cn(
-          "overflow-hidden rounded-xl border bg-white shadow-md",
+          "overflow-hidden rounded-xl border bg-card shadow-md",
           className
         )}
       >
@@ -101,7 +101,7 @@ export function ProjectCardSkeleton({
   return (
     <div
       className={cn(
-        "bg-white border-l-4 border-l-gray-200 rounded-lg shadow-sm p-6",
+        "bg-card border-l-4 border-l-muted rounded-lg shadow-sm p-6",
         className
       )}
     >

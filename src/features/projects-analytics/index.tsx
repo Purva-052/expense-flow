@@ -47,58 +47,49 @@ const SUMMARY_CARD_STYLES: Record<
   total: {
     label: "Total Projects",
     icon: BriefcaseBusiness,
-    iconClassName: "text-slate-700",
-    iconWrapperClassName: "bg-slate-100",
+    iconClassName: "text-slate-700 dark:text-slate-300",
+    iconWrapperClassName: "bg-slate-100 dark:bg-slate-800",
     helperText: "All tracked projects",
-    // selectedCardClassName: "bg-amber-50 border-amber-200 ring-2 ring-amber-100",
-    // selectedLabelClassName: "text-amber-700",
-    // selectedNumberClassName: "text-amber-900",
-    // selectedIconWrapperClassName: "bg-amber-200",
-    // selectedIconClassName: "text-amber-700",
   },
   critical: {
     label: "Critical",
     icon: AlertTriangle,
-    iconClassName: "text-rose-700",
-    iconWrapperClassName: "bg-rose-100",
+    iconClassName: "text-rose-700 dark:text-rose-400",
+    iconWrapperClassName: "bg-rose-100 dark:bg-rose-900/30",
     helperText: "Need immediate attention",
-    selectedCardClassName: "bg-red-50 border-red-200 ring-2 ring-red-100",
-    selectedLabelClassName: "text-red-700",
-    selectedNumberClassName: "text-red-900",
-    selectedIconWrapperClassName: "bg-red-200",
-    selectedIconClassName: "text-red-700",
+    selectedCardClassName:
+      "bg-red-50 border-red-200 ring-2 ring-red-100 dark:bg-red-900/20 dark:border-red-800 dark:ring-red-900/30",
+    selectedLabelClassName: "text-red-700 dark:text-red-400",
+    selectedNumberClassName: "text-red-900 dark:text-red-100",
+    selectedIconWrapperClassName: "bg-red-200 dark:bg-red-900",
+    selectedIconClassName: "text-red-700 dark:text-red-300",
   },
   healthy: {
     label: "Healthy",
     icon: CheckCircle2,
-    iconClassName: "text-emerald-700",
-    iconWrapperClassName: "bg-emerald-100",
+    iconClassName: "text-emerald-700 dark:text-emerald-400",
+    iconWrapperClassName: "bg-emerald-100 dark:bg-emerald-900/30",
     helperText: "Performing as expected",
-    selectedCardClassName: "bg-green-50 border-green-200 ring-2 ring-green-100",
-    selectedLabelClassName: "text-green-700",
-    selectedNumberClassName: "text-green-900",
-    selectedIconWrapperClassName: "bg-green-200",
-    selectedIconClassName: "text-green-700",
+    selectedCardClassName:
+      "bg-green-50 border-green-200 ring-2 ring-green-100 dark:bg-green-900/20 dark:border-green-800 dark:ring-green-900/30",
+    selectedLabelClassName: "text-green-700 dark:text-green-400",
+    selectedNumberClassName: "text-green-900 dark:text-green-100",
+    selectedIconWrapperClassName: "bg-green-200 dark:bg-green-900",
+    selectedIconClassName: "text-green-700 dark:text-green-300",
   },
   on_track: {
     label: "On Track",
     icon: Activity,
-    iconClassName: "text-sky-700",
-    iconWrapperClassName: "bg-sky-100",
+    iconClassName: "text-sky-700 dark:text-sky-400",
+    iconWrapperClassName: "bg-sky-100 dark:bg-sky-900/30",
     helperText: "Progress is stable",
-    selectedCardClassName: "bg-blue-50 border-blue-200 ring-2 ring-blue-100",
-    selectedLabelClassName: "text-blue-700",
-    selectedNumberClassName: "text-blue-900",
-    selectedIconWrapperClassName: "bg-blue-200",
-    selectedIconClassName: "text-blue-700",
+    selectedCardClassName:
+      "bg-blue-50 border-blue-200 ring-2 ring-blue-100 dark:bg-blue-900/20 dark:border-blue-800 dark:ring-blue-900/30",
+    selectedLabelClassName: "text-blue-700 dark:text-blue-400",
+    selectedNumberClassName: "text-blue-900 dark:text-blue-100",
+    selectedIconWrapperClassName: "bg-blue-200 dark:bg-blue-900",
+    selectedIconClassName: "text-blue-700 dark:text-blue-300",
   },
-  // not_started: {
-  //   label: "Not Started",
-  //   icon: Clock3,
-  //   iconClassName: "text-amber-700",
-  //   iconWrapperClassName: "bg-amber-100",
-  //   helperText: "Waiting to begin",
-  // },
 };
 
 const HEALTH_COLORS: Record<string, string> = {
@@ -263,7 +254,7 @@ const ProjectAnalyticsPage = () => {
                     <Card
                       key={key}
                       className={cn(
-                        "border-slate-200 px-0 py-0 transition-all hover:shadow-md",
+                        "border-slate-200 dark:border-slate-800 px-0 py-0 transition-all hover:shadow-md",
                         CLICKABLE_SUMMARY_KEYS.includes(key as ClickableKey) &&
                           "cursor-pointer",
                         selectedHealthFilter === key &&
@@ -293,7 +284,7 @@ const ProjectAnalyticsPage = () => {
                                 "mt-3 text-3xl font-bold tracking-tight",
                                 selectedHealthFilter === key
                                   ? config.selectedNumberClassName
-                                  : "text-slate-900"
+                                  : "text-slate-900 dark:text-slate-100"
                               )}
                             >
                               {summary[key]}
@@ -333,7 +324,7 @@ const ProjectAnalyticsPage = () => {
               )}
             </section>
 
-            <Card className="border-slate-200 transition-shadow hover:shadow-md">
+            <Card className="border-slate-200 dark:border-slate-800 transition-shadow hover:shadow-md">
               <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div className="space-y-1">
                   <CardTitle className="text-xl">{chartTitle}</CardTitle>
@@ -394,39 +385,55 @@ const ProjectAnalyticsPage = () => {
                             }}
                             barGap={10}
                           >
-                            <CartesianGrid
-                              strokeDasharray="3 3"
-                              vertical={false}
-                              stroke="#e2e8f0"
-                            />
-                            <XAxis
-                              dataKey="projectName"
-                              tick={{ fontSize: 12 }}
-                              tickLine={false}
-                              axisLine={false}
-                              interval={0}
-                              angle={chartProjects.length > 6 ? -20 : 0}
-                              textAnchor={
-                                chartProjects.length > 6 ? "end" : "middle"
-                              }
-                              height={chartProjects.length > 6 ? 70 : 40}
-                            />
-                            <YAxis
-                              tick={{ fontSize: 12 }}
-                              tickLine={false}
-                              axisLine={false}
-                              tickFormatter={(value) => `${value}h`}
-                            />
-                            <Tooltip
-                              cursor={{ fill: "#f8fafc" }}
-                              formatter={(value: number, name: string) => [
-                                `${formatHours(value)} hrs`,
-                                name === "plannedHours"
-                                  ? "Planned Hours"
-                                  : "Actual Hours",
-                              ]}
-                              labelFormatter={(label) => `Project: ${label}`}
-                            />
+                             <CartesianGrid
+                               strokeDasharray="3 3"
+                               vertical={false}
+                               stroke="currentColor"
+                               className="text-slate-200 dark:text-slate-800"
+                             />
+                             <XAxis
+                               dataKey="projectName"
+                               tick={{ fontSize: 12, fill: "currentColor" }}
+                               className="text-slate-500 dark:text-slate-400"
+                               tickLine={false}
+                               axisLine={false}
+                               interval={0}
+                               angle={chartProjects.length > 6 ? -20 : 0}
+                               textAnchor={
+                                 chartProjects.length > 6 ? "end" : "middle"
+                               }
+                               height={chartProjects.length > 6 ? 70 : 40}
+                             />
+                             <YAxis
+                               tick={{ fontSize: 12, fill: "currentColor" }}
+                               className="text-slate-500 dark:text-slate-400"
+                               tickLine={false}
+                               axisLine={false}
+                               tickFormatter={(value) => `${value}h`}
+                             />
+                             <Tooltip
+                               cursor={{ fill: "currentColor", opacity: 0.1 }}
+                               contentStyle={{
+                                 backgroundColor: "var(--popover)",
+                                 borderColor: "var(--border)",
+                                 borderRadius: "8px",
+                                 fontSize: "12px",
+                                 boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
+                               }}
+                               itemStyle={{ fontWeight: "600" }}
+                               labelStyle={{
+                                 fontWeight: "700",
+                                 marginBottom: "4px",
+                                 color: "var(--foreground)",
+                               }}
+                               formatter={(value: number, name: string) => [
+                                 `${formatHours(value)} hrs`,
+                                 name === "plannedHours"
+                                   ? "Planned Hours"
+                                   : "Actual Hours",
+                               ]}
+                               labelFormatter={(label) => `Project: ${label}`}
+                             />
                             <Bar
                               dataKey="plannedHours"
                               name="plannedHours"
@@ -457,17 +464,17 @@ const ProjectAnalyticsPage = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-center gap-6 text-sm font-medium text-slate-700">
-                      {CHART_LEGEND_ITEMS.map((item) => (
-                        <div key={item.key} className="flex items-center gap-2">
-                          <span
-                            className="h-3 w-3 rounded-sm"
-                            style={{ backgroundColor: item.color }}
-                          />
-                          <span>{item.label}</span>
-                        </div>
-                      ))}
-                    </div>
+                     <div className="flex items-center justify-center gap-6 text-sm font-medium text-slate-700 dark:text-slate-300">
+                       {CHART_LEGEND_ITEMS.map((item) => (
+                         <div key={item.key} className="flex items-center gap-2">
+                           <span
+                             className="h-3 w-3 rounded-sm"
+                             style={{ backgroundColor: item.color }}
+                           />
+                           <span>{item.label}</span>
+                         </div>
+                       ))}
+                     </div>
 
                     {/* <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                       <span className="font-medium text-slate-700">
@@ -488,9 +495,9 @@ const ProjectAnalyticsPage = () => {
                     </div> */}
                   </>
                 ) : (
-                  <div className="flex h-80 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 text-sm text-muted-foreground">
-                    No analytics data found for the selected project.
-                  </div>
+                   <div className="flex h-80 items-center justify-center rounded-xl border border-dashed border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/30 text-sm text-muted-foreground">
+                     No analytics data found for the selected project.
+                   </div>
                 )}
               </CardContent>
             </Card>
@@ -513,29 +520,26 @@ const MetricPill = ({
   return (
     <div
       className={cn(
-        "rounded-xl border px-4 py-3 transition-shadow hover:shadow-sm",
-        tone === "planned"
-        // ? "border-blue-200 bg-blue-50"
-        // : "border-emerald-200 bg-emerald-50"
+        "rounded-xl border px-4 py-3 transition-shadow hover:shadow-sm"
       )}
     >
       <div className="mb-2 flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-            {label} Hours
-          </p>
-          <p className="mt-1.5 text-sm font-bold tracking-tight text-slate-900">
-            {value}
-          </p>
-        </div>
-        <div
-          className={cn(
-            "rounded-lg p-2",
-            tone === "planned"
-              ? "bg-blue-100 text-blue-700"
-              : "bg-emerald-100 text-emerald-700"
-          )}
-        >
+         <div>
+           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+             {label} Hours
+           </p>
+           <p className="mt-1.5 text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">
+             {value}
+           </p>
+         </div>
+         <div
+           className={cn(
+             "rounded-lg p-2",
+             tone === "planned"
+               ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400"
+               : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400"
+           )}
+         >
           {tone === "planned" ? (
             <CalendarClock className="h-4 w-4" />
           ) : (
@@ -556,33 +560,33 @@ const ProjectAnalyticsSkeleton = () => {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, index) => (
-          <Card key={index} className="gap-4 border-slate-200">
-            <CardContent className="space-y-3 py-5">
-              <div className="h-4 w-24 animate-pulse rounded bg-slate-200" />
-              <div className="h-8 w-16 animate-pulse rounded bg-slate-200" />
-              <div className="h-1.5 w-full animate-pulse rounded bg-slate-200" />
-            </CardContent>
-          </Card>
-        ))}
+         {Array.from({ length: 4 }).map((_, index) => (
+           <Card key={index} className="gap-4 border-slate-200 dark:border-slate-800">
+             <CardContent className="space-y-3 py-5">
+               <div className="h-4 w-24 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+               <div className="h-8 w-16 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+               <div className="h-1.5 w-full animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+             </CardContent>
+           </Card>
+         ))}
       </div>
 
-      <Card className="border-slate-200">
-        <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="space-y-2">
-            <div className="h-6 w-56 animate-pulse rounded bg-slate-200" />
-            <div className="h-4 w-80 animate-pulse rounded bg-slate-200" />
-          </div>
-          <div className="flex gap-3">
-            <div className="h-10 w-70 animate-pulse rounded bg-slate-200" />
-            <div className="h-10 w-30 animate-pulse rounded bg-slate-200" />
-            <div className="h-10 w-30 animate-pulse rounded bg-slate-200" />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="h-105 w-full animate-pulse rounded-xl bg-slate-100" />
-        </CardContent>
-      </Card>
+       <Card className="border-slate-200 dark:border-slate-800">
+         <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+           <div className="space-y-2">
+             <div className="h-6 w-56 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+             <div className="h-4 w-80 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+           </div>
+           <div className="flex gap-3">
+             <div className="h-10 w-70 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+             <div className="h-10 w-30 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+             <div className="h-10 w-30 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+           </div>
+         </CardHeader>
+         <CardContent>
+           <div className="h-105 w-full animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800/50" />
+         </CardContent>
+       </Card>
     </div>
   );
 };

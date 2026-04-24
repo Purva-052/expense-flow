@@ -32,9 +32,9 @@ import { useProjectsStore } from "@/features/projects/stores/useProjectsStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const priorityColorMap: any = {
-  high: "bg-red-100 text-red-700",
-  medium: "bg-yellow-100 text-yellow-700",
-  low: "bg-green-100 text-green-700",
+  high: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+  medium: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
+  low: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
 };
 
 // const priorityBorderMap: any = {
@@ -192,17 +192,17 @@ export function ProjectCard({
     switch (s) {
       case "active-discovery":
       case "planning":
-        return "bg-blue-100 text-blue-700";
+        return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400";
       case "running":
       case "in-progress":
-        return "bg-amber-100 text-amber-700";
+        return "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400";
       case "completed":
-        return "bg-green-100 text-green-700";
+        return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
       case "stop":
       case "on-hold":
-        return "bg-gray-100 text-gray-700";
+        return "bg-muted text-muted-foreground";
       default:
-        return "bg-gray-100 text-gray-700";
+        return "bg-muted text-muted-foreground";
     }
   };
 
@@ -210,7 +210,7 @@ export function ProjectCard({
     <div
       ref={setNodeRef}
       className={cn(
-        "bg-white border-l-4 rounded-lg shadow-sm p-6 hover:shadow-md transition-all duration-300 relative border-l-gray-700",
+        "bg-card border-l-4 rounded-lg shadow-sm p-6 hover:shadow-md transition-all duration-300 relative border-l-muted-foreground",
         isOver && "ring-2 ring-primary bg-primary/5"
       )}
     >
@@ -219,7 +219,7 @@ export function ProjectCard({
         <div className="flex-1">
           <div className="flex flex-col gap-1 mb-1">
             <h3
-              className="text-lg font-semibold text-gray-900 leading-tight pr-4 cursor-pointer hover:text-primary transition-colors"
+              className="text-lg font-semibold text-foreground leading-tight pr-4 cursor-pointer hover:text-primary transition-colors"
               onClick={() => setOpenDrawer(true)}
             >
               {title}
@@ -255,7 +255,7 @@ export function ProjectCard({
               <Button
                 variant="ghost"
                 size="icon"
-                className="p-1 rounded-full hover:bg-gray-200"
+                className="p-1 rounded-full hover:bg-muted"
               >
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
@@ -310,7 +310,7 @@ export function ProjectCard({
 
       {/* Deadline and Progress */}
       <div className="flex items-center justify-between mb-3 mt-2">
-        <div className="flex items-center gap-2 text-gray-600">
+        <div className="flex items-center gap-2 text-muted-foreground">
           <Calendar className="h-4 w-4" />
           <span className="text-xs text-muted-foreground">
             Deadline: {deadline}
@@ -321,7 +321,7 @@ export function ProjectCard({
             className={cn(
               "inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase",
               priorityColorMap[priority.toLowerCase()] ||
-                "bg-gray-100 text-gray-600"
+                "bg-muted text-muted-foreground"
             )}
           >
             {priority}
@@ -330,13 +330,13 @@ export function ProjectCard({
       </div>
       <div className="flex justify-between">
         <span className="text-xs text-muted-foreground mb-1">Progress</span>
-        <span className="text-xs font-bold text-gray-900">{progress}%</span>
+        <span className="text-xs font-bold text-foreground">{progress}%</span>
       </div>
 
       {/* Progress Bar */}
-      <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+      <div className="w-full bg-muted rounded-full h-2 mb-4">
         <div
-          className="h-2 rounded-full transition-all bg-gray-800"
+          className="h-2 rounded-full transition-all bg-primary"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -345,32 +345,32 @@ export function ProjectCard({
       <div className="mb-4 min-h-[40px]">{children}</div>
 
       {/* Details Grid */}
-      <div className="grid grid-cols-2 gap-x-8 gap-y-4 border-t border-gray-100 pt-4 mt-3">
+      <div className="grid grid-cols-2 gap-x-8 gap-y-4 border-t pt-4 mt-3">
         {/* Client */}
         <div>
-          <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">
+          <p className="text-[10px] text-muted-foreground uppercase font-medium tracking-wider mb-1">
             Client
           </p>
-          <p className="text-xs font-semibold text-gray-800 truncate">
+          <p className="text-xs font-semibold text-foreground truncate">
             {clientName}
           </p>
         </div>
 
         {/* Coordinator */}
         <div>
-          <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">
+          <p className="text-[10px] text-muted-foreground uppercase font-medium tracking-wider mb-1">
             Project Coordinator
           </p>
 
           <div className="flex items-center gap-2">
             <Avatar className="h-6 w-6">
               <AvatarImage src={coordinatorProfilePic} />
-              <AvatarFallback className="text-black text-[10px] font-semibold">
+              <AvatarFallback className="text-foreground text-[10px] font-semibold">
                 {coordinatorName?.charAt(0)}
               </AvatarFallback>
             </Avatar>
 
-            <p className="text-xs font-semibold text-gray-800 leading-none">
+            <p className="text-xs font-semibold text-foreground leading-none">
               {coordinatorName}
             </p>
           </div>
@@ -383,16 +383,16 @@ export function ProjectCard({
     <div
       ref={setNodeRef}
       className={cn(
-        "min-w-[860px] bg-white border-b hover:bg-gray-50 transition-colors py-4 px-6 relative group flex items-center gap-4",
+        "min-w-[860px] bg-card border-b hover:bg-muted/50 transition-colors py-4 px-6 relative group flex items-center gap-4",
         isOver && "bg-primary/5"
       )}
     >
-      <div className="w-1 bg-gray-700 rounded-full h-8 shrink-0" />
+      <div className="w-1 bg-muted-foreground/40 rounded-full h-8 shrink-0" />
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <h3
-            className="text-sm font-bold text-gray-900 truncate cursor-pointer hover:text-primary transition-colors"
+            className="text-sm font-bold text-foreground truncate cursor-pointer hover:text-primary transition-colors"
             onClick={() => setOpenDrawer(true)}
           >
             {title}
@@ -456,9 +456,9 @@ export function ProjectCard({
           <span>Progress</span>
           <span>{progress}%</span>
         </div>
-        <div className="w-full bg-gray-100 rounded-full h-1.5">
+        <div className="w-full bg-muted rounded-full h-1.5">
           <div
-            className="h-1.5 rounded-full bg-black"
+            className="h-1.5 rounded-full bg-primary"
             style={{ width: `${progress}%` }}
           />
         </div>

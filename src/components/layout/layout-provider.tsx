@@ -12,7 +12,7 @@ const PageLayout = ({
   return (
     <Main>
       <div
-        className={`rounded-lg bg-white shadow-md ${noPadding ? "p-2" : "p-6"} ${className}`}
+        className={`rounded-lg bg-card text-card-foreground shadow-md ${noPadding ? "p-2" : "p-6"} ${className}`}
       >
         {children}
       </div>

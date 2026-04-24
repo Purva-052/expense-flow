@@ -364,8 +364,13 @@ const SystemInventoryPage = () => {
 
   const showReadonlyMessage = hasSubmitted;
   const tabTriggerClass =
-    "flex items-center gap-2 rounded-[50px] !px-3 !py-2 transition-all " +
-    "data-[state=active]:bg-black data-[state=active]:text-white h-[35px]";
+    "flex items-center gap-2 rounded-[50px] !px-3 !py-2 transition-all h-[35px] " +
+    "text-foreground/70 hover:text-foreground " +
+    // Light: active tab = deep brand-adjacent dark bg with white text
+    "data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-sm " +
+    // Dark: active tab = primary red accent with white text for maximum contrast
+    "dark:text-muted-foreground dark:hover:text-foreground " +
+    "dark:data-[state=active]:bg-primary dark:data-[state=active]:text-white dark:data-[state=active]:shadow-[0_2px_8px_oklch(0_0_0/0.5)]";
 
   if (isAdmin) {
     return (
@@ -377,7 +382,7 @@ const SystemInventoryPage = () => {
 
         <Tabs defaultValue="own" className="w-full py-4">
           <div className="flex items-center justify-between">
-            <TabsList className="bg-[#fdebef] rounded-full">
+            <TabsList className="bg-muted/70 border border-border dark:bg-secondary dark:border-white/10 rounded-full">
               <TabsTrigger value="own" className={tabTriggerClass}>
                 My Inventory
               </TabsTrigger>
@@ -400,13 +405,13 @@ const SystemInventoryPage = () => {
           <TabsContent value="own" className="mt-4">
             <div>
               {showReadonlyMessage && (
-                <div className="rounded-md border border-[#f0d69d] bg-[#fff8e8] px-3 py-2 text-sm text-[#8c6200] w-fit">
+                <div className="rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900/50 px-3 py-2 text-sm text-amber-700 dark:text-amber-400 w-fit">
                   Your inventory has already been submitted and is now locked.
                   you can modify it from the all Inventory tab.
                 </div>
               )}
 
-              <div className="mt-4 rounded-md border border-[#dddddd] bg-[#fdfdfd] p-4 max-w-4xl">
+              <div className="mt-4 rounded-md border border-border bg-card/50 dark:bg-secondary/20 p-4 max-w-4xl">
                 {hasSubmitted && ownRecord ? (
                   <SystemInventoryViewForm
                     inventory={ownRecord}
@@ -489,13 +494,13 @@ const SystemInventoryPage = () => {
         </TablePageHeader>
 
         {showReadonlyMessage && (
-          <div className="mt-4 rounded-md border border-[#f0d69d] bg-[#fff8e8] px-3 py-2 text-sm text-[#8c6200]">
+          <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900/50 px-3 py-2 text-sm text-amber-700 dark:text-amber-400">
             Your inventory has already been submitted and is now locked. Contact
             admin for any changes.
           </div>
         )}
 
-        <div className="mt-5 rounded-md border border-[#dddddd] bg-[#fdfdfd] p-4">
+        <div className="mt-5 rounded-md border border-border bg-card/50 dark:bg-secondary/20 p-4">
           <SystemInventoryActionForm
             formId="system-inventory-user-form"
             initialValues={ownFormValues}

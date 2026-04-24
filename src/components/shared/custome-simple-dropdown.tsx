@@ -94,7 +94,7 @@ const SimpleDropDownSearchable = ({
               ref={triggerRef}
               variant="outline"
               className={cn(
-                "m-0 h-10 w-full justify-between pr-8 rounded-full bg-white",
+                "m-0 h-10 w-full justify-between pr-8 rounded-full",
                 !value && "text-muted-foreground"
               )}
               disabled={disabled || isLoading}
@@ -222,7 +222,7 @@ const SimpleDropDownSearchable = ({
             ? value.length > 0
             : value !== null && value !== undefined) && (
             <X
-              className="absolute top-1/2 right-4 h-4 w-4 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-red-500"
+              className="absolute top-1/2 right-4 h-4 w-4 -translate-y-1/2 cursor-pointer text-muted-foreground hover:text-red-500"
               onClick={() => onChange?.(null)}
             />
           )}

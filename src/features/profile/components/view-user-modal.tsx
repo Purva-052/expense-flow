@@ -30,7 +30,7 @@ export const ViewUserProfileModal = () => {
          3. Added 'block' to ensure it doesn't try to flex-center the card internally.
       */}
       <DialogContent
-        className="sm:max-w-[90vw] !max-w-[60vw] w-full h-[90vh] p-0 gap-0 overflow-y-auto bg-gray-50 border-0 block"
+        className="sm:max-w-[90vw] !max-w-[60vw] w-full h-[90vh] p-0 gap-0 overflow-y-auto bg-background border-0 block"
         aria-describedby={undefined} // optional fix for some radix versions
       >
         {/* Accessibility Requirement: Dialog must have a title */}

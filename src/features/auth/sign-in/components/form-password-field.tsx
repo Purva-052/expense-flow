@@ -33,7 +33,7 @@ const FormPasswordField = ({
               />
               <PasswordInput
                 placeholder='Enter your password'
-                className='text-black'
+                className='bg-white/10 border-white/20 text-white placeholder:text-gray-400'
                 {...field}
               />
             </div>
