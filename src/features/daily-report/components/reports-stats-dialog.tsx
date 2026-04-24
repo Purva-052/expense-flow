@@ -293,7 +293,7 @@ export function ReportsStatsDialog({
                     className={`${
                       sortField === "fullName" && sortOrder === "asc"
                         ? "text-blue-600"
-                        : "text-gray-300 hover:text-gray-600"
+                        : "text-muted-foreground hover:text-foreground"
                     }`}
                   />
                   <ArrowDown
@@ -301,7 +301,7 @@ export function ReportsStatsDialog({
                     className={`-mt-1 ${
                       sortField === "fullName" && sortOrder === "desc"
                         ? "text-blue-600"
-                        : "text-gray-300 hover:text-gray-600"
+                        : "text-muted-foreground hover:text-foreground"
                     }`}
                   />
                 </div>
@@ -322,7 +322,7 @@ export function ReportsStatsDialog({
                     className={`${
                       sortField === "reportingDate" && sortOrder === "asc"
                         ? "text-blue-600"
-                        : "text-gray-300 hover:text-gray-600"
+                        : "text-muted-foreground hover:text-foreground"
                     }`}
                   />
                   <ArrowDown
@@ -330,7 +330,7 @@ export function ReportsStatsDialog({
                     className={`-mt-1 ${
                       sortField === "reportingDate" && sortOrder === "desc"
                         ? "text-blue-600"
-                        : "text-gray-300 hover:text-gray-600"
+                        : "text-muted-foreground hover:text-foreground"
                     }`}
                   />
                 </div>
@@ -409,7 +409,7 @@ export function ReportsStatsDialog({
                       className={`${
                         sortField === "fullName" && sortOrder === "asc"
                           ? "text-blue-600"
-                          : "text-gray-300 hover:text-gray-600"
+                          : "text-muted-foreground hover:text-foreground"
                       }`}
                     />
                     <ArrowDown
@@ -417,7 +417,7 @@ export function ReportsStatsDialog({
                       className={`-mt-1 ${
                         sortField === "fullName" && sortOrder === "desc"
                           ? "text-blue-600"
-                          : "text-gray-300 hover:text-gray-600"
+                          : "text-muted-foreground hover:text-foreground"
                       }`}
                     />
                   </div>
@@ -438,7 +438,7 @@ export function ReportsStatsDialog({
                       className={`${
                         sortField === "reportingDate" && sortOrder === "asc"
                           ? "text-blue-600"
-                          : "text-gray-300 hover:text-gray-600"
+                          : "text-muted-foreground hover:text-foreground"
                       }`}
                     />
                     <ArrowDown
@@ -446,7 +446,7 @@ export function ReportsStatsDialog({
                       className={`-mt-1 ${
                         sortField === "reportingDate" && sortOrder === "desc"
                           ? "text-blue-600"
-                          : "text-gray-300 hover:text-gray-600"
+                          : "text-muted-foreground hover:text-foreground"
                       }`}
                     />
                   </div>
@@ -504,7 +504,7 @@ export function ReportsStatsDialog({
                     {columns.map((col: any) => (
                       <th
                         key={col.accessorKey}
-                        className="h-12 bg-gray-100 text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0 whitespace-nowrap"
+                        className="h-12 bg-muted text-foreground z-50 border-b px-4 text-left align-middle font-medium sticky top-0 whitespace-nowrap"
                       >
                         {col.header}
                       </th>

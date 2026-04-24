@@ -266,7 +266,7 @@ const HoursLogs = ({
       </div>
 
       {/* Table */}
-      <div className="flex-1 overflow-hidden flex flex-col min-h-0 bg-white">
+      <div className="flex-1 overflow-hidden flex flex-col min-h-0 bg-card">
         <GlobalTable
           data={logs}
           columns={columns}
@@ -284,7 +284,7 @@ const HoursLogs = ({
         open={!!viewDescription}
         onOpenChange={(open) => !open && setViewDescription(null)}
       >
-        <DialogContent className="max-w-[95vw] sm:max-w-2xl overflow-hidden text-black">
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl overflow-hidden text-foreground">
           <DialogHeader>
             <DialogTitle>Full Description</DialogTitle>
           </DialogHeader>

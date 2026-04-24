@@ -119,7 +119,7 @@ export const PhoneNumberInput = ({
             type='button'
             onClick={() => setIsOpen(!isOpen)}
             disabled={isLoading || countriesList.length === 0}
-            className={`flex h-full items-center gap-2 rounded-l-md border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium hover:bg-gray-50 focus:border-gray-300 focus:ring-[3px] focus:ring-gray-300 ${
+            className={`flex h-full items-center gap-2 rounded-l-md border border-input bg-background px-3 py-2.5 text-sm font-medium hover:bg-muted dark:hover:bg-secondary focus:border-ring focus:ring-[3px] focus:ring-ring/50 ${
               isLoading || countriesList.length === 0
                 ? 'cursor-not-allowed opacity-50'
                 : ''
@@ -129,26 +129,26 @@ export const PhoneNumberInput = ({
               <img
                 src={selectedCountry.flag}
                 alt={selectedCountry.name}
-                className='h-4 w-6 object-cover'
+                className='h-4 w-6 object-cover rounded-sm'
               />
             )}
-            <span>{selectedCountry?.dialCode || 'Select'}</span>
+            <span className='text-foreground'>{selectedCountry?.dialCode || 'Select'}</span>
             <ChevronDown
-              className={`ml-auto h-4 w-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+              className={`ml-auto h-4 w-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`}
             />
           </button>
 
           {isOpen && (
-            <div className='absolute top-full left-0 z-50 mt-1 max-h-60 w-64 overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg'>
+            <div className='absolute top-full left-0 z-50 mt-1 max-h-60 w-64 overflow-y-auto rounded-md border border-border bg-popover text-popover-foreground shadow-lg'>
               {countriesList.map((country: any) => (
                 <button
                   key={country.code ?? country.id}
                   type='button'
                   onClick={() => handleCountrySelect(country)}
-                  className={`flex w-full items-center gap-3 px-3 py-2 text-left text-sm hover:bg-gray-50 ${
+                  className={`flex w-full items-center gap-3 px-3 py-2 text-left text-sm hover:bg-muted dark:hover:bg-accent ${
                     country.id === selectedCountry?.id ||
                     country.dialCode === selectedCountry?.dialCode
-                      ? 'bg-blue-50'
+                      ? 'bg-accent text-accent-foreground'
                       : ''
                   }`}
                 >
@@ -156,7 +156,7 @@ export const PhoneNumberInput = ({
                     <img
                       src={country.flag}
                       alt={country.name}
-                      className='h-4 w-6 object-cover'
+                      className='h-4 w-6 object-cover rounded-sm'
                     />
                   )}
                   <span className='flex-1'>
@@ -165,12 +165,12 @@ export const PhoneNumberInput = ({
                 </button>
               ))}
               {isLoading && (
-                <div className='px-3 py-2 text-center text-sm text-gray-500'>
+                <div className='px-3 py-2 text-center text-sm text-muted-foreground'>
                   Loading countries...
                 </div>
               )}
               {!isLoading && countriesList.length === 0 && (
-                <div className='px-3 py-2 text-center text-sm text-gray-500'>
+                <div className='px-3 py-2 text-center text-sm text-muted-foreground'>
                   No countries available
                 </div>
               )}
@@ -190,7 +190,7 @@ export const PhoneNumberInput = ({
               ? countryPhoneRules[selectedCountry?.code]?.maxLength || 10
               : 10
           }
-          className={`flex-1 rounded-r-md border border-l-0 border-gray-300 px-2 py-2 text-sm focus:border-gray-300 focus:ring-[3px] focus:ring-gray-300 focus:outline-none ${
+          className={`flex-1 rounded-r-md border border-l-0 border-input bg-background text-foreground px-2 py-2 text-sm focus:border-ring focus:ring-[3px] focus:ring-ring/50 focus:outline-none ${
             form?.formState?.errors?.[fieldName]
               ? 'border-red-500 focus:ring-red-500'
               : ''

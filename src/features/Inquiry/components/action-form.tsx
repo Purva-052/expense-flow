@@ -688,9 +688,9 @@ export function InquiryActionForm({
                 </>
               )}
               <div className="flex flex-col space-y-2">
-                <label className="text-sm font-medium text-gray-700">
+                <FormLabel className={cn("flex items-center gap-1")}>
                   Notes
-                </label>
+                </FormLabel>
                 <Textarea
                   {...form.register("notes")}
                   placeholder="Enter additional notes"

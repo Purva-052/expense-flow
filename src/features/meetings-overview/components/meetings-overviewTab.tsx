@@ -278,21 +278,21 @@ const MeetingsOverviewListing = ({
           <table className="w-full caption-bottom text-sm">
             <thead className="[&_tr]:border-b">
               <tr className="border-b transition-colors hover:bg-muted/50">
-                <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0 whitespace-nowrap">
+                <th className="h-12 bg-muted text-foreground z-50 border-b px-4 text-left align-middle font-medium sticky top-0 whitespace-nowrap">
                   Start Date
                 </th>
-                <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0">
+                <th className="h-12 bg-muted text-foreground z-50 border-b px-4 text-left align-middle font-medium sticky top-0">
                   Coordinator's Name
                 </th>
                 {showProjectColumn && (
-                  <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0">
+                  <th className="h-12 bg-muted text-foreground z-50 border-b px-4 text-left align-middle font-medium sticky top-0">
                     Project
                   </th>
                 )}
-                <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0">
+                <th className="h-12 bg-muted text-foreground z-50 border-b px-4 text-left align-middle font-medium sticky top-0">
                   Description
                 </th>
-                <th className="h-12 bg-gray-100! text-black z-50 border-b px-4 text-left align-middle font-medium sticky top-0">
+                <th className="h-12 bg-muted text-foreground z-50 border-b px-4 text-left align-middle font-medium sticky top-0">
                   Actions
                 </th>
               </tr>
@@ -603,11 +603,17 @@ const MeetingsOverviewTab = ({
   }, [coordinatorsList, selectedCoordinatorId]);
 
   const tabTriggerClass =
-    "flex items-center gap-2 rounded-[50px] px-3 py-2  transition-all " +
-    "data-[state=active]:bg-black data-[state=active]:text-white";
+    "flex items-center gap-2 rounded-[50px] !px-3 !py-2 transition-all h-[35px] " +
+    "text-foreground/70 hover:text-foreground " +
+    // Light: active tab = deep brand-adjacent dark bg with white text
+    "data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-sm " +
+    // Dark: active tab = primary red accent with white text for maximum contrast
+    "dark:text-muted-foreground dark:hover:text-foreground " +
+    "dark:data-[state=active]:bg-primary dark:data-[state=active]:text-white dark:data-[state=active]:shadow-[0_2px_8px_oklch(0_0_0/0.5)]";
   const activeListItemClass =
     "bg-gradient-to-r from-[#f43f5e] to-[#e11d48] text-white border-[#fb7185]";
-  const inactiveListItemClass = "hover:bg-[#fff4f7] border-transparent";
+  const inactiveListItemClass =
+    "hover:bg-rose-50 dark:hover:bg-secondary/40 border-transparent transition-colors";
   const selectedProject = projectList.find(
     (project: any) => project.id === selectedProjectId
   );
@@ -639,7 +645,7 @@ const MeetingsOverviewTab = ({
         className="w-full flex-1 min-h-0 flex flex-col overflow-hidden px-4"
       >
         <div className="flex items-center justify-between gap-2 mt-2">
-          <TabsList className="bg-[#fdebef] rounded-full shrink-0">
+          <TabsList className="bg-rose-50 border border-rose-100 dark:bg-secondary dark:border-white/10 rounded-full shrink-0">
             <TabsTrigger value="projects" className={tabTriggerClass}>
               Projects
             </TabsTrigger>

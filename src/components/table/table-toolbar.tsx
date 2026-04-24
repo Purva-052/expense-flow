@@ -58,7 +58,7 @@ export function DataTableToolbarCompact({
               onChange={(e) => setSearch(e.target.value)}
               className={
                 filter.className ??
-                "w-full sm:w-[200px] lg:w-[280px] min-w-0 rounded-full bg-white"
+                "w-full sm:w-[200px] lg:w-[280px] min-w-0 rounded-full"
               }
             />
           );

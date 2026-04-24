@@ -61,8 +61,13 @@ const LinodeDashboard = () => {
   const zombieCount = analytics.zombieCount || 0;
 
   const tabTriggerClass =
-    "flex items-center gap-2 rounded-[50px] px-3 py-2  transition-all " +
-    "data-[state=active]:bg-black data-[state=active]:text-white";
+    "flex items-center gap-2 rounded-[50px] !px-3 !py-2 transition-all h-[35px] " +
+    "text-foreground/70 hover:text-foreground " +
+    // Light: active tab = deep brand-adjacent dark bg with white text
+    "data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-sm " +
+    // Dark: active tab = primary red accent with white text for maximum contrast
+    "dark:text-muted-foreground dark:hover:text-foreground " +
+    "dark:data-[state=active]:bg-primary dark:data-[state=active]:text-white dark:data-[state=active]:shadow-[0_2px_8px_oklch(0_0_0/0.5)]";
 
   // --- HANDLERS ---
   const handleSearch = (search: string | undefined) => {
@@ -138,26 +143,28 @@ const LinodeDashboard = () => {
         {/* Header Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Month to Date Card */}
-          <Card className="border-slate-200 hover:shadow-md transition-shadow">
+          <Card className="border-border hover:shadow-md transition-shadow">
             <CardContent className="p-4">
               <div className="flex justify-between items-start mb-4">
-                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide flex items-center gap-1">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1">
                   <CalendarClock size={14} /> Month-to-Date
                 </span>
-                <div className="p-2 bg-green-50 text-green-600 rounded-xl">
+                <div className="p-2 bg-green-500/10 text-green-600 rounded-xl">
                   <DollarSign size={20} />
                 </div>
               </div>
               {analyticsLoading ? (
-                <div className="h-[60px] w-full bg-slate-100 rounded-xl animate-pulse flex items-center justify-center">
-                  <div className="text-slate-400 text-sm">Loading...</div>
+                <div className="h-[60px] w-full bg-muted rounded-xl animate-pulse flex items-center justify-center">
+                  <div className="text-muted-foreground text-sm">
+                    Loading...
+                  </div>
                 </div>
               ) : (
                 <div>
-                  <div className="text-3xl font-bold text-slate-900 tracking-tight">
+                  <div className="text-3xl font-bold text-foreground tracking-tight">
                     ${balance_uninvoiced.toFixed(2)}
                   </div>
-                  <div className="text-xs font-medium text-slate-400 mt-1">
+                  <div className="text-xs font-medium text-muted-foreground mt-1">
                     Est. Run Rate: ${totalRunRate.toFixed(2)}/mo
                   </div>
                 </div>
@@ -169,8 +176,8 @@ const LinodeDashboard = () => {
           <Card
             className={`border transition-all cursor-pointer hover:shadow-md ${
               filter === FilterType.ZOMBIE
-                ? "bg-orange-50 border-orange-200 ring-2 ring-orange-100"
-                : "border-slate-200"
+                ? "bg-orange-500/5 border-orange-500/20 ring-2 ring-orange-500/10"
+                : "border-border"
             }`}
             onClick={() => {
               setFilter(FilterType.ZOMBIE);
@@ -182,8 +189,8 @@ const LinodeDashboard = () => {
                 <span
                   className={`text-xs font-semibold uppercase tracking-wide ${
                     filter === FilterType.ZOMBIE
-                      ? "text-orange-700"
-                      : "text-slate-400"
+                      ? "text-orange-600"
+                      : "text-muted-foreground"
                   }`}
                 >
                   Zombie Instances
@@ -191,8 +198,8 @@ const LinodeDashboard = () => {
                 <div
                   className={`p-2 rounded-xl transition-transform ${
                     filter === FilterType.ZOMBIE
-                      ? "bg-orange-200 text-orange-700"
-                      : "bg-orange-50 text-orange-500"
+                      ? "bg-orange-500/20 text-orange-600"
+                      : "bg-orange-500/10 text-orange-500"
                   }`}
                 >
                   <Ghost size={20} />
@@ -201,14 +208,16 @@ const LinodeDashboard = () => {
               <div
                 className={`text-3xl font-bold tracking-tight relative z-10 ${
                   filter === FilterType.ZOMBIE
-                    ? "text-orange-900"
-                    : "text-slate-900"
+                    ? "text-orange-700"
+                    : "text-foreground"
                 }`}
               >
                 {/* Show skeleton or number */}
                 {analyticsLoading ? (
-                  <div className="h-[60px] w-full bg-slate-100 rounded-xl animate-pulse flex items-center justify-center">
-                    <div className="text-slate-400 text-sm">Loading...</div>
+                  <div className="h-[60px] w-full bg-muted rounded-xl animate-pulse flex items-center justify-center">
+                    <div className="text-muted-foreground text-sm">
+                      Loading...
+                    </div>
                   </div>
                 ) : (
                   <>
@@ -219,29 +228,31 @@ const LinodeDashboard = () => {
                   </>
                 )}
               </div>
-              <div className="absolute -bottom-4 -right-4 text-orange-100/50 transform rotate-12 z-0">
+              <div className="absolute -bottom-4 -right-4 text-orange-500/10 transform rotate-12 z-0">
                 <Ghost size={100} />
               </div>
             </CardContent>
           </Card>
 
           {/* Active Instances Card */}
-          <Card className="border-slate-200 hover:shadow-md transition-shadow">
+          <Card className="border-border hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex justify-between items-start mb-4">
-                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                   Active Instances
                 </span>
-                <div className="p-2 bg-primary-50 text-primary-500 rounded-xl">
+                <div className="p-2 bg-primary/10 text-primary rounded-xl">
                   <CheckCircle2 size={20} />
                 </div>
               </div>
               {analyticsLoading ? (
-                <div className="h-[60px] w-full bg-slate-100 rounded-xl animate-pulse flex items-center justify-center">
-                  <div className="text-slate-400 text-sm">Loading...</div>
+                <div className="h-[60px] w-full bg-muted rounded-xl animate-pulse flex items-center justify-center">
+                  <div className="text-muted-foreground text-sm">
+                    Loading...
+                  </div>
                 </div>
               ) : (
-                <div className="text-3xl font-bold text-slate-900 tracking-tight">
+                <div className="text-3xl font-bold text-foreground tracking-tight">
                   {activeCount}
                 </div>
               )}
@@ -280,7 +291,7 @@ const LinodeDashboard = () => {
           }}
           className="w-full"
         >
-          <TabsList className="bg-[#fdebef] rounded-full">
+          <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border-rose-100/50">
             <TabsTrigger className={tabTriggerClass} value={FilterType.ALL}>
               All Instances
             </TabsTrigger>
