@@ -42,13 +42,6 @@ import {
   UserStar,
 } from "lucide-react";
 import { type SidebarData } from "../types";
-// import { useAuthStore } from "@/stores/use-auth-store";
-
-// const { user } = useAuthStore.getState();
-// const userID = user?.user?.id;
-
-// const allowUserID1 = userID === 1 ? true : false;
-
 export const sidebarData: SidebarData = {
   user: {
     name: "satnaing",
@@ -82,6 +75,7 @@ export const sidebarData: SidebarData = {
         roles.DEVELOPER,
         roles.BDE,
       ],
+      allowUserIDs: [134],
       items: [
         {
           title: "Dashboard",
@@ -111,17 +105,13 @@ export const sidebarData: SidebarData = {
           title: "Project Analytics",
           url: "/projects-analytics",
           icon: BarChart3,
-          requiredRoles: [
-            roles.ADMIN,
-            roles.TEAM_LEAD,
-            roles.PROJECT_MANAGER,
-          ],
+          requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
         {
           title: "Lead Management",
           url: "/inquiry",
           icon: BriefcaseBusiness,
-          // allowUserID1: allowUserID1,
+          allowUserIDs: [134],
           requiredRoles: [roles.ADMIN],
         },
         {
@@ -225,44 +215,54 @@ export const sidebarData: SidebarData = {
     },
     {
       title: "Inquiry Management",
-      requiredRoles: [roles.ADMIN, roles.BDE, roles.PROJECT_MANAGER],
+      requiredRoles: [
+        roles.ADMIN,
+        roles.BDE,
+      ],
+      allowUserIDs: [134],
       isCollapsible: true,
       items: [
         {
           title: "Industry",
           url: "/industry",
           icon: Building2,
-          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+          requiredRoles: [roles.ADMIN, roles.BDE],
+          allowUserIDs: [134],
         },
         {
           title: "Domain",
           url: "/domain",
           icon: Globe,
-          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+          requiredRoles: [roles.ADMIN, roles.BDE],
+          allowUserIDs: [134],
         },
         {
           title: "Inquiry Types",
           url: "/inquiry-types",
           icon: Flame,
-          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+          requiredRoles: [roles.ADMIN, roles.BDE],
+          allowUserIDs: [134],
         },
         {
           title: "Inquiry Channels",
           url: "/inquiry-channels",
           icon: Network,
-          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+          requiredRoles: [roles.ADMIN, roles.BDE],
+          allowUserIDs: [134],
         },
         {
           title: "Inbound Sources",
           url: "/inbound-sources",
           icon: ArrowDownToLine,
-          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+          requiredRoles: [roles.ADMIN, roles.BDE],
+          allowUserIDs: [134],
         },
         {
           title: "Outbound Sources",
           url: "/outbound-sources",
           icon: ArrowUpFromLine,
-          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+          requiredRoles: [roles.ADMIN, roles.BDE],
+          allowUserIDs: [134],
         },
         // {
         //   title: "To be Join",
