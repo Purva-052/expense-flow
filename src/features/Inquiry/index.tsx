@@ -433,14 +433,14 @@ const InquiryPage = () => {
   };
 
   const inquiryTypeColors: Record<string, string> = {
-    hot: "bg-red-100 text-red-700 border-red-200",
-    warm: "bg-orange-100 text-orange-700 border-orange-200",
-    cold: "bg-blue-100 text-blue-700 border-blue-200",
+    hot: "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800",
+    warm: "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800",
+    cold: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800",
   };
 
   const inquiryChannelColors: Record<string, string> = {
-    inbound: "bg-green-100 text-green-700 border-green-200",
-    outbound: "bg-yellow-100 text-yellow-700 border-yellow-200",
+    inbound: "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800",
+    outbound: "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800",
   };
 
   const columns: ColumnDef<any>[] = [
@@ -551,10 +551,10 @@ const InquiryPage = () => {
         const modules = row.original?.modules ?? [];
         if (!modules || modules.length === 0) return "-";
         return (
-          <span className="capitalize text-gray-500 flex flex-wrap gap-2">
+          <span className="capitalize text-slate-500 dark:text-slate-400 flex flex-wrap gap-2">
             {modules?.map((m: any) => {
               return (
-                <Badge variant="secondary" className="border border-gray-300">
+                <Badge variant="secondary" className="border border-slate-200 dark:border-slate-800">
                   {m?.name}
                 </Badge>
               );

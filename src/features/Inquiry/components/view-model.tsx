@@ -56,16 +56,16 @@ export function ViewInquiryModal() {
 
         <div className="space-y-3 py-2">
           <div className="flex justify-between">
-            <span className="font-medium text-gray-700">Created By:</span>
-            <span className="text-gray-900">
+            <span className="font-medium text-slate-500 dark:text-slate-400">Created By:</span>
+            <span className="text-slate-900 dark:text-slate-100">
               {currentRow?.generatedByUser?.fullName ?? "-"}
             </span>
           </div>
           <Separator />
 
           <div className="flex justify-between">
-            <span className="font-medium text-gray-700">Project Name:</span>
-            <span className="text-gray-900">
+            <span className="font-medium text-slate-500 dark:text-slate-400">Project Name:</span>
+            <span className="text-slate-900 dark:text-slate-100">
               {currentRow?.projectName && currentRow?.projectName?.trim() !== ""
                 ? currentRow?.projectName
                 : "-"}
@@ -74,16 +74,16 @@ export function ViewInquiryModal() {
           <Separator />
 
           <div className="flex justify-between">
-            <span className="font-medium text-gray-700">Client Name:</span>
-            <span className="text-gray-900">
+            <span className="font-medium text-slate-500 dark:text-slate-400">Client Name:</span>
+            <span className="text-slate-900 dark:text-slate-100">
               {currentRow?.clientName ?? "-"}
             </span>
           </div>
           <Separator />
 
           <div className="flex justify-between">
-            <span className="font-medium text-gray-700">Client Company:</span>
-            <span className="text-gray-900">
+            <span className="font-medium text-slate-500 dark:text-slate-400">Client Company:</span>
+            <span className="text-slate-900 dark:text-slate-100">
               {currentRow?.clientCompanyName?.trim()
                 ? currentRow.clientCompanyName
                 : "-"}
@@ -91,8 +91,8 @@ export function ViewInquiryModal() {
           </div>
           <Separator />
           <div className="flex justify-between">
-            <span className="font-medium text-gray-700">Client Email:</span>
-            <span className="text-gray-900">
+            <span className="font-medium text-slate-500 dark:text-slate-400">Client Email:</span>
+            <span className="text-slate-900 dark:text-slate-100">
               {currentRow?.clientEmailId?.trim()
                 ? currentRow?.clientEmailId
                 : "-"}
@@ -100,8 +100,8 @@ export function ViewInquiryModal() {
           </div>
           <Separator />
           <div className="flex justify-between">
-            <span className="font-medium text-gray-700">Client Contact:</span>
-            <span className="text-gray-900">
+            <span className="font-medium text-slate-500 dark:text-slate-400">Client Contact:</span>
+            <span className="text-slate-900 dark:text-slate-100">
               {currentRow?.clientContactNo?.trim()
                 ? currentRow?.clientContactNo
                 : "-"}
@@ -109,10 +109,10 @@ export function ViewInquiryModal() {
           </div>
           <Separator />
           <div className="flex justify-between">
-            <span className="font-medium text-gray-700">
+            <span className="font-medium text-slate-500 dark:text-slate-400">
               Client LinkedIn Profile:
             </span>
-            <span className="text-gray-900">
+            <span className="text-slate-900 dark:text-slate-100">
               {currentRow?.clientLinkedInProfile?.trim()
                 ? currentRow?.clientLinkedInProfile
                 : "-"}
@@ -120,24 +120,24 @@ export function ViewInquiryModal() {
           </div>
           <Separator />
           <div className="flex justify-between">
-            <span className="font-medium text-gray-700">Country:</span>
-            <span className="text-gray-900">
+            <span className="font-medium text-slate-500 dark:text-slate-400">Country:</span>
+            <span className="text-slate-900 dark:text-slate-100">
               {currentRow?.country?.name ?? "-"}
             </span>
           </div>
           <Separator />
 
           <div className="flex justify-between">
-            <span className="font-medium text-gray-700">Estimate Hours:</span>
-            <span className="text-gray-900">
+            <span className="font-medium text-slate-500 dark:text-slate-400">Estimate Hours:</span>
+            <span className="text-slate-900 dark:text-slate-100">
               {formatNumber(currentRow?.approximateHours) ?? "-"}
             </span>
           </div>
           <Separator />
 
           <div className="flex justify-between">
-            <span className="font-medium text-gray-700">Inquiry Channel:</span>
-            <span className="text-gray-900">
+            <span className="font-medium text-slate-500 dark:text-slate-400">Inquiry Channel:</span>
+            <span className="text-slate-900 dark:text-slate-100">
               {currentRow?.inquirySource?.name.trim()
                 ? currentRow?.inquirySource?.name
                 : "-"}
@@ -146,8 +146,8 @@ export function ViewInquiryModal() {
           <Separator />
 
           <div className="flex justify-between">
-            <span className="font-medium text-gray-700">Inquiry Type:</span>
-            <span className="capitalize text-gray-900">
+            <span className="font-medium text-slate-500 dark:text-slate-400">Inquiry Type:</span>
+            <span className="capitalize text-slate-900 dark:text-slate-100">
               {currentRow?.inquiryType?.name.trim()
                 ? currentRow?.inquiryType?.name
                 : "-"}
@@ -156,8 +156,8 @@ export function ViewInquiryModal() {
           <Separator />
 
           <div className="flex justify-between">
-            <span className="font-medium text-gray-700">Inquiry Date:</span>
-            <span className="capitalize text-gray-900">
+            <span className="font-medium text-slate-500 dark:text-slate-400">Inquiry Date:</span>
+            <span className="capitalize text-slate-900 dark:text-slate-100">
               {currentRow?.inquiryDate
                 ? formatDate(currentRow?.inquiryDate)
                 : "-"}
@@ -166,13 +166,13 @@ export function ViewInquiryModal() {
           <Separator />
 
           <div className="flex justify-between">
-            <span className="font-medium text-gray-700">
+            <span className="font-medium text-slate-500 dark:text-slate-400">
               {currentRow?.inquirySource?.name === "Inbound"
                 ? "Inbound Source:"
                 : "Outbound Source:"}
             </span>
 
-            <span className="text-gray-900">
+            <span className="text-slate-900 dark:text-slate-100">
               {currentRow?.inquirySource?.name === "Inbound"
                 ? currentRow?.inboundSource?.name || "-"
                 : currentRow?.outboundSource?.name || "-"}
@@ -183,8 +183,8 @@ export function ViewInquiryModal() {
           {currentRow?.inquirySource?.name === "Inbound" && (
             <>
               <div className="flex justify-between">
-                <span className="font-medium text-gray-700">Domain Name:</span>
-                <span className="text-gray-900">
+                <span className="font-medium text-slate-500 dark:text-slate-400">Domain Name:</span>
+                <span className="text-slate-900 dark:text-slate-100">
                   {currentRow?.domain?.name.trim()
                     ? currentRow?.domain?.name
                     : "-"}
@@ -195,14 +195,14 @@ export function ViewInquiryModal() {
           )}
 
           <div className="flex justify-between">
-            <span className="font-medium text-gray-700 w-24">Type:</span>
-            <span className="capitalize text-gray-900 flex items-center  gap-1">
+            <span className="font-medium text-slate-500 dark:text-slate-400 w-24">Type:</span>
+            <span className="capitalize text-slate-900 dark:text-slate-100 flex items-center  gap-1">
               {currentRow?.modules?.length > 0
                 ? currentRow?.modules?.map((m: any) => {
                     return (
                       <Badge
                         variant="secondary"
-                        className="border border-gray-300"
+                        className="border border-slate-200 dark:border-slate-800"
                       >
                         {m?.name}
                       </Badge>
@@ -214,8 +214,8 @@ export function ViewInquiryModal() {
           <Separator />
 
           <div className="flex justify-between">
-            <span className="font-medium text-gray-700">Status:</span>
-            <span className="capitalize text-gray-900">
+            <span className="font-medium text-slate-500 dark:text-slate-400">Status:</span>
+            <span className="capitalize text-slate-900 dark:text-slate-100">
               {currentRow?.status
                 ? statusOptions.find((s) => s.value === currentRow?.status)
                     ?.label
@@ -225,8 +225,8 @@ export function ViewInquiryModal() {
           <Separator />
 
           <div>
-            <span className="font-medium text-gray-700">Notes:</span>
-            <p className="mt-1 text-gray-900 whitespace-pre-line border rounded p-1 min-h-20 cursor-not-allowed">
+            <span className="font-medium text-slate-500 dark:text-slate-400">Notes:</span>
+            <p className="mt-1 text-slate-900 dark:text-slate-100 whitespace-pre-line border border-slate-200 dark:border-slate-800 rounded p-1 min-h-20 cursor-not-allowed">
               {currentRow?.notes}
             </p>
           </div>
