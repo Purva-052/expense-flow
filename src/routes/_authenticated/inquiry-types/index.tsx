@@ -5,7 +5,8 @@ import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/inquiry-types/")({
   component: RouteComponent,
-  beforeLoad: () => requireRole([roles.ADMIN, roles.PROJECT_MANAGER]),
+  beforeLoad: () =>
+    requireRole([roles.ADMIN, roles.PROJECT_MANAGER, roles.TEAM_LEAD]),
 });
 
 function RouteComponent() {

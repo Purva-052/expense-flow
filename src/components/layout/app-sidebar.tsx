@@ -19,14 +19,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const hasSidebarAccess = (item: {
     requiredRoles?: string[];
-    allowUserID1?: boolean;
     allowUserIDs?: number[];
   }) => {
     const hasRoleAccess = item.requiredRoles?.includes(role) ?? false;
-    const hasIDAccess = item.allowUserID1 && id === 1;
     const hasUserIDsAccess = item.allowUserIDs?.includes(id) ?? false;
 
-    return hasRoleAccess || hasIDAccess || hasUserIDsAccess;
+    return hasRoleAccess || hasUserIDsAccess;
   };
 
   const filteredNavGroups = sidebarData.navGroups

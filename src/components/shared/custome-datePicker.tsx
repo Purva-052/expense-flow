@@ -109,7 +109,7 @@ export function CustomDatePicker({
                   <span className="font-medium">{format(month, "MMMM")}</span>
 
                   <select
-                    className="rounded-md border bg-transparent px-1 py-0.5 text-sm focus:outline-none"
+                    className="rounded-md border bg-transparent px-1 py-0.5 text-sm focus:outline-none dark:bg-card dark:border-white/20"
                     value={month.getFullYear()}
                     onChange={(e) => {
                       const newYear = parseInt(e.target.value, 10);

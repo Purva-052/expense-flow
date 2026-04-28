@@ -299,6 +299,14 @@
   color: white;
 }
 
+/* Dark mode: make count badges in tab triggers stand out against the active red tab background */
+.dark [role="tablist"] [data-slot="badge"].bg-gradient-primary,
+.dark [role="tablist"] [data-slot="badge"].gradient-primary {
+  background: white !important;
+  color: var(--primary) !important;
+  border-color: transparent !important;
+}
+
 .bg-primary:hover,
 .btn-primary:hover,
 .button-primary:hover,

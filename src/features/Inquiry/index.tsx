@@ -623,7 +623,9 @@ const InquiryPage = () => {
               <DropdownMenuItem onClick={handleViewHistory}>
                 View history
               </DropdownMenuItem>
-              {(userRole === roles.BDE || userRole === roles.ADMIN) && (
+              {(userRole === roles.BDE ||
+                userRole === roles.ADMIN ||
+                userRole === roles.TEAM_LEAD) && (
                 <>
                   <DropdownMenuItem onClick={handleEdit}>
                     Edit Inquiry
@@ -651,7 +653,11 @@ const InquiryPage = () => {
         buttonText="Add Lead"
         onButtonClick={handleAdd}
         showActionButton={
-          userRole === roles.BDE || userRole === roles.ADMIN ? true : false
+          userRole === roles.BDE ||
+          userRole === roles.ADMIN ||
+          userRole === roles.TEAM_LEAD
+            ? true
+            : false
         }
       >
         Manage your Leads here.
