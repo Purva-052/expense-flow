@@ -22,7 +22,6 @@ type NavLink = BaseNavItem & {
   url: LinkProps["to"];
   items?: never;
   requiredRoles?: string[];
-  allowUserID1?: boolean;
   allowUserIDs?: number[];
 };
 
@@ -30,7 +29,6 @@ type NavCollapsible = BaseNavItem & {
   items: (BaseNavItem & {
     url: LinkProps["to"];
     requiredRoles?: string[];
-    allowUserID1?: boolean;
     allowUserIDs?: number[];
   })[];
   url?: never;

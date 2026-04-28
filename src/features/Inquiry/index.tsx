@@ -116,8 +116,13 @@ const InquiryPage = () => {
   };
 
   const tabTriggerClass =
-    "flex items-center gap-2 rounded-[50px] px-3 py-2  transition-all " +
-    "data-[state=active]:bg-black data-[state=active]:text-white";
+    "flex items-center gap-2 rounded-[50px] !px-3 !py-2 transition-all h-[35px] " +
+    "text-foreground/70 hover:text-foreground " +
+    // Light: active tab = deep brand-adjacent dark bg with white text
+    "data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-sm " +
+    // Dark: active tab = primary red accent with white text for maximum contrast
+    "dark:text-muted-foreground dark:hover:text-foreground " +
+    "dark:data-[state=active]:bg-primary dark:data-[state=active]:text-white dark:data-[state=active]:shadow-[0_2px_8px_oklch(0_0_0/0.5)]";
 
   const { data: listData, isPending: loading } = useGetInquiry(apiParams);
 
@@ -618,7 +623,9 @@ const InquiryPage = () => {
               <DropdownMenuItem onClick={handleViewHistory}>
                 View history
               </DropdownMenuItem>
-              {(userRole === roles.BDE || userRole === roles.ADMIN) && (
+              {(userRole === roles.BDE ||
+                userRole === roles.ADMIN ||
+                userRole === roles.TEAM_LEAD) && (
                 <>
                   <DropdownMenuItem onClick={handleEdit}>
                     Edit Inquiry
@@ -646,7 +653,11 @@ const InquiryPage = () => {
         buttonText="Add Lead"
         onButtonClick={handleAdd}
         showActionButton={
-          userRole === roles.BDE || userRole === roles.ADMIN ? true : false
+          userRole === roles.BDE ||
+          userRole === roles.ADMIN ||
+          userRole === roles.TEAM_LEAD
+            ? true
+            : false
         }
       >
         Manage your Leads here.
@@ -657,7 +668,7 @@ const InquiryPage = () => {
           extraItemShow={true}
           className={"!my-2 flex flex-wrap gap-2"}
           extraItem={
-            <TabsList className="bg-[#fdebef] rounded-full">
+            <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border border-rose-100/50">
               <TabsTrigger value="active" className={tabTriggerClass}>
                 Active Leads
               </TabsTrigger>

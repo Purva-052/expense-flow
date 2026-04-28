@@ -142,7 +142,7 @@ export function DeveloperChip({
                 isDragging && "opacity-50 scale-110 z-50"
               )}
             >
-              <Avatar className="h-10 w-10 border-2 border-white shadow-sm hover:scale-110 transition-transform">
+              <Avatar className="h-10 w-10 border-2 border-background shadow-sm hover:scale-110 transition-transform">
                 <AvatarImage
                   src={
                     profilePic ||
@@ -153,7 +153,7 @@ export function DeveloperChip({
                 <AvatarFallback>{developer.fullName?.charAt(0)}</AvatarFallback>
               </Avatar>
               {developer.isCurrentProject && (
-                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-white" />
+                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-background" />
               )}
             </div>
           </TooltipTrigger>
@@ -193,7 +193,7 @@ export function DeveloperChip({
             {...listeners}
             onClick={onClick}
             className={cn(
-              "max-w-[250px] bg-white flex flex-col gap-2 rounded-lg border p-3 text-sm shadow-sm outline-none transition-all duration-200",
+              "max-w-[250px] bg-card flex flex-col gap-2 rounded-lg border p-3 text-sm shadow-sm outline-none transition-all duration-200",
               variant === "default" && "bg-secondary/50",
               onClick && "cursor-pointer hover:shadow-md",
               !disabled && "cursor-grab",

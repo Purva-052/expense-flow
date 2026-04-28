@@ -74,54 +74,72 @@
 }
 
 .dark {
-  --background: oklch(0.14 0 285.86);
-  --foreground: oklch(0.99 0 0);
-  --card: oklch(0.21 0.01 285.93);
-  --card-foreground: oklch(0.99 0 0);
-  --popover: oklch(0.21 0.01 285.93);
-  --popover-foreground: oklch(0.99 0 0);
+  /* ── Page background: deep blue-slate ──────────────────────────── */
+  --background: oklch(0.17 0.018 255);
+  --foreground: oklch(0.97 0.005 250);
+
+  /* ── Card / popover: one step lighter than page ─────────────────── */
+  --card: oklch(0.22 0.016 255);
+  --card-foreground: oklch(0.97 0.005 250);
+  --popover: oklch(0.22 0.016 255);
+  --popover-foreground: oklch(0.97 0.005 250);
+
+  /* ── Brand / primary ────────────────────────────────────────────── */
   --primary: #e80339;
-  --primary-gradient: linear-gradient(135deg, #e80339, #000);
+  --primary-gradient: linear-gradient(135deg, #f87171, #e11d48);
   --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.27 0.01 286.1);
-  --secondary-foreground: oklch(0.99 0 0);
-  --muted: oklch(0.27 0.01 286.1);
-  --muted-foreground: oklch(0.71 0.01 286.09);
-  --accent: oklch(0.27 0.01 286.1);
-  --accent-foreground: oklch(0.99 0 0);
+
+  /* ── Secondary / muted: noticeably lighter than card ────────────── */
+  --secondary: oklch(0.28 0.014 255);
+  --secondary-foreground: oklch(0.95 0.005 250);
+  --muted: oklch(0.28 0.014 255);
+  --muted-foreground: oklch(0.65 0.01 255);
+
+  /* ── Accent: slightly lighter for hover / active states ─────────── */
+  --accent: oklch(0.32 0.013 255);
+  --accent-foreground: oklch(0.97 0.005 250);
+
+  /* ── Semantic ────────────────────────────────────────────────────── */
   --destructive: oklch(0.7 0.19 22.23);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.55 0.02 285.93);
+
+  /* ── Borders & inputs: visible but subtle ───────────────────────── */
+  --border: oklch(1 0 0 / 20%);
+  --input: oklch(1 0 0 / 16%);
+  --ring: oklch(0.55 0.02 255);
+
+  /* ── Charts ─────────────────────────────────────────────────────── */
   --chart-1: oklch(0.49 0.24 264.4);
   --chart-2: oklch(0.7 0.16 160.43);
   --chart-3: oklch(0.77 0.17 65.36);
   --chart-4: oklch(0.62 0.26 305.32);
   --chart-5: oklch(0.64 0.25 16.51);
-  --sidebar: oklch(0.21 0.01 285.93);
-  --sidebar-foreground: oklch(0.99 0 0);
+
+  /* ── Sidebar: same hue family, just a touch darker than card ────── */
+  --sidebar: oklch(0.22 0.016 255);
+  --sidebar-foreground: oklch(0.97 0.005 250);
   --sidebar-primary: oklch(0.49 0.24 264.4);
   --sidebar-primary-foreground: oklch(0.99 0 0);
   --sidebar-accent: #e80339;
   --sidebar-accent-gradient: linear-gradient(135deg, #e80339, #000);
   --sidebar-accent-foreground: oklch(0.99 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.55 0.02 285.93);
+  --sidebar-border: oklch(1 0 0 / 20%);
+  --sidebar-ring: oklch(0.55 0.02 255);
 
-  --shadow-2xs: 0 1px 3px 0px oklch(0 0 0 / 0.05);
-  --shadow-xs: 0 1px 3px 0px oklch(0 0 0 / 0.05);
+  /* ── Shadows ─────────────────────────────────────────────────────── */
+  --shadow-2xs: 0 1px 3px 0px oklch(0 0 0 / 0.15);
+  --shadow-xs: 0 1px 3px 0px oklch(0 0 0 / 0.18);
   --shadow-sm:
-    0 1px 3px 0px oklch(0 0 0 / 0.1), 0 1px 2px -1px oklch(0 0 0 / 0.1);
-  --shadow: 0 1px 3px 0px oklch(0 0 0 / 0.1), 0 1px 2px -1px oklch(0 0 0 / 0.1);
+    0 1px 3px 0px oklch(0 0 0 / 0.25), 0 1px 2px -1px oklch(0 0 0 / 0.2);
+  --shadow: 0 1px 3px 0px oklch(0 0 0 / 0.25), 0 1px 2px -1px oklch(0 0 0 / 0.2);
   --shadow-md:
-    0 1px 3px 0px oklch(0 0 0 / 0.1), 0 2px 4px -1px oklch(0 0 0 / 0.1);
+    0 1px 3px 0px oklch(0 0 0 / 0.3), 0 2px 4px -1px oklch(0 0 0 / 0.25);
   --shadow-lg:
-    0 1px 3px 0px oklch(0 0 0 / 0.1), 0 4px 6px -1px oklch(0 0 0 / 0.1);
+    0 1px 3px 0px oklch(0 0 0 / 0.3), 0 4px 6px -1px oklch(0 0 0 / 0.25);
   --shadow-xl:
-    0 1px 3px 0px oklch(0 0 0 / 0.1), 0 8px 10px -1px oklch(0 0 0 / 0.1);
-  --shadow-2xl: 0 1px 3px 0px oklch(0 0 0 / 0.25);
+    0 1px 3px 0px oklch(0 0 0 / 0.3), 0 8px 10px -1px oklch(0 0 0 / 0.25);
+  --shadow-2xl: 0 1px 3px 0px oklch(0 0 0 / 0.4);
 
-  /* Dark mode gradient variations */
+  /* ── Gradient overrides for dark mode ───────────────────────────── */
   --gradient-primary: linear-gradient(135deg, #e80339, #000);
   --gradient-primary-hover: linear-gradient(135deg, #e80339, #000);
 }
@@ -279,6 +297,14 @@
 .gradient-primary {
   background: var(--primary);
   color: white;
+}
+
+/* Dark mode: make count badges in tab triggers stand out against the active red tab background */
+.dark [role="tablist"] [data-slot="badge"].bg-gradient-primary,
+.dark [role="tablist"] [data-slot="badge"].gradient-primary {
+  background: white !important;
+  color: var(--primary) !important;
+  border-color: transparent !important;
 }
 
 .bg-primary:hover,
@@ -540,4 +566,89 @@ body[data-scroll-locked] {
 .date-range-calendar .day-range-middle:hover {
   background: var(--range-middle-bg) !important;
   color: var(--primary) !important;
+}
+
+/* ── React Big Calendar Global Grid Lines ────────────────────────── */
+.rbc-calendar .rbc-month-view,
+.rbc-calendar .rbc-time-view,
+.rbc-calendar .rbc-agenda-view {
+  border: 1px solid var(--border) !important;
+}
+
+.rbc-calendar .rbc-day-bg + .rbc-day-bg,
+.rbc-calendar .rbc-header + .rbc-header,
+.rbc-calendar .rbc-time-header-content,
+.rbc-calendar .rbc-time-content > * + * {
+  border-left: 1px solid var(--border) !important;
+}
+
+.rbc-calendar .rbc-month-row + .rbc-month-row,
+.rbc-calendar .rbc-timeslot-group,
+.rbc-calendar .rbc-day-slot .rbc-time-slot,
+.rbc-calendar .rbc-agenda-view table.rbc-agenda-table tbody > tr > td {
+  border-color: var(--border) !important;
+}
+
+.rbc-calendar .rbc-timeslot-group {
+  border-bottom: 1px solid var(--border) !important;
+}
+
+/* ── React Big Calendar Dark Mode ────────────────────────────────── */
+.dark .rbc-calendar {
+  background-color: var(--card);
+  color: var(--foreground);
+}
+
+.dark .rbc-off-range-bg {
+  background-color: oklch(0.15 0.018 255 / 0.3) !important;
+}
+
+.dark .rbc-today {
+  background-color: oklch(0.55 0.02 255 / 0.1) !important;
+}
+
+.dark .rbc-header {
+  border-bottom: 1px solid var(--border) !important;
+  color: var(--muted-foreground);
+}
+
+.dark .rbc-month-view,
+.dark .rbc-time-view,
+.dark .rbc-agenda-view {
+  border: 1px solid var(--border) !important;
+  background-color: var(--card);
+}
+
+.dark .rbc-month-row + .rbc-month-row,
+.dark .rbc-day-bg + .rbc-day-bg,
+.dark .rbc-time-header-content,
+.dark .rbc-time-content,
+.dark .rbc-timeslot-group,
+.dark .rbc-time-slot,
+.dark .rbc-agenda-view table.rbc-agenda-table,
+.dark .rbc-agenda-view table.rbc-agenda-table tbody > tr > td + td {
+  border-color: var(--border) !important;
+}
+
+.dark .rbc-event {
+  border: none !important;
+}
+
+.dark .rbc-show-more {
+  color: var(--primary);
+  background-color: transparent !important;
+  font-weight: bold;
+}
+
+.dark .rbc-toolbar button {
+  color: var(--foreground);
+  border: 1px solid var(--border);
+}
+
+.dark .rbc-toolbar button:hover,
+.dark .rbc-toolbar button:active,
+.dark .rbc-toolbar button.rbc-active {
+  background-color: var(--secondary) !important;
+  color: var(--secondary-foreground) !important;
+  box-shadow: none !important;
 }

@@ -35,7 +35,7 @@ function InventoryViewSection({
   const Icon = icon;
 
   return (
-    <div className="space-y-4 rounded-md border border-[#d9d9d9] bg-white p-4">
+    <div className="space-y-4 rounded-md border bg-card p-4">
       <div className="flex items-center gap-2">
         <Icon className="h-4 w-4 text-muted-foreground" />
         <span className="text-sm font-semibold">{title}</span>
@@ -58,7 +58,7 @@ function ViewField({
   return (
     <div className="space-y-1">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <div className="flex h-9 items-center rounded-md border border-[#e5e5e5] bg-[#f5f5f5] px-3 text-sm">
+      <div className="flex h-9 items-center rounded-md border border-border bg-muted/30 dark:bg-secondary/40 px-3 text-sm">
         {displayValue}
       </div>
     </div>
@@ -452,13 +452,18 @@ export function SystemInventoryViewForm({
         : "personal";
 
   const tabTriggerClass =
-    "flex items-center gap-2 rounded-[50px] !px-3 !py-2  transition-all " +
-    "data-[state=active]:bg-black data-[state=active]:text-white h-[35px]";
+    "flex items-center gap-2 rounded-[50px] !px-3 !py-2 transition-all h-[35px] " +
+    "text-foreground/70 hover:text-foreground " +
+    // Light: active tab = deep brand-adjacent dark bg with white text
+    "data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-sm " +
+    // Dark: active tab = primary red accent with white text for maximum contrast
+    "dark:text-muted-foreground dark:hover:text-foreground " +
+    "dark:data-[state=active]:bg-primary dark:data-[state=active]:text-white dark:data-[state=active]:shadow-[0_2px_8px_oklch(0_0_0/0.5)]";
 
   return (
     <div className="space-y-6">
       <Tabs defaultValue={defaultTab} className="w-full">
-        <TabsList className="bg-[#fdebef] rounded-full">
+        <TabsList className="bg-muted/70 border border-border dark:bg-secondary dark:border-white/10 rounded-full">
           <TabsTrigger value="personal" className={tabTriggerClass}>
             Personal
           </TabsTrigger>
@@ -500,7 +505,7 @@ export function SystemInventoryViewForm({
           readOnly
           value={values.notes ?? ""}
           placeholder="No additional notes."
-          className="min-h-[95px] resize-none bg-[#f5f5f5]"
+          className="min-h-[95px] resize-none bg-muted/30 dark:bg-secondary/40"
         />
       </div>
     </div>

@@ -478,8 +478,13 @@ const ProjectPage = ({
     useGetTechnologyDropdownList(null, Role !== roles.BDE);
 
   const tabTriggerClass =
-    "flex items-center gap-2 rounded-[50px] !px-3 !py-2  transition-all " +
-    "data-[state=active]:bg-black data-[state=active]:text-white h-[35px]";
+    "flex items-center gap-2 rounded-[50px] !px-3 !py-2 transition-all h-[35px] " +
+    "text-foreground/70 hover:text-foreground " +
+    // Light: active tab = deep brand-adjacent dark bg with white text
+    "data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-sm " +
+    // Dark: active tab = primary red accent with white text for maximum contrast
+    "dark:text-muted-foreground dark:hover:text-foreground " +
+    "dark:data-[state=active]:bg-primary dark:data-[state=active]:text-white dark:data-[state=active]:shadow-[0_2px_8px_oklch(0_0_0/0.5)]";
 
   const filters: FilterConfig[] = [
     {
@@ -597,13 +602,13 @@ const ProjectPage = ({
             onValueChange={(v: any) => setView(v)}
             className="flex-none"
           >
-            <TabsList className="bg-[#fdebef] rounded-full">
+            <TabsList className="bg-rose-50 dark:bg-muted rounded-full h-9 border border-rose-100/50 dark:border-white/10">
               <TabsTrigger
                 value="grid"
                 className={cn(
                   tabTriggerClass,
                   "gap-2 px-3 h-8 text-xs font-medium transition-all",
-                  view === "grid" && "bg-white text-black shadow-sm"
+                  view === "grid" && "bg-background text-foreground shadow-sm"
                 )}
               >
                 <LayoutGrid className="h-4 w-4" />
@@ -614,7 +619,7 @@ const ProjectPage = ({
                 className={cn(
                   tabTriggerClass,
                   "gap-2 px-3 h-8 text-xs font-medium transition-all",
-                  view === "list" && "bg-white text-black shadow-sm"
+                  view === "list" && "bg-background text-foreground shadow-sm"
                 )}
               >
                 <List className="h-4 w-4" />
@@ -645,8 +650,8 @@ const ProjectPage = ({
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <div className="min-w-[860px] flex flex-col gap-0 border rounded-lg bg-white overflow-hidden">
-                    <div className="flex items-center gap-4 px-6 py-3 bg-gray-50 border-b text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                  <div className="min-w-[860px] flex flex-col gap-0 border rounded-lg bg-card overflow-hidden">
+                    <div className="flex items-center gap-4 px-6 py-3 bg-muted/50 border-b text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
                       <div className="w-1 shrink-0" />
                       <div className="flex-1 min-w-0">Project</div>
                       <div className="w-32 shrink-0 text-center">Status</div>
@@ -714,7 +719,7 @@ const ProjectPage = ({
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <div className="flex items-center justify-center h-10 w-10 rounded-full border-2 border-white bg-gray-100 text-[10px] font-bold text-gray-600 relative z-10 cursor-default hover:bg-gray-200 transition-colors">
+                                    <div className="flex items-center justify-center h-10 w-10 rounded-full border-2 border-background bg-secondary text-[10px] font-bold text-foreground relative z-10 cursor-default hover:bg-secondary/80 transition-colors">
                                       +
                                       {p.developerAllocations.length -
                                         (view === "grid" ? 6 : 3)}
@@ -776,8 +781,8 @@ const ProjectPage = ({
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <div className="min-w-[860px] flex flex-col gap-0 border rounded-lg bg-white overflow-hidden">
-                    <div className="flex items-center gap-4 px-6 py-3 bg-gray-50 border-b text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                  <div className="min-w-[860px] flex flex-col gap-0 border rounded-lg bg-card overflow-hidden">
+                    <div className="flex items-center gap-4 px-6 py-3 bg-muted/50 border-b text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
                       <div className="w-1 shrink-0" />
                       <div className="flex-1 min-w-0">Project</div>
 
@@ -840,7 +845,7 @@ const ProjectPage = ({
                                 <TooltipProvider>
                                   <Tooltip>
                                     <TooltipTrigger asChild>
-                                      <div className="flex items-center justify-center h-10 w-10 rounded-full border-2 border-white bg-gray-100 text-[10px] font-bold text-gray-600 relative z-10 cursor-default hover:bg-gray-200 transition-colors">
+                                      <div className="flex items-center justify-center h-10 w-10 rounded-full border-2 border-background bg-secondary text-[10px] font-bold text-foreground relative z-10 cursor-default hover:bg-secondary/80 transition-colors">
                                         +{p.developerAllocations.length - 3}
                                       </div>
                                     </TooltipTrigger>
@@ -925,7 +930,7 @@ const ProjectPage = ({
                 </div>
               ) : (
                 <div className="overflow-x-auto py-2">
-                  <div className="min-w-[860px] flex flex-col gap-0 border rounded-lg bg-white overflow-hidden">
+                  <div className="min-w-[860px] flex flex-col gap-0 border rounded-lg bg-card overflow-hidden">
                     {Array.from({ length: 3 }).map((_, index) => (
                       <ProjectCardSkeleton
                         key={`project-fetch-skeleton-list-${index}`}
@@ -955,7 +960,7 @@ const ProjectPage = ({
                     onValueChange={setActiveTabResource}
                     className="w-full my-1"
                   >
-                    <TabsList className="flex flex-wrap bg-[#fdebef] rounded-full h-auto">
+                    <TabsList className="flex flex-wrap bg-rose-50 dark:bg-muted rounded-full h-auto border border-rose-100/50 dark:border-white/10">
                       <TabsTrigger
                         value="available"
                         className={tabTriggerClass}

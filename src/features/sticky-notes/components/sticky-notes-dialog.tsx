@@ -155,7 +155,7 @@ export const StickyNotesDialog = () => {
         onPointerDownOutside={(e) => e.preventDefault()}
         onInteractOutside={(e) => e.preventDefault()}
       >
-        <DialogHeader className="p-6 border-b bg-white/80 sticky top-0 z-10 flex flex-row items-center justify-between space-y-0">
+        <DialogHeader className="p-6 border-b bg-background/80 sticky top-0 z-10 flex flex-row items-center justify-between space-y-0">
           <div className="flex flex-col gap-1">
             <DialogTitle className="text-2xl font-bold bg-clip-text text-black">
               {isAdding

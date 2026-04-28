@@ -193,7 +193,7 @@ export const FileUpload = ({
                 <div
                   className={cn(
                     "flex items-center justify-between rounded-md border p-3",
-                    fieldError ? "border-red-500 bg-red-50" : "border-gray-200"
+                    fieldError ? "border-red-500 bg-red-500/10" : "border-border"
                   )}
                 >
                   <div className="flex items-center gap-2">
@@ -203,7 +203,7 @@ export const FileUpload = ({
                       <FileIcon
                         className={cn(
                           "h-6 w-6",
-                          fieldError ? "text-red-500" : "text-gray-500"
+                          fieldError ? "text-red-500" : "text-muted-foreground"
                         )}
                       />
                     )}
@@ -211,7 +211,7 @@ export const FileUpload = ({
                       <span
                         className={cn(
                           "font-medium text-sm",
-                          fieldError ? "text-red-700" : ""
+                          fieldError ? "text-red-500" : "text-foreground"
                         )}
                       >
                         {file.name}
@@ -219,7 +219,7 @@ export const FileUpload = ({
                       <span
                         className={cn(
                           "text-xs",
-                          fieldError ? "text-red-400" : "text-gray-400"
+                          fieldError ? "text-red-400" : "text-muted-foreground"
                         )}
                       >
                         {formatBytes(file.size)}
@@ -253,8 +253,8 @@ export const FileUpload = ({
                   className={cn(
                     "flex items-center justify-between rounded-md border p-3",
                     fieldError
-                      ? "border-red-500 bg-red-50"
-                      : "border-green-100 bg-green-50"
+                      ? "border-red-500 bg-red-500/10"
+                      : "border-green-500/20 bg-green-500/10"
                   )}
                 >
                   <div className="flex items-center gap-2">
@@ -268,7 +268,7 @@ export const FileUpload = ({
                       <span
                         className={cn(
                           "font-medium text-sm",
-                          fieldError ? "text-red-700" : "text-green-700"
+                          fieldError ? "text-red-500" : "text-green-600"
                         )}
                       >
                         {displayFileName}
@@ -309,8 +309,8 @@ export const FileUpload = ({
                     isDragActive
                       ? "border-primary bg-primary/10"
                       : fieldError
-                        ? "border-red-500 bg-red-50 hover:bg-red-100/50"
-                        : "border-gray-300 hover:bg-gray-50",
+                        ? "border-red-500 bg-red-500/5 hover:bg-red-500/10"
+                        : "border-border bg-muted/20 hover:bg-muted/50",
                     (isUploading || disabled) && "opacity-50 cursor-not-allowed"
                   )}
                 >
@@ -321,7 +321,7 @@ export const FileUpload = ({
                     <UploadCloud
                       className={cn(
                         "h-10 w-10",
-                        fieldError ? "text-red-500" : "text-gray-400"
+                        fieldError ? "text-red-500" : "text-muted-foreground"
                       )}
                     />
                   )}
@@ -343,7 +343,7 @@ export const FileUpload = ({
                       <p
                         className={cn(
                           "text-xs",
-                          fieldError ? "text-red-400" : "text-gray-400"
+                          fieldError ? "text-red-400" : "text-muted-foreground"
                         )}
                       >
                         {fileLabel}

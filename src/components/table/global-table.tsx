@@ -93,7 +93,7 @@ export function GlobalTable<TData>({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-md border">
+      <div className="rounded-md border bg-background">
         <div
           className="relative overflow-auto"
           style={{
@@ -117,7 +117,7 @@ export function GlobalTable<TData>({
                     return (
                       <th
                         key={header.id}
-                        className={`h-12 !bg-gray-100 text-black z-50 border-b   px-4 text-left align-middle font-medium  sticky top-0`}
+                        className={`h-12 bg-muted text-foreground z-50 border-b px-4 text-left align-middle font-medium sticky top-0`}
                         style={{ width: header.getSize?.() }}
                       >
                         {canSort ? (
@@ -134,15 +134,15 @@ export function GlobalTable<TData>({
                               <ArrowUp
                                 className={`h-3 w-3 ${
                                   sortState === "asc"
-                                    ? "text-black"
-                                    : "text-gray-400"
+                                    ? "text-primary"
+                                    : "text-muted-foreground"
                                 }`}
                               />
                               <ArrowDown
                                 className={`-mt-1 h-3 w-3 ${
                                   sortState === "desc"
-                                    ? "text-black"
-                                    : "text-gray-400"
+                                    ? "text-primary"
+                                    : "text-muted-foreground"
                                 }`}
                               />
                             </span>
