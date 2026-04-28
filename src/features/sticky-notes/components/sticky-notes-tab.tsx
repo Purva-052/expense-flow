@@ -169,8 +169,8 @@ export const StickyNotesTab = ({ projectId }: StickyNotesTabProps) => {
   return (
     <Card className="gap-3">
       <CardHeader className="px-0 gap-0">
-        <div className="flex items-center justify-between border-b pb-2">
-          <h2 className="text-2xl font-bold text-black">
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+          <h2 className="text-2xl font-bold text-black dark:text-slate-100">
             {isAdding
               ? editingNote
                 ? "Edit Note"
@@ -289,7 +289,7 @@ export const StickyNotesTab = ({ projectId }: StickyNotesTabProps) => {
       </div>
 
       {!isAdding && !viewingNote && notesData?.data?.length > 0 && (
-        <div className="flex items-center justify-between px-6 py-4 border-t bg-gray-50/50">
+        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
           <div className="flex items-center gap-2 text-sm text-muted-foreground font-medium">
             <span>
               Total{" "}
@@ -310,7 +310,7 @@ export const StickyNotesTab = ({ projectId }: StickyNotesTabProps) => {
                   setCurrentPage(1);
                 }}
               >
-                <SelectTrigger className="h-8 w-[70px]">
+                <SelectTrigger className="h-8 w-[70px] dark:bg-slate-800/50 dark:border-slate-700">
                   <SelectValue placeholder={pageSize} />
                 </SelectTrigger>
                 <SelectContent side="top">
@@ -330,48 +330,48 @@ export const StickyNotesTab = ({ projectId }: StickyNotesTabProps) => {
             </div>
 
             <div className="flex items-center gap-1">
-              <Button
-                variant="outline"
-                className="h-8 w-8 p-0"
-                onClick={() => setCurrentPage(1)}
-                disabled={currentPage === 1}
-              >
-                <ChevronsLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                className="h-8 w-8 p-0"
-                onClick={() => setCurrentPage((prev) => prev - 1)}
-                disabled={currentPage === 1}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                className="h-8 w-8 p-0"
-                onClick={() => setCurrentPage((prev) => prev + 1)}
-                disabled={
-                  currentPage >=
-                  Math.ceil((notesData?.metadata?.totalCount || 0) / pageSize)
-                }
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                className="h-8 w-8 p-0"
-                onClick={() =>
-                  setCurrentPage(
+                <Button
+                  variant="outline"
+                  className="h-8 w-8 p-0 dark:bg-slate-800/50 dark:border-slate-700"
+                  onClick={() => setCurrentPage(1)}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronsLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-8 w-8 p-0 dark:bg-slate-800/50 dark:border-slate-700"
+                  onClick={() => setCurrentPage((prev) => prev - 1)}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-8 w-8 p-0 dark:bg-slate-800/50 dark:border-slate-700"
+                  onClick={() => setCurrentPage((prev) => prev + 1)}
+                  disabled={
+                    currentPage >=
                     Math.ceil((notesData?.metadata?.totalCount || 0) / pageSize)
-                  )
-                }
-                disabled={
-                  currentPage >=
-                  Math.ceil((notesData?.metadata?.totalCount || 0) / pageSize)
-                }
-              >
-                <ChevronsRight className="h-4 w-4" />
-              </Button>
+                  }
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-8 w-8 p-0 dark:bg-slate-800/50 dark:border-slate-700"
+                  onClick={() =>
+                    setCurrentPage(
+                      Math.ceil((notesData?.metadata?.totalCount || 0) / pageSize)
+                    )
+                  }
+                  disabled={
+                    currentPage >=
+                    Math.ceil((notesData?.metadata?.totalCount || 0) / pageSize)
+                  }
+                >
+                  <ChevronsRight className="h-4 w-4" />
+                </Button>
             </div>
           </div>
         </div>
