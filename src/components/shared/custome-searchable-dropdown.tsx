@@ -181,8 +181,8 @@ const CustomDropDownSearchable = ({
                       ref={triggerRef}
                       variant="outline"
                       className={cn(
-                        "m-0 h-10 w-full min-w-0 justify-between pr-8 overflow-hidden",
-                        valueArray.length === 0 && "text-muted-foreground",
+                        "m-0 h-10 w-full min-w-0 justify-between pr-8 overflow-hidden transition-colors",
+                        valueArray.length === 0 ? "text-muted-foreground" : "text-slate-900 dark:text-slate-100",
                         triggerClassName
                       )}
                       disabled={disabled || isLoading}
