@@ -237,8 +237,11 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
   }, [activeMainTab]);
 
   const tabTriggerClass =
-    "flex items-center gap-2 rounded-[50px] px-3 py-2  transition-all " +
-    "data-[state=active]:bg-black data-[state=active]:text-white";
+    "flex items-center gap-2 rounded-[50px] px-3 py-2 transition-all " +
+    "text-foreground/70 hover:text-foreground " +
+    "data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-sm " +
+    "dark:text-muted-foreground dark:hover:text-foreground " +
+    "dark:data-[state=active]:bg-primary dark:data-[state=active]:text-white dark:data-[state=active]:shadow-[0_2px_8px_oklch(0_0_0/0.5)]";
 
   const getSkeletonForTab = (tabName: string) => {
     switch (tabName) {
@@ -292,7 +295,10 @@ export const ProjectDetails = ({ projectId }: { projectId?: any }) => {
           <TabsList
             className="
       flex gap-2
-      bg-[#fdebef]
+      bg-rose-50
+      border border-rose-100
+      dark:bg-secondary
+      dark:border-white/10
       rounded-full
       px-2 py-1
       w-full sm:w-max

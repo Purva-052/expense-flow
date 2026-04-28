@@ -73,17 +73,17 @@ export const formatExperience = (
 };
 
 const priorityColorMap: any = {
-  high: "bg-red-100 text-red-800",
-  medium: "bg-yellow-100 text-yellow-800",
-  low: "bg-green-100 text-green-800",
+  high: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+  medium: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
+  low: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
 };
 
 const statusColorMap: any = {
-  "active-discovery": "bg-blue-100 text-blue-700",
-  running: "bg-green-100 text-green-700",
-  slow: "bg-amber-100 text-amber-700",
-  stop: "bg-red-100 text-red-700",
-  completed: "bg-emerald-100 text-emerald-700",
+  "active-discovery": "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+  running: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+  slow: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  stop: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+  completed: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
 };
 
 const TECHNOLOGIES_VISIBLE_COUNT = 7;
@@ -158,55 +158,55 @@ const OverviewProject = ({
         <div className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8">
             <div className="flex flex-col">
-              <div className="flex items-center text-sm font-medium text-gray-500 mb-1">
+              <div className="flex items-center text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
                 <Building size={16} />
                 <h3 className="ml-2">Client Name</h3>
               </div>
-              <div className="text-base text-gray-800 pl-6">
+              <div className="text-base text-slate-900 dark:text-slate-100 pl-6">
                 <p>{project.client?.name || "-"}</p>
               </div>
             </div>
 
             <div className="flex flex-col">
-              <div className="flex items-center text-sm font-medium text-gray-500 mb-1">
+              <div className="flex items-center text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
                 <Briefcase size={16} />
                 <h3 className="ml-2">Project Type</h3>
               </div>
-              <div className="text-base text-gray-800 pl-6">
+              <div className="text-base text-slate-900 dark:text-slate-100 pl-6">
                 <p>{project.projectType?.name || "-"}</p>
               </div>
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <p className="text-[10px] uppercase tracking-wider font-medium text-gray-400">
+              <p className="text-[10px] uppercase tracking-wider font-medium text-slate-400 dark:text-slate-500">
                 Project Coordinator
               </p>
 
               <div className="flex items-center gap-2">
                 <Avatar className="h-7 w-7">
                   <AvatarImage src={project.projectHandler?.profilePicUrl} />
-                  <AvatarFallback className="bg-gray-200 text-gray-700 text-[11px] font-semibold">
+                  <AvatarFallback className="bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-semibold">
                     {project.projectHandler?.fullName?.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
 
-                <span className="text-base text-gray-800">
+                <span className="text-base text-slate-900 dark:text-slate-100">
                   {project.projectHandler?.fullName || "—"}
                 </span>
               </div>
             </div>
 
             <div className="flex flex-col">
-              <div className="flex items-center text-sm font-medium text-gray-500 mb-1">
+              <div className="flex items-center text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
                 <Activity size={16} />
                 <h3 className="ml-2">Current Status</h3>
               </div>
-              <div className="text-base text-gray-800 pl-6">
+              <div className="text-base text-slate-900 dark:text-slate-100 pl-6">
                 <span
                   className={cn(
                     "px-2 py-0.5 text-xs font-semibold rounded-full capitalize",
                     statusColorMap[project.currentStatus?.toLowerCase()] ||
-                      "bg-gray-100 text-gray-700"
+                      "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
                   )}
                 >
                   {project.currentStatus?.replace(/-/g, " ") || "N/A"}
@@ -215,16 +215,16 @@ const OverviewProject = ({
             </div>
 
             <div className="flex flex-col">
-              <div className="flex items-center text-sm font-medium text-gray-500 mb-1">
+              <div className="flex items-center text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
                 <Flag size={16} />
                 <h3 className="ml-2">Priority</h3>
               </div>
-              <div className="text-base text-gray-800 pl-6">
+              <div className="text-base text-slate-900 dark:text-slate-100 pl-6">
                 <span
                   className={cn(
                     "px-2 py-0.5 text-xs font-semibold rounded-full capitalize",
                     priorityColorMap[project.priority?.toLowerCase()] ||
-                      "bg-gray-100 text-gray-800"
+                      "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
                   )}
                 >
                   {project.priority || "low"}
@@ -233,11 +233,11 @@ const OverviewProject = ({
             </div>
 
             <div className="flex flex-col">
-              <div className="flex items-center text-sm font-medium text-gray-500 mb-1">
+              <div className="flex items-center text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
                 <Calendar size={16} />
                 <h3 className="ml-2">Start Date</h3>
               </div>
-              <div className="text-base text-gray-800 pl-6">
+              <div className="text-base text-slate-900 dark:text-slate-100 pl-6">
                 <p>
                   {project.startDate
                     ? format(new Date(project.startDate), "dd-MM-yyyy")
@@ -247,11 +247,11 @@ const OverviewProject = ({
             </div>
 
             <div className="flex flex-col">
-              <div className="flex items-center text-sm font-medium text-gray-500 mb-1">
+              <div className="flex items-center text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
                 <Clock size={16} />
                 <h3 className="ml-2">Expected Completion</h3>
               </div>
-              <div className="text-base text-gray-800 pl-6">
+              <div className="text-base text-slate-900 dark:text-slate-100 pl-6">
                 <p>
                   {project.expectedCompletionDate
                     ? format(
@@ -264,21 +264,21 @@ const OverviewProject = ({
             </div>
 
             <div className="flex flex-col">
-              <div className="flex items-center text-sm font-medium text-gray-500 mb-1">
+              <div className="flex items-center text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
                 <Clock size={16} />
                 <h3 className="ml-2">Total Hours</h3>
               </div>
-              <div className="text-base text-gray-800 pl-6">
+              <div className="text-base text-slate-900 dark:text-slate-100 pl-6">
                 <p>{project.projectMilestoneTotalEstimateHours || "0.00"}</p>
               </div>
             </div>
 
             <div className="flex flex-col">
-              <div className="flex items-center text-sm font-medium text-gray-500 mb-1">
+              <div className="flex items-center text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
                 <Code size={16} />
                 <h3 className="ml-2">Technologies</h3>
               </div>
-              <div className="text-base text-gray-800 pl-6">
+              <div className="text-base text-slate-900 dark:text-slate-100 pl-6">
                 <div className="flex flex-wrap gap-2">
                   {technologies.length > 0 ? (
                     <>
@@ -300,7 +300,7 @@ const OverviewProject = ({
                             <TooltipTrigger asChild>
                               <button
                                 type="button"
-                                className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-200"
+                                className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-colors hover:bg-slate-200 dark:hover:bg-slate-800"
                               >
                                 +{hiddenTechnologies.length}
                               </button>
@@ -342,17 +342,17 @@ const OverviewProject = ({
 
             <div className="lg:col-span-3">
               <div className="flex justify-between items-center mb-2">
-                <h3 className="text-sm font-medium text-gray-500 flex items-center">
+                <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 flex items-center">
                   <TrendingUp size={16} className="mr-2" />
                   Progress
                 </h3>
-                <p className="text-sm font-semibold text-gray-600">
+                <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">
                   {project.percentageComplete}%
                 </p>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2.5">
+              <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-2.5">
                 <div
-                  className="bg-gray-800 h-2.5 rounded-full transition-all duration-500"
+                  className="bg-slate-800 dark:bg-slate-100 h-2.5 rounded-full transition-all duration-500"
                   style={{ width: `${project.percentageComplete}%` }}
                 ></div>
               </div>
@@ -360,12 +360,12 @@ const OverviewProject = ({
 
             <div className="md:col-span-2 lg:col-span-3">
               <div className="flex flex-col">
-                <div className="flex items-center text-sm font-medium text-gray-500 mb-1">
+                <div className="flex items-center text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
                   <FileText size={16} />
                   <h3 className="ml-2">Description</h3>
                 </div>
-                <div className="text-base text-gray-800 pl-6">
-                  <p className="whitespace-pre-wrap break-words text-gray-700">
+                <div className="text-base text-slate-900 dark:text-slate-100 pl-6">
+                  <p className="whitespace-pre-wrap break-words text-slate-700 dark:text-slate-300">
                     {project.description || "No description available."}
                   </p>
                 </div>
@@ -377,9 +377,9 @@ const OverviewProject = ({
 
       <Card className="p-0">
         <div className="p-4">
-          <div className="flex items-center text-sm font-medium text-gray-500 mb-4 border-b pb-2">
+          <div className="flex items-center text-sm font-medium text-slate-500 dark:text-slate-400 mb-4 border-b pb-2">
             <Users size={16} />
-            <h3 className="ml-2 text-lg font-bold text-gray-900">
+            <h3 className="ml-2 text-lg font-bold text-slate-900 dark:text-slate-100">
               Assigned Developers
               <Badge className="ml-2">{developerAllocationsCount}</Badge>
             </h3>
@@ -440,10 +440,10 @@ const OverviewProject = ({
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
                         {allocation.developer?.fullName}
                       </p>
-                      <p className="text-sm text-gray-500 truncate">
+                      <p className="text-sm text-slate-500 dark:text-slate-400 truncate">
                         Exp:{" "}
                         {formatExperience(
                           allocation.developer?.careerStartDate
