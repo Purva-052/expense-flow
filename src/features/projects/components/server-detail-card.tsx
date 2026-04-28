@@ -101,13 +101,13 @@ const ServerDetailsCard = ({
 
         <div className="space-y-2 text-gray-600">
           <div className="flex justify-between items-center">
-            <span className="font-medium">Name:</span>
-            <span className="font-semibold text-gray-800 break-all">
+            <span className="font-medium dark:text-slate-100">Name:</span>
+            <span className="font-semibold text-gray-800 break-all dark:text-slate-100">
               {server?.name ?? "-"}
             </span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="font-medium">Type:</span>
+            <span className="font-medium dark:text-slate-100">Type:</span>
             <span
               className={`text-xs font-semibold px-2.5 py-0.5 rounded ${getTypeBadgeClasses(
                 server?.type
@@ -117,7 +117,7 @@ const ServerDetailsCard = ({
             </span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="font-medium">Status:</span>
+            <span className="font-medium dark:text-slate-100">Status:</span>
             <span
               className={`px-2 py-1 text-xs font-bold leading-none rounded-full ${
                 isActive
@@ -129,9 +129,9 @@ const ServerDetailsCard = ({
             </span>
           </div>
           <div className={`flex justify-between items-center gap-2`}>
-            <span className="font-medium">Server:</span>
+            <span className="font-medium dark:text-slate-100">Server:</span>
             {server?.server?.ip ? (
-              <h3 className="font-semibold text-gray-800 break-all">
+              <h3 className="font-semibold text-gray-800 break-all dark:text-slate-100">
                 {server?.server?.ip}
               </h3>
             ) : (
@@ -139,9 +139,9 @@ const ServerDetailsCard = ({
             )}
           </div>
           <div className={`flex justify-between items-center gap-2`}>
-            <span className="font-medium">Created at:</span>
+            <span className="font-medium dark:text-slate-100">Created at:</span>
             {server?.createdAt ? (
-              <h3 className="font-semibold text-gray-800 break-all">
+              <h3 className="font-semibold text-gray-800 break-all dark:text-slate-100">
                 {format(new Date(server?.createdAt), "dd/MM/yyyy")}
               </h3>
             ) : (
@@ -149,9 +149,9 @@ const ServerDetailsCard = ({
             )}
           </div>
           <div className={`flex justify-between items-center gap-2`}>
-            <span className="font-medium">Created by:</span>
+            <span className="font-medium dark:text-slate-100">Created by:</span>
             {server?.createdBy?.name ? (
-              <h3 className="font-semibold text-gray-800 break-all">
+              <h3 className="font-semibold text-gray-800 break-all dark:text-slate-100">
                 {server?.createdBy?.name}
               </h3>
             ) : (
