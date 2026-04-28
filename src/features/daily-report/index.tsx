@@ -358,8 +358,8 @@ export default function DailyReportPage() {
           <Card
             className={`border transition-all cursor-pointer hover:shadow-md ${
               reportType === "pending"
-                ? "bg-orange-50 border-orange-200 ring-2 ring-orange-100"
-                : "border-slate-200"
+                ? "bg-orange-50 border-orange-200 ring-2 ring-orange-100 dark:bg-orange-900/20 dark:border-orange-800 dark:ring-orange-900/30"
+                : "border-slate-200 dark:border-slate-800"
             }`}
             onClick={() => handleCardClick("pending")}
           >
@@ -368,7 +368,7 @@ export default function DailyReportPage() {
                 <span
                   className={`text-xs font-semibold uppercase tracking-wide ${
                     reportType === "pending"
-                      ? "text-orange-700"
+                      ? "text-orange-700 dark:text-orange-400"
                       : "text-slate-400"
                   }`}
                 >
@@ -377,8 +377,8 @@ export default function DailyReportPage() {
                 <div
                   className={`p-2 rounded-xl ${
                     reportType === "pending"
-                      ? "bg-orange-200 text-orange-700"
-                      : "bg-orange-50 text-orange-500"
+                      ? "bg-orange-200 text-orange-700 dark:bg-orange-900 dark:text-orange-300"
+                      : "bg-orange-50 text-orange-500 dark:bg-orange-900/30 dark:text-orange-400"
                   }`}
                 >
                   <Clock size={20} />
@@ -387,8 +387,8 @@ export default function DailyReportPage() {
               <div
                 className={`text-3xl font-bold tracking-tight ${
                   reportType === "pending"
-                    ? "text-orange-900"
-                    : "text-slate-900"
+                    ? "text-orange-900 dark:text-orange-100"
+                    : "text-slate-900 dark:text-slate-100"
                 }`}
               >
                 {analytics?.pendingCount ?? 0}
@@ -400,8 +400,8 @@ export default function DailyReportPage() {
           <Card
             className={`border transition-all cursor-pointer hover:shadow-md ${
               reportType === "incomplete"
-                ? "bg-red-50 border-red-200 ring-2 ring-red-100"
-                : "border-slate-200"
+                ? "bg-red-50 border-red-200 ring-2 ring-red-100 dark:bg-red-900/20 dark:border-red-800 dark:ring-red-900/30"
+                : "border-slate-200 dark:border-slate-800"
             }`}
             onClick={() => handleCardClick("incomplete")}
           >
@@ -410,7 +410,7 @@ export default function DailyReportPage() {
                 <span
                   className={`text-xs font-semibold uppercase tracking-wide ${
                     reportType === "incomplete"
-                      ? "text-red-700"
+                      ? "text-red-700 dark:text-red-400"
                       : "text-slate-400"
                   }`}
                 >
@@ -419,8 +419,8 @@ export default function DailyReportPage() {
                 <div
                   className={`p-2 rounded-xl ${
                     reportType === "incomplete"
-                      ? "bg-red-200 text-red-700"
-                      : "bg-red-50 text-red-500"
+                      ? "bg-red-200 text-red-700 dark:bg-red-900 dark:text-red-300"
+                      : "bg-red-50 text-red-500 dark:bg-red-900/30 dark:text-red-400"
                   }`}
                 >
                   <AlertCircle size={20} />
@@ -429,8 +429,8 @@ export default function DailyReportPage() {
               <div
                 className={`text-3xl font-bold tracking-tight ${
                   reportType === "incomplete"
-                    ? "text-red-900"
-                    : "text-slate-900"
+                    ? "text-red-900 dark:text-red-100"
+                    : "text-slate-900 dark:text-slate-100"
                 }`}
               >
                 {analytics?.incompleteCount ?? 0}
@@ -443,8 +443,8 @@ export default function DailyReportPage() {
           <Card
             className={`border transition-all cursor-pointer hover:shadow-md ${
               reportType === "holiday"
-                ? "bg-indigo-50 border-indigo-200 ring-2 ring-indigo-100"
-                : "border-slate-200"
+                ? "bg-indigo-50 border-indigo-200 ring-2 ring-indigo-100 dark:bg-indigo-900/20 dark:border-indigo-800 dark:ring-indigo-900/30"
+                : "border-slate-200 dark:border-slate-800"
             }`}
             onClick={() => handleCardClick("holiday")}
           >
@@ -453,7 +453,7 @@ export default function DailyReportPage() {
                 <span
                   className={`text-xs font-semibold uppercase tracking-wide ${
                     reportType === "holiday"
-                      ? "text-indigo-700"
+                      ? "text-indigo-700 dark:text-indigo-400"
                       : "text-slate-400"
                   }`}
                 >
@@ -463,8 +463,8 @@ export default function DailyReportPage() {
                 <div
                   className={`p-2 rounded-xl ${
                     reportType === "holiday"
-                      ? "bg-indigo-200 text-indigo-700"
-                      : "bg-indigo-50 text-indigo-500"
+                      ? "bg-indigo-200 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300"
+                      : "bg-indigo-50 text-indigo-500 dark:bg-indigo-900/30 dark:text-indigo-400"
                   }`}
                 >
                   <CalendarDays size={20} />
@@ -474,8 +474,8 @@ export default function DailyReportPage() {
               <div
                 className={`text-3xl font-bold tracking-tight ${
                   reportType === "holiday"
-                    ? "text-indigo-900"
-                    : "text-slate-900"
+                    ? "text-indigo-900 dark:text-indigo-100"
+                    : "text-slate-900 dark:text-slate-100"
                 }`}
               >
                 {analytics?.holidayCount ?? 0}

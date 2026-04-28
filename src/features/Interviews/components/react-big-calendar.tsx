@@ -7,6 +7,7 @@ import {
   momentLocalizer,
   View,
   DateLocalizer,
+  SlotInfo,
 } from "react-big-calendar";
 import { format } from "date-fns";
 import moment from "moment";
@@ -152,29 +153,29 @@ export const ReactBigCalendar = ({
           </TooltipTrigger>
           <TooltipContent
             side="right"
-            className="p-3 text-sm rounded-md shadow-xl z-[60] bg-white"
+            className="p-3 text-sm rounded-md shadow-xl z-[60] bg-popover text-popover-foreground border-border"
           >
             <div className="font-semibold">{event.title}</div>
-            <div className="text-gray-600 mt-1">
+            <div className="text-muted-foreground mt-1">
               Technology: {event.extendedProps?.technology?.name}
             </div>
-            <div className="text-gray-600 mt-1">
+            <div className="text-muted-foreground mt-1">
               Interviewer:{" "}
               <span className="font-medium">{event.interViewer}</span>
             </div>
-            <div className="text-gray-600">
+            <div className="text-muted-foreground">
               Time: {format(event.start, "hh:mm a")} –{" "}
               {format(event.end, "hh:mm a")}
             </div>
             <div>
-              <span className="text-gray-600">Status:</span>{" "}
+              <span className="text-muted-foreground">Status:</span>{" "}
               {event.extendedProps?.status &&
               INTERVIEW_STATUS_LABEL[event.extendedProps.status] ? (
-                <span className="text-gray-600">
+                <span className="text-muted-foreground">
                   {INTERVIEW_STATUS_LABEL[event.extendedProps.status]}
                 </span>
               ) : (
-                <span className="text-gray-600">NA</span>
+                <span className="text-muted-foreground">NA</span>
               )}
             </div>
           </TooltipContent>
@@ -198,26 +199,6 @@ export const ReactBigCalendar = ({
     };
   }, []);
 
-  // ✅ 2. Custom Date Cell Wrapper
-  // This ensures clicking the *empty* part of the box triggers onDateClick
-  const DateCellWrapper = ({ value, children }: any) => {
-    const isToday = moment(value).isSame(moment(now), "day");
-    return (
-      <div
-        onClick={() => {
-          if (isAdmin) {
-            onDateClick(value);
-          }
-        }}
-        className={`h-full w-full border border-black/6 z-1 ${
-          isToday ? "bg-[#e8f0fe]" : "bg-transparent"
-        } ${isAdmin ? "cursor-pointer" : "cursor-default"}`}
-      >
-        {children}
-      </div>
-    );
-  };
-
   // ✅ 3. Date Formats (01, 02 style)
   const formats = {
     dateFormat: (date: Date, culture: any, localizer: DateLocalizer) =>
@@ -227,17 +208,17 @@ export const ReactBigCalendar = ({
   };
 
   return (
-    <div className="flex flex-col h-screen max-h-[90vh] bg-white text-slate-900 rounded-xl shadow-sm overflow-hidden font-sans border border-slate-200">
+    <div className="flex flex-col h-screen max-h-[90vh] bg-card text-foreground rounded-xl shadow-sm overflow-hidden font-sans border border-border">
       {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-100">
+      <header className="flex items-center justify-between px-6 py-4 bg-card border-b border-border">
         <div className="flex items-center gap-6">
           {isAdmin && (
             <Button
-              className="hidden lg:flex items-center gap-2 pl-3 pr-5 h-12 rounded-full shadow-sm bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-all hover:shadow-md"
+              className="hidden lg:flex items-center gap-2 pl-3 pr-5 h-12 rounded-full shadow-sm bg-background hover:bg-muted text-foreground border border-border transition-all hover:shadow-md dark:bg-secondary dark:hover:bg-accent"
               onClick={() => onDateClick(new Date())}
             >
               <div className="p-1">
-                <Plus className="h-6 w-6 text-blue-600" />
+                <Plus className="h-6 w-6 text-primary" />
               </div>
               <span className="font-medium text-base">Create</span>
             </Button>
@@ -247,7 +228,7 @@ export const ReactBigCalendar = ({
             <Button
               variant="outline"
               onClick={onTodayClick}
-              className="px-5 py-2 h-10 text-sm font-medium border-slate-200 hover:bg-slate-50 text-slate-700 rounded-md"
+              className="px-5 py-2 h-10 text-sm font-medium border-border hover:bg-muted text-foreground rounded-md"
             >
               Today
             </Button>
@@ -256,7 +237,7 @@ export const ReactBigCalendar = ({
                 variant="ghost"
                 size="icon"
                 onClick={onPrevClick}
-                className="h-9 w-9 rounded-full hover:bg-slate-100 text-slate-600"
+                className="h-9 w-9 rounded-full hover:bg-muted text-muted-foreground"
               >
                 <ChevronLeft className="h-5 w-5" />
               </Button>
@@ -264,12 +245,12 @@ export const ReactBigCalendar = ({
                 variant="ghost"
                 size="icon"
                 onClick={onNextClick}
-                className="h-9 w-9 rounded-full hover:bg-slate-100 text-slate-600"
+                className="h-9 w-9 rounded-full hover:bg-muted text-muted-foreground"
               >
                 <ChevronRight className="h-5 w-5" />
               </Button>
             </div>
-            <h2 className="text-xl font-normal text-slate-800 ml-2">
+            <h2 className="text-xl font-normal text-foreground ml-2">
               {format(currentDate, "MMMM yyyy")}
             </h2>
           </div>
@@ -280,7 +261,7 @@ export const ReactBigCalendar = ({
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                className="min-w-[100px] justify-between border-slate-200 text-slate-700 hover:bg-slate-50 px-4"
+                className="min-w-[100px] justify-between border-border text-foreground hover:bg-muted px-4"
               >
                 {view.charAt(0).toUpperCase() + view.slice(1)}
                 <ChevronLeft className="h-4 w-4 rotate-270 ml-2 opacity-50" />
@@ -314,6 +295,7 @@ export const ReactBigCalendar = ({
             onView={handleViewChange}
             date={currentDate}
             onNavigate={handleNavigate}
+            onSelectSlot={(slotInfo: SlotInfo) => onDateClick(slotInfo.start)}
             onSelectEvent={(event: any) => onEventClick(event)}
             eventPropGetter={eventPropGetter}
             selectable={isAdmin}
@@ -324,7 +306,6 @@ export const ReactBigCalendar = ({
             components={{
               toolbar: () => null,
               event: CustomEvent,
-              dateCellWrapper: DateCellWrapper, // ✅ Restored for empty cell clicks
             }}
             className={`google-calendar ${isAdmin ? "is-admin" : "is-not-admin"}`}
           />
@@ -336,85 +317,129 @@ export const ReactBigCalendar = ({
   /* ================================= */
 
   .google-calendar-wrapper {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: var(--font-sans);
   }
 
-  .rbc-calendar {
+  .google-calendar-wrapper .rbc-calendar {
     border: none;
   }
 
+  .google-calendar-wrapper .rbc-month-header {
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
   /* Toolbar is hidden as we use custom header */
-  .rbc-toolbar {
+  .google-calendar-wrapper .rbc-toolbar {
     display: none;
   }
 
   /* Month View Container */
-  .rbc-month-view {
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
+  .google-calendar-wrapper .rbc-month-view {
+    border: none;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     overflow: hidden;
   }
 
   /* Header Row (Sun, Mon...) */
-  .rbc-header {
+  .google-calendar-wrapper .rbc-header {
     padding: 12px 0;
     font-size: 11px;
     font-weight: 600;
-    color: #64748b;
+    color: var(--muted-foreground);
     text-transform: uppercase;
-    border-bottom: 1px solid #e2e8f0 !important;
+    border-bottom: 1px solid var(--border) !important;
     border-left: none !important;
     text-align: center;
   }
   
-  .rbc-header + .rbc-header {
+  .google-calendar-wrapper .rbc-header + .rbc-header {
     border-left: none; 
   }
 
   /* Grid Lines */
-  .rbc-day-bg + .rbc-day-bg {
-    border-left: 1px solid #e2e8f0;
+  .google-calendar-wrapper .rbc-month-row {
+    border-bottom: 1px solid var(--border);
+    flex: 1 0 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
-  .rbc-month-row + .rbc-month-row {
-    border-top: 1px solid #e2e8f0;
+
+  .google-calendar-wrapper .rbc-month-row .rbc-row-bg {
+    flex: 1;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .google-calendar-wrapper .rbc-month-row .rbc-row-content {
+    flex: 1;
+    height: 100%;
+    position: relative;
+    z-index: 4;
+  }
+
+  .google-calendar-wrapper .rbc-month-row:last-child {
+    border-bottom: none;
+  }
+
+  .google-calendar-wrapper .rbc-day-bg + .rbc-day-bg {
+    border-left: 1px solid var(--border);
+  }
+
+  .google-calendar-wrapper .rbc-off-range-bg {
+    background: transparent;
+  }
+
+  .google-calendar-wrapper .rbc-off-range .rbc-button-link {
+    color: var(--muted-foreground);
+    opacity: 0.5;
+  }
+
+  .google-calendar-wrapper .rbc-today {
+    background-color: hsl(var(--muted) / 0.35);
+  }
+
+  .google-calendar-wrapper .rbc-selected-cell {
+    background-color: transparent;
   }
 
   /* Date Cells (The actual day numbers) */
-  .rbc-date-cell {
+  .google-calendar-wrapper .rbc-date-cell {
+    padding: 6px 8px;
     text-align: center;
-    padding-top: 8px;
     font-size: 12px;
     font-weight: 500;
-    color: #334155;
+    color: var(--foreground);
     pointer-events: auto;
   }
 
-  .is-admin .rbc-date-cell {
+  .google-calendar-wrapper.is-admin .rbc-date-cell {
     cursor: pointer;
   }
 
-  .is-not-admin .rbc-date-cell {
+  .google-calendar-wrapper.is-not-admin .rbc-date-cell {
     cursor: default;
   }
   
-  .rbc-date-cell .rbc-button-link {
+  .google-calendar-wrapper .rbc-date-cell .rbc-button-link {
     pointer-events: auto;
   }
 
-  .is-admin .rbc-date-cell .rbc-button-link {
+  .google-calendar-wrapper.is-admin .rbc-date-cell .rbc-button-link {
     cursor: pointer;
   }
 
-  .is-not-admin .rbc-date-cell .rbc-button-link {
+  .google-calendar-wrapper.is-not-admin .rbc-date-cell .rbc-button-link {
     cursor: default;
   }
 
-
-
-  
   /* The blue circle for today's date number */
-  .rbc-now .rbc-button-link {
-      background-color: #1a73e8 !important;
+  .google-calendar-wrapper .rbc-now .rbc-button-link {
+      background-color: var(--primary) !important;
       color: white;
       border-radius: 50%;
       width: 24px;
@@ -427,7 +452,7 @@ export const ReactBigCalendar = ({
 
 
   /* Event Styling */
-  .rbc-event {
+  .google-calendar-wrapper .rbc-event {
     background: none !important;
     padding: 0 !important;
     border: none !important;
@@ -437,69 +462,68 @@ export const ReactBigCalendar = ({
     min-height: 20px;
   }
 
-  .rbc-event:focus {
+  .google-calendar-wrapper .rbc-event:focus {
     outline: none !important;
   }
 
 
   /* Functionality Fix: Layering */
-  .rbc-row-content {
+  .google-calendar-wrapper .rbc-row-content {
     z-index: 4; 
     padding-right: 6px;
-    pointer-events: none; /* Let clicks pass through to DateCellWrapper by default */
+    pointer-events: none;
   }
   
-  .rbc-row-content .rbc-row {
-    pointer-events: none; /* Let clicks pass through to DateCellWrapper */
+  .google-calendar-wrapper .rbc-row-content .rbc-row {
+    pointer-events: none;
   }
 
   /* Allow clicks on events and other interactive elements */
-  .rbc-event, .rbc-show-more, .rbc-overlay {
+  .google-calendar-wrapper .rbc-event, .google-calendar-wrapper .rbc-show-more, .google-calendar-wrapper .rbc-overlay {
     pointer-events: auto;
   }
 
-  .rbc-date-cell:hover .rbc-button-link {
-    // color: #1a73e8;
+  .google-calendar-wrapper .rbc-date-cell:hover .rbc-button-link {
     text-decoration: underline;
   }
 
-  .rbc-row-bg {
+  .google-calendar-wrapper .rbc-row-bg {
     z-index: 1;
   }
 
   /* Popup Styling */
-  .rbc-overlay {
+  .google-calendar-wrapper .rbc-overlay {
     z-index: 100 !important;
-    background: white;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
+    background: var(--popover);
+    box-shadow: var(--shadow-xl);
+    border: 1px solid var(--border);
     border-radius: 8px;
     padding: 8px;
   }
   
-  .rbc-overlay-header {
-      border-bottom: 1px solid #f1f5f9;
+  .google-calendar-wrapper .rbc-overlay-header {
+      border-bottom: 1px solid var(--border);
       padding: 4px 8px 8px;
       margin-bottom: 4px;
       font-size: 13px;
       font-weight: 600;
-      color: #475569;
+      color: var(--muted-foreground);
   }
 
   /* The "+2 more" link styling */
-  .rbc-show-more {
+  .google-calendar-wrapper .rbc-show-more {
       background-color: transparent;
-      color: #64748b;
+      color: var(--primary);
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 700;
       padding: 2px 8px;
       border-radius: 4px;
       z-index: 10;
   }
   
-  .rbc-show-more:hover {
-      background-color: #f1f5f9;
-      color: #334155;
+  .google-calendar-wrapper .rbc-show-more:hover {
+      background-color: var(--muted);
+      color: var(--primary);
   }
 `}</style>
     </div>

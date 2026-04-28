@@ -113,20 +113,20 @@ const ProfileSkeleton = () => {
       <div className="max-w-6xl mx-auto px-6 -mt-8 space-y-8 pb-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="p-4 bg-white rounded shadow-sm">
-              <div className="h-4 bg-slate-200 rounded w-24 mb-3 animate-pulse" />
-              <div className="h-5 bg-slate-300 rounded w-40 animate-pulse" />
+            <div key={i} className="p-4 bg-card rounded shadow-sm">
+              <div className="h-4 bg-muted rounded w-24 mb-3 animate-pulse" />
+              <div className="h-5 bg-muted rounded w-40 animate-pulse" />
             </div>
           ))}
         </div>
 
         <div className="space-y-6">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="bg-white rounded shadow-sm p-4">
-              <div className="h-5 bg-slate-200 rounded w-48 mb-4 animate-pulse" />
-              <div className="h-6 bg-slate-100 rounded w-full mb-2 animate-pulse" />
-              <div className="h-6 bg-slate-100 rounded w-full mb-2 animate-pulse" />
-              <div className="h-6 bg-slate-100 rounded w-1/2 animate-pulse" />
+            <div key={i} className="bg-card rounded shadow-sm p-4">
+              <div className="h-5 bg-muted rounded w-48 mb-4 animate-pulse" />
+              <div className="h-6 bg-muted/50 rounded w-full mb-2 animate-pulse" />
+              <div className="h-6 bg-muted/50 rounded w-full mb-2 animate-pulse" />
+              <div className="h-6 bg-muted/50 rounded w-1/2 animate-pulse" />
             </div>
           ))}
         </div>
@@ -709,12 +709,12 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
                   certificatesData.map((cert: any, i: number) => (
                     <div key={i} className="relative group">
                       {editingCertId === cert.id ? (
-                        <div className="flex items-center gap-2 bg-yellow-100 px-3 py-1.5 rounded-md">
-                          <Award className="h-3 w-3 text-yellow-700" />
+                        <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 px-3 py-1.5 rounded-md">
+                          <Award className="h-3 w-3 text-yellow-600" />
                           <Input
                             value={editingCertName}
                             onChange={(e) => setEditingCertName(e.target.value)}
-                            className="h-6 px-2 py-0 text-sm border-yellow-300 focus:border-yellow-500 flex-1"
+                            className="h-6 px-2 py-0 text-sm border-yellow-500/30 focus:border-yellow-500 flex-1 bg-transparent"
                             placeholder="Certificate name"
                             autoFocus
                             onKeyDown={(e) => {
@@ -894,8 +894,8 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
                             className="relative group"
                           >
                             {isEditing ? (
-                              <div className="flex items-center gap-2 bg-yellow-100 px-3 py-1.5 rounded-md">
-                                <Code className="h-3 w-3 text-yellow-700" />
+                              <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 px-3 py-1.5 rounded-md">
+                                <Code className="h-3 w-3 text-yellow-600" />
                                 <div className="min-w-[150px]">
                                   <CreatableSkillsSelect
                                     options={filteredSkillOptions}
@@ -1018,8 +1018,8 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
                             className="relative group"
                           >
                             {isEditing ? (
-                              <div className="flex items-center gap-2 bg-yellow-100 px-3 py-1.5 rounded-md">
-                                <Code className="h-3 w-3 text-yellow-700" />
+                              <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 px-3 py-1.5 rounded-md">
+                                <Code className="h-3 w-3 text-yellow-600" />
                                 <div className="min-w-[150px]">
                                   <CreatableSkillsSelect
                                     options={filteredSkillOptions}

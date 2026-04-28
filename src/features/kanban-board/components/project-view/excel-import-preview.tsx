@@ -79,7 +79,7 @@ export const ExcelImportPreview: React.FC<ExcelImportPreviewProps> = ({
           <>
             <div className="flex-1 min-h-[300px] overflow-auto border rounded-md relative">
               <Table className="min-w-max w-full">
-                <TableHeader className="sticky top-0 bg-white shadow-sm z-20">
+                <TableHeader className="sticky top-0 bg-muted shadow-sm z-20">
                   <TableRow>
                     {data.headers.map((header, index) => (
                       <TableHead

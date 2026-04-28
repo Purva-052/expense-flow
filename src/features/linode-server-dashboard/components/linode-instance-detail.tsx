@@ -137,16 +137,16 @@ export default function LinodeInstanceDetail({
           {/* Specs Cards Skeleton - UPDATED TO UNIFIED STRIP */}
           <Card className="w-full overflow-hidden">
             <div className="w-full overflow-x-auto">
-              <div className="flex divide-x divide-slate-100 min-w-max">
+              <div className="flex divide-x divide-border min-w-max">
                 {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                   <div
                     key={i}
                     className="flex-1 p-4 min-w-[150px] flex items-center gap-3"
                   >
-                    <div className="h-10 w-10 bg-slate-100 rounded-lg animate-pulse flex-shrink-0" />
+                    <div className="h-10 w-10 bg-muted rounded-lg animate-pulse flex-shrink-0" />
                     <div className="space-y-2 flex-1">
-                      <div className="h-2 w-10 bg-slate-200 rounded animate-pulse" />
-                      <div className="h-4 w-16 bg-slate-200 rounded animate-pulse" />
+                      <div className="h-2 w-10 bg-muted rounded animate-pulse" />
+                      <div className="h-4 w-16 bg-muted rounded animate-pulse" />
                     </div>
                   </div>
                 ))}
@@ -162,20 +162,22 @@ export default function LinodeInstanceDetail({
                 <div className="flex gap-3">
                   <div className="h-10 w-[140px] bg-slate-200 rounded animate-pulse"></div>
                   <div className="h-10 w-[100px] bg-slate-200 rounded animate-pulse"></div>
+                  <div className="h-10 w-[140px] bg-muted rounded animate-pulse"></div>
+                  <div className="h-10 w-[100px] bg-muted rounded animate-pulse"></div>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-8">
               {/* CPU Chart Skeleton */}
               <div>
-                <div className="h-4 w-32 bg-slate-200 rounded animate-pulse mb-4"></div>
-                <div className="h-[250px] w-full bg-slate-100 rounded-xl animate-pulse"></div>
+                <div className="h-4 w-32 bg-muted rounded animate-pulse mb-4"></div>
+                <div className="h-[250px] w-full bg-muted/50 rounded-xl animate-pulse"></div>
               </div>
 
               {/* Network Chart Skeleton */}
               <div>
-                <div className="h-4 w-40 bg-slate-200 rounded animate-pulse mb-4"></div>
-                <div className="h-[250px] w-full bg-slate-100 rounded-xl animate-pulse"></div>
+                <div className="h-4 w-40 bg-muted rounded animate-pulse mb-4"></div>
+                <div className="h-[250px] w-full bg-muted/50 rounded-xl animate-pulse"></div>
               </div>
             </CardContent>
           </Card>
@@ -213,10 +215,10 @@ export default function LinodeInstanceDetail({
         {/* Specs Cards - UNIFIED DATA STRIP */}
         <Card className="w-full overflow-hidden">
           <div className="w-full overflow-x-auto">
-            <div className="flex divide-x divide-slate-100 min-w-max">
+            <div className="flex divide-x divide-border min-w-max">
               {/* Item 1 */}
-              <div className="flex-1 p-4 min-w-[150px] flex items-center gap-3 hover:bg-slate-50 transition-colors">
-                <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+              <div className="flex-1 p-4 min-w-[150px] flex items-center gap-3 hover:bg-muted/20 transition-colors">
+                <div className="p-2 bg-blue-500/10 text-blue-600 rounded-lg">
                   <Server className="h-5 w-5" />
                 </div>
                 <div>
@@ -233,8 +235,8 @@ export default function LinodeInstanceDetail({
               </div>
 
               {/* Item 2 */}
-              <div className="flex-1 p-4 min-w-[150px] flex items-center gap-3 hover:bg-slate-50 transition-colors">
-                <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+              <div className="flex-1 p-4 min-w-[150px] flex items-center gap-3 hover:bg-muted/20 transition-colors">
+                <div className="p-2 bg-blue-500/10 text-blue-600 rounded-lg">
                   <MapPin className="h-5 w-5" />
                 </div>
                 <div>
@@ -251,8 +253,8 @@ export default function LinodeInstanceDetail({
               </div>
 
               {/* Item 3 */}
-              <div className="flex-1 p-4 min-w-[150px] flex items-center gap-3 hover:bg-slate-50 transition-colors">
-                <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
+              <div className="flex-1 p-4 min-w-[150px] flex items-center gap-3 hover:bg-muted/20 transition-colors">
+                <div className="p-2 bg-purple-500/10 text-purple-600 rounded-lg">
                   <Cpu className="h-5 w-5" />
                 </div>
                 <div>
@@ -266,8 +268,8 @@ export default function LinodeInstanceDetail({
               </div>
 
               {/* Item 4 */}
-              <div className="flex-1 p-4 min-w-[150px] flex items-center gap-3 hover:bg-slate-50 transition-colors">
-                <div className="p-2 bg-pink-50 text-pink-600 rounded-lg">
+              <div className="flex-1 p-4 min-w-[150px] flex items-center gap-3 hover:bg-muted/20 transition-colors">
+                <div className="p-2 bg-pink-500/10 text-pink-600 rounded-lg">
                   <MemoryStick className="h-5 w-5" />
                 </div>
                 <div>
@@ -281,8 +283,8 @@ export default function LinodeInstanceDetail({
               </div>
 
               {/* Item 5 */}
-              <div className="flex-1 p-4 min-w-[150px] flex items-center gap-3 hover:bg-slate-50 transition-colors">
-                <div className="p-2 bg-green-50 text-green-600 rounded-lg">
+              <div className="flex-1 p-4 min-w-[150px] flex items-center gap-3 hover:bg-muted/20 transition-colors">
+                <div className="p-2 bg-green-500/10 text-green-600 rounded-lg">
                   <HardDrive className="h-5 w-5" />
                 </div>
                 <div>
@@ -296,8 +298,8 @@ export default function LinodeInstanceDetail({
               </div>
 
               {/* Item 6 */}
-              <div className="flex-1 p-4 min-w-[150px] flex items-center gap-3 hover:bg-slate-50 transition-colors">
-                <div className="p-2 bg-green-50 text-green-600 rounded-lg">
+              <div className="flex-1 p-4 min-w-[150px] flex items-center gap-3 hover:bg-muted/20 transition-colors">
+                <div className="p-2 bg-green-500/10 text-green-600 rounded-lg">
                   <Terminal className="h-5 w-5" />
                 </div>
                 <div>
@@ -314,8 +316,8 @@ export default function LinodeInstanceDetail({
               </div>
 
               {/* Item 7 */}
-              <div className="flex-1 p-4 min-w-[150px] flex items-center gap-3 hover:bg-slate-50 transition-colors">
-                <div className="p-2 bg-green-50 text-green-600 rounded-lg">
+              <div className="flex-1 p-4 min-w-[150px] flex items-center gap-3 hover:bg-muted/20 transition-colors">
+                <div className="p-2 bg-green-500/10 text-green-600 rounded-lg">
                   <ShieldCheck className="h-5 w-5" />
                 </div>
                 <div>
@@ -331,8 +333,8 @@ export default function LinodeInstanceDetail({
               </div>
 
               {/* Item 8 */}
-              <div className="flex-1 p-4 min-w-[150px] flex items-center gap-3 hover:bg-slate-50 transition-colors">
-                <div className="p-2 bg-green-50 text-green-600 rounded-lg">
+              <div className="flex-1 p-4 min-w-[150px] flex items-center gap-3 hover:bg-muted/20 transition-colors">
+                <div className="p-2 bg-green-500/10 text-green-600 rounded-lg">
                   <ArrowUpDown className="h-5 w-5" />
                 </div>
                 <div>
@@ -424,34 +426,38 @@ export default function LinodeInstanceDetail({
                     <CartesianGrid
                       strokeDasharray="3 3"
                       vertical={false}
-                      stroke="#f1f5f9"
+                      stroke="var(--border)"
                     />
                     <XAxis
                       dataKey="timestamp"
                       type="number"
                       domain={["dataMin", "dataMax"]}
                       tickFormatter={dateFormatter}
-                      tick={{ fontSize: 12 }}
+                      tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
                       tickLine={false}
                       axisLine={false}
                     />
                     <YAxis
                       width={40}
-                      tick={{ fontSize: 12 }}
+                      tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
                       tickLine={false}
                       axisLine={false}
                     />
                     <Tooltip
                       isAnimationActive={false}
                       cursor={{
-                        stroke: "#94a3b8",
+                        stroke: "var(--muted-foreground)",
                         strokeWidth: 1,
                         strokeDasharray: "4 4",
                       }}
                       contentStyle={{
-                        backgroundColor: "#fff",
-                        border: "1px solid #e5e7eb",
+                        backgroundColor: "var(--popover)",
+                        border: "1px solid var(--border)",
                         borderRadius: "8px",
+                        color: "var(--popover-foreground)",
+                      }}
+                      itemStyle={{
+                        color: "var(--popover-foreground)",
                       }}
                       labelFormatter={(label) =>
                         new Date(label).toLocaleString()
@@ -511,34 +517,38 @@ export default function LinodeInstanceDetail({
                       <CartesianGrid
                         strokeDasharray="3 3"
                         vertical={false}
-                        stroke="#f1f5f9"
+                        stroke="var(--border)"
                       />
                       <XAxis
                         dataKey="timestamp"
                         type="number"
                         domain={["dataMin", "dataMax"]}
                         tickFormatter={dateFormatter}
-                        tick={{ fontSize: 12 }}
+                        tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
                         tickLine={false}
                         axisLine={false}
                       />
                       <YAxis
                         width={40}
-                        tick={{ fontSize: 12 }}
+                        tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
                         tickLine={false}
                         axisLine={false}
                       />
                       <Tooltip
                         isAnimationActive={false}
                         cursor={{
-                          stroke: "#94a3b8",
+                          stroke: "var(--muted-foreground)",
                           strokeWidth: 1,
                           strokeDasharray: "4 4",
                         }}
                         contentStyle={{
-                          backgroundColor: "#fff",
-                          border: "1px solid #e5e7eb",
+                          backgroundColor: "var(--popover)",
+                          border: "1px solid var(--border)",
                           borderRadius: "8px",
+                          color: "var(--popover-foreground)",
+                        }}
+                        itemStyle={{
+                          color: "var(--popover-foreground)",
                         }}
                         labelFormatter={(label) =>
                           new Date(label).toLocaleString()
@@ -574,7 +584,7 @@ export default function LinodeInstanceDetail({
                   </div>
                 </>
               ) : (
-                <div className="h-[250px] w-full flex items-center justify-center text-slate-400 text-sm bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                <div className="h-[250px] w-full flex items-center justify-center text-muted-foreground text-sm bg-muted/20 rounded-2xl border border-dashed border-border">
                   No data available
                 </div>
               )}

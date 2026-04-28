@@ -128,19 +128,19 @@ export const ReactBigCalendar = ({
             </div>
           </TooltipTrigger>
 
-          <TooltipContent side="right" className="p-3 text-sm rounded-md">
+          <TooltipContent side="right" className="p-3 text-sm rounded-md bg-popover text-popover-foreground border-border">
             {/* <div className="font-semibold"></div> */}
             <div className="font-bold">
               {event.extendedProps?.createdBy?.fullName} - {event.title}
             </div>
-            <div className="text-gray-600 mt-1">
+            <div className="text-muted-foreground mt-1">
               Project: {event.extendedProps?.project?.name || "NA"}
             </div>
-            <div className="text-gray-600">
+            <div className="text-muted-foreground">
               Time: {format(event.start, "hh:mm a")} –{" "}
               {format(event.end, "hh:mm a")}
             </div>
-            <div className="text-gray-500 text-xs mt-1">
+            <div className="text-muted-foreground/70 text-xs mt-1">
               {format(event.start, "MMMM dd, yyyy")}
             </div>
           </TooltipContent>
@@ -172,7 +172,7 @@ export const ReactBigCalendar = ({
     return (
       <div className="flex flex-col items-center justify-center py-3 px-2 min-w-[60px]">
         <span
-          className={`text-xs font-medium uppercase mb-2 whitespace-nowrap ${isToday ? "text-blue-600" : "text-gray-500"}`}
+          className={`text-xs font-medium uppercase mb-2 whitespace-nowrap ${isToday ? "text-primary" : "text-muted-foreground"}`}
         >
           {format(date, "EEE")}
         </span>
@@ -181,8 +181,8 @@ export const ReactBigCalendar = ({
             h-10 w-10 flex items-center justify-center rounded-full text-base font-normal shrink-0
             ${
               isToday
-                ? "bg-blue-600 text-white shadow-sm"
-                : "text-gray-700 hover:bg-gray-100 cursor-pointer transition-colors"
+                ? "bg-primary text-white shadow-sm"
+                : "text-foreground hover:bg-muted cursor-pointer transition-colors"
             }
           `}
           onClick={() => onNavigate(date)}
@@ -194,14 +194,14 @@ export const ReactBigCalendar = ({
   };
 
   return (
-    <div className="flex flex-col h-screen max-h-[90vh] bg-white text-slate-900 border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+    <div className="flex flex-col h-screen max-h-[90vh] bg-card text-foreground border border-border rounded-lg shadow-sm overflow-hidden">
       {/* Header */}
-      <header className="flex items-center justify-between px-6 py-3 border-b border-gray-200 bg-white">
+      <header className="flex items-center justify-between px-6 py-3 border-b border-border bg-card">
         <div className="flex items-center gap-4 lg:gap-6">
           {userRole === roles.ADMIN && (
-            <div className="hidden lg:flex flex-col w-fit border-r border-gray-200 pr-6 bg-white/50">
+            <div className="hidden lg:flex flex-col w-fit border-r border-border pr-6">
               <Button
-                className="w-fit pl-3 pr-6 h-12 rounded-full shadow-md bg-white hover:bg-slate-50 text-slate-700 border border-gray-200 flex items-center gap-3 transition-all hover:shadow-lg"
+                className="w-fit pl-3 pr-6 h-12 rounded-full shadow-md bg-background hover:bg-muted text-foreground border border-border flex items-center gap-3 transition-all hover:shadow-lg dark:bg-secondary dark:hover:bg-accent"
                 onClick={() => {
                   const start = new Date();
                   const end = new Date();
@@ -210,7 +210,7 @@ export const ReactBigCalendar = ({
                 }}
               >
                 <div className="relative">
-                  <Plus className="h-7 w-7 text-blue-600" />
+                  <Plus className="h-7 w-7 text-primary" />
                 </div>
                 <span className="font-medium text-base">Create</span>
               </Button>
@@ -221,7 +221,7 @@ export const ReactBigCalendar = ({
             <Button
               variant="outline"
               onClick={onTodayClick}
-              className="px-4 py-1.5 h-9 text-sm font-medium border-gray-300 hover:bg-gray-100 text-gray-700 rounded-md"
+              className="px-4 py-1.5 h-9 text-sm font-medium border-border hover:bg-muted text-foreground rounded-md"
             >
               Today
             </Button>
@@ -230,20 +230,20 @@ export const ReactBigCalendar = ({
                 variant="ghost"
                 size="icon"
                 onClick={onPrevClick}
-                className="h-8 w-8 rounded-full hover:bg-gray-100"
+                className="h-8 w-8 rounded-full hover:bg-muted"
               >
-                <ChevronLeft className="h-4 w-4 text-gray-600" />
+                <ChevronLeft className="h-4 w-4 text-muted-foreground hover:text-foreground" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={onNextClick}
-                className="h-8 w-8 rounded-full hover:bg-gray-100"
+                className="h-8 w-8 rounded-full hover:bg-muted"
               >
-                <ChevronRight className="h-4 w-4 text-gray-600" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground hover:text-foreground" />
               </Button>
             </div>
-            <h2 className="text-xl font-normal text-gray-800 min-w-[160px]">
+            <h2 className="text-xl font-normal text-foreground min-w-[160px]">
               {view === "day"
                 ? format(currentDate, "MMMM d, yyyy")
                 : format(currentDate, "MMMM yyyy")}
@@ -258,7 +258,7 @@ export const ReactBigCalendar = ({
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="outline"
-                    className="min-w-[90px] justify-between border-gray-300 text-gray-700 hover:bg-gray-50"
+                    className="min-w-[90px] justify-between border-border text-foreground hover:bg-muted"
                   >
                     {view.charAt(0).toUpperCase() + view.slice(1)}
                     <ChevronLeft className="h-4 w-4 rotate-270 ml-2" />
@@ -331,19 +331,17 @@ export const ReactBigCalendar = ({
         .google-calendar-wrapper .rbc-toolbar {
           margin-top: 10px;
           margin-inline: 10px;
-        }
-
-        .google-calendar-wrapper .rbc-month-header {
-          border-top: 1px solid #e5e7eb;
+        }        .google-calendar-wrapper .rbc-month-header {
+          border-top: 1px solid var(--border);
           flex-shrink: 0;
         }
 
         .google-calendar-wrapper .rbc-header {
-          border-bottom: 1px solid #e5e7eb;
+          border-bottom: 1px solid var(--border);
           padding: 12px 8px;
           font-size: 11px;
           font-weight: 600;
-          color: #70757a;
+          color: var(--muted-foreground);
           text-transform: uppercase;
           min-width: 60px;
           overflow: visible;
@@ -359,7 +357,7 @@ export const ReactBigCalendar = ({
         }
 
         .google-calendar-wrapper .rbc-month-row {
-          border-bottom: 1px solid #e5e7eb;
+          border-bottom: 1px solid var(--border);
           flex: 1 0 0; 
           min-height: 0;
           display: flex;
@@ -385,7 +383,7 @@ export const ReactBigCalendar = ({
         }
 
         .google-calendar-wrapper .rbc-day-bg + .rbc-day-bg {
-          border-left: 1px solid #e5e7eb;
+          border-left: 1px solid var(--border);
         }
 
         /* 3. Date Cells */
@@ -394,12 +392,12 @@ export const ReactBigCalendar = ({
           text-align: center;
           font-size: 12px;
           font-weight: 500;
-          color: #3c4043;
+          color: var(--foreground);
         }
           
         
         .google-calendar-wrapper .rbc-now .rbc-button-link {
-          background-color: #1a73e8;
+          background-color: var(--primary);
           color: white;
           border-radius: 50%;
           width: 24px;
@@ -415,7 +413,8 @@ export const ReactBigCalendar = ({
         }
 
         .google-calendar-wrapper .rbc-off-range .rbc-button-link {
-          color: #d1d5db;
+          color: var(--muted-foreground);
+          opacity: 0.5;
         }
 
         /* 4. Events */
@@ -436,9 +435,9 @@ export const ReactBigCalendar = ({
         
         .google-calendar-wrapper .rbc-show-more {
           background-color: transparent;
-          color: #1a73e8;
+          color: var(--primary);
           font-size: 11px;
-          font-weight: 500;
+          font-weight: 700;
           padding: 2px 8px;
           margin: 2px;
           text-align: left;
@@ -448,7 +447,7 @@ export const ReactBigCalendar = ({
         }
         
         .google-calendar-wrapper .rbc-show-more:hover {
-          background-color: #f1f3f4;
+          background-color: var(--muted);
         }
 
         .google-calendar-wrapper .rbc-selected {
@@ -466,7 +465,7 @@ export const ReactBigCalendar = ({
         }
 
         .google-calendar-wrapper .rbc-time-header {
-          border-bottom: 1px solid #e5e7eb;
+          border-bottom: 1px solid var(--border);
           flex-shrink: 0;
         }
         
@@ -474,10 +473,11 @@ export const ReactBigCalendar = ({
           border-top: none;
           flex: 1;
           overflow-y: auto;
+          border-left: 1px solid var(--border);
         }
 
         .google-calendar-wrapper .rbc-timeslot-group {
-          border-bottom: 1px solid #f3f4f6;
+          border-bottom: 1px solid var(--border);
           min-height: 48px;
         }
 
@@ -487,7 +487,7 @@ export const ReactBigCalendar = ({
 
         .google-calendar-wrapper .rbc-label {
           font-size: 11px;
-          color: #70757a;
+          color: var(--muted-foreground);
           top: -6px;
           position: relative;
         }
@@ -521,15 +521,15 @@ export const ReactBigCalendar = ({
           background: transparent;
         }
         .google-calendar-wrapper ::-webkit-scrollbar-thumb {
-          background: #dadce0;
+          background: var(--border);
           border-radius: 4px;
         }
         .google-calendar-wrapper ::-webkit-scrollbar-thumb:hover {
-          background: #bdc1c6;
+          background: var(--muted-foreground);
         }
           .google-calendar-wrapper .rbc-time-view .rbc-row{
-         min-height: auto !important;
-        }
+          min-height: auto !important;
+        } }
       `}</style>
     </div>
   );

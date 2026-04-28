@@ -160,7 +160,9 @@ export const buildSystemInventoryPayload = (
       ? parseIdValue(values.laptopStorageId)
       : null,
     laptopRamId: values.laptopEnabled ? parseIdValue(values.laptopRamId) : null,
-    laptopOwnershipType: values.laptopEnabled ? values.laptopOwnershipType : null,
+    laptopOwnershipType: values.laptopEnabled
+      ? values.laptopOwnershipType
+      : null,
 
     monitorBrandId: values.monitorEnabled
       ? parseIdValue(values.monitorBrandId)
@@ -279,7 +281,7 @@ function InventorySection({
   const Icon = icon;
 
   return (
-    <div className="space-y-4 rounded-md border border-[#d9d9d9] bg-white p-4">
+    <div className="space-y-4 rounded-md border bg-card p-4">
       <div className="flex items-center gap-2">
         <Checkbox
           checked={enabled}
@@ -933,7 +935,7 @@ export function SystemInventoryActionForm({
             type="submit"
             loading={loading}
             disabled={disabled}
-            className="h-10 w-full bg-black text-white hover:bg-black/90"
+            className="h-10 w-full bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90"
           >
             {submitLabel}
           </CustomButton>

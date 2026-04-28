@@ -67,12 +67,12 @@ function DialogContent({
     absolute top-3 right-3
     inline-flex items-center justify-center
     h-8 w-8 rounded-full
-    hover:bg-background active:bg-background
+    hover:bg-muted active:bg-muted
     transition-all duration-200
-    text-white hover:text-foreground
-    border  hover:border-muted
+    text-foreground
+    border border-border hover:border-border
     shadow-sm
-    bg-black
+    bg-secondary
     opacity-80 hover:opacity-100
     focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
     outline-none

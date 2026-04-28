@@ -51,6 +51,21 @@
     <link rel="stylesheet" href="/public/fonts/poppins.regular.ttf" />
 
     <meta name="theme-color" content="#fff" />
+    <script>
+      (function () {
+        try {
+          const mode = localStorage.getItem("mode") || "light";
+          const supportDarkMode = window.matchMedia(
+            "(prefers-color-scheme: dark)"
+          ).matches;
+          if (mode === "dark" || (mode === "system" && supportDarkMode)) {
+            document.documentElement.classList.add("dark");
+          } else {
+            document.documentElement.classList.remove("dark");
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
 
   <body class="group/body">
