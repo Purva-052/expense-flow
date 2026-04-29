@@ -8,6 +8,14 @@ import { cn } from "@/lib/utils";
 import { Briefcase, Zap } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+// ✅ Helper: Get initials from full name (e.g. "John Doe" → "JD")
+const getInitials = (fullName?: string | null): string => {
+  if (!fullName) return "?";
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+};
+
 // ✅ Helper: Calculate years of experience
 export const formatExperience = (
   startDate: string | null | undefined
@@ -111,13 +119,10 @@ export const ResourceCard = ({
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10 shrink-0 border-2 border-white shadow-sm">
                 <AvatarImage
-                  src={
-                    profilePic ||
-                    `https://api.dicebear.com/7.x/avataaars/svg?seed=${developer.fullName}`
-                  }
+                  src={profilePic || undefined}
                   alt={developer.fullName}
                 />
-                <AvatarFallback>{developer.fullName?.charAt(0)}</AvatarFallback>
+                <AvatarFallback className="text-xs font-semibold">{getInitials(developer.fullName)}</AvatarFallback>
               </Avatar>
 
               <div className="flex-1">

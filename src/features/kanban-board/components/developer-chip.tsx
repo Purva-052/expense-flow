@@ -12,6 +12,14 @@ import {
 import { Clock } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+// ✅ Helper: Get initials from full name (e.g. "John Doe" → "JD")
+const getInitials = (fullName?: string | null): string => {
+  if (!fullName) return "?";
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+};
+
 const getDaysRemaining = (
   endDate: string | null | undefined
 ): number | null => {
@@ -144,13 +152,10 @@ export function DeveloperChip({
             >
               <Avatar className="h-10 w-10 border-2 border-background shadow-sm hover:scale-110 transition-transform">
                 <AvatarImage
-                  src={
-                    profilePic ||
-                    `https://api.dicebear.com/7.x/avataaars/svg?seed=${developer.fullName}`
-                  }
+                  src={profilePic || undefined}
                   alt={developer.fullName}
                 />
-                <AvatarFallback>{developer.fullName?.charAt(0)}</AvatarFallback>
+                <AvatarFallback className="text-xs font-semibold">{getInitials(developer.fullName)}</AvatarFallback>
               </Avatar>
               {developer.isCurrentProject && (
                 <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-background" />
@@ -205,14 +210,11 @@ export function DeveloperChip({
               <div className="flex items-center gap-1">
                 <Avatar className="h-8 w-8">
                   <AvatarImage
-                    src={
-                      profilePic ||
-                      `https://api.dicebear.com/7.x/avataaars/svg?seed=${developer.fullName}`
-                    }
+                    src={profilePic || undefined}
                     alt={developer.fullName}
                   />
-                  <AvatarFallback className="text-xs">
-                    {developer.fullName?.charAt(0)}
+                  <AvatarFallback className="text-xs font-semibold">
+                    {getInitials(developer.fullName)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col gap-0.5 min-w-0">
