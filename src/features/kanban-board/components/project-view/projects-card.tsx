@@ -366,7 +366,14 @@ export function ProjectCard({
             <Avatar className="h-6 w-6">
               <AvatarImage src={coordinatorProfilePic} />
               <AvatarFallback className="text-foreground text-[10px] font-semibold">
-                {coordinatorName?.charAt(0)}
+                {(() => {
+                  const name = coordinatorName;
+                  if (!name || name === "N/A") return "?";
+                  const parts = name.trim().split(/\s+/);
+                  return parts.length === 1
+                    ? parts[0].charAt(0).toUpperCase()
+                    : (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+                })()}
               </AvatarFallback>
             </Avatar>
 
