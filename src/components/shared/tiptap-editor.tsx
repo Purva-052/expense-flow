@@ -188,7 +188,7 @@ export const TiptapEditor = ({
   const toolbarButtonClass = (isActive: boolean) =>
     cn(
       "inline-flex h-8 w-8 items-center justify-center rounded-md border border-transparent text-muted-foreground transition-colors",
-      "hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+      "hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:bg-slate-100 dark:text-slate-400",
       isActive && "bg-muted text-foreground",
       disabled && "pointer-events-none opacity-50"
     );
@@ -386,7 +386,7 @@ export const TiptapEditor = ({
       )}
     >
       {showToolbar ? (
-        <div className="flex flex-wrap items-center gap-1 border-b border-input bg-muted/40 p-2">
+        <div className="flex flex-wrap items-center gap-1 border-b border-input bg-muted/40 dark:border-slate-200 p-2">
           {toolbarItems}
         </div>
       ) : null}

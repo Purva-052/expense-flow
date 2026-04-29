@@ -94,7 +94,7 @@ export const NoteEditor = ({
             onChange={(e) =>
               setFormData({ ...formData, title: e.target.value })
             }
-            className="bg-transparent border-none text-lg font-bold placeholder:text-gray-400 focus-visible:ring-0 p-0 h-auto"
+            className="bg-transparent border-none text-lg font-bold placeholder:text-gray-400 focus-visible:ring-0 p-2 h-auto dark:text-gray-500"
           />
         </div>
         <div className="min-h-[200px] border-none bg-transparent text-gray-700">
