@@ -186,7 +186,14 @@ const OverviewProject = ({
                 <Avatar className="h-7 w-7">
                   <AvatarImage src={project.projectHandler?.profilePicUrl} />
                   <AvatarFallback className="bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-semibold">
-                    {project.projectHandler?.fullName?.charAt(0)}
+                    {(() => {
+                      const name = project.projectHandler?.fullName;
+                      if (!name) return "?";
+                      const parts = name.trim().split(/\s+/);
+                      return parts.length === 1
+                        ? parts[0].charAt(0).toUpperCase()
+                        : (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+                    })()}
                   </AvatarFallback>
                 </Avatar>
 
@@ -417,7 +424,14 @@ const OverviewProject = ({
                               "#94a3b8",
                           }}
                         >
-                          {allocation.developer?.fullName?.charAt(0)}
+                          {(() => {
+                            const name = allocation.developer?.fullName;
+                            if (!name) return "?";
+                            const parts = name.trim().split(/\s+/);
+                            return parts.length === 1
+                              ? parts[0].charAt(0).toUpperCase()
+                              : (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+                          })()}
                         </AvatarFallback>
                       </Avatar>
                       {isWorkingOnCurrentProject && (
