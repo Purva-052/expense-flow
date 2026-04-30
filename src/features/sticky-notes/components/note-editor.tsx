@@ -55,13 +55,13 @@ export const NoteEditor = ({
           />
           <div className="flex items-center space-x-2 bg-black/5 px-3 py-1.5 rounded-full transition-colors hover:bg-black/10">
             {formData.isPublic ? (
-              <Globe className="w-3.5 h-3.5 text-gray-600" />
+              <Globe className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
             ) : (
-              <Lock className="w-3.5 h-3.5 text-gray-600" />
+              <Lock className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
             )}
             <Label
               htmlFor="privacy-toggle"
-              className="text-xs font-semibold text-gray-700 cursor-pointer"
+              className="text-xs font-semibold text-gray-700 dark:text-gray-300 cursor-pointer"
             >
               {formData.isPublic ? "Public" : "Private"}
             </Label>
@@ -94,17 +94,17 @@ export const NoteEditor = ({
             onChange={(e) =>
               setFormData({ ...formData, title: e.target.value })
             }
-            className="bg-transparent border-none text-lg font-bold placeholder:text-gray-400 focus-visible:ring-0 p-2 h-auto dark:text-gray-500"
+            className="bg-transparent border-none text-lg font-bold placeholder:text-gray-400/60 focus-visible:ring-0 p-2 h-auto text-slate-900 dark:text-slate-100"
           />
         </div>
-        <div className="min-h-[200px] border-none bg-transparent text-gray-700">
+        <div className="min-h-[200px] border-none bg-transparent text-slate-800 dark:text-slate-200">
           <TiptapEditor
             value={formData.content}
             onChange={(content) => setFormData({ ...formData, content })}
             placeholder="Type your note here..."
             className="border-none bg-transparent shadow-none"
             minHeightClassName="min-h-[200px]"
-            editorClassName="text-gray-700"
+            editorClassName="text-slate-800 dark:text-slate-200"
             toolbar={[
               "bold",
               "italic",
