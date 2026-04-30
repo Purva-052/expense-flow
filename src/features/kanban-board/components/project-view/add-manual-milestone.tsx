@@ -495,7 +495,7 @@ export function AddManualMilestone({
                         <Input
                           {...field}
                           readOnly
-                          className="bg-slate-100 text-slate-700 cursor-not-allowed focus-visible:ring-0"
+                          className="bg-muted/50 text-foreground cursor-not-allowed focus-visible:ring-0"
                           tabIndex={-1}
                         />
                       </FormControl>
@@ -594,7 +594,7 @@ export function AddManualMilestone({
                   return (
                     <div
                       key={item.id}
-                      className="grid grid-cols-12 gap-3 p-3 border rounded-lg bg-slate-50"
+                      className="grid grid-cols-12 gap-3 p-3 border rounded-lg bg-muted/30"
                     >
                       {/* Task Name */}
                       <div className="col-span-7">
@@ -680,7 +680,7 @@ export function AddManualMilestone({
             </div>
 
             {/* Footer */}
-            <DialogFooter className="px-6 py-4 border-t shrink-0 bg-slate-50">
+            <DialogFooter className="px-6 py-4 border-t shrink-0 bg-muted/30">
               <Button
                 type="button"
                 variant="outline"
