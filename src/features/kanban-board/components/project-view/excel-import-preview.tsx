@@ -84,7 +84,7 @@ export const ExcelImportPreview: React.FC<ExcelImportPreviewProps> = ({
                     {data.headers.map((header, index) => (
                       <TableHead
                         key={index}
-                        className="whitespace-nowrap px-4 font-bold text-slate-900 border-b"
+                        className="whitespace-nowrap px-4 font-bold text-foreground border-b"
                       >
                         {header}
                       </TableHead>
@@ -93,7 +93,7 @@ export const ExcelImportPreview: React.FC<ExcelImportPreviewProps> = ({
                 </TableHeader>
                 <TableBody>
                   {paginatedRows.map((row, rowIndex) => (
-                    <TableRow key={rowIndex} className="hover:bg-slate-50">
+                    <TableRow key={rowIndex} className="hover:bg-muted/50">
                       {row.map((cell, cellIndex) => (
                         <TableCell
                           key={cellIndex}
@@ -118,16 +118,22 @@ export const ExcelImportPreview: React.FC<ExcelImportPreviewProps> = ({
                   rows
                 </span>
                 <select
-                  className="bg-transparent border rounded p-1 text-xs"
+                  className="bg-background border rounded p-1 text-xs outline-none focus:ring-1 focus:ring-ring"
                   value={pageSize}
                   onChange={(e) => {
                     setPageSize(Number(e.target.value));
                     setCurrentPage(1);
                   }}
                 >
-                  <option value={50}>50 per page</option>
-                  <option value={100}>100 per page</option>
-                  <option value={200}>200 per page</option>
+                  <option value={50} className="bg-background text-foreground">
+                    50 per page
+                  </option>
+                  <option value={100} className="bg-background text-foreground">
+                    100 per page
+                  </option>
+                  <option value={200} className="bg-background text-foreground">
+                    200 per page
+                  </option>
                 </select>
               </div>
 
