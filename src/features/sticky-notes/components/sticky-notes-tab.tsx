@@ -254,7 +254,7 @@ export const StickyNotesTab = ({ projectId }: StickyNotesTabProps) => {
                 <span className="text-4xl">📝</span>
               </div>
               <h3 className="text-xl font-semibold mb-2">
-                {search ? "No results found" : "No Stickies Yet"}
+                {search ? "No results found" : "No Sticky Notes Yet"}
               </h3>
               <p className="text-muted-foreground max-w-sm">
                 {search
