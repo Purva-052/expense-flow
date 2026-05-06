@@ -281,6 +281,10 @@ const API = {
   },
   projects_analytics:{
     list:"/projects/analytics/planned-vs-actual",
+  },
+  admob_analytics:{
+    dashboard:"/admob/dashboard",
+    apps:"/admob/apps",
   }
 };
 

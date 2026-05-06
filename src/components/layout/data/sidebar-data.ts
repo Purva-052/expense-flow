@@ -34,11 +34,13 @@ import {
   HardDrive,
   Headset,
   MemoryStick,
+  // MessageCircleQuestionMark,
   Microchip,
   Network,
   Plane,
   ScrollText,
   Tag,
+  TrendingUp,
   UserStar,
 } from "lucide-react";
 import { type SidebarData } from "../types";
@@ -107,6 +109,18 @@ export const sidebarData: SidebarData = {
           icon: BarChart3,
           requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
+        {
+          title: "Admob Analytics",
+          url: "/admob-analytics",
+          icon: TrendingUp,
+          requiredRoles: [roles.ADMIN],
+        },
+        // {
+        //   title: "Product Inquiry",
+        //   url: "/product-inquiry",
+        //   icon: MessageCircleQuestionMark,
+        //   requiredRoles: [roles.ADMIN],
+        // },
         {
           title: "Lead Management",
           url: "/inquiry",
@@ -215,10 +229,7 @@ export const sidebarData: SidebarData = {
     },
     {
       title: "Inquiry Management",
-      requiredRoles: [
-        roles.ADMIN,
-        roles.BDE,
-      ],
+      requiredRoles: [roles.ADMIN, roles.BDE],
       allowUserIDs: [134],
       isCollapsible: true,
       items: [
