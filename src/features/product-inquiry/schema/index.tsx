@@ -29,6 +29,18 @@ export const ProductInquirySchema = z.object({
       message: "Additional notes are required for Others status",
     });
   }
+
+  if (
+    values.trialStartDate &&
+    values.trialEndDate &&
+    values.trialEndDate < values.trialStartDate
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["trialEndDate"],
+      message: "Trial end date cannot be before trial start date",
+    });
+  }
 });
 
 export type TProductInquirySchema = z.infer<typeof ProductInquirySchema>;
