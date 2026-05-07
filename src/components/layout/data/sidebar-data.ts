@@ -34,11 +34,13 @@ import {
   HardDrive,
   Headset,
   MemoryStick,
+  MessageCircleQuestionMark,
   Microchip,
   Network,
   Plane,
   ScrollText,
   Tag,
+  TrendingUp,
   UserStar,
 } from "lucide-react";
 import { type SidebarData } from "../types";
@@ -76,11 +78,13 @@ export const sidebarData: SidebarData = {
         roles.BDE,
       ],
       allowUserIDs: [134],
+      allowedTech: [29],
       items: [
         {
           title: "Dashboard",
           url: "/",
           icon: IconLayoutBoardFilled,
+          allowedTech: [29],
           requiredRoles: [
             roles.ADMIN,
             roles.TEAM_LEAD,
@@ -93,6 +97,7 @@ export const sidebarData: SidebarData = {
           title: "Daily Report",
           url: "/daily-report",
           icon: ClipboardList,
+          allowedTech: [29],
           requiredRoles: [
             roles.ADMIN,
             roles.TEAM_LEAD,
@@ -108,6 +113,21 @@ export const sidebarData: SidebarData = {
           requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
         {
+          title: "Admob Analytics",
+          url: "/admob-analytics",
+          icon: TrendingUp,
+          requiredRoles: [roles.ADMIN],
+          allowUserIDs: [134],
+        },
+        {
+          title: "Product Inquiry",
+          url: "/product-inquiry",
+          icon: MessageCircleQuestionMark,
+          requiredRoles: [roles.ADMIN],
+          allowUserIDs: [134],
+          allowedTech: [29],
+        },
+        {
           title: "Lead Management",
           url: "/inquiry",
           icon: BriefcaseBusiness,
@@ -118,6 +138,7 @@ export const sidebarData: SidebarData = {
           title: "System Inventory",
           url: "/system-inventory",
           icon: Database,
+          allowedTech: [29],
           requiredRoles: [
             roles.ADMIN,
             roles.TEAM_LEAD,
@@ -215,10 +236,7 @@ export const sidebarData: SidebarData = {
     },
     {
       title: "Inquiry Management",
-      requiredRoles: [
-        roles.ADMIN,
-        roles.BDE,
-      ],
+      requiredRoles: [roles.ADMIN, roles.BDE],
       allowUserIDs: [134],
       isCollapsible: true,
       items: [

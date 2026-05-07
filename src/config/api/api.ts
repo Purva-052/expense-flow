@@ -279,9 +279,25 @@ const API = {
     delete: "/outbound-source",
     dropdown: "/outbound-source/dropdown",
   },
-  projects_analytics:{
-    list:"/projects/analytics/planned-vs-actual",
-  }
+  projects_analytics: {
+    list: "/projects/analytics/planned-vs-actual",
+  },
+  admob_analytics: {
+    dashboard: "/admob/dashboard",
+    apps: "/admob/apps",
+  },
+  product_inquiry: {
+    list: "/product-inquiries",
+    create: "/product-inquiries",
+    update: "/product-inquiries",
+    delete: "/product-inquiries",
+    comments: {
+      list: (id: string) => `/product-inquiries/${id}/comments`,
+      create: (id: string) => `/product-inquiries/${id}/comments`,
+      update: (id: string, commentId: string) => `/product-inquiries/${id}/comments/${commentId}`,
+      delete: (id: string, commentId: string) => `/product-inquiries/${id}/comments/${commentId}`,
+    },
+  },
 };
 
 Object.freeze(API);
