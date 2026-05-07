@@ -12,24 +12,15 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
-  CalendarIcon,
 } from "lucide-react";
 import SimpleDropDownSearchable from "@/components/shared/custome-simple-dropdown";
 import TablePageHeader from "@/components/table/table-page-header";
 import { columns, appColumns } from "./components/columns";
 import { TabView } from "./types";
 import { useGetAdmobDashboard, useGetAdmobApps } from "./services";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
 import { DateRange } from "react-day-picker";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { Button } from "@/components/ui/button";
 import { formatDate } from "@/utils/commonFunctions";
+import DateRangeFilter from "@/components/table/custome-dateRange";
 
 // Refactored Components
 import { StatCard } from "./components/stat-card";
@@ -59,12 +50,17 @@ const AdMobAnalyticsDashboard = () => {
     to: undefined,
   });
 
+  const appliedDate = useMemo(() => {
+    if (date?.from && date?.to) return date;
+    return undefined;
+  }, [date]);
+
   const filterParams = useMemo(
     () => ({
-      startDate: formatDate(date?.from) ?? undefined,
-      endDate: formatDate(date?.to) ?? undefined,
+      startDate: formatDate(appliedDate?.from) ?? undefined,
+      endDate: formatDate(appliedDate?.to) ?? undefined,
     }),
-    [date]
+    [appliedDate]
   );
 
   const { data: apiResponse, isLoading: isDashboardLoading } =
@@ -231,7 +227,7 @@ const AdMobAnalyticsDashboard = () => {
             onValueChange={(v) => setTab(v as TabView)}
             className="w-full"
           >
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-4">
               <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border-rose-100/50 w-fit">
                 <TabsTrigger className={tabTriggerClass} value="overview">
                   Overview
@@ -240,55 +236,6 @@ const AdMobAnalyticsDashboard = () => {
                   App Performance
                 </TabsTrigger>
               </TabsList>
-
-              <div className="flex items-center gap-2">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      id="date"
-                      variant={"outline"}
-                      className={cn(
-                        "w-[260px] justify-start text-left font-normal bg-background border-border",
-                        !date && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {date?.from ? (
-                        date.to ? (
-                          <>
-                            {format(date.from, "LLL dd, y")} -{" "}
-                            {format(date.to, "LLL dd, y")}
-                          </>
-                        ) : (
-                          format(date.from, "LLL dd, y")
-                        )
-                      ) : (
-                        <span>Pick a date range</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="end">
-                    <Calendar
-                      initialFocus
-                      mode="range"
-                      defaultMonth={date?.from}
-                      selected={date}
-                      onSelect={setDate}
-                      numberOfMonths={2}
-                    />
-                  </PopoverContent>
-                </Popover>
-                {(date?.from || date?.to) && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setDate({ from: undefined, to: undefined })}
-                    className="h-10 px-2 text-muted-foreground hover:text-foreground"
-                  >
-                    Clear
-                  </Button>
-                )}
-              </div>
             </div>
 
             <TabsContent value="overview" className="mt-6 space-y-6">
@@ -297,6 +244,15 @@ const AdMobAnalyticsDashboard = () => {
                 {statCards.map((card) => (
                   <StatCard key={card.label} {...card} />
                 ))}
+              </div>
+
+              <div className="flex justify-start lg:justify-end">
+                <DateRangeFilter
+                  placeholder="Pick a date range"
+                  value={date}
+                  onChange={setDate}
+                  disabled={{ after: new Date() }}
+                />
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -384,6 +340,15 @@ const AdMobAnalyticsDashboard = () => {
                   className="min-w-45 h-10"
                   allowClear={platformFilter !== "all"}
                 /> */}
+
+                <div className="flex justify-start lg:justify-end lg:ml-auto">
+                  <DateRangeFilter
+                    placeholder="Pick a date range"
+                    value={date}
+                    onChange={setDate}
+                    disabled={{ after: new Date() }}
+                  />
+                </div>
               </div>
 
               {/* Table */}

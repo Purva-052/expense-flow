@@ -114,6 +114,7 @@ export const sidebarData: SidebarData = {
           url: "/admob-analytics",
           icon: TrendingUp,
           requiredRoles: [roles.ADMIN],
+          allowUserIDs: [134],
         },
         // {
         //   title: "Product Inquiry",
