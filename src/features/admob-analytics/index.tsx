@@ -19,7 +19,6 @@ import { columns, appColumns } from "./components/columns";
 import { TabView } from "./types";
 import { useGetAdmobDashboard, useGetAdmobApps } from "./services";
 import { DateRange } from "react-day-picker";
-import { Button } from "@/components/ui/button";
 import { formatDate } from "@/utils/commonFunctions";
 import DateRangeFilter from "@/components/table/custome-dateRange";
 
@@ -248,26 +247,12 @@ const AdMobAnalyticsDashboard = () => {
               </div>
 
               <div className="flex justify-start lg:justify-end">
-                <div className="flex items-center gap-2">
-                  <DateRangeFilter
-                    placeholder="Pick a date range"
-                    value={date}
-                    onChange={setDate}
-                    disabled={{ after: new Date() }}
-                  />
-                  {(date?.from || date?.to) && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        setDate({ from: undefined, to: undefined })
-                      }
-                      className="h-10 px-2 text-muted-foreground hover:text-foreground"
-                    >
-                      Clear
-                    </Button>
-                  )}
-                </div>
+                <DateRangeFilter
+                  placeholder="Pick a date range"
+                  value={date}
+                  onChange={setDate}
+                  disabled={{ after: new Date() }}
+                />
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -357,26 +342,12 @@ const AdMobAnalyticsDashboard = () => {
                 /> */}
 
                 <div className="flex justify-start lg:justify-end lg:ml-auto">
-                  <div className="flex items-center gap-2">
-                    <DateRangeFilter
-                      placeholder="Pick a date range"
-                      value={date}
-                      onChange={setDate}
-                      disabled={{ after: new Date() }}
-                    />
-                    {(date?.from || date?.to) && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          setDate({ from: undefined, to: undefined })
-                        }
-                        className="h-10 px-2 text-muted-foreground hover:text-foreground"
-                      >
-                        Clear
-                      </Button>
-                    )}
-                  </div>
+                  <DateRangeFilter
+                    placeholder="Pick a date range"
+                    value={date}
+                    onChange={setDate}
+                    disabled={{ after: new Date() }}
+                  />
                 </div>
               </div>
 
