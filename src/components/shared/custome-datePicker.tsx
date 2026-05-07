@@ -145,6 +145,7 @@ export function CustomDatePicker({
                   mode="single"
                   month={month}
                   onMonthChange={setMonth}
+                  hideNavigation
                   selected={field.value}
                   onSelect={(date) => {
                     if (date) {

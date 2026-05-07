@@ -6,6 +6,9 @@ export const useGetAdmobDashboard = (params?: any) => {
   return useFetchData<AdMobAnalyticsResponse>({
     url: API.admob_analytics.dashboard,
     params,
+    queryOptions: {
+      placeholderData: (previousData) => previousData,
+    },
   });
 };
 
@@ -13,5 +16,8 @@ export const useGetAdmobApps = (params?: any) => {
   return useFetchData<AdMobAppsResponse>({
     url: API.admob_analytics.apps,
     params,
+    queryOptions: {
+      placeholderData: (previousData) => previousData,
+    },
   });
 };
