@@ -23,6 +23,7 @@ type NavLink = BaseNavItem & {
   items?: never;
   requiredRoles?: string[];
   allowUserIDs?: number[];
+  allowedTech?: number[];
 };
 
 type NavCollapsible = BaseNavItem & {
@@ -30,11 +31,13 @@ type NavCollapsible = BaseNavItem & {
     url: LinkProps["to"];
     requiredRoles?: string[];
     allowUserIDs?: number[];
+    allowedTech?: number[];
   })[];
   url?: never;
   requiredRoles?: string[];
   defaultClosed?: boolean;
   allowUserIDs?: number[];
+  allowedTech?: number[];
 };
 
 type NavItem = NavCollapsible | NavLink;
@@ -45,6 +48,7 @@ interface NavGroup {
   requiredRoles?: string[];
   isCollapsible?: boolean;
   allowUserIDs?: number[];
+  allowedTech?: number[];
 }
 
 interface SidebarData {

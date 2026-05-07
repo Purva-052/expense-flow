@@ -67,6 +67,71 @@ export const INQUIRY_STATUS_LABEL: any = {
   closed: "Closed",
   "opted-out": "Opted Out",
 };
+export const PRODUCT_INQUIRY_STATUS = {
+  CONTACTED: "contacted",
+  UNQUALIFIED: "unqualified_lead",
+  NO_RESPONSE: "no_response",
+  DEMO_SCHEDULED: "demo-scheduled",
+  DEMO_COMPLETED: "demo-completed",
+  PROPOSAL_SHARED: "proposal-shared",
+  WON: "won",
+  LOST: "lost",
+  OTHERS: "others",
+};
+
+export const PRODUCT_INQUIRY_STATUS_OPTIONS = [
+  {
+    value: PRODUCT_INQUIRY_STATUS.CONTACTED,
+    label: "Contacted",
+  },
+  {
+    value: PRODUCT_INQUIRY_STATUS.UNQUALIFIED,
+    label: "Unqualified Lead",
+  },
+  {
+    value: PRODUCT_INQUIRY_STATUS.NO_RESPONSE,
+    label: "No Response",
+  },
+  {
+    value: PRODUCT_INQUIRY_STATUS.DEMO_SCHEDULED,
+    label: "Demo Scheduled",
+  },
+  {
+    value: PRODUCT_INQUIRY_STATUS.DEMO_COMPLETED,
+    label: "Demo Completed",
+  },
+  {
+    value: PRODUCT_INQUIRY_STATUS.PROPOSAL_SHARED,
+    label: "Proposal Shared",
+  },
+  {
+    value: PRODUCT_INQUIRY_STATUS.WON,
+    label: "Won",
+  },
+  {
+    value: PRODUCT_INQUIRY_STATUS.LOST,
+    label: "Lost",
+  },
+  {
+    value: PRODUCT_INQUIRY_STATUS.OTHERS,
+    label: "Others",
+  },
+];
+
+export const PRODUCT_INQUIRY_STATUS_LABEL: any = {
+  contacted: "Contacted",
+  unqualified_lead: "Unqualified Lead",
+  no_response: "No Response",
+  "demo-scheduled": "Demo Scheduled",
+  "demo-completed": "Demo Completed",
+  "proposal-shared": "Proposal Shared",
+  won: "Won",
+  lost: "Lost",
+  others: "Others",
+  "trial-started": "Trial Started",
+  converted: "Converted",
+  "not-interested": "Not Interested",
+};
 
 export const INTERVIEW_STATUS_LABEL: any = {
   technical_round: "Technical Round",

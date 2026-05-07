@@ -11,25 +11,38 @@ import {
 } from "@/components/ui/sidebar";
 import { NavGroup } from "@/components/layout/nav-group";
 import { sidebarData } from "./data/sidebar-data";
+import { useGetUserDetails } from "@/features/users/services";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useAuthStore();
   const role = user?.user?.role || "";
   const id = user?.user?.id;
 
+  const { data: userDetails }: any = useGetUserDetails(user?.user?.id);
+  const technologyId = userDetails?.data?.technology?.id;
+  const restrictedTechnologyIds = [29];
+  const isRestrictedTechnologyUser = restrictedTechnologyIds.includes(technologyId);
+
   const hasSidebarAccess = (item: {
     requiredRoles?: string[];
     allowUserIDs?: number[];
+    allowedTech?: number[];
   }) => {
     const hasRoleAccess = item.requiredRoles?.includes(role) ?? false;
     const hasUserIDsAccess = item.allowUserIDs?.includes(id) ?? false;
+    const hasTechAccess = item.allowedTech?.includes(technologyId) ?? false;
 
-    return hasRoleAccess || hasUserIDsAccess;
+    if (isRestrictedTechnologyUser) {
+      return hasUserIDsAccess || hasTechAccess;
+    }
+
+    return hasRoleAccess || hasUserIDsAccess || hasTechAccess;
   };
 
   const filteredNavGroups = sidebarData.navGroups
     .filter((group: any) => {
-      if (!group.requiredRoles && !group.allowUserIDs) return true;
+      if (!group.requiredRoles && !group.allowUserIDs && !group.allowedTech)
+        return true;
       return hasSidebarAccess(group);
     })
     .map((group) => ({
@@ -55,14 +68,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader className="cursor-pointer p-2 border-b bg-card">
         <Link to="/">
           <img
-            className='h-12 w-full group-data-[state=collapsed]:h-10 dark:hidden'
+            className="h-12 w-full group-data-[state=collapsed]:h-10 dark:hidden"
             src={sidebarLogo}
-            alt='Resource Logo'
+            alt="Resource Logo"
           />
           <img
-            className='h-12 w-full group-data-[state=collapsed]:h-10 hidden dark:block'
+            className="h-12 w-full group-data-[state=collapsed]:h-10 hidden dark:block"
             src={darkLogo}
-            alt='Resource Logo'
+            alt="Resource Logo"
           />
         </Link>
       </SidebarHeader>
