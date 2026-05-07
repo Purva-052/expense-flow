@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
-import { PRODUCT_INQUIRY_STATUS_LABEL } from "@/utils/constant";
+import { formatProductInquiryStatusLabel } from "@/utils/constant";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -72,10 +72,9 @@ export const getColumns = (): ColumnDef<any>[] => [
     header: "Status",
     cell: ({ row }) => {
       const status = row.original?.status;
-      const label = PRODUCT_INQUIRY_STATUS_LABEL[status] || status;
       return (
         <Badge variant="outline" className="capitalize">
-          {label}
+          {formatProductInquiryStatusLabel(status)}
         </Badge>
       );
     },

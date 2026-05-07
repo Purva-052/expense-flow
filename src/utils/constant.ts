@@ -122,15 +122,30 @@ export const PRODUCT_INQUIRY_STATUS_LABEL: any = {
   contacted: "Contacted",
   unqualified_lead: "Unqualified Lead",
   no_response: "No Response",
-  "demo-scheduled": "Demo Scheduled",
-  "demo-completed": "Demo Completed",
-  "proposal-shared": "Proposal Shared",
+  demo_scheduled: "Demo Scheduled",
+  demo_completed: "Demo Completed",
+  proposal_shared: "Proposal Shared",
   won: "Won",
   lost: "Lost",
   others: "Others",
-  "trial-started": "Trial Started",
+  trial_started: "Trial Started",
   converted: "Converted",
-  "not-interested": "Not Interested",
+  not_interested: "Not Interested",
+};
+
+export const formatProductInquiryStatusLabel = (
+  status?: string | null
+): string => {
+  if (!status) return "-";
+
+  return (
+    PRODUCT_INQUIRY_STATUS_LABEL[status] ||
+    status
+      .split(/[_-]+/)
+      .filter(Boolean)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ")
+  );
 };
 
 export const INTERVIEW_STATUS_LABEL: any = {
