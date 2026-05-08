@@ -187,9 +187,9 @@ export function CommentModal() {
             </DialogTitle>
           </DialogHeader>
 
-          <div className="flex flex-1 max-h-[90vh] overflow-auto">
+          <div className="flex flex-1 overflow-hidden">
             {/* Left Side: Inquiry Details */}
-            <div className="hidden w-1/3 border-r border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-[#0f141d]/50 md:block">
+            <div className="hidden h-full w-1/3 shrink-0 border-r border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-[#0f141d]/50 md:block">
               <div className="sticky top-0 space-y-8 p-8">
                 <div className="space-y-2">
                   <h3 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
@@ -253,8 +253,8 @@ export function CommentModal() {
             </div>
 
             {/* Right Side: Chat UI */}
-            <div className="relative flex flex-1 flex-col bg-white dark:bg-[#0a0e14]">
-              <ScrollArea className="flex-1 p-6">
+            <div className="relative flex min-h-0 flex-1 flex-col bg-white dark:bg-[#0a0e14]">
+              <ScrollArea className="flex-1 min-h-0 p-6">
                 <div className="space-y-6 pb-4">
                   {sortedComments.length === 0 && !loadingComments && (
                     <div className="flex flex-col items-center gap-2 py-20 text-center italic text-slate-500 dark:text-slate-500">
