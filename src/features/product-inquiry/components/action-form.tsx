@@ -82,10 +82,15 @@ export function ProductInquiryActionForm({
   });
 
   useEffect(() => {
-    if (isEdit && currentRow) {
+    if (open) {
       form.reset(getDefaultValues(currentRow));
+      return;
     }
-  }, [currentRow, form, getDefaultValues, isEdit]);
+
+    if (!isEdit) {
+      form.reset(getDefaultValues());
+    }
+  }, [currentRow, form, getDefaultValues, isEdit, open]);
 
   const { data: industryList, isPending: loadingIndustry }: any =
     useGetIndustryDropdownList();
@@ -136,7 +141,7 @@ export function ProductInquiryActionForm({
       onOpenChange={(state) => {
         onOpenChange(state);
         if (!state) {
-          form.reset();
+          form.reset(getDefaultValues(currentRow));
         }
       }}
     >
@@ -176,21 +181,28 @@ export function ProductInquiryActionForm({
                 />
               </div>
 
-              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-                <PhoneInputField
-                  form={form}
-                  name="phoneNumber"
-                  label="Phone Number"
-                />
-                <TextInputField
-                  control={form.control}
-                  name="city"
-                  label="City"
-                  placeholder="Enter city"
-                />
-              </div>
+              <PhoneInputField
+                form={form}
+                name="phoneNumber"
+                label="Phone Number"
+              />
 
               <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="demoDate"
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>Demo Date</FormLabel>
+                      <CustomDatePicker
+                        control={form.control}
+                        name="demoDate"
+                        label=""
+                      />
+                    </FormItem>
+                  )}
+                />
+
                 <FormField
                   control={form.control}
                   name="industryId"
@@ -211,6 +223,9 @@ export function ProductInquiryActionForm({
                     </FormItem>
                   )}
                 />
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="numberOfUsers"
@@ -233,22 +248,14 @@ export function ProductInquiryActionForm({
                     </FormItem>
                   )}
                 />
-              </div>
 
-              <FormField
-                control={form.control}
-                name="demoDate"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>Demo Date</FormLabel>
-                    <CustomDatePicker
-                      control={form.control}
-                      name="demoDate"
-                      label=""
-                    />
-                  </FormItem>
-                )}
-              />
+                <TextInputField
+                  control={form.control}
+                  name="city"
+                  label="City"
+                  placeholder="Enter city"
+                />
+              </div>
 
               <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                 <FormField
