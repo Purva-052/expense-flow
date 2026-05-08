@@ -252,6 +252,9 @@ const AdMobAnalyticsDashboard = () => {
                   value={date}
                   onChange={setDate}
                   disabled={{ after: new Date() }}
+                  popoverAlign="end"
+                  popoverSide="top"
+                  popoverSideOffset={8}
                 />
               </div>
 
@@ -347,6 +350,9 @@ const AdMobAnalyticsDashboard = () => {
                     value={date}
                     onChange={setDate}
                     disabled={{ after: new Date() }}
+                    popoverAlign="end"
+                    popoverSide="top"
+                    popoverSideOffset={8}
                   />
                 </div>
               </div>

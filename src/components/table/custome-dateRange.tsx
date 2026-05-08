@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { format, isSameDay } from "date-fns";
 import type { DateRange, Matcher } from "react-day-picker";
+import type { PopoverContentProps } from "@radix-ui/react-popover";
 
 export default function DateRangeFilter(props: {
   value?: DateRange | undefined;
@@ -18,8 +19,22 @@ export default function DateRangeFilter(props: {
   onChange?: (val: DateRange | undefined) => void;
   disabled?: Matcher | Matcher[] | undefined;
   className?: string;
+  popoverAlign?: PopoverContentProps["align"];
+  popoverSide?: PopoverContentProps["side"];
+  popoverSideOffset?: number;
+  popoverClassName?: string;
 }) {
-  const { value, placeholder, onChange, disabled, className } = props;
+  const {
+    value,
+    placeholder,
+    onChange,
+    disabled,
+    className,
+    popoverAlign = "start",
+    popoverSide = "bottom",
+    popoverSideOffset = 4,
+    popoverClassName,
+  } = props;
   const isControlled = Object.prototype.hasOwnProperty.call(props, "value");
   const normalizedValue = useMemo(
     () => (value && (value.from || value.to) ? value : undefined),
@@ -103,7 +118,12 @@ export default function DateRangeFilter(props: {
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent
+        className={cn("w-auto p-0", popoverClassName)}
+        align={popoverAlign}
+        side={popoverSide}
+        sideOffset={popoverSideOffset}
+      >
         <Calendar
           className="date-range-calendar"
           mode="range"
