@@ -30,10 +30,12 @@ export const getColumns = (): ColumnDef<any>[] => [
   {
     accessorKey: "emailId",
     header: "Email ID",
+    cell: ({ row }) => row.original?.emailId ?? "-",
   },
   {
     accessorKey: "phoneNumber",
     header: "Phone Number",
+    cell: ({ row }) => row.original?.phoneNumber ?? "-",
   },
   {
     id: "industry",
@@ -66,6 +68,7 @@ export const getColumns = (): ColumnDef<any>[] => [
   {
     accessorKey: "numberOfUsers",
     header: "Users",
+    cell: ({ row }) => row.original?.numberOfUsers ?? "-",
   },
   {
     accessorKey: "status",
