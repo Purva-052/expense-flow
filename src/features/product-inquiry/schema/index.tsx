@@ -13,8 +13,18 @@ export const ProductInquirySchema = z.object({
     .nullable(),
   demoDate: z.date().optional().nullable(),
   city: z.string().optional().nullable(),
-  industryId: z.number().optional().nullable(),
-  numberOfUsers: z.number().optional().nullable(),
+  industryId: z.preprocess(
+    (val) => (val === "" ? null : val),
+    z.number().optional().nullable()
+  ),
+  numberOfUsers: z.preprocess(
+    (val) => (val === "" ? null : val),
+    z
+      .number()
+      .min(0, "Number of users cannot be negative")
+      .optional()
+      .nullable()
+  ),
   requirements: z.string().optional().nullable(),
   status: z.string().optional().nullable(),
   others: z.string().optional().nullable(),
