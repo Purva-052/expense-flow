@@ -33,7 +33,7 @@ import {
 import {
   PRODUCT_INQUIRY_STATUS,
   PRODUCT_INQUIRY_STATUS_OPTIONS,
-  PRODUCT_INQUIRY_STATUS_LABEL,
+  formatProductInquiryStatusLabel,
 } from "@/utils/constant";
 
 export function CommentModal() {
@@ -223,9 +223,7 @@ export function CommentModal() {
                   </label>
                   <div className="mt-2">
                     <span className="px-3 py-1.5 bg-primary/20 text-primary rounded-md text-xs font-black uppercase tracking-tighter border border-primary/30">
-                      {PRODUCT_INQUIRY_STATUS_LABEL[currentRow?.status] ||
-                        currentRow?.status ||
-                        "-"}
+                      {formatProductInquiryStatusLabel(currentRow?.status)}
                     </span>
                   </div>
                   {currentRow?.status === PRODUCT_INQUIRY_STATUS.OTHERS &&

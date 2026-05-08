@@ -30,6 +30,7 @@ import { Input } from "@/components/ui/input";
 import { useGetIndustryDropdownList } from "@/features/industry/services";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 import { useCallback, useEffect } from "react";
+import { startOfDay } from "date-fns";
 
 interface Props {
   currentRow?: any;
@@ -89,6 +90,10 @@ export function ProductInquiryActionForm({
   const { data: industryList, isPending: loadingIndustry }: any =
     useGetIndustryDropdownList();
   const selectedStatus = form.watch("status");
+  const trialStartDate = form.watch("trialStartDate");
+  const trialEndDate = form.watch("trialEndDate");
+
+  const today = startOfDay(new Date());
 
   useEffect(() => {
     if (selectedStatus !== PRODUCT_INQUIRY_STATUS.OTHERS) {
@@ -99,6 +104,20 @@ export function ProductInquiryActionForm({
       });
     }
   }, [form, selectedStatus]);
+
+  useEffect(() => {
+    if (
+      trialStartDate &&
+      trialEndDate &&
+      startOfDay(trialEndDate) < startOfDay(trialStartDate)
+    ) {
+      form.setValue("trialEndDate", null, {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      });
+    }
+  }, [form, trialEndDate, trialStartDate]);
 
   const onSubmit: SubmitHandler<TProductInquirySchema> = (values) => {
     onSubmitValues({
@@ -256,6 +275,14 @@ export function ProductInquiryActionForm({
                         control={form.control}
                         name="trialEndDate"
                         label=""
+                        disabledDays={(date: Date) => {
+                          const currentDate = startOfDay(date);
+                          const minimumEndDate = startOfDay(
+                            trialStartDate ?? today
+                          );
+
+                          return currentDate < minimumEndDate;
+                        }}
                       />
                     </FormItem>
                   )}

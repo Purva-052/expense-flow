@@ -243,17 +243,25 @@ export function LeaveActionForm({
 
                 {/* The Dynamic Table */}
                 {fields.length > 0 && (
-                  <div className="border rounded-md mt-4 overflow-y-auto max-h-[330px] relative">
+                  <div className="border border-border rounded-md mt-4 overflow-y-auto max-h-[330px] relative bg-background">
                     <table className="w-full text-sm text-left">
-                      <thead className="bg-gray-50 text-gray-700 font-medium border-b sticky top-0 z-10 shadow-sm">
+                      <thead className="[&_tr]:border-b">
                         <tr>
-                          <th className="p-3 w-[120px]">Leave Date</th>
-                          <th className="p-3 w-[100px]">Day</th>
-                          <th className="p-3 w-[160px]">Half/Full day</th>
-                          <th className="p-3 w-[180px]">1st/2nd Half</th>
+                          <th className="h-12 bg-muted text-foreground z-10 border-b px-3 text-left align-middle font-medium sticky top-0 w-[120px]">
+                            Leave Date
+                          </th>
+                          <th className="h-12 bg-muted text-foreground z-10 border-b px-3 text-left align-middle font-medium sticky top-0 w-[100px]">
+                            Day
+                          </th>
+                          <th className="h-12 bg-muted text-foreground z-10 border-b px-3 text-left align-middle font-medium sticky top-0 w-[160px]">
+                            Half/Full day
+                          </th>
+                          <th className="h-12 bg-muted text-foreground z-10 border-b px-3 text-left align-middle font-medium sticky top-0 w-[180px]">
+                            1st/2nd Half
+                          </th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y">
+                      <tbody className="divide-y divide-border">
                         {fields.map((field, index) => {
                           const currentDayType = watchDays?.[index]?.dayType;
                           const isWeekend =
@@ -266,11 +274,14 @@ export function LeaveActionForm({
                             .join("-");
 
                           return (
-                            <tr key={field.id} className="hover:bg-gray-50">
+                            <tr
+                              key={field.id}
+                              className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                            >
                               <td className="p-3 align-middle whitespace-nowrap">
                                 {displayDate}
                               </td>
-                              <td className="p-3 align-middle text-gray-500">
+                              <td className="p-3 align-middle text-muted-foreground">
                                 {field.dayName}
                                 {isWeekend && (
                                   <span className="block text-xs text-red-400 font-medium">
