@@ -7,7 +7,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useProductInquiryStore } from "../stores/useProductInquiry";
-import { PRODUCT_INQUIRY_STATUS_LABEL } from "@/utils/constant";
+import { formatProductInquiryStatusLabel } from "@/utils/constant";
 
 export function ViewProductInquiryModal() {
   const { open, setOpen, currentRow } = useProductInquiryStore();
@@ -155,8 +155,7 @@ export function ViewProductInquiryModal() {
             <span className="text-right text-slate-900 dark:text-slate-100">
               {currentRow?.status ? (
                 <Badge variant="outline" className="capitalize">
-                  {PRODUCT_INQUIRY_STATUS_LABEL[currentRow.status] ||
-                    currentRow.status}
+                  {formatProductInquiryStatusLabel(currentRow.status)}
                 </Badge>
               ) : (
                 "-"
