@@ -32,6 +32,7 @@ import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedProjectsAnalyticsIndexRouteImport } from './routes/_authenticated/projects-analytics/index'
 import { Route as AuthenticatedProjectTypeIndexRouteImport } from './routes/_authenticated/project-type/index'
 import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authenticated/profile/index'
+import { Route as AuthenticatedProductInquiryIndexRouteImport } from './routes/_authenticated/product-inquiry/index'
 import { Route as AuthenticatedProcessorIndexRouteImport } from './routes/_authenticated/processor/index'
 import { Route as AuthenticatedOutboundSourcesIndexRouteImport } from './routes/_authenticated/outbound-sources/index'
 import { Route as AuthenticatedNewJoineesIndexRouteImport } from './routes/_authenticated/new-joinees/index'
@@ -53,6 +54,7 @@ import { Route as AuthenticatedDailyReportIndexRouteImport } from './routes/_aut
 import { Route as AuthenticatedConferenceRoomBookingIndexRouteImport } from './routes/_authenticated/conference-room-booking/index'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
 import { Route as AuthenticatedBrandsIndexRouteImport } from './routes/_authenticated/brands/index'
+import { Route as AuthenticatedAdmobAnalyticsIndexRouteImport } from './routes/_authenticated/admob-analytics/index'
 import { Route as AuthenticatedProjectsDetailIdRouteImport } from './routes/_authenticated/projects/detail.$id'
 import { Route as AuthenticatedLinodeServerDashboardDetailIdRouteImport } from './routes/_authenticated/linode-server-dashboard/detail.$id'
 
@@ -181,6 +183,12 @@ const AuthenticatedProfileIndexRoute =
     path: '/profile/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedProductInquiryIndexRoute =
+  AuthenticatedProductInquiryIndexRouteImport.update({
+    id: '/product-inquiry/',
+    path: '/product-inquiry/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProcessorIndexRoute =
   AuthenticatedProcessorIndexRouteImport.update({
     id: '/processor/',
@@ -307,6 +315,12 @@ const AuthenticatedBrandsIndexRoute =
     path: '/brands/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdmobAnalyticsIndexRoute =
+  AuthenticatedAdmobAnalyticsIndexRouteImport.update({
+    id: '/admob-analytics/',
+    path: '/admob-analytics/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProjectsDetailIdRoute =
   AuthenticatedProjectsDetailIdRouteImport.update({
     id: '/projects/detail/$id',
@@ -331,6 +345,7 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/unauthorized': typeof errorsUnauthorizedRoute
+  '/admob-analytics/': typeof AuthenticatedAdmobAnalyticsIndexRoute
   '/brands/': typeof AuthenticatedBrandsIndexRoute
   '/clients/': typeof AuthenticatedClientsIndexRoute
   '/conference-room-booking/': typeof AuthenticatedConferenceRoomBookingIndexRoute
@@ -352,6 +367,7 @@ export interface FileRoutesByFullPath {
   '/new-joinees/': typeof AuthenticatedNewJoineesIndexRoute
   '/outbound-sources/': typeof AuthenticatedOutboundSourcesIndexRoute
   '/processor/': typeof AuthenticatedProcessorIndexRoute
+  '/product-inquiry/': typeof AuthenticatedProductInquiryIndexRoute
   '/profile/': typeof AuthenticatedProfileIndexRoute
   '/project-type/': typeof AuthenticatedProjectTypeIndexRoute
   '/projects-analytics/': typeof AuthenticatedProjectsAnalyticsIndexRoute
@@ -378,6 +394,7 @@ export interface FileRoutesByTo {
   '/503': typeof errors503Route
   '/unauthorized': typeof errorsUnauthorizedRoute
   '/': typeof AuthenticatedIndexRoute
+  '/admob-analytics': typeof AuthenticatedAdmobAnalyticsIndexRoute
   '/brands': typeof AuthenticatedBrandsIndexRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
   '/conference-room-booking': typeof AuthenticatedConferenceRoomBookingIndexRoute
@@ -399,6 +416,7 @@ export interface FileRoutesByTo {
   '/new-joinees': typeof AuthenticatedNewJoineesIndexRoute
   '/outbound-sources': typeof AuthenticatedOutboundSourcesIndexRoute
   '/processor': typeof AuthenticatedProcessorIndexRoute
+  '/product-inquiry': typeof AuthenticatedProductInquiryIndexRoute
   '/profile': typeof AuthenticatedProfileIndexRoute
   '/project-type': typeof AuthenticatedProjectTypeIndexRoute
   '/projects-analytics': typeof AuthenticatedProjectsAnalyticsIndexRoute
@@ -427,6 +445,7 @@ export interface FileRoutesById {
   '/(errors)/503': typeof errors503Route
   '/(errors)/unauthorized': typeof errorsUnauthorizedRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/admob-analytics/': typeof AuthenticatedAdmobAnalyticsIndexRoute
   '/_authenticated/brands/': typeof AuthenticatedBrandsIndexRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
   '/_authenticated/conference-room-booking/': typeof AuthenticatedConferenceRoomBookingIndexRoute
@@ -448,6 +467,7 @@ export interface FileRoutesById {
   '/_authenticated/new-joinees/': typeof AuthenticatedNewJoineesIndexRoute
   '/_authenticated/outbound-sources/': typeof AuthenticatedOutboundSourcesIndexRoute
   '/_authenticated/processor/': typeof AuthenticatedProcessorIndexRoute
+  '/_authenticated/product-inquiry/': typeof AuthenticatedProductInquiryIndexRoute
   '/_authenticated/profile/': typeof AuthenticatedProfileIndexRoute
   '/_authenticated/project-type/': typeof AuthenticatedProjectTypeIndexRoute
   '/_authenticated/projects-analytics/': typeof AuthenticatedProjectsAnalyticsIndexRoute
@@ -476,6 +496,7 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/unauthorized'
+    | '/admob-analytics/'
     | '/brands/'
     | '/clients/'
     | '/conference-room-booking/'
@@ -497,6 +518,7 @@ export interface FileRouteTypes {
     | '/new-joinees/'
     | '/outbound-sources/'
     | '/processor/'
+    | '/product-inquiry/'
     | '/profile/'
     | '/project-type/'
     | '/projects-analytics/'
@@ -523,6 +545,7 @@ export interface FileRouteTypes {
     | '/503'
     | '/unauthorized'
     | '/'
+    | '/admob-analytics'
     | '/brands'
     | '/clients'
     | '/conference-room-booking'
@@ -544,6 +567,7 @@ export interface FileRouteTypes {
     | '/new-joinees'
     | '/outbound-sources'
     | '/processor'
+    | '/product-inquiry'
     | '/profile'
     | '/project-type'
     | '/projects-analytics'
@@ -571,6 +595,7 @@ export interface FileRouteTypes {
     | '/(errors)/503'
     | '/(errors)/unauthorized'
     | '/_authenticated/'
+    | '/_authenticated/admob-analytics/'
     | '/_authenticated/brands/'
     | '/_authenticated/clients/'
     | '/_authenticated/conference-room-booking/'
@@ -592,6 +617,7 @@ export interface FileRouteTypes {
     | '/_authenticated/new-joinees/'
     | '/_authenticated/outbound-sources/'
     | '/_authenticated/processor/'
+    | '/_authenticated/product-inquiry/'
     | '/_authenticated/profile/'
     | '/_authenticated/project-type/'
     | '/_authenticated/projects-analytics/'
@@ -784,6 +810,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfileIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/product-inquiry/': {
+      id: '/_authenticated/product-inquiry/'
+      path: '/product-inquiry'
+      fullPath: '/product-inquiry/'
+      preLoaderRoute: typeof AuthenticatedProductInquiryIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/processor/': {
       id: '/_authenticated/processor/'
       path: '/processor'
@@ -931,6 +964,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBrandsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admob-analytics/': {
+      id: '/_authenticated/admob-analytics/'
+      path: '/admob-analytics'
+      fullPath: '/admob-analytics/'
+      preLoaderRoute: typeof AuthenticatedAdmobAnalyticsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/projects/detail/$id': {
       id: '/_authenticated/projects/detail/$id'
       path: '/projects/detail/$id'
@@ -950,6 +990,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedAdmobAnalyticsIndexRoute: typeof AuthenticatedAdmobAnalyticsIndexRoute
   AuthenticatedBrandsIndexRoute: typeof AuthenticatedBrandsIndexRoute
   AuthenticatedClientsIndexRoute: typeof AuthenticatedClientsIndexRoute
   AuthenticatedConferenceRoomBookingIndexRoute: typeof AuthenticatedConferenceRoomBookingIndexRoute
@@ -971,6 +1012,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedNewJoineesIndexRoute: typeof AuthenticatedNewJoineesIndexRoute
   AuthenticatedOutboundSourcesIndexRoute: typeof AuthenticatedOutboundSourcesIndexRoute
   AuthenticatedProcessorIndexRoute: typeof AuthenticatedProcessorIndexRoute
+  AuthenticatedProductInquiryIndexRoute: typeof AuthenticatedProductInquiryIndexRoute
   AuthenticatedProfileIndexRoute: typeof AuthenticatedProfileIndexRoute
   AuthenticatedProjectTypeIndexRoute: typeof AuthenticatedProjectTypeIndexRoute
   AuthenticatedProjectsAnalyticsIndexRoute: typeof AuthenticatedProjectsAnalyticsIndexRoute
@@ -989,6 +1031,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedAdmobAnalyticsIndexRoute: AuthenticatedAdmobAnalyticsIndexRoute,
   AuthenticatedBrandsIndexRoute: AuthenticatedBrandsIndexRoute,
   AuthenticatedClientsIndexRoute: AuthenticatedClientsIndexRoute,
   AuthenticatedConferenceRoomBookingIndexRoute:
@@ -1018,6 +1061,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOutboundSourcesIndexRoute:
     AuthenticatedOutboundSourcesIndexRoute,
   AuthenticatedProcessorIndexRoute: AuthenticatedProcessorIndexRoute,
+  AuthenticatedProductInquiryIndexRoute: AuthenticatedProductInquiryIndexRoute,
   AuthenticatedProfileIndexRoute: AuthenticatedProfileIndexRoute,
   AuthenticatedProjectTypeIndexRoute: AuthenticatedProjectTypeIndexRoute,
   AuthenticatedProjectsAnalyticsIndexRoute:

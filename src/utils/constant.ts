@@ -67,6 +67,86 @@ export const INQUIRY_STATUS_LABEL: any = {
   closed: "Closed",
   "opted-out": "Opted Out",
 };
+export const PRODUCT_INQUIRY_STATUS = {
+  CONTACTED: "contacted",
+  UNQUALIFIED: "unqualified_lead",
+  NO_RESPONSE: "no_response",
+  DEMO_SCHEDULED: "demo_scheduled",
+  DEMO_COMPLETED: "demo_completed",
+  PROPOSAL_SHARED: "proposal_shared",
+  WON: "won",
+  LOST: "lost",
+  OTHERS: "others",
+};
+
+export const PRODUCT_INQUIRY_STATUS_OPTIONS = [
+  {
+    value: PRODUCT_INQUIRY_STATUS.CONTACTED,
+    label: "Contacted",
+  },
+  {
+    value: PRODUCT_INQUIRY_STATUS.UNQUALIFIED,
+    label: "Unqualified Lead",
+  },
+  {
+    value: PRODUCT_INQUIRY_STATUS.NO_RESPONSE,
+    label: "No Response",
+  },
+  {
+    value: PRODUCT_INQUIRY_STATUS.DEMO_SCHEDULED,
+    label: "Demo Scheduled",
+  },
+  {
+    value: PRODUCT_INQUIRY_STATUS.DEMO_COMPLETED,
+    label: "Demo Completed",
+  },
+  {
+    value: PRODUCT_INQUIRY_STATUS.PROPOSAL_SHARED,
+    label: "Proposal Shared",
+  },
+  {
+    value: PRODUCT_INQUIRY_STATUS.WON,
+    label: "Won",
+  },
+  {
+    value: PRODUCT_INQUIRY_STATUS.LOST,
+    label: "Lost",
+  },
+  {
+    value: PRODUCT_INQUIRY_STATUS.OTHERS,
+    label: "Others",
+  },
+];
+
+export const PRODUCT_INQUIRY_STATUS_LABEL: any = {
+  contacted: "Contacted",
+  unqualified_lead: "Unqualified Lead",
+  no_response: "No Response",
+  demo_scheduled: "Demo Scheduled",
+  demo_completed: "Demo Completed",
+  proposal_shared: "Proposal Shared",
+  won: "Won",
+  lost: "Lost",
+  others: "Others",
+  trial_started: "Trial Started",
+  converted: "Converted",
+  not_interested: "Not Interested",
+};
+
+export const formatProductInquiryStatusLabel = (
+  status?: string | null
+): string => {
+  if (!status) return "-";
+
+  return (
+    PRODUCT_INQUIRY_STATUS_LABEL[status] ||
+    status
+      .split(/[_-]+/)
+      .filter(Boolean)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ")
+  );
+};
 
 export const INTERVIEW_STATUS_LABEL: any = {
   technical_round: "Technical Round",

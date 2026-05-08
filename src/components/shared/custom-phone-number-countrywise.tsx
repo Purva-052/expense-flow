@@ -11,7 +11,7 @@ interface Props {
 
 export function PhoneInputField({ form, name, label }: Props) {
   return (
-    <div className="flex flex-col gap-1">
+    <div className="phone-input-wrapper relative flex flex-col gap-1">
       {label && (
         <label className="text-sm font-medium text-foreground">{label}</label>
       )}
@@ -85,15 +85,20 @@ export function PhoneInputField({ form, name, label }: Props) {
           --react-international-phone-border-color: var(--input);
           --react-international-phone-background-color: var(--background);
           --react-international-phone-text-color: var(--foreground);
-          --react-international-phone-selected-country-z-index: 10;
+          --react-international-phone-selected-country-z-index: 70;
           
+          position: relative;
           display: flex;
           align-items: center;
           height: 36px;
           border: 1px solid var(--input);
           border-radius: 6px;
-          overflow: hidden;
           background-color: var(--background);
+          overflow: visible;
+        }
+
+        .phone-input-wrapper:focus-within {
+          z-index: 70;
         }
 
         .phone-input-field {
@@ -119,10 +124,15 @@ export function PhoneInputField({ form, name, label }: Props) {
         }
 
         .phone-country-dropdown {
+          position: absolute !important;
+          top: calc(100% + 4px) !important;
+          left: 0 !important;
           background-color: var(--popover) !important;
           border: 1px solid var(--border) !important;
           color: var(--popover-foreground) !important;
-          z-index: 50 !important;
+          z-index: 60 !important;
+          border-radius: 8px !important;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12) !important;
         }
 
         .phone-country-dropdown .react-international-phone-country-selector-list {
