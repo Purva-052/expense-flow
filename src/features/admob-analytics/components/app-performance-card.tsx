@@ -9,9 +9,9 @@ export const AppPerformanceCard = ({ data }: { data: AdMobAppPerformance[] }) =>
         <CardTitle className="text-base font-semibold">
           App Performance
         </CardTitle>
-        <button className="text-xs font-bold text-primary hover:underline">
+        {/* <button className="text-xs font-bold text-primary hover:underline">
           Export CSV
-        </button>
+        </button> */}
       </CardHeader>
       <CardContent className="p-0">
         <div className="w-full overflow-x-auto">
