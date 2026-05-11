@@ -594,7 +594,6 @@ export default function DailyReportPage() {
             }
           }}
           type={reportType}
-          reportingDate={listParams.fromDate}
           userId={statsUserId}
         />
       </div>
