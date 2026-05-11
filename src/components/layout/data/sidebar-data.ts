@@ -172,7 +172,7 @@ export const sidebarData: SidebarData = {
           allowUserIDs: [134],
         },
         {
-          title: "Product Inquiry",
+          title: "Product Inquiries",
           url: "/product-inquiry",
           icon: MessageCircleQuestionMark,
           requiredRoles: [roles.ADMIN],

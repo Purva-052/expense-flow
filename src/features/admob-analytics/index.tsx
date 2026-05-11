@@ -178,6 +178,15 @@ const AdMobAnalyticsDashboard = () => {
 
   const appStatCards = [
     {
+      label: "Total Earnings",
+      value: dashboardData?.summary.totalEarnings.displayValue || "$0.00",
+      helperText: "Revenue for selected period",
+      icon: (
+        <DollarSign className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
+      ),
+      iconBg: "bg-emerald-100 dark:bg-emerald-900/30",
+    },
+    {
       label: "Total Apps",
       value: appsData?.summary.totalApps.value.toString() || "0",
       helperText: "Total apps integrated",
@@ -251,6 +260,11 @@ const AdMobAnalyticsDashboard = () => {
                   placeholder="Pick a date range"
                   value={date}
                   onChange={setDate}
+                  onOpenChange={(open) => {
+                    if (!open && date?.from && !date.to) {
+                      setDate(undefined);
+                    }
+                  }}
                   disabled={{ after: new Date() }}
                   popoverAlign="end"
                   popoverSide="top"
@@ -349,6 +363,11 @@ const AdMobAnalyticsDashboard = () => {
                     placeholder="Pick a date range"
                     value={date}
                     onChange={setDate}
+                    onOpenChange={(open) => {
+                      if (!open && date?.from && !date.to) {
+                        setDate(undefined);
+                      }
+                    }}
                     disabled={{ after: new Date() }}
                     popoverAlign="end"
                     popoverSide="top"

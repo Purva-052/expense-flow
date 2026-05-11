@@ -17,6 +17,7 @@ export default function DateRangeFilter(props: {
   value?: DateRange | undefined;
   placeholder?: string;
   onChange?: (val: DateRange | undefined) => void;
+  onOpenChange?: (open: boolean) => void;
   disabled?: Matcher | Matcher[] | undefined;
   className?: string;
   popoverAlign?: PopoverContentProps["align"];
@@ -28,6 +29,7 @@ export default function DateRangeFilter(props: {
     value,
     placeholder,
     onChange,
+    onOpenChange,
     disabled,
     className,
     popoverAlign = "start",
@@ -71,7 +73,13 @@ export default function DateRangeFilter(props: {
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={(val) => {
+        setOpen(val);
+        if (onOpenChange) onOpenChange(val);
+      }}
+    >
       <PopoverTrigger asChild>
         <Button
           variant={"outline"}
