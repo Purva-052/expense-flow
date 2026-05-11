@@ -18,6 +18,7 @@ export const getColumns = (): ColumnDef<any>[] => [
   {
     accessorKey: "companyName",
     header: "Company Name",
+    cell: ({ row }) => row.original?.companyName ?? "-",
   },
   {
     accessorKey: "contactPerson",
@@ -48,6 +49,21 @@ export const getColumns = (): ColumnDef<any>[] => [
       return (
         <Badge variant="secondary" className="rounded-full px-2.5 py-1">
           {industryName}
+        </Badge>
+      );
+    },
+  },
+  {
+    id: "product",
+    header: "Product",
+    accessorFn: (row) => row?.product?.name ?? "-",
+    cell: ({ row }) => {
+      const productName = row.original?.product?.name;
+      if (!productName) return "-";
+
+      return (
+        <Badge variant="secondary" className="rounded-full px-2.5 py-1">
+          {productName}
         </Badge>
       );
     },

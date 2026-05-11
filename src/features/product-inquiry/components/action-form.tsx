@@ -31,6 +31,7 @@ import { useGetIndustryDropdownList } from "@/features/industry/services";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 import { useCallback, useEffect } from "react";
 import { startOfDay } from "date-fns";
+import { useGetProductDropdown } from "../services";
 
 interface Props {
   currentRow?: any;
@@ -63,6 +64,7 @@ export function ProductInquiryActionForm({
       demoDate: row?.demoDate ? new Date(row?.demoDate) : null,
       city: row?.city ?? "",
       industryId: toNumberOrNull(row?.industry?.id ?? row?.industryId),
+      productId: row?.product?.id ?? toNumberOrNull(row?.productId),
       numberOfUsers: toNumberOrNull(row?.numberOfUsers),
       requirements: row?.requirements ?? "",
       status: row?.status ?? PRODUCT_INQUIRY_STATUS.CONTACTED,
@@ -94,6 +96,8 @@ export function ProductInquiryActionForm({
 
   const { data: industryList, isPending: loadingIndustry }: any =
     useGetIndustryDropdownList();
+  const { data: productDropdownList, isPending: loadingProductDropdown }: any =
+    useGetProductDropdown();
   const selectedStatus = form.watch("status");
   const trialStartDate = form.watch("trialStartDate");
   const trialEndDate = form.watch("trialEndDate");
@@ -228,6 +232,45 @@ export function ProductInquiryActionForm({
               <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
+                  name="status"
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>Status</FormLabel>
+                      <CustomDropDownSearchable
+                        form={form}
+                        name="status"
+                        label=""
+                        placeholder="Select Status"
+                        options={PRODUCT_INQUIRY_STATUS_OPTIONS}
+                      />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="productId"
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>Product</FormLabel>
+                      <CustomDropDownSearchable
+                        form={form}
+                        name="productId"
+                        label=""
+                        placeholder="Select Product"
+                        isLoading={loadingProductDropdown}
+                        options={productDropdownList?.data?.map((opt: any) => ({
+                          value: opt.id,
+                          label: opt.name,
+                        }))}
+                      />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
                   name="numberOfUsers"
                   render={({ field }) => (
                     <FormItem>
@@ -295,23 +338,6 @@ export function ProductInquiryActionForm({
                   )}
                 />
               </div>
-
-              <FormField
-                control={form.control}
-                name="status"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>Status</FormLabel>
-                    <CustomDropDownSearchable
-                      form={form}
-                      name="status"
-                      label=""
-                      placeholder="Select Status"
-                      options={PRODUCT_INQUIRY_STATUS_OPTIONS}
-                    />
-                  </FormItem>
-                )}
-              />
 
               {selectedStatus === PRODUCT_INQUIRY_STATUS.OTHERS && (
                 <div className="flex flex-col space-y-2">

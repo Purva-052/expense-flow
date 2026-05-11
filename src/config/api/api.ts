@@ -291,11 +291,14 @@ const API = {
     create: "/product-inquiries",
     update: "/product-inquiries",
     delete: "/product-inquiries",
+    productDropdown: "/product-inquiries/dropdown/products",
     comments: {
       list: (id: string) => `/product-inquiries/${id}/comments`,
       create: (id: string) => `/product-inquiries/${id}/comments`,
-      update: (id: string, commentId: string) => `/product-inquiries/${id}/comments/${commentId}`,
-      delete: (id: string, commentId: string) => `/product-inquiries/${id}/comments/${commentId}`,
+      update: (id: string, commentId: string) =>
+        `/product-inquiries/${id}/comments/${commentId}`,
+      delete: (id: string, commentId: string) =>
+        `/product-inquiries/${id}/comments/${commentId}`,
     },
   },
 };

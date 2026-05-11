@@ -146,25 +146,21 @@ export function CommentModal() {
     setEditText("");
   };
 
-  const handleStatusChange = async (status: string) => {
+  const handleStatusChange = (status: string) => {
     setSelectedStatus(status);
-    if (status === PRODUCT_INQUIRY_STATUS.OTHERS) {
-      return;
-    }
-    setStatusOthersText("");
-    try {
-      await updateInquiryStatus({ status, others: "" });
-    } catch {
-      setSelectedStatus(currentRow?.status || "");
+    if (status !== PRODUCT_INQUIRY_STATUS.OTHERS) {
+      setStatusOthersText("");
     }
   };
 
-  const handleOthersStatusSave = async () => {
-    if (!statusOthersText.trim()) return;
+  const handleStatusSave = async () => {
+    const isOthers = selectedStatus === PRODUCT_INQUIRY_STATUS.OTHERS;
+    if (isOthers && !statusOthersText.trim()) return;
+
     try {
       await updateInquiryStatus({
-        status: PRODUCT_INQUIRY_STATUS.OTHERS,
-        others: statusOthersText.trim(),
+        status: selectedStatus,
+        others: isOthers ? statusOthersText.trim() : "",
       });
     } catch {
       setSelectedStatus(currentRow?.status || "");
@@ -455,35 +451,40 @@ export function CommentModal() {
                       </Select>
 
                       {selectedStatus === PRODUCT_INQUIRY_STATUS.OTHERS && (
-                        <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center">
-                          <Textarea
-                            value={statusOthersText}
-                            onChange={(e) =>
-                              setStatusOthersText(e.target.value)
-                            }
-                            placeholder="Additional notes about the status"
-                            className="min-h-[44px] rounded-xl border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 placeholder:text-slate-400 sm:min-h-[44px] sm:max-h-[92px] dark:border-slate-700 dark:bg-[#0b1018] dark:text-slate-200 dark:placeholder:text-slate-500"
-                          />
-                          <Button
-                            type="button"
-                            className="h-10 rounded-xl bg-primary px-4 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
-                            onClick={handleOthersStatusSave}
-                            disabled={
-                              updatingStatus || !statusOthersText.trim()
-                            }
-                          >
-                            Save Status
-                          </Button>
-                        </div>
+                        <Textarea
+                          value={statusOthersText}
+                          onChange={(e) =>
+                            setStatusOthersText(e.target.value)
+                          }
+                          placeholder="Additional notes about the status"
+                          className="min-h-[44px] rounded-xl border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 placeholder:text-slate-400 sm:min-h-[44px] sm:max-h-[92px] dark:border-slate-700 dark:bg-[#0b1018] dark:text-slate-200 dark:placeholder:text-slate-500"
+                        />
                       )}
+
+                      <Button
+                        type="button"
+                        className="h-10 rounded-xl bg-primary px-4 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
+                        onClick={handleStatusSave}
+                        disabled={
+                          updatingStatus ||
+                          (selectedStatus === PRODUCT_INQUIRY_STATUS.OTHERS &&
+                            !statusOthersText.trim()) ||
+                          (selectedStatus === currentRow?.status &&
+                            (selectedStatus !== PRODUCT_INQUIRY_STATUS.OTHERS ||
+                              statusOthersText === (currentRow?.others || "")))
+                        }
+                      >
+                        {updatingStatus ? "Updating..." : "Update Status"}
+                      </Button>
                     </div>
                   </div>
                   <span className="text-xs text-slate-500">
                     {updatingStatus
                       ? "Updating status..."
-                      : selectedStatus === PRODUCT_INQUIRY_STATUS.OTHERS
-                        ? "Add a note before saving Others"
-                        : "Changes apply instantly"}
+                      : selectedStatus === PRODUCT_INQUIRY_STATUS.OTHERS &&
+                          !statusOthersText.trim()
+                        ? "Add a note before saving"
+                        : "Click Update Status to apply changes"}
                   </span>
                 </div>
 
