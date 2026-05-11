@@ -17,13 +17,8 @@ function Calendar({
       classNames={{
         months: "flex flex-col sm:flex-row gap-2",
         month: "flex flex-col gap-4",
-        caption_label: cn(
+        caption_label:
           "text-sm font-medium flex items-center gap-1 select-none pointer-events-none text-foreground dark:text-white",
-          // Hide the plain text label only when in non-dropdown layout
-          !props.captionLayout || props.captionLayout === "label"
-            ? "hidden"
-            : ""
-        ),
         chevron: cn(
           "opacity-100",
           // Navigation chevrons (left/right) - no fill override needed, they inherit currentColor
@@ -70,7 +65,8 @@ function Calendar({
         range_middle:
           "day-range-middle aria-selected:bg-accent aria-selected:text-accent-foreground",
         hidden: "invisible",
-        month_caption: "flex justify-center pt-1 relative items-center w-full",
+        month_caption:
+          "relative flex h-7 items-center justify-center px-8",
         caption_dropdowns: "flex justify-center items-center gap-1 px-8",
         dropdown_root:
           "relative inline-flex h-8 items-center rounded-md border border-border bg-background px-2 text-foreground transition-colors hover:bg-accent dark:border-white/10 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800",
