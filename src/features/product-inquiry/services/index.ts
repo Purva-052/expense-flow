@@ -48,6 +48,10 @@ export const useGetProductInquiryList = (params?: any) => {
   return useFetchData({ url: GET_API_URL, params });
 };
 
+export const useGetProductDropdown = () => {
+  return useFetchData({ url: API.product_inquiry.productDropdown });
+};
+
 export const useDeleteProductInquiry = (id: string) => {
   const { setOpen } = useProductInquiryStore();
   return useDeleteData({
@@ -75,7 +79,10 @@ export const useCreateProductInquiryComment = (inquiryId: string) => {
   });
 };
 
-export const useUpdateProductInquiryComment = (inquiryId: string, commentId: string) => {
+export const useUpdateProductInquiryComment = (
+  inquiryId: string,
+  commentId: string
+) => {
   return usePatchData({
     url: API.product_inquiry.comments.update(inquiryId, commentId),
     refetchQueries: [API.product_inquiry.comments.list(inquiryId)],
