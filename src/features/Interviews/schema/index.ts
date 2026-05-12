@@ -72,11 +72,10 @@ export const interviewFormSchema = z
 
     resumeS3Key: z.string().optional(),
 
-    currentCtc: z.coerce
-      .number({
-        required_error: "Current CTC is required",
-      })
-      .gt(0, "Current CTC must be greater than 0"),
+    currentCtc: z.coerce.number({
+      required_error: "Current CTC is required",
+    }),
+    // .gt(0, "Current CTC must be greater than 0"),
 
     expectedCtc: z.coerce
       .number({
