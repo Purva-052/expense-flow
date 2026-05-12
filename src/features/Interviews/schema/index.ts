@@ -77,11 +77,10 @@ export const interviewFormSchema = z
     }),
     // .gt(0, "Current CTC must be greater than 0"),
 
-    expectedCtc: z.coerce
-      .number({
-        required_error: "Expected CTC is required",
-      })
-      .gt(0, "Expected CTC must be greater than 0"),
+    expectedCtc: z.coerce.number({
+      required_error: "Expected CTC is required",
+    }),
+    // .gt(0, "Expected CTC must be greater than 0"),
 
     noticePeriod: z.string().optional(),
 
