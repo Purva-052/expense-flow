@@ -66,6 +66,7 @@ const API = {
     update: "/project-leads",
     delete: "/project-leads",
     dashboard: "/project-leads/inquiry",
+    export_csv: "/project-leads/export",
   },
   interview: {
     list: "/interviews",
@@ -291,6 +292,7 @@ const API = {
     create: "/product-inquiries",
     update: "/product-inquiries",
     delete: "/product-inquiries",
+    export_csv: "/product-inquiries/export-report",
     productDropdown: "/product-inquiries/dropdown/products",
     comments: {
       list: (id: string) => `/product-inquiries/${id}/comments`,
