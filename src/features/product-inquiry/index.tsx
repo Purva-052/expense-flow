@@ -6,12 +6,15 @@ import TablePageHeader from "@/components/table/table-page-header";
 import { FilterConfig } from "@/components/table/table-toolbar";
 import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import { useProductInquiryStore } from "./stores/useProductInquiry";
-import { useGetProductInquiryList } from "./services";
+import { useExportCSV, useGetProductInquiryList } from "./services";
 import { getColumns } from "./components/columns";
 import { ActionFormModal } from "./components/actions";
 import { useMemo } from "react";
 import { useGetIndustryDropdownList } from "../industry/services";
 import { PRODUCT_INQUIRY_STATUS_OPTIONS } from "@/utils/constant";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
+import { toast } from "sonner";
 
 const ProductInquiryPage = () => {
   const { setOpen } = useProductInquiryStore();
@@ -35,6 +38,7 @@ const ProductInquiryPage = () => {
 
   const { data: listData, isPending: loading } =
     useGetProductInquiryList(apiParams);
+  const { mutate: exportCSV, isPending: exportCSVLoading } = useExportCSV();
   const { data: industryDropdownData, isPending: loadingIndustry }: any =
     useGetIndustryDropdownList();
 
@@ -96,6 +100,41 @@ const ProductInquiryPage = () => {
     setOpen("add");
   };
 
+  const handleExportCSV = () => {
+    const payload = Object.fromEntries(
+      Object.entries(apiParams).filter(
+        ([, value]) => value !== "" && value !== null && value !== undefined
+      )
+    );
+
+    exportCSV(payload, {
+      onSuccess: (response: any) => {
+        const fileBlob = response?.blob;
+        const filename =
+          response?.filename ||
+          `product_inquiries_export_${new Date().toISOString().split("T")[0]}.xlsx`;
+
+        if (fileBlob) {
+          const fileUrl = URL.createObjectURL(fileBlob);
+          const link = document.createElement("a");
+          link.href = fileUrl;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(fileUrl);
+          toast.success("CSV export generated successfully");
+        } else {
+          console.error("No file URL found in response:", response);
+          toast.error("Failed to generate CSV file");
+        }
+      },
+      onError: (error: Error) => {
+        console.error("CSV export failed:", error);
+      },
+    });
+  };
+
   const columns = useMemo(() => getColumns(), []);
 
   return (
@@ -104,6 +143,12 @@ const ProductInquiryPage = () => {
         title="Product Inquiries"
         buttonText="Add Inquiry"
         onButtonClick={handleAdd}
+        actions={
+          <Button onClick={handleExportCSV} disabled={exportCSVLoading}>
+            <Download />
+            {exportCSVLoading ? "Exporting CSV ..." : "Export CSV"}
+          </Button>
+        }
       >
         Manage your product inquiries and trial requests here.
       </TablePageHeader>

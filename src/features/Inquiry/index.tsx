@@ -36,7 +36,7 @@ import { useAuthStore } from "@/stores/use-auth-store";
 import { INQUIRY_STATUS, roles } from "@/utils/constant";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
+import { Download, MoreHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod"; // Import zod
@@ -51,6 +51,8 @@ import { useGetInquiryDropdownList } from "../inquiry-types/services";
 import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import { formatDate } from "@/utils/commonFunctions";
 import { ViewNoteModal } from "./components/view-note-modal";
+import { toast } from "sonner";
+import { useExportCSV } from "./services";
 
 const InquiryPage = () => {
   const { open, setOpen } = useInquiryStore();
@@ -125,6 +127,7 @@ const InquiryPage = () => {
     "dark:data-[state=active]:bg-primary dark:data-[state=active]:text-white dark:data-[state=active]:shadow-[0_2px_8px_oklch(0_0_0/0.5)]";
 
   const { data: listData, isPending: loading } = useGetInquiry(apiParams);
+  const { mutate: exportCSV, isPending: exportCSVLoading } = useExportCSV();
 
   const totalCount = (listData as any)?.metadata?.totalCount;
 
@@ -260,6 +263,41 @@ const InquiryPage = () => {
 
   const handleAdd = () => {
     setOpen("add");
+  };
+
+  const handleExportCSV = () => {
+    const payload = Object.fromEntries(
+      Object.entries(apiParams).filter(
+        ([, value]) => value !== "" && value !== null && value !== undefined
+      )
+    );
+
+    exportCSV(payload, {
+      onSuccess: (response: any) => {
+        const fileBlob = response?.blob;
+        const filename =
+          response?.filename ||
+          `lead_management_export_${new Date().toISOString().split("T")[0]}.xlsx`;
+
+        if (fileBlob) {
+          const fileUrl = URL.createObjectURL(fileBlob);
+          const link = document.createElement("a");
+          link.href = fileUrl;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(fileUrl);
+          toast.success("CSV export generated successfully");
+        } else {
+          console.error("No file URL found in response:", response);
+          toast.error("Failed to generate CSV file");
+        }
+      },
+      onError: (error: Error) => {
+        console.error("CSV export failed:", error);
+      },
+    });
   };
 
   const statusUpdateSchema = z.object({
@@ -649,9 +687,15 @@ const InquiryPage = () => {
   return (
     <PageLayout className="h-[calc(100vh-100px)] overflow-y-auto flex flex-col">
       <TablePageHeader
-        title="Inquiries / Lead Management"
+        title="Service Inquiries"
         buttonText="Add Lead"
         onButtonClick={handleAdd}
+        actions={
+          <Button onClick={handleExportCSV} disabled={exportCSVLoading}>
+            <Download />
+            {exportCSVLoading ? "Exporting CSV ..." : "Export CSV"}
+          </Button>
+        }
         showActionButton={
           userRole === roles.BDE ||
           userRole === roles.ADMIN ||
