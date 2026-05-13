@@ -107,13 +107,6 @@ export const sidebarData: SidebarData = {
           ],
         },
         {
-          title: "Lead Management",
-          url: "/inquiry",
-          icon: BriefcaseBusiness,
-          allowUserIDs: [134],
-          requiredRoles: [roles.ADMIN],
-        },
-        {
           title: "System Inventory",
           url: "/system-inventory",
           icon: Database,
@@ -147,6 +140,35 @@ export const sidebarData: SidebarData = {
       ],
     },
     {
+      title: "Sales",
+      requiredRoles: [
+        roles.ADMIN,
+        roles.TEAM_LEAD,
+        roles.PROJECT_MANAGER,
+        roles.DEVELOPER,
+        roles.BDE,
+      ],
+      allowUserIDs: [134],
+      allowedTech: [29],
+      items: [
+        {
+          title: "Service Inquiries",
+          url: "/inquiry",
+          icon: BriefcaseBusiness,
+          allowUserIDs: [134],
+          requiredRoles: [roles.ADMIN],
+        },
+        {
+          title: "Product Inquiries",
+          url: "/product-inquiry",
+          icon: MessageCircleQuestionMark,
+          requiredRoles: [roles.ADMIN],
+          allowUserIDs: [134],
+          allowedTech: [29],
+        },
+      ],
+    },
+    {
       title: "Growth Analytics",
       requiredRoles: [
         roles.ADMIN,
@@ -170,14 +192,6 @@ export const sidebarData: SidebarData = {
           icon: TrendingUp,
           requiredRoles: [roles.ADMIN],
           allowUserIDs: [134],
-        },
-        {
-          title: "Product Inquiries",
-          url: "/product-inquiry",
-          icon: MessageCircleQuestionMark,
-          requiredRoles: [roles.ADMIN],
-          allowUserIDs: [134],
-          allowedTech: [29],
         },
       ],
     },
