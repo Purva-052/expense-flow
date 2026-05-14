@@ -10,7 +10,7 @@ export const URL_TO_TITLE_MAP: Record<string, string> = {
   "/clients": "Clients",
   "/profile": "Profile",
   "/project-type": "Project Types",
-  "/inquiry": "Lead Management",
+  "/inquiry": "Service Inquiries",
   "/inquiry-requirements": "Inquiry Requirements",
   "/server": "Servers",
   "/new-joinees": "To be Join",

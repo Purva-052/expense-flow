@@ -107,13 +107,6 @@ export const sidebarData: SidebarData = {
           ],
         },
         {
-          title: "Lead Management",
-          url: "/inquiry",
-          icon: BriefcaseBusiness,
-          allowUserIDs: [134],
-          requiredRoles: [roles.ADMIN],
-        },
-        {
           title: "System Inventory",
           url: "/system-inventory",
           icon: Database,
@@ -147,6 +140,35 @@ export const sidebarData: SidebarData = {
       ],
     },
     {
+      title: "Sales",
+      requiredRoles: [
+        roles.ADMIN,
+        roles.TEAM_LEAD,
+        roles.PROJECT_MANAGER,
+        roles.DEVELOPER,
+        roles.BDE,
+      ],
+      allowUserIDs: [134],
+      allowedTech: [29],
+      items: [
+        {
+          title: "Service Inquiries",
+          url: "/inquiry",
+          icon: BriefcaseBusiness,
+          allowUserIDs: [134],
+          requiredRoles: [roles.ADMIN],
+        },
+        {
+          title: "Product Inquiries",
+          url: "/product-inquiry",
+          icon: MessageCircleQuestionMark,
+          requiredRoles: [roles.ADMIN],
+          allowUserIDs: [134],
+          allowedTech: [29],
+        },
+      ],
+    },
+    {
       title: "Growth Analytics",
       requiredRoles: [
         roles.ADMIN,
@@ -171,14 +193,6 @@ export const sidebarData: SidebarData = {
           requiredRoles: [roles.ADMIN],
           allowUserIDs: [134],
         },
-        {
-          title: "Product Inquiries",
-          url: "/product-inquiry",
-          icon: MessageCircleQuestionMark,
-          requiredRoles: [roles.ADMIN],
-          allowUserIDs: [134],
-          allowedTech: [29],
-        },
       ],
     },
     {
@@ -201,8 +215,14 @@ export const sidebarData: SidebarData = {
     },
     {
       title: "Operations",
-      requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
+      requiredRoles: [
+        roles.ADMIN,
+        roles.TEAM_LEAD,
+        roles.PROJECT_MANAGER,
+        roles.BDE,
+      ],
       allowUserIDs: [169, 170, 171, 175, 174],
+      allowedTech: [29, 15],
       items: [
         {
           title: "Conference Room Booking",
@@ -219,8 +239,14 @@ export const sidebarData: SidebarData = {
           title: "Transaction Logs",
           url: "/transactions-logs",
           icon: ScrollText,
-          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER, roles.TEAM_LEAD],
+          requiredRoles: [
+            roles.ADMIN,
+            roles.PROJECT_MANAGER,
+            roles.TEAM_LEAD,
+            roles.BDE,
+          ],
           allowUserIDs: [169, 170, 171, 175, 174],
+          allowedTech: [29, 15],
         },
         {
           title: "Tools Management",
