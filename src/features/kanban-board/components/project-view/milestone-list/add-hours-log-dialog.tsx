@@ -242,7 +242,7 @@ export const AddHoursLogDialog = ({
         }}
       >
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="pt-4">
             {reportId ? "Edit" : "Add"} Log Hours{" "}
             {taskName ? `- ${taskName}` : ""}
           </DialogTitle>
@@ -287,7 +287,7 @@ export const AddHoursLogDialog = ({
                     <SelectValue placeholder="Hrs" />
                   </SelectTrigger>
                   <SelectContent>
-                    {Array.from({ length: 13 }).map((_, i) => (
+                    {Array.from({ length: 15 }).map((_, i) => (
                       <SelectItem key={i} value={String(i)}>
                         {String(i).padStart(2, "0")} hrs
                       </SelectItem>
