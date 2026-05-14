@@ -12,7 +12,6 @@ import {
   Phone,
   MapPin,
   Briefcase,
-  DollarSign,
   FileCheck,
   MessageSquare,
   UserCircle,
@@ -22,6 +21,7 @@ import {
   SquareArrowOutUpRight,
   History,
   RefreshCcw,
+  IndianRupee,
   // ShieldCheck,
 } from "lucide-react";
 import {
@@ -438,7 +438,7 @@ export const InterviewDetailsDialog = ({
                   {userRole === roles.ADMIN && (
                     <>
                       <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                        <DollarSign className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                        <IndianRupee className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
                             Current CTC
@@ -449,7 +449,7 @@ export const InterviewDetailsDialog = ({
                         </div>
                       </div>
                       <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                        <DollarSign className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                        <IndianRupee className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
                             Expected CTC
