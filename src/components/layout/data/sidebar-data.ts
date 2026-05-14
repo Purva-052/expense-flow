@@ -215,8 +215,14 @@ export const sidebarData: SidebarData = {
     },
     {
       title: "Operations",
-      requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
+      requiredRoles: [
+        roles.ADMIN,
+        roles.TEAM_LEAD,
+        roles.PROJECT_MANAGER,
+        roles.BDE,
+      ],
       allowUserIDs: [169, 170, 171, 175, 174],
+      allowedTech: [29, 15],
       items: [
         {
           title: "Conference Room Booking",
@@ -233,8 +239,14 @@ export const sidebarData: SidebarData = {
           title: "Transaction Logs",
           url: "/transactions-logs",
           icon: ScrollText,
-          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER, roles.TEAM_LEAD],
+          requiredRoles: [
+            roles.ADMIN,
+            roles.PROJECT_MANAGER,
+            roles.TEAM_LEAD,
+            roles.BDE,
+          ],
           allowUserIDs: [169, 170, 171, 175, 174],
+          allowedTech: [29, 15],
         },
         {
           title: "Tools Management",

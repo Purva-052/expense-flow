@@ -456,11 +456,11 @@ export const InterviewForm = ({
                     <FormField
                       control={form.control}
                       name="currentCtc"
-                      render={({ field, fieldState }) => (
+                      render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-sm ">
                             Current CTC
-                            <RequiredIndicator error={!!fieldState.error} />
+                            {/* <RequiredIndicator error={!!fieldState.error} /> */}
                           </FormLabel>
                           <FormControl>
                             <Input
@@ -506,11 +506,11 @@ export const InterviewForm = ({
                     <FormField
                       control={form.control}
                       name="expectedCtc"
-                      render={({ field, fieldState }) => (
+                      render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-sm">
                             Expected CTC
-                            <RequiredIndicator error={!!fieldState.error} />
+                            {/* <RequiredIndicator error={!!fieldState.error} /> */}
                           </FormLabel>
                           <FormControl>
                             <Input

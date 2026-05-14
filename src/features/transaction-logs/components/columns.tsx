@@ -177,7 +177,10 @@ export const columns: ColumnDef<any>[] = [
       const creatorId = row.original.userId;
       const isCreator = String(creatorId) === String(currentUserId);
       const isPMorTL =
-        userRole === roles.PROJECT_MANAGER || userRole === roles.TEAM_LEAD;
+        userRole === roles.PROJECT_MANAGER ||
+        userRole === roles.TEAM_LEAD ||
+        userRole === roles.BDE ||
+        userRole === roles.DEVELOPER;
 
       const canEditDelete = isAdmin || (isPMorTL && isCreator);
 

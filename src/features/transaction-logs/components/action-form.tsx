@@ -110,19 +110,25 @@ export function TransactionLogsActionForm({
   const userRole = user?.role || user?.user?.role;
   const currentUserId = user?.user_id;
 
-  const isAdmin = userRole === roles.ADMIN;
-  const creatorId = currentRow?.user?.id || currentRow?.user?._id || currentRow?.userId;
+  const creatorId =
+    currentRow?.user?.id || currentRow?.user?._id || currentRow?.userId;
   const isCreator = String(creatorId) === String(currentUserId);
   const isPMorTL =
-    userRole === roles.PROJECT_MANAGER || userRole === roles.TEAM_LEAD;
+    userRole === roles.PROJECT_MANAGER ||
+    userRole === roles.TEAM_LEAD ||
+    userRole === roles.BDE ||
+    userRole === roles.DEVELOPER ||
+    userRole === roles.ADMIN;
 
-  const canEdit = !isEdit || isAdmin || (isPMorTL && isCreator);
+  const canEdit = !isEdit || isPMorTL || isCreator;
 
   const [uploadedFileKey, setUploadedFileKey] = useState<string>("");
   const [hasExistingFile, setHasExistingFile] = useState(false);
   const { mutateAsync: uploadFile } = useUploadTransactionFile();
 
   const transactionType = form.watch("transactionType");
+  const subscriptionCycle = form.watch("subscriptionCycle");
+  const subscriptionEndDate = form.watch("subscriptionEndDate");
 
   useEffect(() => {
     if (currentRow && open) {
@@ -133,11 +139,27 @@ export function TransactionLogsActionForm({
 
   useEffect(() => {
     if (transactionType === "subscription") {
-      form.trigger(["subscriptionCycle", "subscriptionEndDate"]);
+      if (!subscriptionCycle) {
+        form.setError("subscriptionCycle", {
+          type: "manual",
+          message: "Subscription Cycle is required",
+        });
+      } else {
+        form.clearErrors("subscriptionCycle");
+      }
+
+      if (!subscriptionEndDate) {
+        form.setError("subscriptionEndDate", {
+          type: "manual",
+          message: "Subscription End Date is required",
+        });
+      } else {
+        form.clearErrors("subscriptionEndDate");
+      }
     } else {
       form.clearErrors(["subscriptionCycle", "subscriptionEndDate"]);
     }
-  }, [transactionType, form]);
+  }, [transactionType, subscriptionCycle, subscriptionEndDate, form]);
 
   const handleFileRemove = () => {
     setUploadedFileKey("");
@@ -402,22 +424,56 @@ export function TransactionLogsActionForm({
               {/* 3️⃣ Subscription Details (Conditional) */}
               {transactionType === "subscription" && (
                 <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-                  <CustomDropDownSearchable
-                    form={form}
+                  <FormField
+                    control={form.control}
                     name="subscriptionCycle"
-                    label="Subscription Cycle"
-                    options={SubscriptionTypeOptions}
-                    placeholder="Select cycle"
-                    searchEnabled={false}
-                    disabled={!canEdit}
+                    render={({ fieldState }) => (
+                      <FormItem>
+                        <FormLabel
+                          className={cn(
+                            "flex items-center gap-1",
+                            fieldState.error && "text-red-500"
+                          )}
+                        >
+                          Subscription Cycle
+                          <span className="text-red-500">*</span>
+                        </FormLabel>
+                        <CustomDropDownSearchable
+                          form={form}
+                          name="subscriptionCycle"
+                          label=""
+                          options={SubscriptionTypeOptions}
+                          placeholder="Select Subscription Cycle"
+                          searchEnabled={false}
+                          disabled={!canEdit}
+                        />
+                      </FormItem>
+                    )}
                   />
 
-                  <CustomDatePicker
+                  <FormField
                     control={form.control}
                     name="subscriptionEndDate"
-                    label="Subscription End Date"
-                    placeholder="Select end date"
-                    disabled={!canEdit}
+                    render={({ fieldState }) => (
+                      <FormItem>
+                        <FormLabel
+                          className={cn(
+                            "flex items-center gap-1",
+                            fieldState.error && "text-red-500"
+                          )}
+                        >
+                          Subscription End Date
+                          <span className="text-red-500">*</span>
+                        </FormLabel>
+                        <CustomDatePicker
+                          control={form.control}
+                          name="subscriptionEndDate"
+                          label=""
+                          placeholder="Select end date"
+                          disabled={!canEdit}
+                        />
+                      </FormItem>
+                    )}
                   />
                 </div>
               )}
@@ -428,7 +484,7 @@ export function TransactionLogsActionForm({
               <FileUpload
                 name="file"
                 label="Transaction Receipt"
-                fileLabel="PDF, DOC, DOCX, JPG, JPEG (MAX 25MB)"
+                fileLabel="PDF, DOC, DOCX (MAX 25MB)"
                 onFileSelect={undefined}
                 onFileRemove={handleFileRemove}
                 existingFileUrl={
