@@ -94,6 +94,17 @@ const ProductInquiryPage = () => {
   // Compute early so it can be used inside the memo below
   const isSearchActive = !!(queryParams.search || queryParams.industryId);
 
+  const getRowClassName = (row: any) => {
+    if (!row?.demoDate) return "";
+    const todayLocal = new Date();
+    todayLocal.setHours(0, 0, 0, 0);
+    const demoLocal = new Date(row.demoDate);
+    demoLocal.setHours(0, 0, 0, 0);
+    const isDemoToday = todayLocal.getTime() === demoLocal.getTime();
+    const isBlinkingEnabled = !silencedInquiries.includes(row.id || row._id);
+    return isDemoToday && isBlinkingEnabled ? "demo-reminder-blink" : "";
+  };
+
   const displayedInquiryList = useMemo(() => {
     // When drilling into a product (search active) → show individual records
     // so action menus, reminders, and demo dates are all visible per record
@@ -422,6 +433,7 @@ const ProductInquiryPage = () => {
                 loading={true}
                 isPaginationEnabled
                 enableSorting
+                getRowClassName={getRowClassName}
               />
             ) : view === "grid" ? (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
@@ -454,6 +466,7 @@ const ProductInquiryPage = () => {
               loading={loadingTable}
               isPaginationEnabled
               enableSorting
+              getRowClassName={getRowClassName}
             />
           ) : displayedInquiryList?.length ? (
             view === "grid" ? (
