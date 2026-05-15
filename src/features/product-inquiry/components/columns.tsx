@@ -137,7 +137,7 @@ export const getColumns = (): ColumnDef<any>[] => [
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleComment}>
-              Add Comment
+              Comments
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleView}>
               View Inquiry

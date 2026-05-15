@@ -24,14 +24,16 @@ import { ProductInquirySchema, TProductInquirySchema } from "../schema";
 import {
   PRODUCT_INQUIRY_STATUS,
   PRODUCT_INQUIRY_STATUS_OPTIONS,
+  roles,
 } from "@/utils/constant";
 import { PhoneInputField } from "@/components/shared/custom-phone-number-countrywise";
 import { Input } from "@/components/ui/input";
 import { useGetIndustryDropdownList } from "@/features/industry/services";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { startOfDay } from "date-fns";
 import { useGetProductDropdown } from "../services";
+import { useGetUserDropdownList } from "@/features/users/services";
 
 interface Props {
   currentRow?: any;
@@ -98,11 +100,32 @@ export function ProductInquiryActionForm({
     useGetIndustryDropdownList();
   const { data: productDropdownList, isPending: loadingProductDropdown }: any =
     useGetProductDropdown();
+  const { data: salesPerson, isPending: salesPersonLoading }: any =
+    useGetUserDropdownList({
+      role: [roles.BDE, roles.ADMIN],
+      status: "active",
+    });
   const selectedStatus = form.watch("status");
   const trialStartDate = form.watch("trialStartDate");
   const trialEndDate = form.watch("trialEndDate");
 
   const today = startOfDay(new Date());
+
+  const salesPersonOptions = useMemo(() => {
+    if (!salesPerson?.data) return [];
+
+    const baseUsers = salesPerson.data.map((s: any) => ({
+      value: s.id,
+      label: s.fullName,
+    }));
+
+    const extraUsers = [
+      { value: 134, label: "Piyush Patel" },
+      { value: 86, label: "Bhavdeep Devmurari" },
+    ];
+
+    return [...extraUsers, ...baseUsers];
+  }, [salesPerson]);
 
   useEffect(() => {
     if (selectedStatus !== PRODUCT_INQUIRY_STATUS.OTHERS) {
@@ -171,11 +194,26 @@ export function ProductInquiryActionForm({
               />
 
               <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-                <TextInputField
+                <FormField
                   control={form.control}
                   name="contactPerson"
-                  label="Contact Person"
-                  placeholder="Enter contact person name"
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>
+                        Contact Person<span className="text-red-500">*</span>
+                      </FormLabel>
+                      <CustomDropDownSearchable
+                        form={form}
+                        name="contactPerson"
+                        label=""
+                        // multiple
+                        options={salesPersonOptions}
+                        placeholder="Select Contact person"
+                        searchEnabled={false}
+                        isLoading={salesPersonLoading}
+                      />
+                    </FormItem>
+                  )}
                 />
                 <TextInputField
                   control={form.control}
@@ -251,7 +289,9 @@ export function ProductInquiryActionForm({
                   name="productId"
                   render={() => (
                     <FormItem>
-                      <FormLabel>Product</FormLabel>
+                      <FormLabel>
+                        Product<span className="text-red-500">*</span>
+                      </FormLabel>
                       <CustomDropDownSearchable
                         form={form}
                         name="productId"
