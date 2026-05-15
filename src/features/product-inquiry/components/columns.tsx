@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { useProductInquiryStore } from "../stores/useProductInquiry";
 
 export const getColumns = (): ColumnDef<any>[] => [
@@ -95,6 +96,41 @@ export const getColumns = (): ColumnDef<any>[] => [
         <Badge variant="outline" className="capitalize">
           {formatProductInquiryStatusLabel(status)}
         </Badge>
+      );
+    },
+  },
+  {
+    id: "reminder",
+    header: "Reminder",
+    cell: function Cell({ row }) {
+      const inquiry = row.original;
+      const { silencedInquiries, silenceInquiry } = useProductInquiryStore();
+
+      if (!inquiry?.demoDate) return "-";
+
+      const todayLocal = new Date();
+      todayLocal.setHours(0, 0, 0, 0);
+      const demoLocal = new Date(inquiry.demoDate);
+      demoLocal.setHours(0, 0, 0, 0);
+      const isDemoToday = todayLocal.getTime() === demoLocal.getTime();
+
+      const isBlinkingEnabled = !silencedInquiries.includes(
+        inquiry.id || inquiry._id
+      );
+
+      if (!isDemoToday) return "-";
+
+      return (
+        <Switch
+          checked={isBlinkingEnabled}
+          onCheckedChange={(checked) => {
+            if (!checked) {
+              silenceInquiry(inquiry.id || inquiry._id);
+            }
+          }}
+          disabled={!isBlinkingEnabled}
+          className="scale-75 data-[state=checked]:bg-red-500"
+        />
       );
     },
   },
