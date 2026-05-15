@@ -338,6 +338,40 @@
   background: var(--sidebar-accent-gradient) !important;
 }
 
+/* ── Demo Date Reminder Pulse ─────────────────────────────────────── */
+
+/* Light mode: gentle warm rose background fade */
+@keyframes demo-reminder-pulse-light {
+  0%,
+  100% {
+    background-color: rgba(239, 68, 68, 0.06);
+  }
+  50% {
+    background-color: rgba(239, 68, 68, 0.15);
+  }
+}
+
+/* Dark mode: soft red background breathing */
+@keyframes demo-reminder-pulse-dark {
+  0%,
+  100% {
+    background-color: rgba(239, 68, 68, 0.05);
+  }
+  50% {
+    background-color: rgba(239, 68, 68, 0.18);
+  }
+}
+
+.demo-reminder-blink {
+  animation: demo-reminder-pulse-light 3s ease-in-out infinite;
+  border-left-color: rgba(239, 68, 68, 0.45) !important;
+}
+
+.dark .demo-reminder-blink {
+  animation: demo-reminder-pulse-dark 3s ease-in-out infinite;
+  border-left-color: rgba(239, 68, 68, 0.7) !important;
+}
+
 /* styles.css */
 .CollapsibleContent {
   overflow: hidden;
