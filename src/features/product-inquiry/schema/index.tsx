@@ -3,7 +3,15 @@ import { z } from "zod";
 export const ProductInquirySchema = z
   .object({
     companyName: z.string().trim().optional().nullable(),
-    contactPerson: z.string().trim().min(1, "Contact Person is required"),
+    contactPerson: z.preprocess(
+      (val) => (val === "" || val === null ? undefined : Number(val)),
+      z
+        .number({
+          required_error: "Contact Person is required",
+          invalid_type_error: "Contact Person is required",
+        })
+        .min(1, "Contact Person is required")
+    ),
     phoneNumber: z.string().optional().nullable(),
     emailId: z
       .string()
@@ -19,8 +27,13 @@ export const ProductInquirySchema = z
       z.number().optional().nullable()
     ),
     productId: z.preprocess(
-      (val) => (val === "" ? null : val),
-      z.number().optional().nullable()
+      (val) => (val === "" || val === null ? undefined : Number(val)),
+      z
+        .number({
+          required_error: "Product is required",
+          invalid_type_error: "Product is required",
+        })
+        .min(1, "Product is required")
     ),
     numberOfUsers: z.preprocess(
       (val) => (val === "" ? null : val),

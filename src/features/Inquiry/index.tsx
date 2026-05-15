@@ -36,8 +36,9 @@ import { useAuthStore } from "@/stores/use-auth-store";
 import { INQUIRY_STATUS, roles } from "@/utils/constant";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ColumnDef } from "@tanstack/react-table";
-import { Download, MoreHorizontal } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Download, LayoutGrid, List, MoreHorizontal } from "lucide-react";
+import { InquiryCard } from "./components/service-inquiry-card";
+import { useEffect, useMemo, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod"; // Import zod
 import { ActionFormModal } from "./components/action";
@@ -53,12 +54,14 @@ import { formatDate } from "@/utils/commonFunctions";
 import { ViewNoteModal } from "./components/view-note-modal";
 import { toast } from "sonner";
 import { useExportCSV } from "./services";
+import { cn } from "@/lib/utils";
 
 const InquiryPage = () => {
   const { open, setOpen } = useInquiryStore();
   const user = useAuthStore((state) => state.user);
   const userRole = user?.user?.role;
   const [activeTab, setActiveTab] = useState("active");
+  const [view, setView] = useState<"grid" | "list">("grid");
 
   const { mutateAsync: InquiryStatusChange } = useCreateInquiryStatus();
   const { data: usersList, isPending: usersListLoading }: any =
@@ -129,6 +132,28 @@ const InquiryPage = () => {
   const { data: listData, isPending: loading } = useGetInquiry(apiParams);
   const { mutate: exportCSV, isPending: exportCSVLoading } = useExportCSV();
 
+  const inquiryList = (listData as any)?.data ?? [];
+
+  const isSalesPersonFiltered = !!(
+    queryParams.salesPersonId || queryParams.search
+  );
+
+  const displayedInquiryList = useMemo(() => {
+    if (isSalesPersonFiltered) {
+      return inquiryList;
+    }
+
+    const seenSalesPersons = new Set();
+    return inquiryList.filter((inquiry: any) => {
+      const spName = inquiry?.salesPerson?.fullName || "Unassigned";
+      if (!seenSalesPersons.has(spName)) {
+        seenSalesPersons.add(spName);
+        return true;
+      }
+      return false;
+    });
+  }, [inquiryList, isSalesPersonFiltered]);
+
   const totalCount = (listData as any)?.metadata?.totalCount;
 
   const handleSearch = (search: string | undefined) => {
@@ -144,6 +169,23 @@ const InquiryPage = () => {
       pageSize: newPagination.pageSize,
       currentPage: newPagination.pageIndex + 1,
     });
+  };
+
+  const handleSalesPersonClick = (name: string) => {
+    const sp = usersList?.data?.find((u: any) => u.fullName === name);
+    if (sp) {
+      setQueryParams({
+        ...queryParams,
+        salesPersonId: sp.id,
+        currentPage: 1,
+      });
+    } else {
+      setQueryParams({
+        ...queryParams,
+        search: name,
+        currentPage: 1,
+      });
+    }
   };
 
   // const coordinatorOptions = useMemo(() => {
@@ -477,8 +519,10 @@ const InquiryPage = () => {
   };
 
   const inquiryChannelColors: Record<string, string> = {
-    inbound: "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800",
-    outbound: "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800",
+    inbound:
+      "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800",
+    outbound:
+      "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800",
   };
 
   const columns: ColumnDef<any>[] = [
@@ -592,7 +636,10 @@ const InquiryPage = () => {
           <span className="capitalize text-slate-500 dark:text-slate-400 flex flex-wrap gap-2">
             {modules?.map((m: any) => {
               return (
-                <Badge variant="secondary" className="border border-slate-200 dark:border-slate-800">
+                <Badge
+                  variant="secondary"
+                  className="border border-slate-200 dark:border-slate-800"
+                >
                   {m?.name}
                 </Badge>
               );
@@ -707,12 +754,10 @@ const InquiryPage = () => {
         Manage your Leads here.
       </TablePageHeader>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <GlobalFilterSection
-          filters={filters ?? []}
-          extraItemShow={true}
-          className={"!my-2 flex flex-wrap gap-2"}
-          extraItem={
-            <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border border-rose-100/50">
+        <div className="flex flex-col gap-4 py-2">
+          {/* Header row with Active/Archive and View Toggles */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border border-rose-100/50 h-9">
               <TabsTrigger value="active" className={tabTriggerClass}>
                 Active Leads
               </TabsTrigger>
@@ -720,19 +765,105 @@ const InquiryPage = () => {
                 Archive Leads
               </TabsTrigger>
             </TabsList>
-          }
-        />
-        <GlobalTable
-          pageSize={queryParams.pageSize}
-          currentPage={queryParams.currentPage}
-          totalCount={totalCount ?? 0}
-          data={(listData as any)?.data ?? []}
-          onPaginationChange={handlePaginationChange}
-          columns={columns}
-          loading={loading}
-          isPaginationEnabled
-          enableSorting
-        />
+
+            {!isSalesPersonFiltered && (
+              <Tabs
+                value={view}
+                onValueChange={(v) => setView(v as any)}
+                className="flex-none"
+              >
+                <TabsList className="bg-rose-50 dark:bg-muted rounded-full h-9 border border-rose-100/50 dark:border-white/10">
+                  <TabsTrigger
+                    value="grid"
+                    className={cn(
+                      tabTriggerClass,
+                      "gap-2 px-3 h-8 text-xs font-medium transition-all",
+                      view === "grid" &&
+                        "bg-background text-foreground shadow-sm"
+                    )}
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                    Grid
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="list"
+                    className={cn(
+                      tabTriggerClass,
+                      "gap-2 px-3 h-8 text-xs font-medium transition-all",
+                      view === "list" &&
+                        "bg-background text-foreground shadow-sm"
+                    )}
+                  >
+                    <List className="h-4 w-4" />
+                    List
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            )}
+          </div>
+
+          <GlobalFilterSection
+            filters={filters ?? []}
+            className={"!my-0 flex flex-wrap items-center gap-4"}
+          />
+
+          <div className="mt-2">
+            {loading ? (
+              <div className="flex items-center justify-center py-20">
+                <p className="text-sm text-muted-foreground">
+                  Loading leads...
+                </p>
+              </div>
+            ) : isSalesPersonFiltered ? (
+              <GlobalTable
+                pageSize={queryParams.pageSize}
+                currentPage={queryParams.currentPage}
+                totalCount={totalCount ?? 0}
+                data={displayedInquiryList}
+                onPaginationChange={handlePaginationChange}
+                columns={columns}
+                loading={loading}
+                isPaginationEnabled
+                enableSorting
+              />
+            ) : view === "grid" ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
+                {displayedInquiryList.map((inquiry: any) => (
+                  <InquiryCard
+                    key={inquiry.id}
+                    inquiry={inquiry}
+                    view="grid"
+                    onSalesPersonClick={handleSalesPersonClick}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <div className="min-w-[860px] flex flex-col gap-0 border rounded-lg bg-card overflow-hidden">
+                  <div className="flex items-center gap-4 px-6 py-3 bg-muted/50 border-b text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                    <div className="w-1 shrink-0" />
+                    <div className="flex-1 min-w-0">Sales Person</div>
+                    <div className="w-32 shrink-0 text-center">Status</div>
+                    <div className="w-28 shrink-0 text-center">Industry</div>
+                    <div className="w-28 shrink-0">Inquiry Date</div>
+                    <div className="w-24 shrink-0">Client</div>
+                    <div className="w-[64px] shrink-0 text-right pr-4">
+                      Actions
+                    </div>
+                  </div>
+                  {displayedInquiryList.map((inquiry: any) => (
+                    <InquiryCard
+                      key={inquiry.id}
+                      inquiry={inquiry}
+                      view="list"
+                      onSalesPersonClick={handleSalesPersonClick}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </Tabs>
       {open && <ActionFormModal />}
       <ViewInquiryModal />
