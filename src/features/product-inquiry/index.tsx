@@ -50,6 +50,7 @@ const ProductInquiryPage = () => {
     search: parseAsString.withDefault(""),
     industryId: parseAsString.withDefault(""),
     status: parseAsString.withDefault(""),
+    drilled: parseAsString.withDefault(""),
     pageSize: parseAsInteger.withDefault(10),
     currentPage: parseAsInteger.withDefault(1),
   });
@@ -92,17 +93,10 @@ const ProductInquiryPage = () => {
   );
 
   // Compute early so it can be used inside the memo below
-  const isSearchActive = !!(queryParams.search || queryParams.industryId);
+  const isSearchActive = queryParams.drilled === "true";
 
-  const getRowClassName = (row: any) => {
-    if (!row?.demoDate) return "";
-    const todayLocal = new Date();
-    todayLocal.setHours(0, 0, 0, 0);
-    const demoLocal = new Date(row.demoDate);
-    demoLocal.setHours(0, 0, 0, 0);
-    const isDemoToday = todayLocal.getTime() === demoLocal.getTime();
-    const isBlinkingEnabled = !silencedInquiries.includes(row.id || row._id);
-    return isDemoToday && isBlinkingEnabled ? "demo-reminder-blink" : "";
+  const getRowClassName = () => {
+    return "";
   };
 
   const displayedInquiryList = useMemo(() => {
@@ -162,12 +156,12 @@ const ProductInquiryPage = () => {
 
       // Use LOCAL midnight comparison so timezone offsets (e.g. IST UTC+5:30)
       // don't cause a demo at "2026-05-14T18:30:00Z" (= May 15 IST) to miss
-      if (inquiry?.demoDate) {
+      if (inquiry?.status === "demo_scheduled" && inquiry?.demoDate) {
         const todayLocal = new Date();
         todayLocal.setHours(0, 0, 0, 0);
         const demoLocal = new Date(inquiry.demoDate);
         demoLocal.setHours(0, 0, 0, 0);
-        if (todayLocal.getTime() === demoLocal.getTime()) {
+        if (demoLocal.getTime() <= todayLocal.getTime()) {
           g.hasDemoToday = true;
           const isSilenced = silencedInquiries.includes(inquiry.id);
           if (!isSilenced) {
@@ -223,11 +217,11 @@ const ProductInquiryPage = () => {
   }, [isFetchingNextPage]);
 
   const handleSearch = (search: string | undefined) => {
-    setQueryParams({ search: search ?? "" });
+    setQueryParams({ search: search ?? "", drilled: "" });
   };
 
   const handleIndustryFilter = (industryId?: string) => {
-    setQueryParams({ industryId: industryId ?? "" });
+    setQueryParams({ industryId: industryId ?? "", drilled: "" });
   };
 
   const handleStatusFilter = (status?: string) => {
@@ -235,7 +229,7 @@ const ProductInquiryPage = () => {
   };
 
   const handleProductClick = (productName: string) => {
-    setQueryParams({ search: productName });
+    setQueryParams({ search: productName, drilled: "true" });
     // When drilling into a product, switch to list view (grid is hidden)
     if (view === "grid") setView("list");
   };
@@ -341,7 +335,7 @@ const ProductInquiryPage = () => {
           </Button>
         }
       >
-        Manage your product inquiries and trial requests here.
+        Manage your product inquiries here.
       </TablePageHeader>
 
       <div className="flex-1 min-h-0 flex flex-col gap-4 py-2">
@@ -353,7 +347,7 @@ const ProductInquiryPage = () => {
               size="sm"
               className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground px-2 h-8"
               onClick={() => {
-                setQueryParams({ search: "", status: "" });
+                setQueryParams({ search: "", status: "", drilled: "" });
                 setView("grid");
               }}
             >
@@ -447,9 +441,17 @@ const ProductInquiryPage = () => {
                     <div className="flex-1 min-w-0">Product</div>
                     <div className="w-32 shrink-0 text-center">Status</div>
                     <div className="w-28 shrink-0 text-center">Industry</div>
-                    <div className="w-28 shrink-0">Demo Date</div>
-                    <div className="w-24 shrink-0">Contact</div>
-                    <div className="w-[64px] shrink-0" />
+                    <div className="w-28 shrink-0 text-center">
+                      Contact Person
+                    </div>
+                    <div className="w-28 shrink-0 text-center">
+                      Inquiry Date
+                    </div>
+                    <div className="w-28 shrink-0 text-center">Demo Date</div>
+                    <div className="w-26 shrink-0 text-center">
+                      Attending Person
+                    </div>
+                    <div className="w-[68px] shrink-0" />
                   </div>
                   {skeletons}
                 </div>
@@ -489,14 +491,22 @@ const ProductInquiryPage = () => {
                     <div className="flex-1 min-w-0">Product</div>
                     <div className="w-32 shrink-0 text-center">Status</div>
                     <div className="w-28 shrink-0 text-center">Industry</div>
-                    <div className="w-28 shrink-0">Demo Date</div>
-                    <div className="w-24 shrink-0">Contact</div>
+                    <div className="w-28 shrink-0 text-center">
+                      Contact Person
+                    </div>
+                    <div className="w-28 shrink-0 text-center">
+                      Inquiry Date
+                    </div>
+                    <div className="w-28 shrink-0 text-center">Demo Date</div>
+                    <div className="w-26 shrink-0 text-center">
+                      Attending Person
+                    </div>
                     {isSearchActive && (
-                      <div className="w-[64px] shrink-0 text-right pr-4">
+                      <div className="w-[68px] shrink-0 text-right pr-4">
                         Actions
                       </div>
                     )}
-                    {!isSearchActive && <div className="w-[64px] shrink-0" />}
+                    {!isSearchActive && <div className="w-[68px] shrink-0" />}
                   </div>
                   {displayedInquiryList.map((inquiry: any) => (
                     <InquiryCard

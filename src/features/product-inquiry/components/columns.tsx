@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
 import { useProductInquiryStore } from "../stores/useProductInquiry";
 
 export const getColumns = (): ColumnDef<any>[] => [
@@ -83,9 +82,17 @@ export const getColumns = (): ColumnDef<any>[] => [
     },
   },
   {
-    accessorKey: "numberOfUsers",
-    header: "Users",
-    cell: ({ row }) => row.original?.numberOfUsers ?? "-",
+    accessorKey: "inquiryDate",
+    header: "Inquiry Date",
+    cell: ({ row }) => {
+      const date = row.original?.inquiryDate;
+      if (!date) return "-";
+      return new Date(date).toLocaleDateString("en-IN", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    },
   },
   {
     accessorKey: "status",
@@ -99,41 +106,41 @@ export const getColumns = (): ColumnDef<any>[] => [
       );
     },
   },
-  {
-    id: "reminder",
-    header: "Reminder",
-    cell: function Cell({ row }) {
-      const inquiry = row.original;
-      const { silencedInquiries, silenceInquiry } = useProductInquiryStore();
+  // {
+  //   id: "reminder",
+  //   header: "Reminder",
+  //   cell: function Cell({ row }) {
+  //     const inquiry = row.original;
+  //     const { silencedInquiries, silenceInquiry } = useProductInquiryStore();
 
-      if (!inquiry?.demoDate) return "-";
+  //     if (!inquiry?.demoDate) return "-";
 
-      const todayLocal = new Date();
-      todayLocal.setHours(0, 0, 0, 0);
-      const demoLocal = new Date(inquiry.demoDate);
-      demoLocal.setHours(0, 0, 0, 0);
-      const isDemoToday = todayLocal.getTime() === demoLocal.getTime();
+  //     const todayLocal = new Date();
+  //     todayLocal.setHours(0, 0, 0, 0);
+  //     const demoLocal = new Date(inquiry.demoDate);
+  //     demoLocal.setHours(0, 0, 0, 0);
+  //     const isDemoToday = todayLocal.getTime() === demoLocal.getTime();
 
-      const isBlinkingEnabled = !silencedInquiries.includes(
-        inquiry.id || inquiry._id
-      );
+  //     const isBlinkingEnabled = !silencedInquiries.includes(
+  //       inquiry.id || inquiry._id
+  //     );
 
-      if (!isDemoToday) return "-";
+  //     if (!isDemoToday) return "-";
 
-      return (
-        <Switch
-          checked={isBlinkingEnabled}
-          onCheckedChange={(checked) => {
-            if (!checked) {
-              silenceInquiry(inquiry.id || inquiry._id);
-            }
-          }}
-          disabled={!isBlinkingEnabled}
-          className="scale-75 data-[state=checked]:bg-red-500"
-        />
-      );
-    },
-  },
+  //     return (
+  //       <Switch
+  //         checked={isBlinkingEnabled}
+  //         onCheckedChange={(checked) => {
+  //           if (!checked) {
+  //             silenceInquiry(inquiry.id || inquiry._id);
+  //           }
+  //         }}
+  //         disabled={!isBlinkingEnabled}
+  //         className="scale-75 data-[state=checked]:bg-red-500"
+  //       />
+  //     );
+  //   },
+  // },
   {
     id: "actions",
     header: "Actions",
