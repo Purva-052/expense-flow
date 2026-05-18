@@ -13,10 +13,12 @@ const FormPasswordField = ({
   form,
   name,
   label,
+  className,
 }: {
   form: any
   name: string
   label: string
+  className?: string
 }) => {
   return (
     <FormField
@@ -33,7 +35,10 @@ const FormPasswordField = ({
               /> */}
               <PasswordInput
                 placeholder='Enter your password'
-                className='bg-white/10 border-white/20 text-white placeholder:text-gray-400'
+                className={
+                  className ??
+                  'border-input bg-background text-foreground placeholder:text-muted-foreground'
+                }
                 {...field}
               />
             </div>

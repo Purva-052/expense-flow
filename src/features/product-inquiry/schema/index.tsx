@@ -3,7 +3,16 @@ import { z } from "zod";
 export const ProductInquirySchema = z
   .object({
     companyName: z.string().trim().optional().nullable(),
-    contactPerson: z.string().trim().min(1, "Contact Person is required"),
+    contactPerson: z.string().optional().nullable(),
+    attendingPerson: z.preprocess(
+      (val) => (val === "" || val === null ? undefined : Number(val)),
+      z
+        .number({
+          required_error: "Attending Person is required",
+          invalid_type_error: "Attending Person is required",
+        })
+        .min(1, "Attending Person is required")
+    ),
     phoneNumber: z.string().optional().nullable(),
     emailId: z
       .string()
@@ -19,8 +28,13 @@ export const ProductInquirySchema = z
       z.number().optional().nullable()
     ),
     productId: z.preprocess(
-      (val) => (val === "" ? null : val),
-      z.number().optional().nullable()
+      (val) => (val === "" || val === null ? undefined : Number(val)),
+      z
+        .number({
+          required_error: "Product is required",
+          invalid_type_error: "Product is required",
+        })
+        .min(1, "Product is required")
     ),
     numberOfUsers: z.preprocess(
       (val) => (val === "" ? null : val),
@@ -34,6 +48,23 @@ export const ProductInquirySchema = z
     status: z.string().optional().nullable(),
     others: z.string().optional().nullable(),
     notes: z.string().optional().nullable(),
+    inquiryDate: z.preprocess(
+      (val) => {
+        if (
+          val === "" ||
+          val === null ||
+          val === undefined ||
+          (val instanceof Date && isNaN(val.getTime()))
+        ) {
+          return undefined;
+        }
+        return val;
+      },
+      z.date({
+        required_error: "Inquiry date is required",
+        invalid_type_error: "Inquiry date is required",
+      })
+    ),
     trialStartDate: z.date().optional().nullable(),
     trialEndDate: z.date().optional().nullable(),
   })

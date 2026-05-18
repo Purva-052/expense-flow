@@ -82,9 +82,17 @@ export const getColumns = (): ColumnDef<any>[] => [
     },
   },
   {
-    accessorKey: "numberOfUsers",
-    header: "Users",
-    cell: ({ row }) => row.original?.numberOfUsers ?? "-",
+    accessorKey: "inquiryDate",
+    header: "Inquiry Date",
+    cell: ({ row }) => {
+      const date = row.original?.inquiryDate;
+      if (!date) return "-";
+      return new Date(date).toLocaleDateString("en-IN", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    },
   },
   {
     accessorKey: "status",
@@ -98,6 +106,41 @@ export const getColumns = (): ColumnDef<any>[] => [
       );
     },
   },
+  // {
+  //   id: "reminder",
+  //   header: "Reminder",
+  //   cell: function Cell({ row }) {
+  //     const inquiry = row.original;
+  //     const { silencedInquiries, silenceInquiry } = useProductInquiryStore();
+
+  //     if (!inquiry?.demoDate) return "-";
+
+  //     const todayLocal = new Date();
+  //     todayLocal.setHours(0, 0, 0, 0);
+  //     const demoLocal = new Date(inquiry.demoDate);
+  //     demoLocal.setHours(0, 0, 0, 0);
+  //     const isDemoToday = todayLocal.getTime() === demoLocal.getTime();
+
+  //     const isBlinkingEnabled = !silencedInquiries.includes(
+  //       inquiry.id || inquiry._id
+  //     );
+
+  //     if (!isDemoToday) return "-";
+
+  //     return (
+  //       <Switch
+  //         checked={isBlinkingEnabled}
+  //         onCheckedChange={(checked) => {
+  //           if (!checked) {
+  //             silenceInquiry(inquiry.id || inquiry._id);
+  //           }
+  //         }}
+  //         disabled={!isBlinkingEnabled}
+  //         className="scale-75 data-[state=checked]:bg-red-500"
+  //       />
+  //     );
+  //   },
+  // },
   {
     id: "actions",
     header: "Actions",
@@ -137,7 +180,7 @@ export const getColumns = (): ColumnDef<any>[] => [
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleComment}>
-              Add Comment
+              Comments
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleView}>
               View Inquiry

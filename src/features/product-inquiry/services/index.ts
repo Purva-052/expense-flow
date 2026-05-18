@@ -6,13 +6,51 @@ import usePatchData from "@/hooks/use-patch-data";
 import useDeleteData from "@/hooks/use-delete-data";
 import { buildQueryString } from "@/utils/storage";
 import { useProductInquiryStore } from "../stores/useProductInquiry";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import axios from "axios";
 import instance from "@/config/instance/instance";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { toast } from "sonner";
 
 const GET_API_URL = API.product_inquiry.list;
+
+const fetchProductInquiries = async ({ pageParam = 1, queryKey }: any) => {
+  const [_key, params] = queryKey;
+  const baseURL = import.meta.env.VITE_API_BASE_URL;
+  const token =
+    useAuthStore.getState().user?.token ?? useAuthStore.getState().token;
+  const queryStr = buildQueryString({
+    ...params,
+    page: pageParam,
+    limit: 9,
+  });
+  const response = await axios.get(baseURL + `${GET_API_URL}${queryStr}`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return response.data;
+};
+
+export const useGetProductInquiryListInfinite = (params?: any) => {
+  return useInfiniteQuery({
+    queryKey: [GET_API_URL, params],
+    queryFn: fetchProductInquiries,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const metadata = lastPage?.metadata;
+      return metadata?.page < metadata?.totalPages
+        ? metadata.page + 1
+        : undefined;
+    },
+  });
+};
 
 export const useCreateProductInquiry = () => {
   const { setOpen } = useProductInquiryStore();

@@ -472,7 +472,7 @@ const Board = ({
                     (_, index) => (
                       <ProjectCardSkeleton
                         key={`project-skeleton-${index}`}
-                        view="board"
+                        view="table"
                       />
                     )
                   )}
@@ -535,7 +535,7 @@ const Board = ({
                   {Array.from({ length: 2 }).map((_, index) => (
                     <ProjectCardSkeleton
                       key={`project-fetch-skeleton-${index}`}
-                      view="board"
+                      view="table"
                     />
                   ))}
                 </div>

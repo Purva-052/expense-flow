@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 type ProjectCardSkeletonProps = {
-  view?: "board" | "grid" | "list";
+  view?: "table" | "grid" | "list";
   className?: string;
 };
 
@@ -50,7 +50,7 @@ export function ProjectCardSkeleton({
     );
   }
 
-  if (view === "board") {
+  if (view === "table") {
     return (
       <div
         className={cn(

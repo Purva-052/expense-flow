@@ -27,6 +27,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { cn } from "@/lib/utils";
 import { ArrowDown, ArrowUp, SearchX } from "lucide-react";
 import { useState } from "react";
 
@@ -41,6 +42,7 @@ interface GlobalTableProps<TData> {
   loading?: boolean;
   scrollY?: string;
   enableSorting?: boolean;
+  getRowClassName?: (row: TData) => string;
 }
 
 export function GlobalTable<TData>({
@@ -54,6 +56,7 @@ export function GlobalTable<TData>({
   loading = false,
   scrollY = "55dvh",
   enableSorting = false,
+  getRowClassName,
 }: Readonly<GlobalTableProps<TData>>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -186,7 +189,10 @@ export function GlobalTable<TData>({
                 table.getRowModel().rows.map((row) => (
                   <tr
                     key={row.id}
-                    className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                    className={cn(
+                      "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+                      getRowClassName?.(row.original)
+                    )}
                   >
                     {row.getVisibleCells().map((cell: any) => (
                       <td

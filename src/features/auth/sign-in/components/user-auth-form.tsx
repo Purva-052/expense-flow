@@ -47,6 +47,7 @@ export const LoginForm = () => {
           label="Password"
           name="password"
           key={"password"}
+          className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
         />
         <CustomButton
           type="submit"

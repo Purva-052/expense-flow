@@ -24,14 +24,16 @@ import { ProductInquirySchema, TProductInquirySchema } from "../schema";
 import {
   PRODUCT_INQUIRY_STATUS,
   PRODUCT_INQUIRY_STATUS_OPTIONS,
+  roles,
 } from "@/utils/constant";
 import { PhoneInputField } from "@/components/shared/custom-phone-number-countrywise";
 import { Input } from "@/components/ui/input";
 import { useGetIndustryDropdownList } from "@/features/industry/services";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { startOfDay } from "date-fns";
 import { useGetProductDropdown } from "../services";
+import { useGetUserDropdownList } from "@/features/users/services";
 
 interface Props {
   currentRow?: any;
@@ -58,10 +60,11 @@ export function ProductInquiryActionForm({
   const getDefaultValues = useCallback(
     (row?: any): Partial<TProductInquirySchema> => ({
       companyName: row?.companyName ?? "",
-      contactPerson: row?.contactPerson?.fullName ?? row?.contactPerson ?? "",
+      attendingPerson:
+        row?.attendingPerson?.fullName ?? row?.attendingPerson ?? "",
       phoneNumber: row?.phoneNumber ?? "",
       emailId: row?.emailId ?? "",
-      demoDate: row?.demoDate ? new Date(row?.demoDate) : null,
+      demoDate: row?.demoDate ? new Date(row?.demoDate) : undefined,
       city: row?.city ?? "",
       industryId: toNumberOrNull(row?.industry?.id ?? row?.industryId),
       productId: row?.product?.id ?? toNumberOrNull(row?.productId),
@@ -72,8 +75,9 @@ export function ProductInquiryActionForm({
       notes: row?.notes ?? "",
       trialStartDate: row?.trialStartDate
         ? new Date(row?.trialStartDate)
-        : null,
-      trialEndDate: row?.trialEndDate ? new Date(row?.trialEndDate) : null,
+        : undefined,
+      trialEndDate: row?.trialEndDate ? new Date(row?.trialEndDate) : undefined,
+      inquiryDate: row?.inquiryDate ? new Date(row?.inquiryDate) : undefined,
     }),
     []
   );
@@ -98,11 +102,32 @@ export function ProductInquiryActionForm({
     useGetIndustryDropdownList();
   const { data: productDropdownList, isPending: loadingProductDropdown }: any =
     useGetProductDropdown();
+  const { data: salesPerson, isPending: salesPersonLoading }: any =
+    useGetUserDropdownList({
+      role: [roles.BDE, roles.ADMIN],
+      status: "active",
+    });
   const selectedStatus = form.watch("status");
   const trialStartDate = form.watch("trialStartDate");
   const trialEndDate = form.watch("trialEndDate");
 
   const today = startOfDay(new Date());
+
+  const salesPersonOptions = useMemo(() => {
+    if (!salesPerson?.data) return [];
+
+    const baseUsers = salesPerson.data.map((s: any) => ({
+      value: s.id,
+      label: s.fullName,
+    }));
+
+    const extraUsers = [
+      { value: 134, label: "Piyush Patel" },
+      { value: 86, label: "Bhavdeep Devmurari" },
+    ];
+
+    return [...extraUsers, ...baseUsers];
+  }, [salesPerson]);
 
   useEffect(() => {
     if (selectedStatus !== PRODUCT_INQUIRY_STATUS.OTHERS) {
@@ -163,19 +188,43 @@ export function ProductInquiryActionForm({
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-4 p-0.5"
             >
-              <TextInputField
-                control={form.control}
-                name="companyName"
-                label="Company Name"
-                placeholder="Enter company name"
-              />
-
               <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+                <TextInputField
+                  control={form.control}
+                  name="companyName"
+                  label="Company Name"
+                  placeholder="Enter company name"
+                />
+
                 <TextInputField
                   control={form.control}
                   name="contactPerson"
                   label="Contact Person"
                   placeholder="Enter contact person name"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="attendingPerson"
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>
+                        Attending Person<span className="text-red-500">*</span>
+                      </FormLabel>
+                      <CustomDropDownSearchable
+                        form={form}
+                        name="attendingPerson"
+                        label=""
+                        // multiple
+                        options={salesPersonOptions}
+                        placeholder="Select Attending person"
+                        searchEnabled={false}
+                        isLoading={salesPersonLoading}
+                      />
+                    </FormItem>
+                  )}
                 />
                 <TextInputField
                   control={form.control}
@@ -191,82 +240,139 @@ export function ProductInquiryActionForm({
                 label="Phone Number"
               />
 
-              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="demoDate"
-                  render={() => (
-                    <FormItem>
-                      <FormLabel>Demo Date</FormLabel>
-                      <CustomDatePicker
-                        control={form.control}
-                        name="demoDate"
-                        label=""
-                      />
-                    </FormItem>
-                  )}
-                />
+              {isEdit ? (
+                <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="industryId"
+                    render={() => (
+                      <FormItem>
+                        <FormLabel>Industry</FormLabel>
+                        <CustomDropDownSearchable
+                          form={form}
+                          name="industryId"
+                          label=""
+                          placeholder="Select industry"
+                          isLoading={loadingIndustry}
+                          options={industryList?.data?.map((opt: any) => ({
+                            value: opt.id,
+                            label: opt.name,
+                          }))}
+                        />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="industryId"
-                  render={() => (
-                    <FormItem>
-                      <FormLabel>Industry</FormLabel>
-                      <CustomDropDownSearchable
-                        form={form}
-                        name="industryId"
-                        label=""
-                        placeholder="Select industry"
-                        isLoading={loadingIndustry}
-                        options={industryList?.data?.map((opt: any) => ({
-                          value: opt.id,
-                          label: opt.name,
-                        }))}
-                      />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                  <FormField
+                    control={form.control}
+                    name="productId"
+                    render={() => (
+                      <FormItem>
+                        <FormLabel>
+                          Product<span className="text-red-500">*</span>
+                        </FormLabel>
+                        <CustomDropDownSearchable
+                          form={form}
+                          name="productId"
+                          label=""
+                          placeholder="Select Product"
+                          isLoading={loadingProductDropdown}
+                          options={productDropdownList?.data?.map(
+                            (opt: any) => ({
+                              value: opt.id,
+                              label: opt.name,
+                            })
+                          )}
+                        />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+                    <FormField
+                      control={form.control}
+                      name="demoDate"
+                      render={() => (
+                        <FormItem>
+                          <FormLabel>Demo Date</FormLabel>
+                          <CustomDatePicker
+                            control={form.control}
+                            name="demoDate"
+                            label=""
+                          />
+                        </FormItem>
+                      )}
+                    />
 
-              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={() => (
-                    <FormItem>
-                      <FormLabel>Status</FormLabel>
-                      <CustomDropDownSearchable
-                        form={form}
-                        name="status"
-                        label=""
-                        placeholder="Select Status"
-                        options={PRODUCT_INQUIRY_STATUS_OPTIONS}
-                      />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="productId"
-                  render={() => (
-                    <FormItem>
-                      <FormLabel>Product</FormLabel>
-                      <CustomDropDownSearchable
-                        form={form}
-                        name="productId"
-                        label=""
-                        placeholder="Select Product"
-                        isLoading={loadingProductDropdown}
-                        options={productDropdownList?.data?.map((opt: any) => ({
-                          value: opt.id,
-                          label: opt.name,
-                        }))}
-                      />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                    <FormField
+                      control={form.control}
+                      name="industryId"
+                      render={() => (
+                        <FormItem>
+                          <FormLabel>Industry</FormLabel>
+                          <CustomDropDownSearchable
+                            form={form}
+                            name="industryId"
+                            label=""
+                            placeholder="Select industry"
+                            isLoading={loadingIndustry}
+                            options={industryList?.data?.map((opt: any) => ({
+                              value: opt.id,
+                              label: opt.name,
+                            }))}
+                          />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+                    <FormField
+                      control={form.control}
+                      name="status"
+                      render={() => (
+                        <FormItem>
+                          <FormLabel>Status</FormLabel>
+                          <CustomDropDownSearchable
+                            form={form}
+                            name="status"
+                            label=""
+                            placeholder="Select Status"
+                            options={PRODUCT_INQUIRY_STATUS_OPTIONS}
+                          />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="productId"
+                      render={() => (
+                        <FormItem>
+                          <FormLabel>
+                            Product<span className="text-red-500">*</span>
+                          </FormLabel>
+                          <CustomDropDownSearchable
+                            form={form}
+                            name="productId"
+                            label=""
+                            placeholder="Select Product"
+                            isLoading={loadingProductDropdown}
+                            options={productDropdownList?.data?.map(
+                              (opt: any) => ({
+                                value: opt.id,
+                                label: opt.name,
+                              })
+                            )}
+                          />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </>
+              )}
 
               <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                 <FormField
@@ -338,6 +444,23 @@ export function ProductInquiryActionForm({
                   )}
                 />
               </div>
+
+              <FormField
+                control={form.control}
+                name="inquiryDate"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>
+                      Inquiry Date<span className="text-red-500">*</span>
+                    </FormLabel>
+                    <CustomDatePicker
+                      control={form.control}
+                      name="inquiryDate"
+                      label=""
+                    />
+                  </FormItem>
+                )}
+              />
 
               {selectedStatus === PRODUCT_INQUIRY_STATUS.OTHERS && (
                 <div className="flex flex-col space-y-2">

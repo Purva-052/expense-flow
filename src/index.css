@@ -338,6 +338,46 @@
   background: var(--sidebar-accent-gradient) !important;
 }
 
+/* ── Demo Date Reminder Pulse ─────────────────────────────────────── */
+
+/* Light mode: gentle warm rose background fade and red shadow pulse */
+@keyframes demo-reminder-pulse-light {
+  0%,
+  100% {
+    background-color: rgba(239, 68, 68, 0.04);
+    box-shadow: 0 0 4px rgba(239, 68, 68, 0.05);
+  }
+  50% {
+    background-color: rgba(239, 68, 68, 0.12);
+    box-shadow: 0 0 16px rgba(239, 68, 68, 0.22);
+  }
+}
+
+/* Dark mode: soft red background breathing and red shadow pulse */
+@keyframes demo-reminder-pulse-dark {
+  0%,
+  100% {
+    background-color: rgba(239, 68, 68, 0.02);
+    box-shadow: 0 0 4px rgba(239, 68, 68, 0.03);
+  }
+  50% {
+    background-color: rgba(239, 68, 68, 0.14);
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.32);
+  }
+}
+
+.demo-reminder-blink {
+  animation: demo-reminder-pulse-light 2.5s ease-in-out infinite;
+  border-left: 4px solid rgb(239, 68, 68) !important;
+  transition: all 0.3s ease-in-out;
+}
+
+.dark .demo-reminder-blink {
+  animation: demo-reminder-pulse-dark 2.5s ease-in-out infinite;
+  border-left: 4px solid rgb(239, 68, 68) !important;
+  transition: all 0.3s ease-in-out;
+}
+
 /* styles.css */
 .CollapsibleContent {
   overflow: hidden;
