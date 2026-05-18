@@ -245,9 +245,15 @@ export function CommentModal() {
 
     const isDemoScheduled =
       selectedStatus === PRODUCT_INQUIRY_STATUS.DEMO_SCHEDULED;
-    if (isDemoScheduled && !demoDate) {
-      toast.error("Please select a demo date.");
-      return;
+    if (isDemoScheduled) {
+      if (!demoDate) {
+        toast.error("Please select a demo date.");
+        return;
+      }
+      if (!commentText.trim()) {
+        toast.error("Please type a comment to schedule the demo.");
+        return;
+      }
     }
 
     try {
@@ -264,9 +270,10 @@ export function CommentModal() {
         commentDate.setHours(12, 0, 0, 0);
 
         await createComment({
-          comment: `📅 Demo scheduled for ${format(commentDate, "MMMM do, yyyy")}`,
+          comment: commentText.trim(),
           demoDate: commentDate.toISOString(),
         });
+        setCommentText("");
       }
     } catch {
       setSelectedStatus(currentRow?.status || "");
