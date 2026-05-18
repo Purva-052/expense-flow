@@ -18,8 +18,22 @@ import { useAuthStore } from "@/stores/use-auth-store";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Send, Pencil, Trash2, Check, X, Building2, User, Briefcase, Info } from "lucide-react";
+import {
+  Send,
+  Pencil,
+  Trash2,
+  Check,
+  X,
+  Calendar as CalendarIcon,
+} from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { DeleteModal } from "@/components/model/delete-model";
@@ -33,7 +47,6 @@ import {
 import {
   PRODUCT_INQUIRY_STATUS,
   PRODUCT_INQUIRY_STATUS_OPTIONS,
-  formatProductInquiryStatusLabel,
 } from "@/utils/constant";
 
 export function CommentModal() {
@@ -52,6 +65,10 @@ export function CommentModal() {
   );
   const [statusOthersText, setStatusOthersText] = useState(
     currentRow?.others || ""
+  );
+  const [_, setDemoScheduled] = useState(false);
+  const [demoDate, setDemoDate] = useState<Date | undefined>(
+    currentRow?.demoDate ? new Date(currentRow.demoDate) : undefined
   );
 
   const inquiryId = currentRow?.id;
@@ -73,6 +90,7 @@ export function CommentModal() {
           setCurrentRow({
             ...currentRow,
             status: selectedStatus,
+            demoDate: demoDate?.toISOString() || null,
             others:
               selectedStatus === PRODUCT_INQUIRY_STATUS.OTHERS
                 ? statusOthersText
@@ -98,12 +116,23 @@ export function CommentModal() {
   useEffect(() => {
     setSelectedStatus(currentRow?.status || "");
     setStatusOthersText(currentRow?.others || "");
-  }, [currentRow?.status, currentRow?.others]);
+    setDemoScheduled(false);
+    setDemoDate(
+      currentRow?.demoDate ? new Date(currentRow.demoDate) : undefined
+    );
+  }, [currentRow]);
 
   const handleSend = async () => {
     if (!commentText.trim()) return;
     try {
-      await createComment({ comment: commentText });
+      const payload: any = { comment: commentText };
+      if (
+        selectedStatus === PRODUCT_INQUIRY_STATUS.DEMO_SCHEDULED &&
+        demoDate
+      ) {
+        payload.demoDate = demoDate.toISOString();
+      }
+      await createComment(payload);
       setCommentText("");
     } catch {
       // Request-level feedback is handled by the mutation layer.
@@ -153,15 +182,92 @@ export function CommentModal() {
     }
   };
 
+  const getUpdatePayload = (
+    status: string,
+    others: string,
+    date: Date | null | undefined
+  ) => {
+    if (!currentRow) return {};
+
+    const toNumberOrNull = (value: any): number | null => {
+      if (value === null || value === undefined || value === "") return null;
+      return Number(value);
+    };
+
+    return {
+      companyName: currentRow.companyName ?? "",
+      attendingPerson: toNumberOrNull(
+        currentRow.attendingPerson?.id ?? currentRow.attendingPerson
+      ),
+      contactPerson:
+        currentRow.contactPerson?.fullName ?? currentRow.contactPerson ?? "",
+      phoneNumber: currentRow.phoneNumber ?? "",
+      emailId: currentRow.emailId ?? "",
+      demoDate:
+        status === PRODUCT_INQUIRY_STATUS.DEMO_SCHEDULED
+          ? date
+            ? (() => {
+                const d = new Date(date);
+                d.setHours(12, 0, 0, 0);
+                return d.toISOString();
+              })()
+            : null
+          : null,
+      city: currentRow.city ?? "",
+      industryId: toNumberOrNull(
+        currentRow.industry?.id ?? currentRow.industryId
+      ),
+      productId: toNumberOrNull(currentRow.product?.id ?? currentRow.productId),
+      numberOfUsers: toNumberOrNull(currentRow.numberOfUsers),
+      requirements: currentRow.requirements ?? "",
+      status: status,
+      notes: currentRow.notes ?? "",
+      others: others,
+      trialStartDate: currentRow.trialStartDate
+        ? new Date(currentRow.trialStartDate).toISOString()
+        : null,
+      trialEndDate: currentRow.trialEndDate
+        ? new Date(currentRow.trialEndDate).toISOString()
+        : null,
+      inquiryDate: currentRow.inquiryDate
+        ? new Date(currentRow.inquiryDate).toISOString()
+        : null,
+    };
+  };
+
+  const handleDemoDateUpdate = async (date: Date | undefined) => {
+    setDemoDate(date);
+  };
+
   const handleStatusSave = async () => {
     const isOthers = selectedStatus === PRODUCT_INQUIRY_STATUS.OTHERS;
     if (isOthers && !statusOthersText.trim()) return;
 
+    const isDemoScheduled =
+      selectedStatus === PRODUCT_INQUIRY_STATUS.DEMO_SCHEDULED;
+    if (isDemoScheduled && !demoDate) {
+      toast.error("Please select a demo date.");
+      return;
+    }
+
     try {
-      await updateInquiryStatus({
-        status: selectedStatus,
-        others: isOthers ? statusOthersText.trim() : "",
-      });
+      const payload = getUpdatePayload(
+        selectedStatus,
+        isOthers ? statusOthersText.trim() : "",
+        demoDate
+      );
+      await updateInquiryStatus(payload);
+
+      // Create comment ONLY when status is Demo Scheduled and is being saved
+      if (isDemoScheduled && demoDate) {
+        const commentDate = new Date(demoDate);
+        commentDate.setHours(12, 0, 0, 0);
+
+        await createComment({
+          comment: `📅 Demo scheduled for ${format(commentDate, "MMMM do, yyyy")}`,
+          demoDate: commentDate.toISOString(),
+        });
+      }
     } catch {
       setSelectedStatus(currentRow?.status || "");
       setStatusOthersText(currentRow?.others || "");
@@ -179,76 +285,12 @@ export function CommentModal() {
         <DialogContent className="sm:max-w-4xl h-[85vh] p-0 flex flex-col overflow-hidden border border-slate-200 bg-white text-slate-900 dark:border-slate-800 dark:bg-[#0a0e14] dark:text-slate-100">
           <DialogHeader className="flex flex-row items-center justify-between border-b border-slate-200 p-4 dark:border-slate-800">
             <DialogTitle className="text-xl font-bold tracking-tight">
-              Inquiry Activity & Comments
+              Inquiry Status & Comments
             </DialogTitle>
           </DialogHeader>
 
           <div className="flex flex-1 overflow-hidden">
-            {/* Left Side: Inquiry Details */}
-            <div className="hidden h-full w-1/3 shrink-0 border-r border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-[#0f141d]/50 md:block">
-              <div className="sticky top-0 space-y-8 p-8">
-                <div className="space-y-2">
-                  <h3 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-                    Inquiry Details
-                  </h3>
-                  <div className="h-1 w-12 rounded-full bg-primary shadow-sm shadow-primary/20" />
-                </div>
-
-                <div className="space-y-7">
-                  <div className="group">
-                    <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 dark:text-slate-500">
-                      <Building2 className="h-3 w-3" />
-                      Company Name
-                    </label>
-                    <p className="mt-2 text-lg font-semibold text-slate-800 transition-colors group-hover:text-primary dark:text-slate-200 dark:group-hover:text-primary">
-                      {currentRow?.companyName || "-"}
-                    </p>
-                  </div>
-
-                  <div className="group">
-                    <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 dark:text-slate-500">
-                      <User className="h-3 w-3" />
-                      Contact Person
-                    </label>
-                    <p className="mt-2 text-lg font-semibold text-slate-800 transition-colors group-hover:text-primary dark:text-slate-200 dark:group-hover:text-primary">
-                      {currentRow?.contactPerson?.fullName ||
-                        currentRow?.contactPerson ||
-                        "-"}
-                    </p>
-                  </div>
-
-                  <div className="group">
-                    <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 dark:text-slate-500">
-                      <Briefcase className="h-3 w-3" />
-                      Industry
-                    </label>
-                    <p className="mt-2 text-lg font-semibold text-slate-800 transition-colors group-hover:text-primary dark:text-slate-200 dark:group-hover:text-primary">
-                      {currentRow?.industry?.name || "-"}
-                    </p>
-                  </div>
-
-                  <div className="group">
-                    <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 dark:text-slate-500">
-                      <Info className="h-3 w-3" />
-                      Current Status
-                    </label>
-                    <div className="mt-3">
-                      <span className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-black uppercase tracking-tight text-primary shadow-sm">
-                        {formatProductInquiryStatusLabel(currentRow?.status)}
-                      </span>
-                    </div>
-                    {currentRow?.status === PRODUCT_INQUIRY_STATUS.OTHERS &&
-                      currentRow?.others && (
-                        <div className="mt-3 rounded-xl border border-slate-200 bg-white/50 p-3 text-sm italic text-slate-500 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-400">
-                          {currentRow.others}
-                        </div>
-                      )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Side: Chat UI */}
+            {/* Full Width: Chat UI */}
             <div className="relative flex min-h-0 flex-1 flex-col bg-white dark:bg-[#0a0e14]">
               <ScrollArea className="flex-1 min-h-0 p-6">
                 <div className="space-y-6 pb-4">
@@ -424,71 +466,200 @@ export function CommentModal() {
                   <div ref={scrollRef} />
                 </div>
               </ScrollArea>
-
-              {/* Input area */}
-              <div className="border-t border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-[#0d1117]">
-                <div className="mx-auto mb-4 flex max-w-4xl flex-col gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800/80 dark:bg-[#111722]">
-                  <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
-                    <span className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-500">
-                      Update Status:
-                    </span>
-                    <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
-                      <Select
-                        value={selectedStatus}
-                        onValueChange={handleStatusChange}
-                        disabled={updatingStatus}
-                      >
-                        <SelectTrigger className="h-9 w-full min-w-[220px] rounded-xl border-slate-300 bg-white text-sm text-slate-800 sm:w-[240px] dark:border-slate-700 dark:bg-[#0b1018] dark:text-slate-200">
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-72 border-slate-200 bg-white text-slate-800 dark:border-slate-800 dark:bg-[#101722] dark:text-slate-200">
-                          {PRODUCT_INQUIRY_STATUS_OPTIONS.map((status) => (
-                            <SelectItem key={status.value} value={status.value}>
-                              {status.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-
-                      {selectedStatus === PRODUCT_INQUIRY_STATUS.OTHERS && (
-                        <Textarea
-                          value={statusOthersText}
-                          onChange={(e) =>
-                            setStatusOthersText(e.target.value)
-                          }
-                          placeholder="Additional notes about the status"
-                          className="min-h-[44px] rounded-xl border-slate-300 bg-white px-4 py-2 text-sm text-slate-800 placeholder:text-slate-400 sm:min-h-[44px] sm:max-h-[92px] dark:border-slate-700 dark:bg-[#0b1018] dark:text-slate-200 dark:placeholder:text-slate-500"
+              {/* Action Area: Demo Scheduling and Status Update */}
+              <div className="border-t border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-[#0d1117]">
+                <div className="mx-auto max-w-4xl space-y-3">
+                  {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-3"> */}
+                  {/* <div className="flex flex-col gap-2.5 p-3 rounded-xl bg-white border border-slate-200 dark:bg-[#111722] dark:border-slate-800/80 shadow-sm">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <CalendarIcon className="h-4 w-4" />
+                          </div>
+                          <h4 className="text-[10px] font-bold tracking-widest text-slate-900 dark:text-white uppercase">
+                            Demo Scheduled
+                          </h4>
+                        </div>
+                        <Switch
+                          checked={demoScheduled}
+                          onCheckedChange={(val) => {
+                            setDemoScheduled(val);
+                            if (!val) setDemoDate(undefined);
+                          }}
+                          className="scale-90"
                         />
-                      )}
+                      </div>
 
-                      <Button
-                        type="button"
-                        className="h-10 rounded-xl bg-primary px-4 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
-                        onClick={handleStatusSave}
-                        disabled={
-                          updatingStatus ||
-                          (selectedStatus === PRODUCT_INQUIRY_STATUS.OTHERS &&
-                            !statusOthersText.trim()) ||
-                          (selectedStatus === currentRow?.status &&
-                            (selectedStatus !== PRODUCT_INQUIRY_STATUS.OTHERS ||
-                              statusOthersText === (currentRow?.others || "")))
-                        }
-                      >
-                        {updatingStatus ? "Updating..." : "Update Status"}
-                      </Button>
+                      {demoScheduled && (
+                        <div className="animate-in fade-in slide-in-from-top-1">
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  "h-8 w-full justify-start text-xs font-normal border-slate-200 bg-white transition-all hover:bg-slate-50 dark:border-slate-700 dark:bg-[#0b1018]",
+                                  !demoDate && "text-muted-foreground"
+                                )}
+                              >
+                                <CalendarIcon className="mr-2 h-3.5 w-3.5 text-primary" />
+                                {demoDate ? (
+                                  format(demoDate, "PPP")
+                                ) : (
+                                  <span>Pick date</span>
+                                )}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-auto p-0 rounded-xl"
+                              align="start"
+                            >
+                              <Calendar
+                                mode="single"
+                                selected={demoDate}
+                                onSelect={handleDemoDateUpdate}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                      )}
+                    </div> */}
+
+                  {/* Status Update Section (Condensed) */}
+                  <div className="flex flex-col gap-2.5 p-3 rounded-xl bg-white border border-slate-200 dark:bg-[#111722] dark:border-slate-800/80 shadow-sm">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 whitespace-nowrap pl-1">
+                        Status
+                      </span>
+                      <div className="flex flex-1 items-center gap-2 justify-end">
+                        <Select
+                          value={selectedStatus}
+                          onValueChange={handleStatusChange}
+                          disabled={updatingStatus}
+                        >
+                          <SelectTrigger className="h-8 w-[160px] rounded-lg border-slate-300 bg-white text-[11px] text-slate-800 dark:border-slate-700 dark:bg-[#0b1018] dark:text-slate-200">
+                            <SelectValue placeholder="Status" />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-72 border-slate-200 bg-white text-slate-800 dark:border-slate-800 dark:bg-[#101722] dark:text-slate-200">
+                            {PRODUCT_INQUIRY_STATUS_OPTIONS.map((status) => (
+                              <SelectItem
+                                key={status.value}
+                                value={status.value}
+                                className="text-xs"
+                              >
+                                {status.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+
+                        <Button
+                          type="button"
+                          className="h-8 rounded-lg bg-primary px-3 text-[11px] font-semibold text-primary-foreground hover:bg-primary/90"
+                          onClick={handleStatusSave}
+                          disabled={
+                            updatingStatus ||
+                            (selectedStatus === PRODUCT_INQUIRY_STATUS.OTHERS &&
+                              !statusOthersText.trim()) ||
+                            (selectedStatus ===
+                              PRODUCT_INQUIRY_STATUS.DEMO_SCHEDULED &&
+                              !demoDate) ||
+                            (selectedStatus === currentRow?.status &&
+                              (selectedStatus === PRODUCT_INQUIRY_STATUS.OTHERS
+                                ? statusOthersText ===
+                                  (currentRow?.others || "")
+                                : selectedStatus ===
+                                    PRODUCT_INQUIRY_STATUS.DEMO_SCHEDULED
+                                  ? demoDate?.getTime() ===
+                                    (currentRow?.demoDate
+                                      ? new Date(currentRow.demoDate).getTime()
+                                      : 0)
+                                  : true))
+                          }
+                        >
+                          {updatingStatus ? "..." : "Save"}
+                        </Button>
+                      </div>
                     </div>
+                    {selectedStatus === PRODUCT_INQUIRY_STATUS.OTHERS && (
+                      <Textarea
+                        value={statusOthersText}
+                        onChange={(e) => setStatusOthersText(e.target.value)}
+                        placeholder="Notes..."
+                        className="min-h-[32px] max-h-[60px] rounded-lg border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-800 dark:border-slate-700 dark:bg-[#0b1018] dark:text-slate-200"
+                      />
+                    )}
+
+                    {selectedStatus ===
+                      PRODUCT_INQUIRY_STATUS.DEMO_SCHEDULED && (
+                      <div className="flex flex-col gap-2 mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/60 animate-in fade-in slide-in-from-top-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">
+                            Demo Date
+                          </span>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  "h-8 w-[160px] justify-start text-xs font-normal border-slate-300 bg-white transition-all hover:bg-slate-50 dark:border-slate-700 dark:bg-[#0b1018] dark:text-slate-200",
+                                  !demoDate && "text-muted-foreground"
+                                )}
+                              >
+                                <CalendarIcon className="mr-2 h-3.5 w-3.5 text-primary" />
+                                {demoDate ? (
+                                  format(demoDate, "PPP")
+                                ) : (
+                                  <span>Pick date</span>
+                                )}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-auto p-0 rounded-xl"
+                              align="start"
+                            >
+                              <Calendar
+                                mode="single"
+                                selected={demoDate}
+                                onSelect={handleDemoDateUpdate}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+
+                        {(() => {
+                          if (!demoDate) return null;
+                          const todayLocal = new Date();
+                          todayLocal.setHours(0, 0, 0, 0);
+                          const demoLocal = new Date(demoDate);
+                          demoLocal.setHours(0, 0, 0, 0);
+                          const isPastOrToday =
+                            demoLocal.getTime() <= todayLocal.getTime();
+
+                          if (!isPastOrToday) return null;
+
+                          return (
+                            <div className="flex items-center gap-2 p-2.5 rounded-lg border border-red-200 dark:border-red-950/40 bg-red-50/50 dark:bg-red-950/10 mt-1 animate-pulse">
+                              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500/10 text-red-500">
+                                <span className="relative flex h-2.5 w-2.5">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                                </span>
+                              </div>
+                              <span className="text-[10px] font-bold tracking-wider text-red-600 dark:text-red-400 uppercase">
+                                Action Required: Demo Reminder Active
+                              </span>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    )}
                   </div>
-                  <span className="text-xs text-slate-500">
-                    {updatingStatus
-                      ? "Updating status..."
-                      : selectedStatus === PRODUCT_INQUIRY_STATUS.OTHERS &&
-                          !statusOthersText.trim()
-                        ? "Add a note before saving"
-                        : "Click Update Status to apply changes"}
-                  </span>
+                  {/* </div> */}
                 </div>
 
-                <div className="flex gap-3 items-end max-w-4xl mx-auto">
+                <div className="flex gap-3 items-end max-w-4xl mx-auto pt-4 border-t border-dashed border-slate-200 dark:border-slate-800/50 mt-4">
                   <div className="flex-1 relative">
                     <Textarea
                       placeholder="Type your comment or update here..."

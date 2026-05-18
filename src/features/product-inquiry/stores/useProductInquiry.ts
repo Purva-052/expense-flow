@@ -9,6 +9,7 @@ interface ProductInquiryStore {
   setOpen: (open: ProductInquiryType) => void;
   setCurrentRow: (row: any) => void;
   silenceInquiry: (id: string) => void;
+  unsilenceInquiry: (id: string) => void;
 }
 
 export const useProductInquiryStore = create<ProductInquiryStore>((set) => ({
@@ -22,5 +23,9 @@ export const useProductInquiryStore = create<ProductInquiryStore>((set) => ({
       silencedInquiries: state.silencedInquiries.includes(id)
         ? state.silencedInquiries
         : [...state.silencedInquiries, id],
+    })),
+  unsilenceInquiry: (id) =>
+    set((state) => ({
+      silencedInquiries: state.silencedInquiries.filter((x) => x !== id),
     })),
 }));

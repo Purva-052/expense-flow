@@ -2,8 +2,6 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -65,14 +63,22 @@ export function InquiryCard({
   view = "grid",
   onProductClick,
 }: InquiryCardProps) {
-  const { setOpen, setCurrentRow, silencedInquiries, silenceInquiry } =
-    useProductInquiryStore();
+  const { setOpen, setCurrentRow } = useProductInquiryStore();
   const isGroup = inquiry?.isGroup;
   const inquiries = isGroup ? inquiry.inquiries : [inquiry];
 
-  const isBlinkingEnabled = isGroup
+  const shouldBlink = isGroup
     ? inquiry.isBlinking
-    : !silencedInquiries.includes(inquiry.id || inquiry._id);
+    : (() => {
+        if (inquiry?.status !== "demo_scheduled") return false;
+        if (!inquiry?.demoDate) return false;
+        const todayLocal = new Date();
+        todayLocal.setHours(0, 0, 0, 0);
+        const demoLocal = new Date(inquiry.demoDate);
+        demoLocal.setHours(0, 0, 0, 0);
+        const isPastOrToday = demoLocal.getTime() <= todayLocal.getTime();
+        return isPastOrToday;
+      })();
 
   const productName = inquiry?.product?.name || "No Product";
 
@@ -83,8 +89,6 @@ export function InquiryCard({
   const statuses = isGroup
     ? Array.from(inquiry.statuses)
     : [inquiry?.status].filter(Boolean);
-
-  // const totalUsers = isGroup ? inquiry.totalUsers : inquiry?.numberOfUsers;
 
   const contacts = isGroup
     ? inquiry.contacts
@@ -100,17 +104,16 @@ export function InquiryCard({
     ? Array.from(inquiry.companies)
     : [inquiry?.companyName].filter((c) => c && c !== "N/A");
 
-  // Use LOCAL midnight comparison to handle timezone offsets (e.g. IST UTC+5:30)
-  const isDemoToday = isGroup
-    ? inquiry.hasDemoToday
-    : (() => {
-        if (!inquiry?.demoDate) return false;
-        const todayLocal = new Date();
-        todayLocal.setHours(0, 0, 0, 0);
-        const demoLocal = new Date(inquiry.demoDate);
-        demoLocal.setHours(0, 0, 0, 0);
-        return todayLocal.getTime() === demoLocal.getTime();
-      })();
+  const attendingPersons = isGroup
+    ? Array.from(
+        new Map(
+          inquiries
+            .map((inq: any) => inq?.attendingPerson)
+            .filter(Boolean)
+            .map((ap: any) => [ap.id ?? ap, ap])
+        ).values()
+      )
+    : [inquiry?.attendingPerson].filter(Boolean);
 
   const demoDate =
     !isGroup && inquiry?.demoDate
@@ -138,15 +141,40 @@ export function InquiryCard({
       ]
     : [];
 
+  const formattedInquiryDate =
+    !isGroup && inquiry?.inquiryDate
+      ? new Date(inquiry.inquiryDate).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })
+      : null;
+
+  const groupInquiryDates: any[] = isGroup
+    ? [
+        ...new Set(
+          inquiries
+            .filter((inq: any) => inq?.inquiryDate)
+            .map((inq: any) =>
+              new Date(inq.inquiryDate).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })
+            )
+        ),
+      ]
+    : [];
+
   // Handler to silence ALL inquiries in a group at once
-  const silenceGroup = () => {
-    inquiries.forEach((inq: any) => {
-      const id = inq.id || inq._id;
-      if (!silencedInquiries.includes(id)) {
-        silenceInquiry(id);
-      }
-    });
-  };
+  // const silenceGroup = () => {
+  //   inquiries.forEach((inq: any) => {
+  //     const id = inq.id || inq._id;
+  //     if (!silencedInquiries.includes(id)) {
+  //       silenceInquiry(id);
+  //     }
+  //   });
+  // };
 
   const handleOpenComment = () => {
     setOpen("comment");
@@ -203,52 +231,40 @@ export function InquiryCard({
       <div
         className={cn(
           "min-w-[860px] bg-card border-b hover:bg-muted/50 transition-colors py-4 px-6 relative group flex items-center gap-4",
-          isDemoToday && isBlinkingEnabled && "demo-reminder-blink"
+          shouldBlink && "demo-reminder-blink"
         )}
       >
         <div className="w-1 bg-muted-foreground/40 rounded-full h-8 shrink-0" />
 
         {/* Product Name + Company + Contact */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3 flex-wrap">
             <h3
               className="text-sm font-bold text-foreground truncate cursor-pointer hover:text-primary transition-colors"
               onClick={() => onProductClick?.(productName)}
             >
               {productName}
             </h3>
-            {/* Reminder toggle — individual or group */}
-            {isDemoToday && (
-              <div className="flex items-center gap-2 ml-1">
-                <Switch
-                  id={`blink-mode-list-${inquiry.id || inquiry._id || productName}`}
-                  checked={isBlinkingEnabled}
-                  onCheckedChange={(checked) => {
-                    if (!checked) {
-                      if (isGroup) silenceGroup();
-                      else silenceInquiry(inquiry.id || inquiry._id);
-                    }
-                  }}
-                  disabled={!isBlinkingEnabled}
-                  className="scale-75 data-[state=checked]:bg-red-500"
-                />
-                <Label
-                  htmlFor={`blink-mode-list-${inquiry.id || inquiry._id || productName}`}
-                  className="text-[9px] text-slate-500 dark:text-slate-400 uppercase font-bold cursor-pointer transition-colors"
-                >
-                  Reminder
-                </Label>
-              </div>
+            {shouldBlink && (
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider bg-red-500/10 text-red-500 border border-red-500/30 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.15)] shrink-0">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span>
+                </span>
+                Demo Overdue / Today
+              </span>
             )}
           </div>
           <p className="text-[11px] text-muted-foreground truncate font-medium">
-            Company : {isGroup ? companies.join(", ") : companies[0] || "N/A"}
+            Company: {isGroup ? companies.join(", ") : companies[0] || "N/A"}
           </p>
           <p className="text-[11px] text-muted-foreground truncate font-medium">
-            Contact :{" "}
+            Contact Person:{" "}
             {isGroup
               ? contacts.map((c: any) => c.name).join(", ")
-              : contacts[0]?.name || "N/A"}
+              : (inquiry?.contactPerson?.fullName ??
+                inquiry?.contactPerson ??
+                "N/A")}
           </p>
         </div>
 
@@ -258,7 +274,7 @@ export function InquiryCard({
             <div
               key={s}
               className={cn(
-                "px-2 py-0.5 rounded-full text-[9px] font-semibold inline-block whitespace-nowrap",
+                "px-3 py-1 rounded-full text-[10px] font-bold inline-block whitespace-nowrap uppercase tracking-wider",
                 getStatusBadgeClasses(s)
               )}
             >
@@ -274,7 +290,7 @@ export function InquiryCard({
               <Badge
                 key={ind}
                 variant="secondary"
-                className="rounded-full px-2 py-0.5 text-[9px] whitespace-nowrap"
+                className="rounded-full px-3 py-1 text-[10px] whitespace-nowrap font-bold uppercase tracking-wide"
               >
                 {ind}
               </Badge>
@@ -284,15 +300,65 @@ export function InquiryCard({
           )}
         </div>
 
+        {/* Contact Person */}
+        <div className="w-28 shrink-0 text-xs text-foreground font-semibold text-center truncate px-2">
+          {isGroup
+            ? contacts.map((c: any) => c.name).join(", ")
+            : (inquiry?.contactPerson?.fullName ??
+              inquiry?.contactPerson ??
+              "—")}
+        </div>
+
+        {/* Inquiry Date */}
+        <div className="w-28 shrink-0 text-[11px] text-muted-foreground flex items-center justify-center">
+          {isGroup ? (
+            groupInquiryDates.length > 0 ? (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted/50 border border-muted cursor-default w-fit text-[10px]">
+                      <Calendar className="h-3.5 w-3.5 shrink-0" />
+                      <span className="font-semibold">
+                        {groupInquiryDates.length} Date
+                        {groupInquiryDates.length > 1 ? "s" : ""}
+                      </span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[180px] p-2">
+                    <div className="flex flex-col gap-1">
+                      {groupInquiryDates.map((d) => (
+                        <div
+                          key={d}
+                          className="flex items-center gap-1.5 text-xs"
+                        >
+                          <Calendar className="h-3 w-3 shrink-0" />
+                          <span>{d}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ) : (
+              <span className="text-muted-foreground/50">—</span>
+            )
+          ) : (
+            <div className="flex items-center gap-1.5 justify-center">
+              <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="font-medium">{formattedInquiryDate || "—"}</span>
+            </div>
+          )}
+        </div>
+
         {/* Demo Date */}
-        <div className="w-28 shrink-0 text-[11px] text-muted-foreground">
+        <div className="w-28 shrink-0 text-[11px] text-muted-foreground flex items-center justify-center">
           {isGroup ? (
             groupDemoDates.length > 0 ? (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/50 border border-muted cursor-default w-fit">
-                      <Calendar className="h-3 w-3 shrink-0" />
+                    <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted/50 border border-muted cursor-default w-fit text-[10px]">
+                      <Calendar className="h-3.5 w-3.5 shrink-0" />
                       <span className="font-semibold">
                         {groupDemoDates.length} Date
                         {groupDemoDates.length > 1 ? "s" : ""}
@@ -318,32 +384,78 @@ export function InquiryCard({
               <span className="text-muted-foreground/50">—</span>
             )
           ) : (
-            <div className="flex items-center gap-1">
-              <Calendar className="h-3.5 w-3.5" />
-              <span>{demoDate || "—"}</span>
+            <div className="flex items-center gap-1.5 justify-center">
+              <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="font-medium">{demoDate || "—"}</span>
             </div>
           )}
         </div>
 
-        {/* Contact Avatar */}
-        <div className="w-24 shrink-0 flex items-center -space-x-2 overflow-hidden">
-          {contacts.slice(0, 3).map((contact: any, idx: number) => (
-            <Avatar
-              key={contact.id || idx}
-              className="h-8 w-8 border-2 border-background shrink-0"
-            >
-              <AvatarFallback className="text-foreground text-[10px] font-semibold">
-                {getInitials(contact.name)}
-              </AvatarFallback>
-            </Avatar>
-          ))}
-          {contacts.length > 3 && (
-            <div className="h-8 w-8 rounded-full bg-muted border-2 border-background flex items-center justify-center shrink-0 z-10">
-              <span className="text-[10px] font-bold text-muted-foreground">
-                +{contacts.length - 3}
-              </span>
-            </div>
-          )}
+        {/* Attending Person */}
+        <div className="w-26 shrink-0 flex items-center justify-center -space-x-2 overflow-visible">
+          <TooltipProvider>
+            {attendingPersons.slice(0, 3).map((ap: any, idx: number) => {
+              const name =
+                ap?.fullName ?? (typeof ap === "string" ? ap : "N/A");
+              const pic = ap?.profilePicUrl ?? null;
+              return (
+                <Tooltip key={ap?.id ?? idx}>
+                  <TooltipTrigger asChild>
+                    <Avatar className="h-8 w-8 border-2 border-background shrink-0 hover:scale-110 transition-transform">
+                      <AvatarImage src={pic || undefined} alt={name} />
+                      <AvatarFallback className="text-foreground text-[10px] font-bold bg-muted">
+                        {getInitials(name)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <p className="text-xs font-semibold">{name}</p>
+                  </TooltipContent>
+                </Tooltip>
+              );
+            })}
+            {attendingPersons.length > 3 && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center justify-center h-8 w-8 rounded-full border-2 border-background bg-secondary text-[9px] font-bold text-muted-foreground relative z-10 cursor-default hover:bg-secondary/80 transition-colors shrink-0">
+                      +{attendingPersons.length - 3}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <div className="space-y-1">
+                      <p className="font-semibold text-xs border-b pb-1 mb-1">
+                        Additional Team Members:
+                      </p>
+                      {attendingPersons.slice(3).map((ap: any, idx: number) => {
+                        const name =
+                          ap?.fullName ?? (typeof ap === "string" ? ap : "N/A");
+                        const email = ap?.email ?? null;
+                        return (
+                          <div
+                            key={ap?.id ?? idx}
+                            className="flex flex-col py-1 border-b last:border-0"
+                          >
+                            <p className="text-[10px] font-medium text-foreground">
+                              {name}
+                            </p>
+                            {email && (
+                              <p className="text-[9px] text-muted-foreground">
+                                {email}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            {attendingPersons.length === 0 && (
+              <span className="text-xs text-muted-foreground/50">—</span>
+            )}
+          </TooltipProvider>
         </div>
 
         {/* Actions — hidden for grouped rows */}
@@ -362,7 +474,7 @@ export function InquiryCard({
     <div
       className={cn(
         "bg-card border-l-4 rounded-lg shadow-sm p-6 hover:shadow-md transition-all duration-300 relative border-l-muted-foreground min-h-[220px]",
-        isDemoToday && isBlinkingEnabled && "demo-reminder-blink"
+        shouldBlink && "demo-reminder-blink"
       )}
     >
       {/* Header: Product Name & Inquiry Count only */}
@@ -382,6 +494,23 @@ export function InquiryCard({
           </span>
         </div>
       </div>
+
+      {shouldBlink && (
+        <div className="mb-3 flex items-center justify-between p-2.5 rounded-lg border border-red-200 dark:border-red-950/40 bg-red-50 dark:bg-red-950/15 shadow-sm animate-pulse">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+            </span>
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-red-600 dark:text-red-400">
+              Urgent: Demo Reminder
+            </span>
+          </div>
+          <span className="text-[10px] font-medium text-red-500/80 dark:text-red-400/80">
+            {isGroup ? "Overdue Demos" : "Overdue / Today"}
+          </span>
+        </div>
+      )}
 
       {/* Industry tags */}
       <div className="flex flex-wrap gap-1 mb-2">
@@ -436,59 +565,75 @@ export function InquiryCard({
             </div>
           ) : null}
         </div>
-
-        {/* Reminder toggle — only when demo is today */}
-        {isDemoToday && (
-          <div className="flex items-center gap-1.5 ml-2">
-            <Switch
-              id={`blink-grid-${inquiry.id || inquiry._id || productName}`}
-              checked={isBlinkingEnabled}
-              onCheckedChange={(checked) => {
-                if (!checked) {
-                  if (isGroup) silenceGroup();
-                  else silenceInquiry(inquiry.id || inquiry._id);
-                }
-              }}
-              disabled={!isBlinkingEnabled}
-              className="scale-75 data-[state=checked]:bg-red-500"
-            />
-            <Label
-              htmlFor={`blink-grid-${inquiry.id || inquiry._id || productName}`}
-              className="text-[9px] text-slate-500 dark:text-slate-400 uppercase font-bold cursor-pointer"
-            >
-              Reminder
-            </Label>
-          </div>
-        )}
       </div>
 
       {/* Main Avatar Stack */}
-      <div className="flex items-center -space-x-3 mb-6 overflow-visible">
-        <TooltipProvider>
-          {contacts.slice(0, 5).map((contact: any, idx: number) => (
-            <Tooltip key={contact.id || idx}>
-              <TooltipTrigger asChild>
-                <Avatar className="h-10 w-10 border-2 border-background shrink-0 cursor-pointer hover:scale-110 transition-transform">
-                  <AvatarImage
-                    src={contact.profilePicUrl || undefined}
-                    alt={contact.name}
-                  />
-                  <AvatarFallback className="text-foreground text-[11px] font-semibold bg-muted">
-                    {getInitials(contact.name)}
-                  </AvatarFallback>
-                </Avatar>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="text-xs font-medium">{contact.name}</p>
-              </TooltipContent>
-            </Tooltip>
-          ))}
-          {contacts.length > 5 && (
-            <div className="h-10 w-10 rounded-full bg-muted border-2 border-background flex items-center justify-center shrink-0 z-10 text-[11px] font-bold text-muted-foreground">
-              +{contacts.length - 5}
-            </div>
-          )}
-        </TooltipProvider>
+      <div className="mb-6">
+        <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-2">
+          Attending Person
+        </p>
+        <div className="flex items-center -space-x-3 overflow-visible">
+          <TooltipProvider>
+            {attendingPersons.slice(0, 5).map((ap: any, idx: number) => {
+              const name =
+                ap?.fullName ?? (typeof ap === "string" ? ap : "N/A");
+              const pic = ap?.profilePicUrl ?? null;
+              return (
+                <Tooltip key={ap?.id ?? idx}>
+                  <TooltipTrigger asChild>
+                    <Avatar className="h-10 w-10 border-2 border-background shrink-0 cursor-pointer hover:scale-110 transition-transform">
+                      <AvatarImage src={pic || undefined} alt={name} />
+                      <AvatarFallback className="text-foreground text-[11px] font-semibold bg-muted">
+                        {getInitials(name)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-xs font-medium">{name}</p>
+                  </TooltipContent>
+                </Tooltip>
+              );
+            })}
+            {attendingPersons.length > 5 && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center justify-center h-10 w-10 rounded-full border-2 border-background bg-secondary text-[11px] font-bold text-muted-foreground relative z-10 cursor-default hover:bg-secondary/80 transition-colors shrink-0">
+                      +{attendingPersons.length - 5}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <div className="space-y-1">
+                      <p className="font-semibold text-xs border-b pb-1 mb-1">
+                        Additional Team Members:
+                      </p>
+                      {attendingPersons.slice(5).map((ap: any, idx: number) => {
+                        const name =
+                          ap?.fullName ?? (typeof ap === "string" ? ap : "N/A");
+                        const email = ap?.email ?? null;
+                        return (
+                          <div
+                            key={ap?.id ?? idx}
+                            className="flex flex-col py-1 border-b last:border-0"
+                          >
+                            <p className="text-[10px] font-medium text-foreground">
+                              {name}
+                            </p>
+                            {email && (
+                              <p className="text-[9px] text-muted-foreground">
+                                {email}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </TooltipProvider>
+        </div>
       </div>
 
       <div className="border-t border-muted/60 my-4" />
@@ -517,9 +662,34 @@ export function InquiryCard({
                 </Tooltip>
               ))}
               {companies.length > 4 && (
-                <div className="h-7 w-7 rounded-full bg-muted border-2 border-background flex items-center justify-center shrink-0 z-10 text-[9px] font-bold text-muted-foreground">
-                  +{companies.length - 4}
-                </div>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center justify-center h-7 w-7 rounded-full border-2 border-background bg-secondary text-[9px] font-bold text-muted-foreground relative z-10 cursor-default hover:bg-secondary/80 transition-colors shrink-0">
+                        +{companies.length - 4}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <div className="space-y-1">
+                        <p className="font-semibold text-xs border-b pb-1 mb-1">
+                          Additional Companies:
+                        </p>
+                        {companies.slice(4).map((company: any, idx: number) => {
+                          return (
+                            <div
+                              key={idx}
+                              className="flex flex-col py-1 border-b last:border-0"
+                            >
+                              <p className="text-[10px] font-medium text-foreground">
+                                {company}
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
             </TooltipProvider>
           </div>
@@ -551,9 +721,34 @@ export function InquiryCard({
                 </Tooltip>
               ))}
               {contacts.length > 4 && (
-                <div className="h-7 w-7 rounded-full bg-muted border-2 border-background flex items-center justify-center shrink-0 z-10 text-[9px] font-bold text-muted-foreground">
-                  +{contacts.length - 4}
-                </div>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center justify-center h-7 w-7 rounded-full border-2 border-background bg-secondary text-[9px] font-bold text-muted-foreground relative z-10 cursor-default hover:bg-secondary/80 transition-colors shrink-0">
+                        +{contacts.length - 4}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <div className="space-y-1">
+                        <p className="font-semibold text-xs border-b pb-1 mb-1">
+                          Additional Contact Persons:
+                        </p>
+                        {contacts.slice(4).map((contact: any, idx: number) => {
+                          return (
+                            <div
+                              key={contact.id || idx}
+                              className="flex flex-col py-1 border-b last:border-0"
+                            >
+                              <p className="text-[10px] font-medium text-foreground">
+                                {contact.name}
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
             </TooltipProvider>
           </div>
