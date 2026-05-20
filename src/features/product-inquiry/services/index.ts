@@ -56,7 +56,7 @@ export const useCreateProductInquiry = () => {
   const { setOpen } = useProductInquiryStore();
   return usePostData({
     url: API.product_inquiry.create,
-    refetchQueries: [GET_API_URL],
+    refetchQueries: [GET_API_URL, API.product_inquiry.stats],
     onSuccess: () => {
       setOpen(null);
     },
@@ -75,7 +75,7 @@ export const useUpdateProductInquiry = (
   const { setOpen } = useProductInquiryStore();
   return usePatchData({
     url: `${API.product_inquiry.update}/${id}`,
-    refetchQueries: [GET_API_URL],
+    refetchQueries: [GET_API_URL, API.product_inquiry.stats],
     onSuccess: () => {
       if (closeOnSuccess) {
         setOpen(null);
@@ -89,6 +89,10 @@ export const useGetProductInquiryList = (params?: any) => {
   return useFetchData({ url: GET_API_URL, params });
 };
 
+export const useGetProductInquiryStats = (params?: any, enabled: boolean = true) => {
+  return useFetchData({ url: API.product_inquiry.stats, params, enabled });
+};
+
 export const useGetProductDropdown = () => {
   return useFetchData({ url: API.product_inquiry.productDropdown });
 };
@@ -97,7 +101,7 @@ export const useDeleteProductInquiry = (id: string) => {
   const { setOpen } = useProductInquiryStore();
   return useDeleteData({
     url: `${API.product_inquiry.delete}/${id}`,
-    refetchQueries: [GET_API_URL],
+    refetchQueries: [GET_API_URL, API.product_inquiry.stats],
     onSuccess: () => {
       setOpen(null);
     },
