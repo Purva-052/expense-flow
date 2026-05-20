@@ -95,6 +95,11 @@ export const getColumns = (): ColumnDef<any>[] => [
     },
   },
   {
+    accessorKey: "numberOfUsers",
+    header: "Number of Users",
+    cell: ({ row }) => row.original?.numberOfUsers ?? "-",
+  },
+  {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {

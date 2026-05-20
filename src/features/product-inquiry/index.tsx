@@ -5,18 +5,27 @@ import TablePageHeader from "@/components/table/table-page-header";
 import { FilterConfig } from "@/components/table/table-toolbar";
 import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import { useProductInquiryStore } from "./stores/useProductInquiry";
-import { useExportCSV, useGetProductInquiryListInfinite } from "./services";
+import {
+  useExportCSV,
+  useGetProductInquiryListInfinite,
+  useGetProductInquiryStats,
+} from "./services";
 import { ActionFormModal } from "./components/actions";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useGetIndustryDropdownList } from "../industry/services";
 import { PRODUCT_INQUIRY_STATUS_OPTIONS } from "@/utils/constant";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   ArrowLeft,
   Download,
   LayoutGrid,
   List,
   Table as TableIcon,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  MessageSquare,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -27,6 +36,7 @@ import { InquiryCard } from "./components/product-inquiry-card";
 import { GlobalTable } from "@/components/table/global-table";
 import { getColumns } from "./components/columns";
 import { useGetProductInquiryList } from "./services";
+import { formatDate } from "@/utils/commonFunctions";
 
 const ProductInquiryPage = () => {
   const { setOpen, silencedInquiries } = useProductInquiryStore();
@@ -51,14 +61,22 @@ const ProductInquiryPage = () => {
     industryId: parseAsString.withDefault(""),
     status: parseAsString.withDefault(""),
     drilled: parseAsString.withDefault(""),
+    productId: parseAsString.withDefault(""),
+    fromDate: parseAsString,
+    toDate: parseAsString,
     pageSize: parseAsInteger.withDefault(10),
     currentPage: parseAsInteger.withDefault(1),
   });
 
+  const isSearchActive = queryParams.drilled === "true";
+
   const apiParams = {
-    search: queryParams.search,
+    search: queryParams.search || undefined,
     industryId: queryParams.industryId || undefined,
     status: queryParams.status || undefined,
+    productId: queryParams.productId || undefined,
+    fromDate: queryParams.fromDate || undefined,
+    toDate: queryParams.toDate || undefined,
     pagination: true,
   };
 
@@ -69,6 +87,17 @@ const ProductInquiryPage = () => {
     hasNextPage,
     isFetchingNextPage,
   } = useGetProductInquiryListInfinite(apiParams);
+
+  const { data: statsData, isPending: loadingStats } =
+    useGetProductInquiryStats(
+      {
+        productId: queryParams.productId,
+        fromDate: queryParams.fromDate || undefined,
+        toDate: queryParams.toDate || undefined,
+      },
+      isSearchActive
+    );
+  const stats = (statsData as any)?.data;
 
   const { mutate: exportCSV, isPending: exportCSVLoading } = useExportCSV();
   const { data: industryDropdownData, isPending: loadingIndustry }: any =
@@ -92,8 +121,16 @@ const ProductInquiryPage = () => {
     [inquiryPages]
   );
 
+  const selectedProduct = useMemo(() => {
+    if (!queryParams.productId) return null;
+    const list = inquiryList || [];
+    const found = list.find(
+      (inq: any) => String(inq?.product?.id) === String(queryParams.productId)
+    );
+    return found?.product;
+  }, [inquiryList, queryParams.productId]);
+
   // Compute early so it can be used inside the memo below
-  const isSearchActive = queryParams.drilled === "true";
 
   const getRowClassName = () => {
     return "";
@@ -217,19 +254,31 @@ const ProductInquiryPage = () => {
   }, [isFetchingNextPage]);
 
   const handleSearch = (search: string | undefined) => {
-    setQueryParams({ search: search ?? "", drilled: "" });
+    setQueryParams({
+      search: search ?? "",
+      drilled: "",
+      productId: "",
+      fromDate: null,
+      toDate: null,
+    });
   };
 
   const handleIndustryFilter = (industryId?: string) => {
-    setQueryParams({ industryId: industryId ?? "", drilled: "" });
+    setQueryParams({
+      industryId: industryId ?? "",
+      drilled: "",
+      productId: "",
+      fromDate: null,
+      toDate: null,
+    });
   };
 
   const handleStatusFilter = (status?: string) => {
     setQueryParams({ status: status ?? "" });
   };
 
-  const handleProductClick = (productName: string) => {
-    setQueryParams({ search: productName, drilled: "true" });
+  const handleProductClick = (productId: string) => {
+    setQueryParams({ productId, drilled: "true", search: "" });
     // When drilling into a product, switch to list view (grid is hidden)
     if (view === "grid") setView("list");
   };
@@ -254,8 +303,8 @@ const ProductInquiryPage = () => {
         label: industry.name,
       })),
     },
-    // Status filter: only shown for table view
-    ...(view === "table"
+    // Status & Date Range filters: only shown inside the particular product listing
+    ...(isSearchActive
       ? [
           {
             type: "select" as const,
@@ -263,7 +312,29 @@ const ProductInquiryPage = () => {
             placeholder: "Filter by status",
             value: queryParams.status || undefined,
             onChange: handleStatusFilter,
-            options: PRODUCT_INQUIRY_STATUS_OPTIONS,
+            options: [
+              { value: "in_progress", label: "In Progress" },
+              ...PRODUCT_INQUIRY_STATUS_OPTIONS,
+            ],
+          },
+          {
+            type: "dateRange" as const,
+            key: "dateRange",
+            placeholder: "Filter by Date",
+            disable: { after: new Date() },
+            value: {
+              from: queryParams.fromDate
+                ? new Date(queryParams.fromDate)
+                : undefined,
+              to: queryParams.toDate ? new Date(queryParams.toDate) : undefined,
+            },
+            onChange: (range: { from?: Date; to?: Date } | undefined) => {
+              setQueryParams({
+                fromDate: formatDate(range?.from) ?? null,
+                toDate: formatDate(range?.to) ?? null,
+                currentPage: 1,
+              });
+            },
           },
         ]
       : []),
@@ -339,27 +410,253 @@ const ProductInquiryPage = () => {
       </TablePageHeader>
 
       <div className="flex-1 min-h-0 flex flex-col gap-4 py-2">
+        {/* Stats Cards */}
+        {isSearchActive && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Total Inquiries Card */}
+            <Card
+              className={cn(
+                "border transition-all cursor-pointer hover:shadow-md",
+                queryParams.status === ""
+                  ? "bg-blue-50 border-blue-200 ring-2 ring-blue-100 dark:bg-blue-900/20 dark:border-blue-800 dark:ring-blue-900/30"
+                  : "border-slate-200 dark:border-slate-800"
+              )}
+              onClick={() => setQueryParams({ status: "" })}
+            >
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <span
+                    className={cn(
+                      "text-xs font-semibold uppercase tracking-wide",
+                      queryParams.status === ""
+                        ? "text-blue-700 dark:text-blue-400"
+                        : "text-slate-400"
+                    )}
+                  >
+                    Total Inquiries
+                  </span>
+                  <div
+                    className={cn(
+                      "p-2 rounded-xl",
+                      queryParams.status === ""
+                        ? "bg-blue-200 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+                        : "bg-blue-50 text-blue-500 dark:bg-blue-900/30 dark:text-blue-400"
+                    )}
+                  >
+                    <MessageSquare size={20} />
+                  </div>
+                </div>
+                <div
+                  className={cn(
+                    "text-3xl font-bold tracking-tight",
+                    queryParams.status === ""
+                      ? "text-blue-900 dark:text-blue-100"
+                      : "text-slate-900 dark:text-slate-100"
+                  )}
+                >
+                  {loadingStats ? (
+                    <div className="h-9 w-12 bg-muted animate-pulse rounded" />
+                  ) : (
+                    (stats?.totalInquiries?.count ?? 0)
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* In Progress Inquiries Card */}
+            <Card
+              className={cn(
+                "border transition-all cursor-pointer hover:shadow-md",
+                queryParams.status === "in_progress"
+                  ? "bg-orange-50 border-orange-200 ring-2 ring-orange-100 dark:bg-orange-900/20 dark:border-orange-800 dark:ring-orange-900/30"
+                  : "border-slate-200 dark:border-slate-800"
+              )}
+              onClick={() =>
+                setQueryParams({
+                  status:
+                    queryParams.status === "in_progress" ? "" : "in_progress",
+                })
+              }
+            >
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <span
+                    className={cn(
+                      "text-xs font-semibold uppercase tracking-wide",
+                      queryParams.status === "in_progress"
+                        ? "text-orange-700 dark:text-orange-400"
+                        : "text-slate-400"
+                    )}
+                  >
+                    In Progress Inquiries
+                  </span>
+                  <div
+                    className={cn(
+                      "p-2 rounded-xl",
+                      queryParams.status === "in_progress"
+                        ? "bg-orange-200 text-orange-700 dark:bg-orange-900 dark:text-orange-300"
+                        : "bg-orange-50 text-orange-500 dark:bg-orange-900/30 dark:text-orange-400"
+                    )}
+                  >
+                    <Clock size={20} />
+                  </div>
+                </div>
+                <div
+                  className={cn(
+                    "text-3xl font-bold tracking-tight",
+                    queryParams.status === "in_progress"
+                      ? "text-orange-900 dark:text-orange-100"
+                      : "text-slate-900 dark:text-slate-100"
+                  )}
+                >
+                  {loadingStats ? (
+                    <div className="h-9 w-12 bg-muted animate-pulse rounded" />
+                  ) : (
+                    (stats?.inProgressInquiries?.count ?? 0)
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Won Inquiries Card */}
+            <Card
+              className={cn(
+                "border transition-all cursor-pointer hover:shadow-md",
+                queryParams.status === "won"
+                  ? "bg-emerald-50 border-emerald-200 ring-2 ring-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800 dark:ring-emerald-900/30"
+                  : "border-slate-200 dark:border-slate-800"
+              )}
+              onClick={() =>
+                setQueryParams({
+                  status: queryParams.status === "won" ? "" : "won",
+                })
+              }
+            >
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <span
+                    className={cn(
+                      "text-xs font-semibold uppercase tracking-wide",
+                      queryParams.status === "won"
+                        ? "text-emerald-700 dark:text-emerald-400"
+                        : "text-slate-400"
+                    )}
+                  >
+                    Won Inquiries
+                  </span>
+                  <div
+                    className={cn(
+                      "p-2 rounded-xl",
+                      queryParams.status === "won"
+                        ? "bg-emerald-200 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300"
+                        : "bg-emerald-50 text-emerald-500 dark:bg-emerald-900/30 dark:text-emerald-400"
+                    )}
+                  >
+                    <CheckCircle2 size={20} />
+                  </div>
+                </div>
+                <div
+                  className={cn(
+                    "text-3xl font-bold tracking-tight",
+                    queryParams.status === "won"
+                      ? "text-emerald-900 dark:text-emerald-100"
+                      : "text-slate-900 dark:text-slate-100"
+                  )}
+                >
+                  {loadingStats ? (
+                    <div className="h-9 w-12 bg-muted animate-pulse rounded" />
+                  ) : (
+                    (stats?.wonInquiries?.count ?? 0)
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Lost Inquiries Card */}
+            <Card
+              className={cn(
+                "border transition-all cursor-pointer hover:shadow-md",
+                queryParams.status === "lost"
+                  ? "bg-rose-50 border-rose-200 ring-2 ring-rose-100 dark:bg-rose-900/20 dark:border-rose-800 dark:ring-rose-900/30"
+                  : "border-slate-200 dark:border-slate-800"
+              )}
+              onClick={() =>
+                setQueryParams({
+                  status: queryParams.status === "lost" ? "" : "lost",
+                })
+              }
+            >
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <span
+                    className={cn(
+                      "text-xs font-semibold uppercase tracking-wide",
+                      queryParams.status === "lost"
+                        ? "text-rose-700 dark:text-rose-400"
+                        : "text-slate-400"
+                    )}
+                  >
+                    Lost Inquiries
+                  </span>
+                  <div
+                    className={cn(
+                      "p-2 rounded-xl",
+                      queryParams.status === "lost"
+                        ? "bg-rose-200 text-rose-700 dark:bg-rose-900 dark:text-rose-300"
+                        : "bg-rose-50 text-rose-500 dark:bg-rose-900/30 dark:text-rose-400"
+                    )}
+                  >
+                    <XCircle size={20} />
+                  </div>
+                </div>
+                <div
+                  className={cn(
+                    "text-3xl font-bold tracking-tight",
+                    queryParams.status === "lost"
+                      ? "text-rose-900 dark:text-rose-100"
+                      : "text-slate-900 dark:text-slate-100"
+                  )}
+                >
+                  {loadingStats ? (
+                    <div className="h-9 w-12 bg-muted animate-pulse rounded" />
+                  ) : (
+                    (stats?.lostInquiries?.count ?? 0)
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         {/* Back navigation when drilled into a product */}
         {isSearchActive && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 bg-muted/40 px-3 py-1 rounded-lg border border-border/50 w-fit shadow-sm">
             <Button
               variant="ghost"
               size="sm"
-              className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground px-2 h-8"
+              className="flex items-center gap-1 text-muted-foreground hover:text-foreground px-2 h-7 hover:bg-muted rounded text-xs font-semibold"
               onClick={() => {
-                setQueryParams({ search: "", status: "", drilled: "" });
+                setQueryParams({
+                  search: "",
+                  status: "",
+                  drilled: "",
+                  productId: "",
+                  fromDate: null,
+                  toDate: null,
+                });
                 setView("grid");
               }}
             >
-              <ArrowLeft className="h-4 w-4" />
-              <span className="text-sm font-medium">All Products</span>
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>All Products</span>
             </Button>
-            <span className="text-muted-foreground/40 text-sm">/</span>
-            <span className="text-sm font-semibold text-foreground">
-              {queryParams.search}
+            <span className="text-muted-foreground/40 text-xs">/</span>
+            <span className="text-xs font-bold text-foreground pr-1">
+              {selectedProduct?.name || "Product"}
             </span>
           </div>
         )}
+
         {/* Filters + View Toggle */}
         <div className="flex flex-wrap items-start gap-3">
           <div className="flex-1 min-w-0">
@@ -449,6 +746,10 @@ const ProductInquiryPage = () => {
                     </div>
                     <div className="w-28 shrink-0 text-center">Demo Date</div>
                     <div className="w-26 shrink-0 text-center">
+                      {" "}
+                      Number of Users{" "}
+                    </div>
+                    <div className="w-26 shrink-0 text-center">
                       Attending Person
                     </div>
                     <div className="w-[68px] shrink-0" />
@@ -498,6 +799,10 @@ const ProductInquiryPage = () => {
                       Inquiry Date
                     </div>
                     <div className="w-28 shrink-0 text-center">Demo Date</div>
+                    <div className="w-26 shrink-0 text-center">
+                      {" "}
+                      Number of Users{" "}
+                    </div>
                     <div className="w-26 shrink-0 text-center">
                       Attending Person
                     </div>
