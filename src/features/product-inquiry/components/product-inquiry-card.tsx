@@ -25,7 +25,7 @@ import { useProductInquiryStore } from "../stores/useProductInquiry";
 interface InquiryCardProps {
   inquiry: any;
   view?: "grid" | "list";
-  onProductClick?: (productName: string) => void;
+  onProductClick?: (productId: string) => void;
 }
 
 const statusColorMap: any = {
@@ -80,6 +80,7 @@ export function InquiryCard({
         return isPastOrToday;
       })();
 
+  const productId = String(inquiry?.product?.id || inquiry?.productId || "");
   const productName = inquiry?.product?.name || "No Product";
 
   const industries = isGroup
@@ -166,6 +167,10 @@ export function InquiryCard({
       ]
     : [];
 
+  const numberOfUsers = isGroup
+    ? inquiry.totalUsers
+    : (inquiry?.numberOfUsers ?? null);
+
   // Handler to silence ALL inquiries in a group at once
   // const silenceGroup = () => {
   //   inquiries.forEach((inq: any) => {
@@ -241,7 +246,7 @@ export function InquiryCard({
           <div className="flex items-center gap-3 flex-wrap">
             <h3
               className="text-sm font-bold text-foreground truncate cursor-pointer hover:text-primary transition-colors"
-              onClick={() => onProductClick?.(productName)}
+              onClick={() => onProductClick?.(productId)}
             >
               {productName}
             </h3>
@@ -391,6 +396,13 @@ export function InquiryCard({
           )}
         </div>
 
+        {/* Number of Users */}
+        <div className="w-26 shrink-0 text-xs text-foreground font-semibold text-center truncate px-2">
+          {numberOfUsers !== null && numberOfUsers !== undefined && numberOfUsers !== 0
+            ? numberOfUsers
+            : "—"}
+        </div>
+
         {/* Attending Person */}
         <div className="w-26 shrink-0 flex items-center justify-center -space-x-2 overflow-visible">
           <TooltipProvider>
@@ -481,7 +493,7 @@ export function InquiryCard({
       <div className="flex items-start justify-between mb-3">
         <h3
           className="text-lg font-bold text-foreground leading-tight cursor-pointer hover:text-rose-600 dark:hover:text-rose-500 transition-colors pr-4"
-          onClick={() => onProductClick?.(productName)}
+          onClick={() => onProductClick?.(productId)}
         >
           {productName}
         </h3>
