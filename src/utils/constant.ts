@@ -77,6 +77,7 @@ export const PRODUCT_INQUIRY_STATUS = {
   WON: "won",
   LOST: "lost",
   OTHERS: "others",
+  TRIAL: "trial",
 };
 
 export const PRODUCT_INQUIRY_STATUS_OPTIONS = [
@@ -115,6 +116,10 @@ export const PRODUCT_INQUIRY_STATUS_OPTIONS = [
   {
     value: PRODUCT_INQUIRY_STATUS.OTHERS,
     label: "Others",
+  },
+  {
+    value: PRODUCT_INQUIRY_STATUS.TRIAL,
+    label: "Trial",
   },
 ];
 

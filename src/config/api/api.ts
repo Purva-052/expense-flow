@@ -302,6 +302,7 @@ const API = {
       delete: (id: string, commentId: string) =>
         `/product-inquiries/${id}/comments/${commentId}`,
     },
+    stats: "/product-inquiries/stats",
   },
 };
 
