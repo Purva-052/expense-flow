@@ -66,6 +66,17 @@ export const useGetProjectsData = (params?: any) => {
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
       const metadata = lastPage?.metadata;
+
+      // Always prefer client-side totalPages calculation using the actual
+      // limit (9) we send. The backend may compute totalPages with a
+      // different default, so we recalculate it ourselves.
+      if (metadata && typeof metadata.totalCount === "number") {
+        const currentPage = metadata.page ?? 1;
+        const totalPages = Math.ceil(metadata.totalCount / 9);
+        return currentPage < totalPages ? currentPage + 1 : undefined;
+      }
+
+      // Fallback: trust the backend's totalPages if totalCount is absent.
       return metadata?.page < metadata?.totalPages
         ? metadata.page + 1
         : undefined;
