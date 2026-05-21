@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// import { useState } from "react";
+import { useMemo } from "react";
 import PageLayout from "@/components/layout/layout-provider";
 import { GlobalTable } from "@/components/table/global-table";
 import GlobalFilterSection from "@/components/table/global-table-filter";
@@ -87,13 +87,28 @@ const TransactionPage = () => {
   const totalCount = (listData as any)?.metadata?.totalCount;
   const { data: usersList, isPending: usersListLoading }: any =
     useGetUserDropdownList({
-      role: [roles.TEAM_LEAD, roles.ADMIN, roles.PROJECT_MANAGER],
+      role: [roles.TEAM_LEAD, roles.ADMIN, roles.PROJECT_MANAGER, roles.BDE],
       status: "active",
     });
 
   const filteredUsersList = usersList?.data?.filter(
     (user: any) => !ACCOUNTANT_USER_IDS.includes(Number(user?.id))
   );
+
+  const userOptions = useMemo(() => {
+    if (!filteredUsersList) return [];
+
+    const baseOptions = filteredUsersList.map((user: any) => ({
+      value: user.id,
+      label: user.fullName,
+    }));
+
+    const hasUser86 = baseOptions.some((opt: any) => Number(opt.value) === 86);
+    if (!hasUser86) {
+      return [{ value: 86, label: "Bhavdeep Devmurari" }, ...baseOptions];
+    }
+    return baseOptions;
+  }, [filteredUsersList]);
 
   const handleSearch = (search: string | undefined) => {
     setQueryParams({ ...listParams, search: search ?? "", currentPage: 1 });
@@ -184,9 +199,7 @@ const TransactionPage = () => {
       type: "select",
       key: "userId",
       placeholder: "Filter by User",
-      options: filteredUsersList?.map((user: any) => {
-        return { value: user.id, label: user.fullName };
-      }),
+      options: userOptions,
       value: listParams.userId,
       onChange: (value: any) => {
         setQueryParams({
