@@ -61,6 +61,19 @@ export function ViewProductInquiryModal() {
 
           <div className="flex justify-between gap-6">
             <span className="font-medium text-slate-500 dark:text-slate-400">
+              Attending Person:
+            </span>
+            <span className="text-right text-slate-900 dark:text-slate-100">
+              {renderValue(
+                currentRow?.attendingPerson?.fullName ??
+                  currentRow?.attendingPerson
+              )}
+            </span>
+          </div>
+          <Separator />
+
+          <div className="flex justify-between gap-6">
+            <span className="font-medium text-slate-500 dark:text-slate-400">
               Email ID:
             </span>
             <span className="text-right text-slate-900 dark:text-slate-100">
@@ -114,6 +127,16 @@ export function ViewProductInquiryModal() {
             </span>
             <span className="text-right text-slate-900 dark:text-slate-100">
               {renderValue(currentRow?.numberOfUsers)}
+            </span>
+          </div>
+          <Separator />
+
+          <div className="flex justify-between gap-6">
+            <span className="font-medium text-slate-500 dark:text-slate-400">
+              Inquiry Date:
+            </span>
+            <span className="text-right text-slate-900 dark:text-slate-100">
+              {formatDate(currentRow?.inquiryDate)}
             </span>
           </div>
           <Separator />

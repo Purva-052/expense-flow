@@ -21,6 +21,7 @@ import { Calendar, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatProductInquiryStatusLabel } from "@/utils/constant";
 import { useProductInquiryStore } from "../stores/useProductInquiry";
+import { useGetProductInquiryStats } from "../services";
 
 interface InquiryCardProps {
   inquiry: any;
@@ -66,6 +67,23 @@ export function InquiryCard({
   const { setOpen, setCurrentRow } = useProductInquiryStore();
   const isGroup = inquiry?.isGroup;
   const inquiries = isGroup ? inquiry.inquiries : [inquiry];
+
+  // Fetch true total counts from the stats API for grouped (product-level) cards.
+  // This avoids showing a count that only reflects paginated records loaded so far.
+  const groupProductId = isGroup
+    ? String(inquiry?.product?.id ?? "")
+    : null;
+  const { data: groupStatsData, isPending: groupStatsLoading } = useGetProductInquiryStats(
+    groupProductId ? { productId: groupProductId } : undefined,
+    !!groupProductId
+  );
+  const groupStats = (groupStatsData as any)?.data;
+  // Only use the stats count once it has loaded — never fall back to the
+  // paginated inquiries.length which would show a wrong (smaller) number.
+  const groupTotalCount: number | null =
+    groupStatsLoading || groupStats === undefined
+      ? null
+      : (groupStats?.totalInquiries?.count ?? null);
 
   const shouldBlink = isGroup
     ? inquiry.isBlinking
@@ -499,11 +517,19 @@ export function InquiryCard({
         </h3>
         <div className="flex items-center gap-1.5 text-muted-foreground whitespace-nowrap shrink-0">
           <Calendar className="h-4 w-4" />
-          <span className="text-xs font-medium">
-            {isGroup
-              ? `${inquiries.length} Inquiries`
-              : `Demo: ${demoDate || "N/A"}`}
-          </span>
+          {isGroup ? (
+            groupTotalCount === null ? (
+              <div className="h-4 w-16 bg-muted animate-pulse rounded" />
+            ) : (
+              <span className="text-xs font-medium">
+                {groupTotalCount} {groupTotalCount === 1 ? "Inquiry" : "Inquiries"}
+              </span>
+            )
+          ) : (
+            <span className="text-xs font-medium">
+              Demo: {demoDate || "N/A"}
+            </span>
+          )}
         </div>
       </div>
 
