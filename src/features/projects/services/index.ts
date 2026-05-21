@@ -47,7 +47,7 @@ const fetchProjects = async ({ pageParam = 1, queryKey }: any) => {
   const queryStr = buildQueryString({
     ...params,
     page: pageParam,
-    limit: 10,
+    limit: 9,
   });
   const response = await axios.get(baseURL + `${GET_API_URL}${queryStr}`, {
     headers: {
