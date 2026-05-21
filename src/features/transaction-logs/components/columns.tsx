@@ -11,8 +11,29 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTransactionStore } from "../stores";
-import { roles } from "@/utils/constant";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { Badge } from "@/components/ui/badge";
+import { roles, TransactionTypeStatus } from "@/utils/constant";
+
+// Status to badge variant mapping
+const statusVariantMap: Record<
+  string,
+  "default" | "secondary" | "destructive" | "outline" | "success" | "warning"
+> = {
+  pending: "warning",
+  approved: "success",
+  rejected: "destructive",
+  completed: "default",
+};
+
+// Status value to label mapping
+const statusLabelMap = TransactionTypeStatus.reduce(
+  (acc, status) => {
+    acc[status.value] = status.label;
+    return acc;
+  },
+  {} as Record<string, string>
+);
 
 export const columns: ColumnDef<any>[] = [
   {
@@ -21,16 +42,6 @@ export const columns: ColumnDef<any>[] = [
     cell: ({ row }) => {
       const createdBy = row.original.user?.name;
       return <span className="text-sm">{createdBy ? createdBy : "-"}</span>;
-    },
-  },
-  {
-    accessorKey: "currency",
-    header: "Currency",
-    cell: ({ row }) => {
-      const currency = row.original.currency;
-      return (
-        <span className="text-sm uppercase">{currency ? currency : "-"}</span>
-      );
     },
   },
   {
@@ -69,6 +80,19 @@ export const columns: ColumnDef<any>[] = [
           {truncated}
         </span>
       );
+    },
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => {
+      const status = row.original.status;
+      if (!status) {
+        return <span className="text-sm">-</span>;
+      }
+      const variant = statusVariantMap[status] || "default";
+      const label = statusLabelMap[status] || status;
+      return <Badge variant={variant}>{label}</Badge>;
     },
   },
   {
@@ -184,6 +208,10 @@ export const columns: ColumnDef<any>[] = [
 
       const canEditDelete = isAdmin || (isPMorTL && isCreator);
 
+      const canAcceptReject =
+        [2, 126].includes(Number(user?.user?.id || user?.user_id)) &&
+        row.original.status === "pending";
+
       const handleEdit = () => {
         setOpen("edit");
         setCurrentRow(operator);
@@ -196,6 +224,11 @@ export const columns: ColumnDef<any>[] = [
 
       const handleView = () => {
         setOpen("view");
+        setCurrentRow(operator);
+      };
+
+      const handleAcceptReject = () => {
+        setOpen("action");
         setCurrentRow(operator);
       };
 
@@ -213,6 +246,11 @@ export const columns: ColumnDef<any>[] = [
             <DropdownMenuItem onClick={handleView}>
               View Transaction
             </DropdownMenuItem>
+            {canAcceptReject && (
+              <DropdownMenuItem onClick={handleAcceptReject}>
+                Review Request
+              </DropdownMenuItem>
+            )}
             {canEditDelete && (
               <DropdownMenuItem onClick={handleEdit}>
                 Edit Transaction

@@ -68,12 +68,28 @@ const ProductInquiryPage = () => {
     currentPage: parseAsInteger.withDefault(1),
   });
 
+  const [activeTab, setActiveTab] = useState<"active" | "inactive">("active");
+
+  const currentView = activeTab === "inactive" ? "table" : view;
+
+  const handleTabChange = (newTab: "active" | "inactive") => {
+    setActiveTab(newTab);
+    setQueryParams({
+      status: "",
+      currentPage: 1,
+      productId: "",
+      drilled: "",
+      fromDate: null,
+      toDate: null,
+    });
+  };
+
   const isSearchActive = queryParams.drilled === "true";
 
   const apiParams = {
     search: queryParams.search || undefined,
     industryId: queryParams.industryId || undefined,
-    status: queryParams.status || undefined,
+    status: queryParams.status || activeTab,
     productId: queryParams.productId || undefined,
     fromDate: queryParams.fromDate || undefined,
     toDate: queryParams.toDate || undefined,
@@ -105,7 +121,7 @@ const ProductInquiryPage = () => {
 
   // Table view data — only fetched when in table mode to avoid duplicate API calls
   const { data: tableData, isPending: loadingTable } = useGetProductInquiryList(
-    view === "table"
+    currentView === "table"
       ? {
           ...apiParams,
           page: queryParams.currentPage,
@@ -303,8 +319,8 @@ const ProductInquiryPage = () => {
         label: industry.name,
       })),
     },
-    // Status & Date Range filters: only shown inside the particular product listing
-    ...(isSearchActive
+    // Status & Date Range filters: always shown when on Archive tab, or when drilled into a product on Active tab
+    ...(isSearchActive || activeTab === "inactive"
       ? [
           {
             type: "select" as const,
@@ -312,10 +328,18 @@ const ProductInquiryPage = () => {
             placeholder: "Filter by status",
             value: queryParams.status || undefined,
             onChange: handleStatusFilter,
-            options: [
-              { value: "in_progress", label: "In Progress" },
-              ...PRODUCT_INQUIRY_STATUS_OPTIONS,
-            ],
+            options:
+              activeTab === "active"
+                ? [
+                    { value: "in_progress", label: "In Progress" },
+                    ...PRODUCT_INQUIRY_STATUS_OPTIONS,
+                  ]
+                : PRODUCT_INQUIRY_STATUS_OPTIONS.filter(
+                    (opt) =>
+                      opt.value === "lost" ||
+                      opt.value === "won" ||
+                      opt.value === "unqualified_lead"
+                  ),
           },
           {
             type: "dateRange" as const,
@@ -388,8 +412,8 @@ const ProductInquiryPage = () => {
 
   const skeletons = Array.from({ length: skeletonCount }).map((_, index) => (
     <ProjectCardSkeleton
-      key={`inquiry-skeleton-${view}-${index}`}
-      view={view}
+      key={`inquiry-skeleton-${currentView}-${index}`}
+      view={currentView}
     />
   ));
 
@@ -410,6 +434,21 @@ const ProductInquiryPage = () => {
       </TablePageHeader>
 
       <div className="flex-1 min-h-0 flex flex-col gap-4 py-2">
+        <Tabs
+          value={activeTab}
+          onValueChange={(val) => handleTabChange(val as "active" | "inactive")}
+          className="w-full"
+        >
+          <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border border-rose-100/50 h-9 w-fit">
+            <TabsTrigger value="active" className={tabTriggerClass}>
+              Active Inquiries
+            </TabsTrigger>
+            <TabsTrigger value="inactive" className={tabTriggerClass}>
+              Inactive Inquiries
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+
         {/* Stats Cards */}
         {isSearchActive && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -662,49 +701,53 @@ const ProductInquiryPage = () => {
           <div className="flex-1 min-w-0">
             <GlobalFilterSection filters={filters} className="" />
           </div>
-          <Tabs
-            value={view}
-            onValueChange={handleViewChange}
-            className="flex-none"
-          >
-            <TabsList className="bg-rose-50 dark:bg-muted rounded-full h-9 border border-rose-100/50 dark:border-white/10">
-              {!isSearchActive && (
+          {activeTab === "active" && (
+            <Tabs
+              value={view}
+              onValueChange={handleViewChange}
+              className="flex-none"
+            >
+              <TabsList className="bg-rose-50 dark:bg-muted rounded-full h-9 border border-rose-100/50 dark:border-white/10">
+                {!isSearchActive && (
+                  <TabsTrigger
+                    value="grid"
+                    className={cn(
+                      tabTriggerClass,
+                      "gap-2 px-3 h-8 text-xs font-medium transition-all",
+                      view === "grid" &&
+                        "bg-background text-foreground shadow-sm"
+                    )}
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                    Grid
+                  </TabsTrigger>
+                )}
                 <TabsTrigger
-                  value="grid"
+                  value="list"
                   className={cn(
                     tabTriggerClass,
                     "gap-2 px-3 h-8 text-xs font-medium transition-all",
-                    view === "grid" && "bg-background text-foreground shadow-sm"
+                    view === "list" && "bg-background text-foreground shadow-sm"
                   )}
                 >
-                  <LayoutGrid className="h-4 w-4" />
-                  Grid
+                  <List className="h-4 w-4" />
+                  List
                 </TabsTrigger>
-              )}
-              <TabsTrigger
-                value="list"
-                className={cn(
-                  tabTriggerClass,
-                  "gap-2 px-3 h-8 text-xs font-medium transition-all",
-                  view === "list" && "bg-background text-foreground shadow-sm"
-                )}
-              >
-                <List className="h-4 w-4" />
-                List
-              </TabsTrigger>
-              <TabsTrigger
-                value="table"
-                className={cn(
-                  tabTriggerClass,
-                  "gap-2 px-3 h-8 text-xs font-medium transition-all",
-                  view === "table" && "bg-background text-foreground shadow-sm"
-                )}
-              >
-                <TableIcon className="h-4 w-4" />
-                Table
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+                <TabsTrigger
+                  value="table"
+                  className={cn(
+                    tabTriggerClass,
+                    "gap-2 px-3 h-8 text-xs font-medium transition-all",
+                    view === "table" &&
+                      "bg-background text-foreground shadow-sm"
+                  )}
+                >
+                  <TableIcon className="h-4 w-4" />
+                  Table
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          )}
         </div>
 
         {/* Scrollable Content Area */}
@@ -713,7 +756,7 @@ const ProductInquiryPage = () => {
           className="space-y-4 !h-full overflow-y-auto overflow-x-hidden p-2 [scrollbar-gutter:stable] rounded-md"
         >
           {loading ? (
-            view === "table" ? (
+            currentView === "table" ? (
               <GlobalTable
                 columns={columns}
                 data={[]}
@@ -726,7 +769,7 @@ const ProductInquiryPage = () => {
                 enableSorting
                 getRowClassName={getRowClassName}
               />
-            ) : view === "grid" ? (
+            ) : currentView === "grid" ? (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
                 {skeletons}
               </div>
@@ -758,7 +801,7 @@ const ProductInquiryPage = () => {
                 </div>
               </div>
             )
-          ) : view === "table" ? (
+          ) : currentView === "table" ? (
             <GlobalTable
               columns={columns}
               data={(tableData as any)?.data ?? []}
@@ -771,7 +814,7 @@ const ProductInquiryPage = () => {
               enableSorting
               getRowClassName={getRowClassName}
             />
-          ) : view === "grid" ? (
+          ) : currentView === "grid" ? (
             displayedInquiryList?.length ? (
               <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
                 {displayedInquiryList.map((inquiry: any) => (
@@ -800,9 +843,7 @@ const ProductInquiryPage = () => {
                   <div className="w-28 shrink-0 text-center">
                     Contact Person
                   </div>
-                  <div className="w-28 shrink-0 text-center">
-                    Inquiry Date
-                  </div>
+                  <div className="w-28 shrink-0 text-center">Inquiry Date</div>
                   <div className="w-28 shrink-0 text-center">Demo Date</div>
                   <div className="w-26 shrink-0 text-center">
                     {" "}
@@ -838,7 +879,7 @@ const ProductInquiryPage = () => {
 
           {/* Infinite Scroll Trigger + Loading More Skeletons */}
           {isFetchingNextPage &&
-            (view === "grid" ? (
+            (currentView === "grid" ? (
               <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
                 {Array.from({ length: 3 }).map((_, i) => (
                   <ProjectCardSkeleton
@@ -861,7 +902,7 @@ const ProductInquiryPage = () => {
             ))}
 
           {/* Sentinel for infinite scroll */}
-          {view !== "table" && <div ref={loadMoreRef} className="h-1" />}
+          {currentView !== "table" && <div ref={loadMoreRef} className="h-1" />}
         </div>
       </div>
 

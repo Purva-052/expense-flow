@@ -16,6 +16,7 @@ import {
   roles,
   SubscriptionTypeOptions,
   TransactionTypeOptions,
+  TransactionTypeStatus,
 } from "@/utils/constant";
 import { useGetUserDropdownList } from "../users/services";
 import { formatDate } from "@/utils/commonFunctions";
@@ -32,6 +33,7 @@ const TransactionPage = () => {
     transactionType: parseAsString,
     subscriptionCycle: parseAsString,
     userId: parseAsInteger,
+    status: parseAsString,
     transactionStartDate: parseAsString,
     transactionEndDate: parseAsString,
   });
@@ -44,6 +46,7 @@ const TransactionPage = () => {
     transactionType: queryParams.transactionType ?? undefined,
     subscriptionCycle: queryParams.subscriptionCycle ?? undefined,
     userId: queryParams.userId ?? undefined,
+    status: queryParams.status ?? undefined,
     transactionStartDate: queryParams.transactionStartDate ?? undefined,
     transactionEndDate: queryParams.transactionEndDate ?? undefined,
   };
@@ -68,6 +71,7 @@ const TransactionPage = () => {
     transactionType: listParams.transactionType,
     subscriptionCycle: listParams.subscriptionCycle,
     userId: listParams.userId,
+    status: listParams.status,
     transactionStartDate: listParams.transactionStartDate,
     transactionEndDate: listParams.transactionEndDate,
   };
@@ -210,6 +214,21 @@ const TransactionPage = () => {
       },
       isLoading: usersListLoading,
     },
+    {
+      type: "select",
+      key: "status",
+      placeholder: "Filter by Status",
+      options: TransactionTypeStatus,
+      value: listParams.status,
+      onChange: (value: any) => {
+        setQueryParams({
+          ...listParams,
+          status: value ?? null,
+          currentPage: 1,
+        });
+      },
+      isLoading: false,
+    },
   ];
 
   const handleAdd = () => {
@@ -220,7 +239,7 @@ const TransactionPage = () => {
     <PageLayout>
       <TablePageHeader
         title="Transaction Logs"
-        buttonText="Add Transaction"
+        buttonText="Request Transaction"
         onButtonClick={handleAdd}
       >
         Manage your Transaction Logs here.
