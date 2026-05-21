@@ -76,7 +76,7 @@ const ProjectPage = ({
   onTotalCountChange,
   activeTab: initialActiveTab = "project_details",
 }: any) => {
-  const projectSkeletonCount = 6;
+  const projectSkeletonCount = 9;
   const resourceSkeletonCount = 4;
   const [activeTab] = useState(initialActiveTab);
   const isInactiveTab = activeTab === "Archive Projects" ? true : false;

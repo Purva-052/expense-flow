@@ -771,8 +771,8 @@ const ProductInquiryPage = () => {
               enableSorting
               getRowClassName={getRowClassName}
             />
-          ) : displayedInquiryList?.length ? (
-            view === "grid" ? (
+          ) : view === "grid" ? (
+            displayedInquiryList?.length ? (
               <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
                 {displayedInquiryList.map((inquiry: any) => (
                   <InquiryCard
@@ -784,49 +784,55 @@ const ProductInquiryPage = () => {
                 ))}
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <div className="min-w-[860px] flex flex-col gap-0 border rounded-lg bg-card overflow-hidden">
-                  {/* List Header */}
-                  <div className="flex items-center gap-4 px-6 py-3 bg-muted/50 border-b text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-                    <div className="w-1 shrink-0" />
-                    <div className="flex-1 min-w-0">Product</div>
-                    <div className="w-32 shrink-0 text-center">Status</div>
-                    <div className="w-28 shrink-0 text-center">Industry</div>
-                    <div className="w-28 shrink-0 text-center">
-                      Contact Person
-                    </div>
-                    <div className="w-28 shrink-0 text-center">
-                      Inquiry Date
-                    </div>
-                    <div className="w-28 shrink-0 text-center">Demo Date</div>
-                    <div className="w-26 shrink-0 text-center">
-                      {" "}
-                      Number of Users{" "}
-                    </div>
-                    <div className="w-26 shrink-0 text-center">
-                      Attending Person
-                    </div>
-                    {isSearchActive && (
-                      <div className="w-[68px] shrink-0 text-right pr-4">
-                        Actions
-                      </div>
-                    )}
-                    {!isSearchActive && <div className="w-[68px] shrink-0" />}
+              <div className="flex flex-col items-center justify-center py-20 text-muted-foreground bg-card border rounded-lg shadow-sm">
+                <p className="text-sm">No product inquiries found.</p>
+              </div>
+            )
+          ) : (
+            <div className="overflow-x-auto">
+              <div className="min-w-[860px] flex flex-col gap-0 border rounded-lg bg-card overflow-hidden">
+                {/* List Header */}
+                <div className="flex items-center gap-4 px-6 py-3 bg-muted/50 border-b text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                  <div className="w-1 shrink-0" />
+                  <div className="flex-1 min-w-0">Product</div>
+                  <div className="w-32 shrink-0 text-center">Status</div>
+                  <div className="w-28 shrink-0 text-center">Industry</div>
+                  <div className="w-28 shrink-0 text-center">
+                    Contact Person
                   </div>
-                  {displayedInquiryList.map((inquiry: any) => (
+                  <div className="w-28 shrink-0 text-center">
+                    Inquiry Date
+                  </div>
+                  <div className="w-28 shrink-0 text-center">Demo Date</div>
+                  <div className="w-26 shrink-0 text-center">
+                    {" "}
+                    Number of Users{" "}
+                  </div>
+                  <div className="w-26 shrink-0 text-center">
+                    Attending Person
+                  </div>
+                  {isSearchActive && (
+                    <div className="w-[68px] shrink-0 text-right pr-4">
+                      Actions
+                    </div>
+                  )}
+                  {!isSearchActive && <div className="w-[68px] shrink-0" />}
+                </div>
+                {displayedInquiryList?.length ? (
+                  displayedInquiryList.map((inquiry: any) => (
                     <InquiryCard
                       key={inquiry.id}
                       inquiry={inquiry}
                       view="list"
                       onProductClick={handleProductClick}
                     />
-                  ))}
-                </div>
+                  ))
+                ) : (
+                  <div className="flex items-center justify-center py-10 text-muted-foreground bg-card">
+                    <p className="text-sm">No product inquiries found.</p>
+                  </div>
+                )}
               </div>
-            )
-          ) : (
-            <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-              <p className="text-sm">No product inquiries found.</p>
             </div>
           )}
 
