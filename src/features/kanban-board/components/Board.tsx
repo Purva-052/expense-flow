@@ -41,7 +41,7 @@ import {
 } from "@dnd-kit/sortable";
 import { ChevronDown, Users } from "lucide-react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useInView } from "react-intersection-observer";
+
 import {
   useAssignDeveloper,
   useGetAllBecomingAvailableDevelopers,
@@ -202,23 +202,34 @@ const Board = ({
   );
 
   const fetchingLock = useRef(false);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
-  const { ref: loadMoreRef } = useInView({
-    root: scrollContainerRef.current,
-    threshold: 0,
-    rootMargin: "300px",
-    onChange: (inView) => {
-      if (
-        inView &&
-        hasNextPage &&
-        !isFetchingNextPage &&
-        !fetchingLock.current
-      ) {
-        fetchingLock.current = true;
-        fetchNextPage();
-      }
-    },
-  });
+  // Use a manual IntersectionObserver so we can pass scrollContainerRef.current
+  // as the root AFTER it has been set on the DOM (useInView captures root at
+  // hook-init time when the ref is still null, defaulting to the viewport).
+  useEffect(() => {
+    const sentinel = loadMoreRef.current;
+    const container = scrollContainerRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (
+          entry.isIntersecting &&
+          hasNextPage &&
+          !isFetchingNextPage &&
+          !fetchingLock.current
+        ) {
+          fetchingLock.current = true;
+          fetchNextPage();
+        }
+      },
+      { root: container, threshold: 0, rootMargin: "300px" }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   useEffect(() => {
     if (!isFetchingNextPage) {
