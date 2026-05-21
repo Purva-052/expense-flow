@@ -228,7 +228,7 @@ export function TransactionLogsActionForm({
       <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEdit ? "Edit Transaction" : "Add Transaction"}
+            {isEdit ? "Edit Transaction" : "Request Transaction"}
           </DialogTitle>
         </DialogHeader>
 
@@ -367,58 +367,64 @@ export function TransactionLogsActionForm({
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="transactionDate"
-                  render={({ fieldState }) => (
-                    <FormItem>
-                      <FormLabel
-                        className={cn(
-                          "flex items-center gap-1",
-                          fieldState.error && "text-red-500"
-                        )}
-                      >
-                        Transaction Date
-                        <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <CustomDatePicker
-                        control={form.control}
-                        name="transactionDate"
-                        label=""
-                        disabled={!canEdit}
-                      />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="cardLast4"
-                  render={({ field, fieldState }) => (
-                    <FormItem>
-                      <FormLabel
-                        className={cn(
-                          "flex items-center gap-1",
-                          fieldState.error && "text-red-500"
-                        )}
-                      >
-                        Card Last 4 Digits
-                        <span className="text-red-500">*</span>
-                      </FormLabel>
+                {isEdit && (
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="transactionDate"
+                      render={({ fieldState }) => (
+                        <FormItem>
+                          <FormLabel
+                            className={cn(
+                              "flex items-center gap-1",
+                              fieldState.error && "text-red-500"
+                            )}
+                          >
+                            Transaction Date
+                            <span className="text-red-500">*</span>
+                          </FormLabel>
+                          <CustomDatePicker
+                            control={form.control}
+                            name="transactionDate"
+                            label=""
+                            disabled={!canEdit}
+                          />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="cardLast4"
+                      render={({ field, fieldState }) => (
+                        <FormItem>
+                          <FormLabel
+                            className={cn(
+                              "flex items-center gap-1",
+                              fieldState.error && "text-red-500"
+                            )}
+                          >
+                            Card Last 4 Digits
+                            <span className="text-red-500">*</span>
+                          </FormLabel>
 
-                      <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="XXXX"
-                          maxLength={4}
-                          className={cn(fieldState.error && "border-red-500")}
-                          disabled={!canEdit}
-                        />
-                      </FormControl>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder="XXXX"
+                              maxLength={4}
+                              className={cn(
+                                fieldState.error && "border-red-500"
+                              )}
+                              disabled={!canEdit}
+                            />
+                          </FormControl>
 
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                )}
               </div>
 
               {/* 3️⃣ Subscription Details (Conditional) */}
@@ -480,33 +486,34 @@ export function TransactionLogsActionForm({
 
               {/* 4️⃣ Payment Info */}
 
-              {/* 5️⃣ Receipt Upload */}
-              <FileUpload
-                name="file"
-                label="Transaction Receipt"
-                fileLabel="PDF, DOC, DOCX (MAX 25MB)"
-                onFileSelect={undefined}
-                onFileRemove={handleFileRemove}
-                existingFileUrl={
-                  hasExistingFile && currentRow?.referenceFileLink
-                    ? currentRow.referenceFileLink
-                    : undefined
-                }
-                existingFileName={
-                  hasExistingFile && currentRow?.referenceFileLink
-                    ? "Transaction Reference File"
-                    : undefined
-                }
-                acceptedFormats={{
-                  "application/pdf": [".pdf"],
-                  "application/msword": [".doc"],
-                  "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-                    [".docx"],
-                  "image/jpeg": [".jpg", ".jpeg"],
-                  "image/jpg": [".jpg"],
-                }}
-                disabled={!canEdit}
-              />
+              {isEdit && (
+                <FileUpload
+                  name="file"
+                  label="Transaction Receipt"
+                  fileLabel="PDF, DOC, DOCX (MAX 25MB)"
+                  onFileSelect={undefined}
+                  onFileRemove={handleFileRemove}
+                  existingFileUrl={
+                    hasExistingFile && currentRow?.referenceFileLink
+                      ? currentRow.referenceFileLink
+                      : undefined
+                  }
+                  existingFileName={
+                    hasExistingFile && currentRow?.referenceFileLink
+                      ? "Transaction Reference File"
+                      : undefined
+                  }
+                  acceptedFormats={{
+                    "application/pdf": [".pdf"],
+                    "application/msword": [".doc"],
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+                      [".docx"],
+                    "image/jpeg": [".jpg", ".jpeg"],
+                    "image/jpg": [".jpg"],
+                  }}
+                  disabled={!canEdit}
+                />
+              )}
 
               {/* 6️⃣ Reason */}
               <FormField

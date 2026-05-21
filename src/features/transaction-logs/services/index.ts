@@ -54,6 +54,17 @@ export const useDeleteTransactionData = (id: string) => {
   });
 };
 
+export const useApproveRejectTransaction = (id: string) => {
+  const { setOpen } = useTransactionStore();
+  return usePatchData({
+    url: API.transaction_logs.request.replace("{id}", id),
+    refetchQueries: [GET_API_URL],
+    onSuccess: () => {
+      setOpen(null);
+    },
+  });
+};
+
 export const useUploadTransactionFile = () => {
   return usePostData({
     url: API.interview.upload,
