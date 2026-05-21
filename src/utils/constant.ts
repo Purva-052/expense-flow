@@ -254,3 +254,22 @@ export const CurrencyType = [
 export const ACCOUNTANT_USER_IDS = [169, 170, 171];
 
 export const PROJECT_DETAILS_FILTER_STORAGE_KEY = "project_details_filters";
+
+export const TransactionTypeStatus = [
+  {
+    label: "Pending",
+    value: "pending",
+  },
+  {
+    label: "Approved",
+    value: "approved",
+  },
+  {
+    label: "Rejected",
+    value: "rejected",
+  },
+  {
+    label: "Completed",
+    value: "completed",
+  },
+];

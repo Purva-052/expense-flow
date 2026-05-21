@@ -1,6 +1,7 @@
 import { DeleteModal } from "@/components/model/delete-model";
 import { TransactionLogsActionForm } from "./action-form";
 import { TTransactionFormSchema } from "../schema";
+import { ApproveRejectModal } from "./approve-reject-modal";
 import {
   useCreateTransactionData,
   useDeleteTransactionData,
@@ -101,6 +102,13 @@ export function ActionFormModal() {
             onClose={handleCloseDialog}
             itemName={deleteInfoText}
             loading={isDeleteLoading}
+          />
+          <ApproveRejectModal
+            open={open === "action"}
+            onOpenChange={(val) => {
+              if (!val) handleCloseDialog();
+            }}
+            currentRow={currentRow}
           />
         </>
       )}
