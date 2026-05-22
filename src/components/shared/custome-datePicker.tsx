@@ -23,7 +23,7 @@ import { Calendar } from "@/components/ui/calendar";
 interface CustomDatePickerProps {
   control: any;
   name: string;
-  label?: string;
+  label?: React.ReactNode;
   placeholder?: string;
   disabled?: boolean;
   dateFormat?: string;
