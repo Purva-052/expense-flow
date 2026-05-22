@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowDown, ArrowUp, ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, MoreHorizontal, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,6 +14,7 @@ import { useTransactionStore } from "../stores";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { Badge } from "@/components/ui/badge";
 import { roles, TransactionTypeStatus } from "@/utils/constant";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
 // Status to badge variant mapping
 const statusVariantMap: Record<
@@ -34,6 +35,28 @@ const statusLabelMap = TransactionTypeStatus.reduce(
   },
   {} as Record<string, string>
 );
+
+// Transaction type styling maps
+const transactionTypeStyleMap: Record<string, string> = {
+  onetime: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800/30",
+  subscription: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800/30",
+};
+
+const transactionTypeLabelMap: Record<string, string> = {
+  onetime: "One Time",
+  subscription: "Subscription",
+};
+
+// Subscription cycle styling maps
+const subscriptionCycleStyleMap: Record<string, string> = {
+  monthly: "bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-300 dark:border-cyan-800/30",
+  yearly: "bg-pink-50 text-pink-700 border-pink-200 dark:bg-pink-900/20 dark:text-pink-300 dark:border-pink-800/30",
+};
+
+const subscriptionCycleLabelMap: Record<string, string> = {
+  monthly: "Monthly",
+  yearly: "Yearly",
+};
 
 export const columns: ColumnDef<any>[] = [
   {
@@ -92,6 +115,27 @@ export const columns: ColumnDef<any>[] = [
       }
       const variant = statusVariantMap[status] || "default";
       const label = statusLabelMap[status] || status;
+
+      if (status === "approved") {
+        return (
+          <div className="flex items-center gap-1.5">
+            <Badge variant={variant}>{label}</Badge>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="cursor-pointer text-muted-foreground hover:text-amber-500 transition-colors">
+                    <Info className="h-4 w-4" />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  Please edit transaction to enter transaction date and card details.
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        );
+      }
+
       return <Badge variant={variant}>{label}</Badge>;
     },
   },
@@ -100,12 +144,19 @@ export const columns: ColumnDef<any>[] = [
     header: "Transaction Type",
     cell: ({ row }) => {
       const transactionType = row.original.transactionType;
+      if (!transactionType) return <span className="text-sm">-</span>;
+
+      const label =
+        transactionTypeLabelMap[transactionType] ||
+        transactionType.charAt(0).toUpperCase() + transactionType.slice(1);
+      const customClass =
+        transactionTypeStyleMap[transactionType] ||
+        "bg-muted text-muted-foreground";
+
       return (
-        <span className="text-sm">
-          {transactionType
-            ? transactionType.charAt(0).toUpperCase() + transactionType.slice(1)
-            : "-"}
-        </span>
+        <Badge variant="outline" className={customClass}>
+          {label}
+        </Badge>
       );
     },
   },
@@ -114,13 +165,19 @@ export const columns: ColumnDef<any>[] = [
     header: "Subscription Cycle",
     cell: ({ row }) => {
       const subscriptionCycle = row.original.subscriptionCycle;
+      if (!subscriptionCycle) return <span className="text-sm">-</span>;
+
+      const label =
+        subscriptionCycleLabelMap[subscriptionCycle] ||
+        subscriptionCycle.charAt(0).toUpperCase() + subscriptionCycle.slice(1);
+      const customClass =
+        subscriptionCycleStyleMap[subscriptionCycle] ||
+        "bg-muted text-muted-foreground";
+
       return (
-        <span className="text-sm">
-          {subscriptionCycle
-            ? subscriptionCycle.charAt(0).toUpperCase() +
-              subscriptionCycle.slice(1)
-            : "-"}
-        </span>
+        <Badge variant="outline" className={customClass}>
+          {label}
+        </Badge>
       );
     },
   },
