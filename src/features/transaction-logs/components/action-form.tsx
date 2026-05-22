@@ -18,7 +18,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import CustomButton from "@/components/shared/custom-button";
-import { transactionLogSchema, TTransactionFormSchema } from "../schema";
+import { getTransactionLogSchema, TTransactionFormSchema } from "../schema";
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import {
   CurrencyType,
@@ -70,7 +70,7 @@ export function TransactionLogsActionForm({
   const isEdit = !!currentRow;
 
   const form = useForm<TTransactionFormSchema>({
-    resolver: zodResolver(transactionLogSchema) as any,
+    resolver: zodResolver(getTransactionLogSchema(isEdit)) as any,
     mode: "onSubmit", // or "onChange" / "onBlur" / "onTouched"
     reValidateMode: "onChange",
     defaultValues: isEdit
@@ -121,14 +121,13 @@ export function TransactionLogsActionForm({
     userRole === roles.ADMIN;
 
   const canEdit = !isEdit || isPMorTL || isCreator;
+  const isPending = currentRow?.status === "pending";
 
   const [uploadedFileKey, setUploadedFileKey] = useState<string>("");
   const [hasExistingFile, setHasExistingFile] = useState(false);
   const { mutateAsync: uploadFile } = useUploadTransactionFile();
 
   const transactionType = form.watch("transactionType");
-  const subscriptionCycle = form.watch("subscriptionCycle");
-  const subscriptionEndDate = form.watch("subscriptionEndDate");
 
   useEffect(() => {
     if (currentRow && open) {
@@ -138,28 +137,10 @@ export function TransactionLogsActionForm({
   }, [currentRow, open]);
 
   useEffect(() => {
-    if (transactionType === "subscription") {
-      if (!subscriptionCycle) {
-        form.setError("subscriptionCycle", {
-          type: "manual",
-          message: "Subscription Cycle is required",
-        });
-      } else {
-        form.clearErrors("subscriptionCycle");
-      }
-
-      if (!subscriptionEndDate) {
-        form.setError("subscriptionEndDate", {
-          type: "manual",
-          message: "Subscription End Date is required",
-        });
-      } else {
-        form.clearErrors("subscriptionEndDate");
-      }
-    } else {
+    if (transactionType !== "subscription") {
       form.clearErrors(["subscriptionCycle", "subscriptionEndDate"]);
     }
-  }, [transactionType, subscriptionCycle, subscriptionEndDate, form]);
+  }, [transactionType, form]);
 
   const handleFileRemove = () => {
     setUploadedFileKey("");
@@ -187,6 +168,7 @@ export function TransactionLogsActionForm({
           finalFileKey = response.key;
         }
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error("Upload failed", error);
         return;
       }
@@ -195,7 +177,10 @@ export function TransactionLogsActionForm({
     const payload: any = {
       ...values,
       referenceFileS3Key: finalFileKey,
-      transactionDate: new Date(values.transactionDate).toISOString(),
+      transactionDate: values.transactionDate
+        ? new Date(values.transactionDate).toISOString()
+        : undefined,
+      cardLast4: values.cardLast4 || undefined,
       subscriptionEndDate:
         values.transactionType === "subscription" && values.subscriptionEndDate
           ? new Date(values.subscriptionEndDate).toISOString()
@@ -228,7 +213,7 @@ export function TransactionLogsActionForm({
       <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEdit ? "Edit Transaction" : "Add Transaction"}
+            {isEdit ? "Edit Transaction" : "Request Transaction"}
           </DialogTitle>
         </DialogHeader>
 
@@ -251,38 +236,24 @@ export function TransactionLogsActionForm({
                 placeholder="Select project"
                 isLoading={projectsListLoading}
                 sortOptions={false}
-                disabled={!canEdit}
+                disabled={!canEdit || (isEdit && !isPending)} // Disable when editing an approved/completed request
               />
 
               {/* 2️⃣ Transaction Details */}
               <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
+                <CustomDropDownSearchable
+                  form={form}
                   name="transactionType"
-                  render={({ fieldState }) => (
-                    <FormItem>
-                      <FormLabel
-                        className={cn(
-                          "flex items-center gap-1",
-                          fieldState.error && "text-red-500"
-                        )}
-                      >
-                        Transaction Type
-                        <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <CustomDropDownSearchable
-                          form={form}
-                          name="transactionType"
-                          label=""
-                          options={TransactionTypeOptions}
-                          placeholder="Select transaction type"
-                          searchEnabled={false}
-                          disabled={!canEdit}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
+                  label={
+                    <span className="flex items-center gap-1">
+                      Transaction Type
+                      <span className="text-red-500">*</span>
+                    </span>
+                  }
+                  options={TransactionTypeOptions}
+                  placeholder="Select transaction type"
+                  searchEnabled={false}
+                  disabled={!canEdit || (isEdit && !isPending)} // Disable when editing an approved/completed request
                 />
                 <FormField
                   control={form.control}
@@ -316,7 +287,7 @@ export function TransactionLogsActionForm({
                                 <Select
                                   onValueChange={currencyField.onChange}
                                   value={currencyField.value}
-                                  disabled={!canEdit}
+                                  disabled={!canEdit || (isEdit && !isPending)} // Disable when editing to prevent changing currency
                                 >
                                   <SelectTrigger className="h-10 w-[95px] rounded-r-none border-r-0 bg-muted/50">
                                     <div className="flex items-center gap-2">
@@ -358,7 +329,7 @@ export function TransactionLogsActionForm({
                             )}
                             onKeyDown={preventNegativeInput}
                             onPaste={preventNegativePaste}
-                            disabled={!canEdit}
+                            disabled={!canEdit || (isEdit && !isPending)}
                           />
                         </div>
                       </FormControl>
@@ -367,146 +338,117 @@ export function TransactionLogsActionForm({
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="transactionDate"
-                  render={({ fieldState }) => (
-                    <FormItem>
-                      <FormLabel
-                        className={cn(
-                          "flex items-center gap-1",
-                          fieldState.error && "text-red-500"
-                        )}
-                      >
-                        Transaction Date
-                        <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <CustomDatePicker
-                        control={form.control}
-                        name="transactionDate"
-                        label=""
-                        disabled={!canEdit}
-                      />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="cardLast4"
-                  render={({ field, fieldState }) => (
-                    <FormItem>
-                      <FormLabel
-                        className={cn(
-                          "flex items-center gap-1",
-                          fieldState.error && "text-red-500"
-                        )}
-                      >
-                        Card Last 4 Digits
-                        <span className="text-red-500">*</span>
-                      </FormLabel>
+                {isEdit && !isPending && (
+                  <>
+                    <CustomDatePicker
+                      control={form.control}
+                      name="transactionDate"
+                      label={
+                        <span className="flex items-center gap-1">
+                          Transaction Date
+                          {isEdit && <span className="text-red-500">*</span>}
+                        </span>
+                      }
+                      disabled={!canEdit}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="cardLast4"
+                      render={({ field, fieldState }) => (
+                        <FormItem>
+                          <FormLabel
+                            className={cn(
+                              "flex items-center gap-1",
+                              fieldState.error && "text-red-500"
+                            )}
+                          >
+                            Card Last 4 Digits
+                            {isEdit && <span className="text-red-500">*</span>}
+                          </FormLabel>
 
-                      <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="XXXX"
-                          maxLength={4}
-                          className={cn(fieldState.error && "border-red-500")}
-                          disabled={!canEdit}
-                        />
-                      </FormControl>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder="XXXX"
+                              maxLength={4}
+                              className={cn(
+                                fieldState.error && "border-red-500"
+                              )}
+                              disabled={!canEdit}
+                            />
+                          </FormControl>
 
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                )}
               </div>
 
               {/* 3️⃣ Subscription Details (Conditional) */}
               {transactionType === "subscription" && (
                 <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-                  <FormField
-                    control={form.control}
+                  <CustomDropDownSearchable
+                    form={form}
                     name="subscriptionCycle"
-                    render={({ fieldState }) => (
-                      <FormItem>
-                        <FormLabel
-                          className={cn(
-                            "flex items-center gap-1",
-                            fieldState.error && "text-red-500"
-                          )}
-                        >
-                          Subscription Cycle
-                          <span className="text-red-500">*</span>
-                        </FormLabel>
-                        <CustomDropDownSearchable
-                          form={form}
-                          name="subscriptionCycle"
-                          label=""
-                          options={SubscriptionTypeOptions}
-                          placeholder="Select Subscription Cycle"
-                          searchEnabled={false}
-                          disabled={!canEdit}
-                        />
-                      </FormItem>
-                    )}
+                    label={
+                      <span className="flex items-center gap-1">
+                        Subscription Cycle
+                        <span className="text-red-500">*</span>
+                      </span>
+                    }
+                    options={SubscriptionTypeOptions}
+                    placeholder="Select Subscription Cycle"
+                    searchEnabled={false}
+                    disabled={!canEdit || (isEdit && !isPending)}
                   />
 
-                  <FormField
+                  <CustomDatePicker
                     control={form.control}
                     name="subscriptionEndDate"
-                    render={({ fieldState }) => (
-                      <FormItem>
-                        <FormLabel
-                          className={cn(
-                            "flex items-center gap-1",
-                            fieldState.error && "text-red-500"
-                          )}
-                        >
-                          Subscription End Date
-                          <span className="text-red-500">*</span>
-                        </FormLabel>
-                        <CustomDatePicker
-                          control={form.control}
-                          name="subscriptionEndDate"
-                          label=""
-                          placeholder="Select end date"
-                          disabled={!canEdit}
-                        />
-                      </FormItem>
-                    )}
+                    label={
+                      <span className="flex items-center gap-1">
+                        Subscription End Date
+                        <span className="text-red-500">*</span>
+                      </span>
+                    }
+                    placeholder="Select end date"
+                    disabled={!canEdit || (isEdit && !isPending)}
                   />
                 </div>
               )}
 
               {/* 4️⃣ Payment Info */}
 
-              {/* 5️⃣ Receipt Upload */}
-              <FileUpload
-                name="file"
-                label="Transaction Receipt"
-                fileLabel="PDF, DOC, DOCX (MAX 25MB)"
-                onFileSelect={undefined}
-                onFileRemove={handleFileRemove}
-                existingFileUrl={
-                  hasExistingFile && currentRow?.referenceFileLink
-                    ? currentRow.referenceFileLink
-                    : undefined
-                }
-                existingFileName={
-                  hasExistingFile && currentRow?.referenceFileLink
-                    ? "Transaction Reference File"
-                    : undefined
-                }
-                acceptedFormats={{
-                  "application/pdf": [".pdf"],
-                  "application/msword": [".doc"],
-                  "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-                    [".docx"],
-                  "image/jpeg": [".jpg", ".jpeg"],
-                  "image/jpg": [".jpg"],
-                }}
-                disabled={!canEdit}
-              />
+              {isEdit && !isPending && (
+                <FileUpload
+                  name="file"
+                  label="Transaction Receipt"
+                  fileLabel="PDF, DOC, DOCX (MAX 25MB)"
+                  onFileSelect={undefined}
+                  onFileRemove={handleFileRemove}
+                  existingFileUrl={
+                    hasExistingFile && currentRow?.referenceFileLink
+                      ? currentRow.referenceFileLink
+                      : undefined
+                  }
+                  existingFileName={
+                    hasExistingFile && currentRow?.referenceFileLink
+                      ? "Transaction Reference File"
+                      : undefined
+                  }
+                  acceptedFormats={{
+                    "application/pdf": [".pdf"],
+                    "application/msword": [".doc"],
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+                      [".docx"],
+                    "image/jpeg": [".jpg", ".jpeg"],
+                    "image/jpg": [".jpg"],
+                  }}
+                  disabled={!canEdit}
+                />
+              )}
 
               {/* 6️⃣ Reason */}
               <FormField
@@ -529,7 +471,7 @@ export function TransactionLogsActionForm({
                         {...field}
                         placeholder="Any additional notes about the transaction..."
                         className={cn(fieldState.error && "border-red-500")}
-                        disabled={!canEdit}
+                        disabled={!canEdit || (isEdit && !isPending)}
                       />
                     </FormControl>
 

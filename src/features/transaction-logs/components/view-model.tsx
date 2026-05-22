@@ -42,6 +42,22 @@ export function ViewTransactionModal() {
           </div>
 
           <div>
+            <h3 className="text-sm font-medium">Status</h3>
+            <p className="text-sm text-gray-600 uppercase">
+              {currentRow?.status || "-"}
+            </p>
+          </div>
+
+          {currentRow.status === "rejected" && (
+            <div>
+              <h3 className="text-sm font-medium">Rejection Reason</h3>
+              <p className="text-sm text-gray-600">
+                {currentRow.rejectionReason || "-"}
+              </p>
+            </div>
+          )}
+
+          <div>
             <h3 className="text-sm font-medium">Currency</h3>
             <p className="text-sm text-gray-600 uppercase">
               {currentRow?.currency || "-"}

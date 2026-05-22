@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-export const transactionLogSchema = z
+const transactionLogSchemaBase = z
   .object({
     reason: z
       .string()
@@ -34,13 +34,19 @@ export const transactionLogSchema = z
           message: "Invalid amount",
         })
     ),
-    cardLast4: z
-      .string()
-      .regex(/^\d{4}$/, "Card last 4 digits must be exactly 4 numbers"),
-    transactionDate: z.date({
-      required_error: "Transaction Date is required",
-      invalid_type_error: "Please select a valid date",
-    }),
+    cardLast4: z.preprocess(
+      (val) => (val === "" || val === null ? undefined : String(val)),
+      z
+        .string()
+        .regex(/^\d{4}$/, "Card last 4 digits must be exactly 4 numbers")
+        .optional()
+    ),
+    transactionDate: z.preprocess(
+      (val) => (val === "" || val === null ? undefined : val),
+      z.date({
+        invalid_type_error: "Please select a valid date",
+      }).optional()
+    ),
     referenceKey: z.string().optional(),
     referenceFileS3Key: z.string().optional(),
     file: z
@@ -84,5 +90,27 @@ export const transactionLogSchema = z
       }
     }
   });
+
+export const getTransactionLogSchema = (isEdit: boolean) =>
+  transactionLogSchemaBase.superRefine((data, ctx) => {
+    if (isEdit) {
+      if (!data.cardLast4) {
+        ctx.addIssue({
+          path: ["cardLast4"],
+          message: "Card Last 4 digits is required",
+          code: z.ZodIssueCode.custom,
+        });
+      }
+      if (!data.transactionDate) {
+        ctx.addIssue({
+          path: ["transactionDate"],
+          message: "Transaction Date is required",
+          code: z.ZodIssueCode.custom,
+        });
+      }
+    }
+  });
+
+export const transactionLogSchema = getTransactionLogSchema(false);
 
 export type TTransactionFormSchema = z.infer<typeof transactionLogSchema>;

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// import { useState } from "react";
+import { useMemo } from "react";
 import PageLayout from "@/components/layout/layout-provider";
 import { GlobalTable } from "@/components/table/global-table";
 import GlobalFilterSection from "@/components/table/global-table-filter";
@@ -16,6 +16,7 @@ import {
   roles,
   SubscriptionTypeOptions,
   TransactionTypeOptions,
+  TransactionTypeStatus,
 } from "@/utils/constant";
 import { useGetUserDropdownList } from "../users/services";
 import { formatDate } from "@/utils/commonFunctions";
@@ -32,6 +33,7 @@ const TransactionPage = () => {
     transactionType: parseAsString,
     subscriptionCycle: parseAsString,
     userId: parseAsInteger,
+    status: parseAsString,
     transactionStartDate: parseAsString,
     transactionEndDate: parseAsString,
   });
@@ -44,6 +46,7 @@ const TransactionPage = () => {
     transactionType: queryParams.transactionType ?? undefined,
     subscriptionCycle: queryParams.subscriptionCycle ?? undefined,
     userId: queryParams.userId ?? undefined,
+    status: queryParams.status ?? undefined,
     transactionStartDate: queryParams.transactionStartDate ?? undefined,
     transactionEndDate: queryParams.transactionEndDate ?? undefined,
   };
@@ -68,6 +71,7 @@ const TransactionPage = () => {
     transactionType: listParams.transactionType,
     subscriptionCycle: listParams.subscriptionCycle,
     userId: listParams.userId,
+    status: listParams.status,
     transactionStartDate: listParams.transactionStartDate,
     transactionEndDate: listParams.transactionEndDate,
   };
@@ -87,13 +91,28 @@ const TransactionPage = () => {
   const totalCount = (listData as any)?.metadata?.totalCount;
   const { data: usersList, isPending: usersListLoading }: any =
     useGetUserDropdownList({
-      role: [roles.TEAM_LEAD, roles.ADMIN, roles.PROJECT_MANAGER],
+      role: [roles.TEAM_LEAD, roles.ADMIN, roles.PROJECT_MANAGER, roles.BDE],
       status: "active",
     });
 
   const filteredUsersList = usersList?.data?.filter(
     (user: any) => !ACCOUNTANT_USER_IDS.includes(Number(user?.id))
   );
+
+  const userOptions = useMemo(() => {
+    if (!filteredUsersList) return [];
+
+    const baseOptions = filteredUsersList.map((user: any) => ({
+      value: user.id,
+      label: user.fullName,
+    }));
+
+    const hasUser86 = baseOptions.some((opt: any) => Number(opt.value) === 86);
+    if (!hasUser86) {
+      return [{ value: 86, label: "Bhavdeep Devmurari" }, ...baseOptions];
+    }
+    return baseOptions;
+  }, [filteredUsersList]);
 
   const handleSearch = (search: string | undefined) => {
     setQueryParams({ ...listParams, search: search ?? "", currentPage: 1 });
@@ -184,9 +203,7 @@ const TransactionPage = () => {
       type: "select",
       key: "userId",
       placeholder: "Filter by User",
-      options: filteredUsersList?.map((user: any) => {
-        return { value: user.id, label: user.fullName };
-      }),
+      options: userOptions,
       value: listParams.userId,
       onChange: (value: any) => {
         setQueryParams({
@@ -196,6 +213,21 @@ const TransactionPage = () => {
         });
       },
       isLoading: usersListLoading,
+    },
+    {
+      type: "select",
+      key: "status",
+      placeholder: "Filter by Status",
+      options: TransactionTypeStatus,
+      value: listParams.status,
+      onChange: (value: any) => {
+        setQueryParams({
+          ...listParams,
+          status: value ?? null,
+          currentPage: 1,
+        });
+      },
+      isLoading: false,
     },
   ];
 
@@ -207,7 +239,7 @@ const TransactionPage = () => {
     <PageLayout>
       <TablePageHeader
         title="Transaction Logs"
-        buttonText="Add Transaction"
+        buttonText="Request Transaction"
         onButtonClick={handleAdd}
       >
         Manage your Transaction Logs here.

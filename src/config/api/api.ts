@@ -127,6 +127,7 @@ const API = {
     create: "/transaction-logs",
     update: "/transaction-logs",
     delete: "/transaction-logs",
+    request: "/transaction-logs/{id}/action"
   },
   daily_report: {
     create: "/daily-reports",
