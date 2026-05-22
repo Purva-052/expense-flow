@@ -14,6 +14,7 @@ import { useTransactionStore } from "../stores";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { Badge } from "@/components/ui/badge";
 import { roles, TransactionTypeStatus } from "@/utils/constant";
+import { useGetUserDetails } from "@/features/users/services";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
 // Status to badge variant mapping
@@ -252,18 +253,28 @@ export const columns: ColumnDef<any>[] = [
       const { setOpen, setCurrentRow } = useTransactionStore();
 
       const user = useAuthStore((state) => state.user);
-      const userRole = user?.role || user?.user?.role;
-      const currentUserId = user?.user.id;
-      const isAdmin = userRole === roles.ADMIN;
+      const rawRole = user?.role || user?.user?.role;
+      const roleName = String(
+        rawRole && typeof rawRole === "object" ? rawRole?.name : (rawRole || "")
+      ).toLowerCase();
+      const currentUserId = user?.user?.id || user?.user_id;
+      const isAdmin = roleName === roles.ADMIN;
       const creatorId = row.original.userId;
       const isCreator = String(creatorId) === String(currentUserId);
       const isPMorTL =
-        userRole === roles.PROJECT_MANAGER ||
-        userRole === roles.TEAM_LEAD ||
-        userRole === roles.BDE ||
-        userRole === roles.DEVELOPER;
+        roleName === roles.PROJECT_MANAGER ||
+        roleName === roles.TEAM_LEAD ||
+        roleName === roles.BDE ||
+        roleName === roles.DEVELOPER;
 
-      const canEditDelete = isAdmin || (isPMorTL && isCreator);
+      const { data: userDetails }: any = useGetUserDetails(user?.user?.id || user?.user_id);
+      const technologyId = userDetails?.data?.technology?.id;
+
+      const canEditDelete =
+      isAdmin ||
+      (isPMorTL && isCreator) ||
+      (roleName === roles.PROJECT_MANAGER && technologyId === 35);
+      console.log('canEditDelete: ', canEditDelete);
 
       const canAcceptReject =
         [2, 126].includes(Number(user?.user?.id || user?.user_id)) &&
