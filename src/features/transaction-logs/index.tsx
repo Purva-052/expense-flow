@@ -16,11 +16,11 @@ import {
   roles,
   SubscriptionTypeOptions,
   TransactionTypeOptions,
-  TransactionTypeStatus,
 } from "@/utils/constant";
 import { useGetUserDropdownList } from "../users/services";
 import { formatDate } from "@/utils/commonFunctions";
 import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const TransactionPage = () => {
   const { open, setOpen } = useTransactionStore();
@@ -33,9 +33,9 @@ const TransactionPage = () => {
     transactionType: parseAsString,
     subscriptionCycle: parseAsString,
     userId: parseAsInteger,
-    status: parseAsString,
     transactionStartDate: parseAsString,
     transactionEndDate: parseAsString,
+    tab: parseAsString.withDefault("requests"),
   });
 
   const listParams = {
@@ -46,21 +46,16 @@ const TransactionPage = () => {
     transactionType: queryParams.transactionType ?? undefined,
     subscriptionCycle: queryParams.subscriptionCycle ?? undefined,
     userId: queryParams.userId ?? undefined,
-    status: queryParams.status ?? undefined,
+    tab: queryParams.tab,
     transactionStartDate: queryParams.transactionStartDate ?? undefined,
     transactionEndDate: queryParams.transactionEndDate ?? undefined,
   };
-  // const [listParams, setQueryParams] = useState({
-  //   pageSize: 10,
-  //   currentPage: 1,
-  //   search: "",
-  //   projectId: undefined,
-  //   transactionType: undefined,
-  //   subscriptionCycle: undefined,
-  //   userId: undefined,
-  //   transactionStartDate: undefined as string | undefined,
-  //   transactionEndDate: undefined as string | undefined,
-  // });
+
+  const getStatusFromTab = (tab: string) => {
+    if (tab === "completed") return ["completed"];
+    if (tab === "rejected") return ["rejected"];
+    return ["pending", "approved"];
+  };
 
   const apiParams = {
     page: listParams.currentPage,
@@ -71,7 +66,7 @@ const TransactionPage = () => {
     transactionType: listParams.transactionType,
     subscriptionCycle: listParams.subscriptionCycle,
     userId: listParams.userId,
-    status: listParams.status,
+    status: getStatusFromTab(queryParams.tab),
     transactionStartDate: listParams.transactionStartDate,
     transactionEndDate: listParams.transactionEndDate,
   };
@@ -214,26 +209,26 @@ const TransactionPage = () => {
       },
       isLoading: usersListLoading,
     },
-    {
-      type: "select",
-      key: "status",
-      placeholder: "Filter by Status",
-      options: TransactionTypeStatus,
-      value: listParams.status,
-      onChange: (value: any) => {
-        setQueryParams({
-          ...listParams,
-          status: value ?? null,
-          currentPage: 1,
-        });
-      },
-      isLoading: false,
-    },
   ];
+
+  const handleTabChange = (val: string) => {
+    setQueryParams({
+      ...listParams,
+      tab: val,
+      currentPage: 1,
+    });
+  };
 
   const handleAdd = () => {
     setOpen("add");
   };
+
+  const tabTriggerClass =
+    "flex items-center gap-2 rounded-[50px] !px-3 !py-2 transition-all h-[35px] " +
+    "text-foreground/70 hover:text-foreground " +
+    "data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-sm " +
+    "dark:text-muted-foreground dark:hover:text-foreground " +
+    "dark:data-[state=active]:bg-primary dark:data-[state=active]:text-white dark:data-[state=active]:shadow-[0_2px_8px_oklch(0_0_0/0.5)]";
 
   return (
     <PageLayout>
@@ -244,17 +239,40 @@ const TransactionPage = () => {
       >
         Manage your Transaction Logs here.
       </TablePageHeader>
-      <GlobalFilterSection filters={filters ?? []} />
-      <GlobalTable
-        pageSize={listParams.pageSize}
-        currentPage={listParams.currentPage}
-        totalCount={totalCount ?? 0}
-        data={(listData as any)?.data ?? []}
-        onPaginationChange={handlePaginationChange}
-        columns={columns}
-        loading={loading}
-        isPaginationEnabled
-      />
+
+      <div className="flex flex-col gap-4 py-2">
+        <Tabs
+          value={queryParams.tab}
+          onValueChange={handleTabChange}
+          className="w-full"
+        >
+          <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border border-rose-100/50 h-9 w-fit">
+            <TabsTrigger value="requests" className={tabTriggerClass}>
+              Pending & Approved
+            </TabsTrigger>
+            <TabsTrigger value="completed" className={tabTriggerClass}>
+              Completed
+            </TabsTrigger>
+            <TabsTrigger value="rejected" className={tabTriggerClass}>
+              Rejected
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        <GlobalFilterSection filters={filters ?? []} />
+
+        <GlobalTable
+          pageSize={listParams.pageSize}
+          currentPage={listParams.currentPage}
+          totalCount={totalCount ?? 0}
+          data={(listData as any)?.data ?? []}
+          onPaginationChange={handlePaginationChange}
+          columns={columns}
+          loading={loading}
+          isPaginationEnabled
+        />
+      </div>
+
       {open && <ActionFormModal />}
       <ViewTransactionModal />
     </PageLayout>

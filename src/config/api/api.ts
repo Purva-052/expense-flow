@@ -127,7 +127,7 @@ const API = {
     create: "/transaction-logs",
     update: "/transaction-logs",
     delete: "/transaction-logs",
-    request: "/transaction-logs/{id}/action"
+    request: "/transaction-logs/{id}/action",
   },
   daily_report: {
     create: "/daily-reports",
@@ -137,6 +137,7 @@ const API = {
     report_details: "/daily-reports/reports-stats",
     report_analytics: "/daily-reports/reports-counts",
     export_csv: "/daily-reports/export-report",
+    project_logs_csv: "/daily-reports/export-project-summary",
   },
   extra_hours: {
     create: "/extra-hours",
