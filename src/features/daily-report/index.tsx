@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import PageLayout from "@/components/layout/layout-provider";
@@ -11,6 +13,7 @@ import {
   useGetTasksDropdownList,
   useGetReportsAnalytics,
   useExportCSV,
+  useExportProjectLogsCSV,
 } from "./services";
 import { columns } from "./components/columns";
 import { useGetProjectSDropdownList } from "../Project-type/services";
@@ -157,11 +160,16 @@ export default function DailyReportPage() {
   const userRole = user?.user?.role;
 
   const { mutate: exportCSV, isPending: exportCSVLoading } = useExportCSV();
+  const { mutate: exportProjectLogs, isPending: exportProjectLogsLoading } =
+    useExportProjectLogsCSV();
 
   const canExportCSV =
     userRole === roles.ADMIN ||
     userRole === roles.PROJECT_MANAGER ||
     userRole === roles.TEAM_LEAD;
+
+  const canExportProjectCSV =
+    userRole === roles.ADMIN || userRole === roles.PROJECT_MANAGER;
 
   const totalCount = (listData as any)?.metadata?.totalCount;
 
@@ -238,6 +246,49 @@ export default function DailyReportPage() {
         // toast.error(error.message || "Failed to generate CSV file");
       },
     });
+  };
+
+  const handleExportProjectLogsCSV = () => {
+    const payload = Object.fromEntries(
+      Object.entries(apiParams).filter(
+        ([, value]) => value !== "" && value !== null && value !== undefined
+      )
+    );
+
+    if (payload.projectMilestoneId) {
+      payload.milestoneId = payload.projectMilestoneId;
+    }
+
+    exportProjectLogs(
+      payload,
+      {
+        onSuccess: (response: any) => {
+          const fileBlob = response?.blob;
+          const filename =
+            response?.filename ||
+            `project_logs_export_${format(new Date(), "yyyy-MM-dd")}.xlsx`;
+
+          if (fileBlob) {
+            const fileUrl = URL.createObjectURL(fileBlob);
+            const link = document.createElement("a");
+            link.href = fileUrl;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(fileUrl);
+            toast.success("Project logs CSV export generated successfully");
+          } else {
+            console.error("No file URL found in response:", response);
+            toast.error("Failed to generate project logs CSV file");
+          }
+        },
+        onError: (error: Error) => {
+          console.error("Project logs CSV export failed:", error);
+          // toast.error(error.message || "Failed to generate project logs CSV file");
+        },
+      }
+    );
   };
 
   const handleSearch = (search: string | undefined) => {
@@ -512,22 +563,40 @@ export default function DailyReportPage() {
               })}
             />
           </div>
-          {canExportCSV && (
-            <Button
-              onClick={handleExportCSV}
-              disabled={exportCSVLoading}
-              className="whitespace-nowrap h-10 px-5 my-4"
-            >
-              {exportCSVLoading ? (
-                "Exporting..."
-              ) : (
-                <>
-                  <Download className="w-4 h-4 mr-2" />
-                  Export CSV
-                </>
-              )}
-            </Button>
-          )}
+          <div className="flex flex-wrap gap-2 items-center my-4">
+            {canExportCSV && (
+              <Button
+                onClick={handleExportCSV}
+                disabled={exportCSVLoading}
+                className="whitespace-nowrap h-10 px-5"
+              >
+                {exportCSVLoading ? (
+                  "Exporting..."
+                ) : (
+                  <>
+                    <Download className="w-4 h-4 mr-2" />
+                    Export CSV
+                  </>
+                )}
+              </Button>
+            )}
+            {canExportProjectCSV && (
+              <Button
+                onClick={handleExportProjectLogsCSV}
+                disabled={exportProjectLogsLoading}
+                className="whitespace-nowrap h-10 px-5"
+              >
+                {exportProjectLogsLoading ? (
+                  "Exporting..."
+                ) : (
+                  <>
+                    <Download className="w-4 h-4 mr-2" />
+                    Export Project Logs CSV
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </div>
         <GlobalTable<DailyReport>
           pageSize={listParams.pageSize}

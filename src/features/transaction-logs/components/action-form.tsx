@@ -34,6 +34,7 @@ import {
 } from "@/utils/commonFunctions";
 import { FileUpload } from "@/components/shared/custome-file-upload";
 import { useUploadTransactionFile } from "../services";
+import { useGetUserDetails } from "@/features/users/services";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -107,20 +108,29 @@ export function TransactionLogsActionForm({
   });
 
   const user = useAuthStore((state) => state.user);
-  const userRole = user?.role || user?.user?.role;
-  const currentUserId = user?.user_id;
+  const rawRole = user?.role || user?.user?.role;
+  const roleName = String(
+    rawRole && typeof rawRole === "object" ? rawRole?.name : (rawRole || "")
+  ).toLowerCase();
+  const currentUserId = user?.user?.id || user?.user_id;
 
   const creatorId =
     currentRow?.user?.id || currentRow?.user?._id || currentRow?.userId;
   const isCreator = String(creatorId) === String(currentUserId);
   const isPMorTL =
-    userRole === roles.PROJECT_MANAGER ||
-    userRole === roles.TEAM_LEAD ||
-    userRole === roles.BDE ||
-    userRole === roles.DEVELOPER ||
-    userRole === roles.ADMIN;
+    roleName === roles.PROJECT_MANAGER ||
+    roleName === roles.TEAM_LEAD ||
+    roleName === roles.BDE ||
+    roleName === roles.DEVELOPER;
 
-  const canEdit = !isEdit || isPMorTL || isCreator;
+  const { data: userDetails }: any = useGetUserDetails(user?.user?.id || user?.user_id);
+  const technologyId = userDetails?.data?.technology?.id;
+
+  const canEdit =
+    !isEdit ||
+    roleName === roles.ADMIN ||
+    (isPMorTL && isCreator) ||
+    (roleName === roles.PROJECT_MANAGER && technologyId === 35);
   const isPending = currentRow?.status === "pending";
 
   const [uploadedFileKey, setUploadedFileKey] = useState<string>("");
