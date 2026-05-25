@@ -267,14 +267,18 @@ export const columns: ColumnDef<any>[] = [
         roleName === roles.BDE ||
         roleName === roles.DEVELOPER;
 
-      const { data: userDetails }: any = useGetUserDetails(user?.user?.id || user?.user_id);
+      const { data: userDetails }: any = useGetUserDetails(
+        user?.user?.id || user?.user_id
+      );
       const technologyId = userDetails?.data?.technology?.id;
 
+      const isAccountPerson = technologyId === 35 || technologyId === 37;
+
       const canEditDelete =
-      isAdmin ||
-      (isPMorTL && isCreator) ||
-      (roleName === roles.PROJECT_MANAGER && technologyId === 35);
-      console.log('canEditDelete: ', canEditDelete);
+        isAdmin ||
+        roleName === roles.PROJECT_MANAGER ||
+        isAccountPerson ||
+        (isPMorTL && isCreator);
 
       const canAcceptReject =
         [2, 126].includes(Number(user?.user?.id || user?.user_id)) &&
