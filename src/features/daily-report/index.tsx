@@ -222,9 +222,14 @@ export default function DailyReportPage() {
     exportCSV(payload, {
       onSuccess: (response: any) => {
         const fileBlob = response?.blob;
-        const filename =
+        let filename =
           response?.filename ||
           `daily_reports_export_${format(new Date(), "yyyy-MM-dd")}.xlsx`;
+
+        if (listParams.fromDate && listParams.toDate) {
+          const extension = filename.split(".").pop() || "xlsx";
+          filename = `daily_reports_export_${listParams.fromDate}_to_${listParams.toDate}.${extension}`;
+        }
 
         if (fileBlob) {
           const fileUrl = URL.createObjectURL(fileBlob);
@@ -259,36 +264,38 @@ export default function DailyReportPage() {
       payload.milestoneId = payload.projectMilestoneId;
     }
 
-    exportProjectLogs(
-      payload,
-      {
-        onSuccess: (response: any) => {
-          const fileBlob = response?.blob;
-          const filename =
-            response?.filename ||
-            `project_logs_export_${format(new Date(), "yyyy-MM-dd")}.xlsx`;
+    exportProjectLogs(payload, {
+      onSuccess: (response: any) => {
+        const fileBlob = response?.blob;
+        let filename =
+          response?.filename ||
+          `project_logs_export_${format(new Date(), "yyyy-MM-dd")}.xlsx`;
 
-          if (fileBlob) {
-            const fileUrl = URL.createObjectURL(fileBlob);
-            const link = document.createElement("a");
-            link.href = fileUrl;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(fileUrl);
-            toast.success("Project logs CSV export generated successfully");
-          } else {
-            console.error("No file URL found in response:", response);
-            toast.error("Failed to generate project logs CSV file");
-          }
-        },
-        onError: (error: Error) => {
-          console.error("Project logs CSV export failed:", error);
-          // toast.error(error.message || "Failed to generate project logs CSV file");
-        },
-      }
-    );
+        if (listParams.fromDate && listParams.toDate) {
+          const extension = filename.split(".").pop() || "xlsx";
+          filename = `project_logs_export_${listParams.fromDate}_to_${listParams.toDate}.${extension}`;
+        }
+
+        if (fileBlob) {
+          const fileUrl = URL.createObjectURL(fileBlob);
+          const link = document.createElement("a");
+          link.href = fileUrl;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(fileUrl);
+          toast.success("Project logs CSV export generated successfully");
+        } else {
+          console.error("No file URL found in response:", response);
+          toast.error("Failed to generate project logs CSV file");
+        }
+      },
+      onError: (error: Error) => {
+        console.error("Project logs CSV export failed:", error);
+        // toast.error(error.message || "Failed to generate project logs CSV file");
+      },
+    });
   };
 
   const handleSearch = (search: string | undefined) => {
@@ -591,7 +598,7 @@ export default function DailyReportPage() {
                 ) : (
                   <>
                     <Download className="w-4 h-4 mr-2" />
-                    Export Project Logs CSV
+                    Export Project Logs
                   </>
                 )}
               </Button>

@@ -34,7 +34,6 @@ import {
 } from "@/utils/commonFunctions";
 import { FileUpload } from "@/components/shared/custome-file-upload";
 import { useUploadTransactionFile } from "../services";
-import { useGetUserDetails } from "@/features/users/services";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -45,6 +44,7 @@ import {
 import { BadgeDollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { useGetUserDetails } from "@/features/users/services";
 // import { useTimezoneSelect, allTimezones } from "react-timezone-select";
 // import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 // import { useGetCountryDropdownList } from "../services";
@@ -110,7 +110,7 @@ export function TransactionLogsActionForm({
   const user = useAuthStore((state) => state.user);
   const rawRole = user?.role || user?.user?.role;
   const roleName = String(
-    rawRole && typeof rawRole === "object" ? rawRole?.name : (rawRole || "")
+    rawRole && typeof rawRole === "object" ? rawRole?.name : rawRole || ""
   ).toLowerCase();
   const currentUserId = user?.user?.id || user?.user_id;
 
@@ -123,14 +123,19 @@ export function TransactionLogsActionForm({
     roleName === roles.BDE ||
     roleName === roles.DEVELOPER;
 
-  const { data: userDetails }: any = useGetUserDetails(user?.user?.id || user?.user_id);
+  const { data: userDetails }: any = useGetUserDetails(
+    user?.user?.id || user?.user_id
+  );
   const technologyId = userDetails?.data?.technology?.id;
+
+  const isAccountPerson = technologyId === 35 || technologyId === 37; // Assuming 35 and 36 are the IDs for the relevant technologies
 
   const canEdit =
     !isEdit ||
     roleName === roles.ADMIN ||
-    (isPMorTL && isCreator) ||
-    (roleName === roles.PROJECT_MANAGER && technologyId === 35);
+    roleName === roles.PROJECT_MANAGER ||
+    isAccountPerson ||
+    (isPMorTL && isCreator);
   const isPending = currentRow?.status === "pending";
 
   const [uploadedFileKey, setUploadedFileKey] = useState<string>("");
