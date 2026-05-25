@@ -59,7 +59,7 @@ export const NoteCard = ({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             {note.title && (
-              <h4 className="font-bold text-gray-900 truncate text-lg">
+              <h4 className="font-bold text-gray-900 dark:text-gray-100 truncate text-lg">
                 {note.title}
               </h4>
             )}
@@ -68,8 +68,8 @@ export const NoteCard = ({
               className={`h-5 px-2 text-[10px] font-semibold flex gap-1 items-center
     ${
       isPublic
-        ? "bg-green-100 text-green-700 border-green-300"
-        : "bg-gray-200 text-gray-600 border-gray-300"
+        ? "bg-green-100 text-green-700 border-green-300 dark:bg-green-950/40 dark:text-green-400 dark:border-green-800"
+        : "bg-gray-200 text-gray-600 border-gray-300 dark:bg-gray-800/60 dark:text-gray-400 dark:border-gray-700"
     }`}
             >
               {isPublic ? (
@@ -91,15 +91,15 @@ export const NoteCard = ({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 hover:bg-black/5 rounded-full"
+                  className="h-8 w-8 hover:bg-black/5 dark:hover:bg-white/10 rounded-full"
                   onClick={handleCopyClick}
                 >
-                  <Clipboard className="w-4 h-4 text-gray-600" />
+                  <Clipboard className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent
                 side="top"
-                className="bg-gray-900 text-white font-medium"
+                className="bg-gray-900 text-white font-medium dark:bg-gray-800"
               >
                 Copied!
               </TooltipContent>
@@ -108,10 +108,10 @@ export const NoteCard = ({
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 hover:bg-black/5 rounded-full"
+            className="h-8 w-8 hover:bg-black/5 dark:hover:bg-white/10 rounded-full"
             onClick={() => onEdit(note)}
           >
-            <Edit2 className="w-4 h-4 text-gray-600" />
+            <Edit2 className="w-4 h-4 text-gray-600 dark:text-gray-300" />
           </Button>
           <Button
             variant="ghost"
@@ -124,10 +124,10 @@ export const NoteCard = ({
         </div>
       </div>
       <div
-        className="text-sm text-gray-700 overflow-hidden text-ellipsis line-clamp-4 sticky-note-content break-words flex-1 select-text"
+        className="text-sm text-gray-700 dark:text-gray-300 overflow-hidden text-ellipsis line-clamp-4 sticky-note-content break-words flex-1 select-text"
         dangerouslySetInnerHTML={{ __html: note.description }}
       />
-      <div className="flex items-center justify-end gap-2 mt-auto pt-3 border-t border-black/5 text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
+      <div className="flex items-center justify-end gap-2 mt-auto pt-3 border-t border-black/5 dark:border-white/10 text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
         <span>{note.createdBy?.name}</span>
         <span className="opacity-30">•</span>
         <span>

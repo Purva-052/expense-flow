@@ -44,11 +44,11 @@ export const NoteView = ({ noteId, onEdit, onDelete }: NoteViewProps) => {
         <div className="flex justify-between items-start mb-6">
           <div>
             {note.title && (
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                 {note.title}
               </h3>
             )}
-            <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
+            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 font-medium">
               <span>{note.createdBy?.name}</span>
               <span>•</span>
               <span>{new Date(note.createdAt).toLocaleDateString()}</span>
@@ -58,10 +58,10 @@ export const NoteView = ({ noteId, onEdit, onDelete }: NoteViewProps) => {
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-full hover:bg-black/5"
+              className="rounded-full hover:bg-black/5 dark:hover:bg-white/10"
               onClick={() => onEdit(note)}
             >
-              <Edit2 className="w-5 h-5 text-gray-600" />
+              <Edit2 className="w-5 h-5 text-gray-600 dark:text-gray-300" />
             </Button>
             <Button
               variant="ghost"
@@ -74,7 +74,7 @@ export const NoteView = ({ noteId, onEdit, onDelete }: NoteViewProps) => {
           </div>
         </div>
         <div
-          className="prose prose-sm max-w-none text-gray-800 ck-content sticky-note-content min-h-[200px]"
+          className="prose prose-sm max-w-none text-gray-800 dark:text-gray-200 ck-content sticky-note-content min-h-[200px]"
           dangerouslySetInnerHTML={{ __html: note.description }}
         />
       </div>
