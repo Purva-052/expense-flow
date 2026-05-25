@@ -53,7 +53,7 @@ export const NoteEditor = ({
             selectedColor={formData.color}
             onColorSelect={(color) => setFormData({ ...formData, color })}
           />
-          <div className="flex items-center space-x-2 bg-black/5 px-3 py-1.5 rounded-full transition-colors hover:bg-black/10">
+          <div className="flex items-center space-x-2 bg-black/5 dark:bg-white/5 px-3 py-1.5 rounded-full transition-colors hover:bg-black/10 dark:hover:bg-white/10">
             {formData.isPublic ? (
               <Globe className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
             ) : (
@@ -78,8 +78,8 @@ export const NoteEditor = ({
                 className={cn(
                   "text-xs font-semibold px-2 py-1 rounded-full",
                   formData.isPublic
-                    ? "bg-green-100 text-green-700"
-                    : "bg-gray-200 text-gray-600"
+                    ? "bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400"
+                    : "bg-gray-200 text-gray-600 dark:bg-gray-800/60 dark:text-gray-400"
                 )}
               >
                 {formData.isPublic ? "Public" : "Private"}
@@ -117,13 +117,13 @@ export const NoteEditor = ({
             ]}
           />
         </div>
-        <div className="flex items-center justify-end mt-4 pt-4 border-t border-black/5">
+        <div className="flex items-center justify-end mt-4 pt-4 border-t border-black/5 dark:border-white/10">
           <div className="flex gap-2">
             <Button
               variant="ghost"
               size="sm"
               onClick={onCancel}
-              className="hover:bg-black/5"
+              className="hover:bg-black/5 dark:hover:bg-white/10"
             >
               Cancel
             </Button>

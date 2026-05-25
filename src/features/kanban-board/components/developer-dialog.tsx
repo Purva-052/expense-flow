@@ -279,7 +279,7 @@ export function DeveloperDialog({
                     <Button
                       variant="secondary"
                       onClick={() => handleReallocate()}
-                      className="col-span-2 h-12 text-black"
+                      className="col-span-2 h-12 text-base"
                     >
                       Reallocate
                     </Button>
