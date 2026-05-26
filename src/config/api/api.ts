@@ -308,6 +308,33 @@ const API = {
     },
     stats: "/product-inquiries/stats",
   },
+  device_management: {
+    create: "/device-master",
+    list: "/device-master",
+    update: "/device-master",
+    delete: "/device-master",
+    dropdown: "/device-master/dropdown",
+  },
+  printer_type: {
+    create: "/printer-type",
+    list: "/printer-type",
+    update: "/printer-type",
+    delete: "/printer-type",
+    dropdown: "/printer-type/dropdown",
+  },
+  client_inventory_type: {
+    create: "/client-inventory-type",
+    list: "/client-inventory-type",
+    update: "/client-inventory-type",
+    delete: "/client-inventory-type",
+    dropdown: "/client-inventory-type/dropdown",
+  },
+  client_inventory: {
+    create: "/client-inventory",
+    list: "/client-inventory",
+    update: "/client-inventory",
+    delete: "/client-inventory",
+  },
 };
 
 Object.freeze(API);
