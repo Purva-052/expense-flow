@@ -5,9 +5,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { GlobalTable } from "@/components/table/global-table";
-import { useGetReportDetails } from "../services";
+import { useGetReportDetails, useExportPendingReports } from "../services";
 import { useEffect, useState, type UIEvent } from "react";
-import { ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowUp, ArrowDown, Download } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,6 +17,8 @@ import { formatDate } from "@/utils/commonFunctions";
 import { useGetUserDropdownList } from "@/features/users/services";
 import { roles } from "@/utils/constant";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 type ReportType = "pending" | "incomplete" | "holiday" | null;
 
@@ -46,13 +48,64 @@ export function ReportsStatsDialog({
 }: ReportsStatsDialogProps) {
   const { user } = useAuthStore();
   const userRole = String(user?.user?.role ?? user?.role ?? "");
-  const canFilterByEmployee = [
-    roles.TEAM_LEAD,
-    roles.PROJECT_MANAGER,
-    roles.ADMIN,
-  ].includes(userRole);
+  // Temporary check for account manager role until backend provides a proper role
+  // user?.user_id can be string | undefined, compare numerically to avoid type mismatch
+  const isAccountManager = Number(user?.user.id) === 170;
+  const canFilterByEmployee =
+    [roles.TEAM_LEAD, roles.PROJECT_MANAGER, roles.ADMIN].includes(userRole) ||
+    isAccountManager;
+
+  const exportPendingReports =
+    isAccountManager || [roles.PROJECT_MANAGER, roles.ADMIN].includes(userRole);
 
   const [currentType, setCurrentType] = useState<ReportType>(type);
+  const { mutate: exportPending, isPending: exportPendingLoading } =
+    useExportPendingReports();
+
+  const handleExportPending = () => {
+    const payload: Record<string, any> = {};
+    if (listParams.userId) {
+      payload.employeeId = Number(listParams.userId);
+    }
+    if (listParams.fromDate) {
+      payload.fromDate = listParams.fromDate;
+    }
+    if (listParams.toDate) {
+      payload.toDate = listParams.toDate;
+    }
+
+    exportPending(payload, {
+      onSuccess: (response: any) => {
+        const fileBlob = response?.blob;
+        let filename =
+          response?.filename ||
+          `pending_reports_export_${format(new Date(), "yyyy-MM-dd")}.xlsx`;
+
+        if (listParams.fromDate && listParams.toDate) {
+          const extension = filename.split(".").pop() || "xlsx";
+          filename = `pending_reports_export_${listParams.fromDate}_to_${listParams.toDate}.${extension}`;
+        }
+
+        if (fileBlob) {
+          const fileUrl = URL.createObjectURL(fileBlob);
+          const link = document.createElement("a");
+          link.href = fileUrl;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(fileUrl);
+          toast.success("Pending reports export generated successfully");
+        } else {
+          console.error("No file URL found in response:", response);
+          toast.error("Failed to generate export file");
+        }
+      },
+      onError: (error: Error) => {
+        console.error("Pending reports export failed:", error);
+      },
+    });
+  };
   const [listParams, setListParams] = useState<ListParams>(() => {
     const isHoliday = type === "holiday";
     return {
@@ -489,7 +542,28 @@ export function ReportsStatsDialog({
 
         <div className="space-y-4 pt-4 flex-1 overflow-hidden flex flex-col">
           {filters.length > 0 && (
-            <GlobalFilterSection filters={filters} className="mb-4" />
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+              <div className="flex-1">
+                <GlobalFilterSection filters={filters} className="my-0" />
+              </div>
+              {currentType === "pending" ||
+                (exportPendingReports && (
+                  <Button
+                    onClick={handleExportPending}
+                    disabled={exportPendingLoading}
+                    className="whitespace-nowrap h-10 px-5"
+                  >
+                    {exportPendingLoading ? (
+                      "Exporting..."
+                    ) : (
+                      <>
+                        <Download className="w-4 h-4 mr-2" />
+                        Export Pending Reports
+                      </>
+                    )}
+                  </Button>
+                ))}
+            </div>
           )}
 
           {currentType === "holiday" ? (

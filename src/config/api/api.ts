@@ -67,6 +67,7 @@ const API = {
     delete: "/project-leads",
     dashboard: "/project-leads/inquiry",
     export_csv: "/project-leads/export",
+    performance: "/project-leads/performance/pie-chart",
   },
   interview: {
     list: "/interviews",
@@ -138,6 +139,7 @@ const API = {
     report_analytics: "/daily-reports/reports-counts",
     export_csv: "/daily-reports/export-report",
     project_logs_csv: "/daily-reports/export-project-summary",
+    export_pending_reports: "/daily-reports/export-pending",
   },
   extra_hours: {
     create: "/extra-hours",

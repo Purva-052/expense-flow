@@ -9,6 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -26,6 +32,7 @@ interface InquiryCardProps {
   inquiry: any;
   view?: "grid" | "list";
   onSalesPersonClick?: (name: string) => void;
+  totalInquiries?: number;
 }
 
 const statusColorMap: any = {
@@ -65,6 +72,7 @@ export function InquiryCard({
   inquiry,
   view = "grid",
   onSalesPersonClick,
+  totalInquiries,
 }: InquiryCardProps) {
   const { setOpen, setCurrentRow } = useInquiryStore();
   const user = useAuthStore((state) => state.user);
@@ -76,7 +84,7 @@ export function InquiryCard({
   const salesPersonName = inquiry?.salesPerson?.fullName || "Unassigned";
   const clientName = inquiry?.clientName || "N/A";
   const clientCompany = inquiry?.clientCompanyName || "N/A";
-  const projectName = inquiry?.projectName || "No Project Name";
+  const projectName = inquiry?.projectName || "N/A";
   const industry = inquiry?.industry?.name || "N/A";
   const status = inquiry?.status;
   const hours = inquiry?.approximateHours || null;
@@ -174,6 +182,14 @@ export function InquiryCard({
             >
               {salesPersonName}
             </h3>
+            {totalInquiries !== undefined && (
+              <Badge
+                variant="secondary"
+                className="rounded-full px-2 py-0.5 text-[10px] bg-muted/60 text-muted-foreground font-semibold"
+              >
+                {totalInquiries} {totalInquiries === 1 ? "Inquiry" : "Inquiries"}
+              </Badge>
+            )}
             {isToday && (
               <div className="flex items-center gap-2 ml-1">
                 <Switch
@@ -194,9 +210,6 @@ export function InquiryCard({
               </div>
             )}
           </div>
-          <p className="text-[11px] text-muted-foreground truncate font-medium">
-            Client: {clientName} ({clientCompany})
-          </p>
           <p className="text-[11px] text-muted-foreground truncate font-medium">
             Project: {projectName}
           </p>
@@ -232,11 +245,20 @@ export function InquiryCard({
 
         {/* Client Avatar */}
         <div className="w-24 shrink-0 flex -space-x-1.5">
-          <Avatar className="h-8 w-8 border-2 border-background">
-            <AvatarFallback className="text-foreground text-[10px] font-semibold">
-              {getInitials(clientName)}
-            </AvatarFallback>
-          </Avatar>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Avatar className="h-8 w-8 border-2 border-background cursor-pointer hover:scale-110 transition-transform">
+                  <AvatarFallback className="text-foreground text-[10px] font-semibold">
+                    {getInitials(clientName)}
+                  </AvatarFallback>
+                </Avatar>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p className="text-xs font-semibold">{clientName}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
 
         {/* Actions */}
@@ -265,6 +287,14 @@ export function InquiryCard({
             >
               {salesPersonName}
             </h3>
+            {totalInquiries !== undefined && (
+              <Badge
+                variant="secondary"
+                className="rounded-full px-2.5 py-0.5 text-xs bg-muted/60 text-muted-foreground font-bold"
+              >
+                {totalInquiries} {totalInquiries === 1 ? "Inquiry" : "Inquiries"}
+              </Badge>
+            )}
             {isToday && (
               <div className="flex items-center gap-2">
                 <Label
