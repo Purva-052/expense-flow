@@ -546,23 +546,22 @@ export function ReportsStatsDialog({
               <div className="flex-1">
                 <GlobalFilterSection filters={filters} className="my-0" />
               </div>
-              {currentType === "pending" ||
-                (exportPendingReports && (
-                  <Button
-                    onClick={handleExportPending}
-                    disabled={exportPendingLoading}
-                    className="whitespace-nowrap h-10 px-5"
-                  >
-                    {exportPendingLoading ? (
-                      "Exporting..."
-                    ) : (
-                      <>
-                        <Download className="w-4 h-4 mr-2" />
-                        Export Pending Reports
-                      </>
-                    )}
-                  </Button>
-                ))}
+              {currentType === "pending" && exportPendingReports && (
+                <Button
+                  onClick={handleExportPending}
+                  disabled={exportPendingLoading}
+                  className="whitespace-nowrap h-10 px-5"
+                >
+                  {exportPendingLoading ? (
+                    "Exporting..."
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4 mr-2" />
+                      Export Pending Reports
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           )}
 
