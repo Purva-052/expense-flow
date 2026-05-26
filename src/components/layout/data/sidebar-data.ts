@@ -120,6 +120,12 @@ export const sidebarData: SidebarData = {
           ],
         },
         {
+          title: "Client Inventory",
+          url: "/client-inventory",
+          icon: IconAlignBoxBottomCenter,
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+        },
+        {
           title: "Extra Work Report",
           url: "/extra-work-report",
           icon: ClockPlus,
@@ -370,6 +376,30 @@ export const sidebarData: SidebarData = {
           url: "/brands",
           icon: Tag,
           requiredRoles: ["admin"],
+        },
+        {
+          title: "Devices",
+          url: "/device-management",
+          icon: IconAlignBoxBottomCenter,
+          requiredRoles: [roles.ADMIN],
+        },
+        {
+          title: "Printer Types",
+          url: "/printer-types",
+          icon: IconAlignBoxBottomCenter,
+          requiredRoles: [roles.ADMIN],
+        },
+        {
+          title: "Client Inventory",
+          url: "/client-inventory",
+          icon: IconAlignBoxBottomCenter,
+          requiredRoles: [roles.ADMIN],
+        },
+        {
+          title: "Client Inventory Types",
+          url: "/client-inventory-type",
+          icon: IconAlignBoxBottomCenter,
+          requiredRoles: [roles.ADMIN],
         },
       ],
     },
