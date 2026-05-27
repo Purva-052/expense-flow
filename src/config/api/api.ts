@@ -140,6 +140,7 @@ const API = {
     export_csv: "/daily-reports/export-report",
     project_logs_csv: "/daily-reports/export-project-summary",
     export_pending_reports: "/daily-reports/export-pending",
+    export_incomplete_reports: "/daily-reports/export-incomplete",
   },
   extra_hours: {
     create: "/extra-hours",

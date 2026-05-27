@@ -119,12 +119,12 @@ export const sidebarData: SidebarData = {
             roles.BDE,
           ],
         },
-        {
-          title: "Client Inventory",
-          url: "/client-inventory",
-          icon: IconAlignBoxBottomCenter,
-          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
-        },
+        // {
+        //   title: "Client Inventory",
+        //   url: "/client-inventory",
+        //   icon: IconAlignBoxBottomCenter,
+        //   requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+        // },
         {
           title: "Extra Work Report",
           url: "/extra-work-report",
@@ -377,30 +377,30 @@ export const sidebarData: SidebarData = {
           icon: Tag,
           requiredRoles: ["admin"],
         },
-        {
-          title: "Devices",
-          url: "/device-management",
-          icon: IconAlignBoxBottomCenter,
-          requiredRoles: [roles.ADMIN],
-        },
-        {
-          title: "Printer Types",
-          url: "/printer-types",
-          icon: IconAlignBoxBottomCenter,
-          requiredRoles: [roles.ADMIN],
-        },
-        {
-          title: "Client Inventory",
-          url: "/client-inventory",
-          icon: IconAlignBoxBottomCenter,
-          requiredRoles: [roles.ADMIN],
-        },
-        {
-          title: "Client Inventory Types",
-          url: "/client-inventory-type",
-          icon: IconAlignBoxBottomCenter,
-          requiredRoles: [roles.ADMIN],
-        },
+        // {
+        //   title: "Devices",
+        //   url: "/device-management",
+        //   icon: IconAlignBoxBottomCenter,
+        //   requiredRoles: [roles.ADMIN],
+        // },
+        // {
+        //   title: "Printer Types",
+        //   url: "/printer-types",
+        //   icon: IconAlignBoxBottomCenter,
+        //   requiredRoles: [roles.ADMIN],
+        // },
+        // {
+        //   title: "Client Inventory",
+        //   url: "/client-inventory",
+        //   icon: IconAlignBoxBottomCenter,
+        //   requiredRoles: [roles.ADMIN],
+        // },
+        // {
+        //   title: "Client Inventory Types",
+        //   url: "/client-inventory-type",
+        //   icon: IconAlignBoxBottomCenter,
+        //   requiredRoles: [roles.ADMIN],
+        // },
       ],
     },
     {
