@@ -603,7 +603,7 @@ const ProjectPage = ({
 
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-4">
-      {!isBdeView && (
+      {/* {!isBdeView && ( */}
         <div className="flex flex-wrap items-start gap-3">
           <div className="flex-1 min-w-0">
             <GlobalFilterSection filters={filters ?? []} className="" />
@@ -639,7 +639,7 @@ const ProjectPage = ({
             </TabsList>
           </Tabs>
         </div>
-      )}
+      {/* )} */}
 
       <div
         className={`${isDeveloperView || isBdeView ? "flex-1 min-h-0 flex flex-col gap-4" : "flex-1 min-h-0 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px]"}`}
