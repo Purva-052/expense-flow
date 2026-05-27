@@ -5,7 +5,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { GlobalTable } from "@/components/table/global-table";
-import { useGetReportDetails, useExportPendingReports } from "../services";
+import { useGetReportDetails, useExportPendingReports, useExportIncompleteReports } from "../services";
 import { useEffect, useState, type UIEvent } from "react";
 import { ArrowUp, ArrowDown, Download } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
@@ -58,9 +58,60 @@ export function ReportsStatsDialog({
   const exportPendingReports =
     isAccountManager || [roles.PROJECT_MANAGER, roles.ADMIN].includes(userRole);
 
+  const exportIncompleteReports =
+    isAccountManager || [roles.PROJECT_MANAGER, roles.ADMIN].includes(userRole);
+
   const [currentType, setCurrentType] = useState<ReportType>(type);
   const { mutate: exportPending, isPending: exportPendingLoading } =
     useExportPendingReports();
+
+  const { mutate: exportIncomplete, isPending: exportIncompleteLoading } =
+    useExportIncompleteReports();
+
+  const handleExportIncomplete = () => {
+    const payload: Record<string, any> = {};
+    if (listParams.userId) {
+      payload.employeeId = Number(listParams.userId);
+    }
+    if (listParams.fromDate) {
+      payload.fromDate = listParams.fromDate;
+    }
+    if (listParams.toDate) {
+      payload.toDate = listParams.toDate;
+    }
+
+    exportIncomplete(payload, {
+      onSuccess: (response: any) => {
+        const fileBlob = response?.blob;
+        let filename =
+          response?.filename ||
+          `incomplete_reports_export_${format(new Date(), "yyyy-MM-dd")}.xlsx`;
+
+        if (listParams.fromDate && listParams.toDate) {
+          const extension = filename.split(".").pop() || "xlsx";
+          filename = `incomplete_reports_export_${listParams.fromDate}_to_${listParams.toDate}.${extension}`;
+        }
+
+        if (fileBlob) {
+          const fileUrl = URL.createObjectURL(fileBlob);
+          const link = document.createElement("a");
+          link.href = fileUrl;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(fileUrl);
+          toast.success("Incomplete reports export generated successfully");
+        } else {
+          console.error("No file URL found in response:", response);
+          toast.error("Failed to generate export file");
+        }
+      },
+      onError: (error: Error) => {
+        console.error("Incomplete reports export failed:", error);
+      },
+    });
+  };
 
   const handleExportPending = () => {
     const payload: Record<string, any> = {};
@@ -558,6 +609,22 @@ export function ReportsStatsDialog({
                     <>
                       <Download className="w-4 h-4 mr-2" />
                       Export Pending Reports
+                    </>
+                  )}
+                </Button>
+              )}
+              {currentType === "incomplete" && exportIncompleteReports && (
+                <Button
+                  onClick={handleExportIncomplete}
+                  disabled={exportIncompleteLoading}
+                  className="whitespace-nowrap h-10 px-5"
+                >
+                  {exportIncompleteLoading ? (
+                    "Exporting..."
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4 mr-2" />
+                      Export Incomplete Reports
                     </>
                   )}
                 </Button>
