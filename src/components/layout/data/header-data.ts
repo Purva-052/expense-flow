@@ -36,4 +36,7 @@ export const URL_TO_TITLE_MAP: Record<string, string> = {
   "/outbound-sources": "Outbound Sources",
   "/admob-analytics": "AdMob Analytics",
   "/product-inquiry": "Product Inquiries",
+  "/device-management": "Device Management",
+  "/client-inventory": "Client Inventory",
+  "/client-inventory-type": "Client Inventory Types",
 };

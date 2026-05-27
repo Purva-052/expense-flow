@@ -34,6 +34,7 @@ import { Route as AuthenticatedProjectTypeIndexRouteImport } from './routes/_aut
 import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authenticated/profile/index'
 import { Route as AuthenticatedProductInquiryIndexRouteImport } from './routes/_authenticated/product-inquiry/index'
 import { Route as AuthenticatedProcessorIndexRouteImport } from './routes/_authenticated/processor/index'
+import { Route as AuthenticatedPrinterTypesIndexRouteImport } from './routes/_authenticated/printer-types/index'
 import { Route as AuthenticatedOutboundSourcesIndexRouteImport } from './routes/_authenticated/outbound-sources/index'
 import { Route as AuthenticatedNewJoineesIndexRouteImport } from './routes/_authenticated/new-joinees/index'
 import { Route as AuthenticatedMonitorSizeIndexRouteImport } from './routes/_authenticated/monitor-size/index'
@@ -50,9 +51,12 @@ import { Route as AuthenticatedInboundSourcesIndexRouteImport } from './routes/_
 import { Route as AuthenticatedHeadphoneBrandIndexRouteImport } from './routes/_authenticated/headphone-brand/index'
 import { Route as AuthenticatedExtraWorkReportIndexRouteImport } from './routes/_authenticated/extra-work-report/index'
 import { Route as AuthenticatedDomainIndexRouteImport } from './routes/_authenticated/domain/index'
+import { Route as AuthenticatedDeviceManagementIndexRouteImport } from './routes/_authenticated/device-management/index'
 import { Route as AuthenticatedDailyReportIndexRouteImport } from './routes/_authenticated/daily-report/index'
 import { Route as AuthenticatedConferenceRoomBookingIndexRouteImport } from './routes/_authenticated/conference-room-booking/index'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
+import { Route as AuthenticatedClientInventoryIndexRouteImport } from './routes/_authenticated/client-inventory/index'
+import { Route as AuthenticatedClientInventoryTypeIndexRouteImport } from './routes/_authenticated/client-inventory-type/index'
 import { Route as AuthenticatedBrandsIndexRouteImport } from './routes/_authenticated/brands/index'
 import { Route as AuthenticatedAdmobAnalyticsIndexRouteImport } from './routes/_authenticated/admob-analytics/index'
 import { Route as AuthenticatedProjectsDetailIdRouteImport } from './routes/_authenticated/projects/detail.$id'
@@ -195,6 +199,12 @@ const AuthenticatedProcessorIndexRoute =
     path: '/processor/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPrinterTypesIndexRoute =
+  AuthenticatedPrinterTypesIndexRouteImport.update({
+    id: '/printer-types/',
+    path: '/printer-types/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedOutboundSourcesIndexRoute =
   AuthenticatedOutboundSourcesIndexRouteImport.update({
     id: '/outbound-sources/',
@@ -291,6 +301,12 @@ const AuthenticatedDomainIndexRoute =
     path: '/domain/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDeviceManagementIndexRoute =
+  AuthenticatedDeviceManagementIndexRouteImport.update({
+    id: '/device-management/',
+    path: '/device-management/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDailyReportIndexRoute =
   AuthenticatedDailyReportIndexRouteImport.update({
     id: '/daily-report/',
@@ -307,6 +323,18 @@ const AuthenticatedClientsIndexRoute =
   AuthenticatedClientsIndexRouteImport.update({
     id: '/clients/',
     path: '/clients/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedClientInventoryIndexRoute =
+  AuthenticatedClientInventoryIndexRouteImport.update({
+    id: '/client-inventory/',
+    path: '/client-inventory/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedClientInventoryTypeIndexRoute =
+  AuthenticatedClientInventoryTypeIndexRouteImport.update({
+    id: '/client-inventory-type/',
+    path: '/client-inventory-type/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedBrandsIndexRoute =
@@ -347,9 +375,12 @@ export interface FileRoutesByFullPath {
   '/unauthorized': typeof errorsUnauthorizedRoute
   '/admob-analytics/': typeof AuthenticatedAdmobAnalyticsIndexRoute
   '/brands/': typeof AuthenticatedBrandsIndexRoute
+  '/client-inventory-type/': typeof AuthenticatedClientInventoryTypeIndexRoute
+  '/client-inventory/': typeof AuthenticatedClientInventoryIndexRoute
   '/clients/': typeof AuthenticatedClientsIndexRoute
   '/conference-room-booking/': typeof AuthenticatedConferenceRoomBookingIndexRoute
   '/daily-report/': typeof AuthenticatedDailyReportIndexRoute
+  '/device-management/': typeof AuthenticatedDeviceManagementIndexRoute
   '/domain/': typeof AuthenticatedDomainIndexRoute
   '/extra-work-report/': typeof AuthenticatedExtraWorkReportIndexRoute
   '/headphone-brand/': typeof AuthenticatedHeadphoneBrandIndexRoute
@@ -366,6 +397,7 @@ export interface FileRoutesByFullPath {
   '/monitor-size/': typeof AuthenticatedMonitorSizeIndexRoute
   '/new-joinees/': typeof AuthenticatedNewJoineesIndexRoute
   '/outbound-sources/': typeof AuthenticatedOutboundSourcesIndexRoute
+  '/printer-types/': typeof AuthenticatedPrinterTypesIndexRoute
   '/processor/': typeof AuthenticatedProcessorIndexRoute
   '/product-inquiry/': typeof AuthenticatedProductInquiryIndexRoute
   '/profile/': typeof AuthenticatedProfileIndexRoute
@@ -396,9 +428,12 @@ export interface FileRoutesByTo {
   '/': typeof AuthenticatedIndexRoute
   '/admob-analytics': typeof AuthenticatedAdmobAnalyticsIndexRoute
   '/brands': typeof AuthenticatedBrandsIndexRoute
+  '/client-inventory-type': typeof AuthenticatedClientInventoryTypeIndexRoute
+  '/client-inventory': typeof AuthenticatedClientInventoryIndexRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
   '/conference-room-booking': typeof AuthenticatedConferenceRoomBookingIndexRoute
   '/daily-report': typeof AuthenticatedDailyReportIndexRoute
+  '/device-management': typeof AuthenticatedDeviceManagementIndexRoute
   '/domain': typeof AuthenticatedDomainIndexRoute
   '/extra-work-report': typeof AuthenticatedExtraWorkReportIndexRoute
   '/headphone-brand': typeof AuthenticatedHeadphoneBrandIndexRoute
@@ -415,6 +450,7 @@ export interface FileRoutesByTo {
   '/monitor-size': typeof AuthenticatedMonitorSizeIndexRoute
   '/new-joinees': typeof AuthenticatedNewJoineesIndexRoute
   '/outbound-sources': typeof AuthenticatedOutboundSourcesIndexRoute
+  '/printer-types': typeof AuthenticatedPrinterTypesIndexRoute
   '/processor': typeof AuthenticatedProcessorIndexRoute
   '/product-inquiry': typeof AuthenticatedProductInquiryIndexRoute
   '/profile': typeof AuthenticatedProfileIndexRoute
@@ -447,9 +483,12 @@ export interface FileRoutesById {
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/admob-analytics/': typeof AuthenticatedAdmobAnalyticsIndexRoute
   '/_authenticated/brands/': typeof AuthenticatedBrandsIndexRoute
+  '/_authenticated/client-inventory-type/': typeof AuthenticatedClientInventoryTypeIndexRoute
+  '/_authenticated/client-inventory/': typeof AuthenticatedClientInventoryIndexRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
   '/_authenticated/conference-room-booking/': typeof AuthenticatedConferenceRoomBookingIndexRoute
   '/_authenticated/daily-report/': typeof AuthenticatedDailyReportIndexRoute
+  '/_authenticated/device-management/': typeof AuthenticatedDeviceManagementIndexRoute
   '/_authenticated/domain/': typeof AuthenticatedDomainIndexRoute
   '/_authenticated/extra-work-report/': typeof AuthenticatedExtraWorkReportIndexRoute
   '/_authenticated/headphone-brand/': typeof AuthenticatedHeadphoneBrandIndexRoute
@@ -466,6 +505,7 @@ export interface FileRoutesById {
   '/_authenticated/monitor-size/': typeof AuthenticatedMonitorSizeIndexRoute
   '/_authenticated/new-joinees/': typeof AuthenticatedNewJoineesIndexRoute
   '/_authenticated/outbound-sources/': typeof AuthenticatedOutboundSourcesIndexRoute
+  '/_authenticated/printer-types/': typeof AuthenticatedPrinterTypesIndexRoute
   '/_authenticated/processor/': typeof AuthenticatedProcessorIndexRoute
   '/_authenticated/product-inquiry/': typeof AuthenticatedProductInquiryIndexRoute
   '/_authenticated/profile/': typeof AuthenticatedProfileIndexRoute
@@ -498,9 +538,12 @@ export interface FileRouteTypes {
     | '/unauthorized'
     | '/admob-analytics/'
     | '/brands/'
+    | '/client-inventory-type/'
+    | '/client-inventory/'
     | '/clients/'
     | '/conference-room-booking/'
     | '/daily-report/'
+    | '/device-management/'
     | '/domain/'
     | '/extra-work-report/'
     | '/headphone-brand/'
@@ -517,6 +560,7 @@ export interface FileRouteTypes {
     | '/monitor-size/'
     | '/new-joinees/'
     | '/outbound-sources/'
+    | '/printer-types/'
     | '/processor/'
     | '/product-inquiry/'
     | '/profile/'
@@ -547,9 +591,12 @@ export interface FileRouteTypes {
     | '/'
     | '/admob-analytics'
     | '/brands'
+    | '/client-inventory-type'
+    | '/client-inventory'
     | '/clients'
     | '/conference-room-booking'
     | '/daily-report'
+    | '/device-management'
     | '/domain'
     | '/extra-work-report'
     | '/headphone-brand'
@@ -566,6 +613,7 @@ export interface FileRouteTypes {
     | '/monitor-size'
     | '/new-joinees'
     | '/outbound-sources'
+    | '/printer-types'
     | '/processor'
     | '/product-inquiry'
     | '/profile'
@@ -597,9 +645,12 @@ export interface FileRouteTypes {
     | '/_authenticated/'
     | '/_authenticated/admob-analytics/'
     | '/_authenticated/brands/'
+    | '/_authenticated/client-inventory-type/'
+    | '/_authenticated/client-inventory/'
     | '/_authenticated/clients/'
     | '/_authenticated/conference-room-booking/'
     | '/_authenticated/daily-report/'
+    | '/_authenticated/device-management/'
     | '/_authenticated/domain/'
     | '/_authenticated/extra-work-report/'
     | '/_authenticated/headphone-brand/'
@@ -616,6 +667,7 @@ export interface FileRouteTypes {
     | '/_authenticated/monitor-size/'
     | '/_authenticated/new-joinees/'
     | '/_authenticated/outbound-sources/'
+    | '/_authenticated/printer-types/'
     | '/_authenticated/processor/'
     | '/_authenticated/product-inquiry/'
     | '/_authenticated/profile/'
@@ -824,6 +876,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProcessorIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/printer-types/': {
+      id: '/_authenticated/printer-types/'
+      path: '/printer-types'
+      fullPath: '/printer-types/'
+      preLoaderRoute: typeof AuthenticatedPrinterTypesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/outbound-sources/': {
       id: '/_authenticated/outbound-sources/'
       path: '/outbound-sources'
@@ -936,6 +995,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDomainIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/device-management/': {
+      id: '/_authenticated/device-management/'
+      path: '/device-management'
+      fullPath: '/device-management/'
+      preLoaderRoute: typeof AuthenticatedDeviceManagementIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/daily-report/': {
       id: '/_authenticated/daily-report/'
       path: '/daily-report'
@@ -955,6 +1021,20 @@ declare module '@tanstack/react-router' {
       path: '/clients'
       fullPath: '/clients/'
       preLoaderRoute: typeof AuthenticatedClientsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/client-inventory/': {
+      id: '/_authenticated/client-inventory/'
+      path: '/client-inventory'
+      fullPath: '/client-inventory/'
+      preLoaderRoute: typeof AuthenticatedClientInventoryIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/client-inventory-type/': {
+      id: '/_authenticated/client-inventory-type/'
+      path: '/client-inventory-type'
+      fullPath: '/client-inventory-type/'
+      preLoaderRoute: typeof AuthenticatedClientInventoryTypeIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/brands/': {
@@ -992,9 +1072,12 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedAdmobAnalyticsIndexRoute: typeof AuthenticatedAdmobAnalyticsIndexRoute
   AuthenticatedBrandsIndexRoute: typeof AuthenticatedBrandsIndexRoute
+  AuthenticatedClientInventoryTypeIndexRoute: typeof AuthenticatedClientInventoryTypeIndexRoute
+  AuthenticatedClientInventoryIndexRoute: typeof AuthenticatedClientInventoryIndexRoute
   AuthenticatedClientsIndexRoute: typeof AuthenticatedClientsIndexRoute
   AuthenticatedConferenceRoomBookingIndexRoute: typeof AuthenticatedConferenceRoomBookingIndexRoute
   AuthenticatedDailyReportIndexRoute: typeof AuthenticatedDailyReportIndexRoute
+  AuthenticatedDeviceManagementIndexRoute: typeof AuthenticatedDeviceManagementIndexRoute
   AuthenticatedDomainIndexRoute: typeof AuthenticatedDomainIndexRoute
   AuthenticatedExtraWorkReportIndexRoute: typeof AuthenticatedExtraWorkReportIndexRoute
   AuthenticatedHeadphoneBrandIndexRoute: typeof AuthenticatedHeadphoneBrandIndexRoute
@@ -1011,6 +1094,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMonitorSizeIndexRoute: typeof AuthenticatedMonitorSizeIndexRoute
   AuthenticatedNewJoineesIndexRoute: typeof AuthenticatedNewJoineesIndexRoute
   AuthenticatedOutboundSourcesIndexRoute: typeof AuthenticatedOutboundSourcesIndexRoute
+  AuthenticatedPrinterTypesIndexRoute: typeof AuthenticatedPrinterTypesIndexRoute
   AuthenticatedProcessorIndexRoute: typeof AuthenticatedProcessorIndexRoute
   AuthenticatedProductInquiryIndexRoute: typeof AuthenticatedProductInquiryIndexRoute
   AuthenticatedProfileIndexRoute: typeof AuthenticatedProfileIndexRoute
@@ -1033,10 +1117,16 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedAdmobAnalyticsIndexRoute: AuthenticatedAdmobAnalyticsIndexRoute,
   AuthenticatedBrandsIndexRoute: AuthenticatedBrandsIndexRoute,
+  AuthenticatedClientInventoryTypeIndexRoute:
+    AuthenticatedClientInventoryTypeIndexRoute,
+  AuthenticatedClientInventoryIndexRoute:
+    AuthenticatedClientInventoryIndexRoute,
   AuthenticatedClientsIndexRoute: AuthenticatedClientsIndexRoute,
   AuthenticatedConferenceRoomBookingIndexRoute:
     AuthenticatedConferenceRoomBookingIndexRoute,
   AuthenticatedDailyReportIndexRoute: AuthenticatedDailyReportIndexRoute,
+  AuthenticatedDeviceManagementIndexRoute:
+    AuthenticatedDeviceManagementIndexRoute,
   AuthenticatedDomainIndexRoute: AuthenticatedDomainIndexRoute,
   AuthenticatedExtraWorkReportIndexRoute:
     AuthenticatedExtraWorkReportIndexRoute,
@@ -1060,6 +1150,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedNewJoineesIndexRoute: AuthenticatedNewJoineesIndexRoute,
   AuthenticatedOutboundSourcesIndexRoute:
     AuthenticatedOutboundSourcesIndexRoute,
+  AuthenticatedPrinterTypesIndexRoute: AuthenticatedPrinterTypesIndexRoute,
   AuthenticatedProcessorIndexRoute: AuthenticatedProcessorIndexRoute,
   AuthenticatedProductInquiryIndexRoute: AuthenticatedProductInquiryIndexRoute,
   AuthenticatedProfileIndexRoute: AuthenticatedProfileIndexRoute,

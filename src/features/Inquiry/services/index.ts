@@ -130,3 +130,12 @@ export const useExportCSV = () => {
     },
   });
 };
+
+export const useGetInquiryPerformance = (params?: any, enabled: boolean = true) => {
+  return useFetchData({
+    url: API.inquiry.performance,
+    params,
+    enabled,
+  });
+};
+

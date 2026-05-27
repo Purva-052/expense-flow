@@ -36,7 +36,13 @@ import { useAuthStore } from "@/stores/use-auth-store";
 import { INQUIRY_STATUS, roles } from "@/utils/constant";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ColumnDef } from "@tanstack/react-table";
-import { Download, LayoutGrid, List, MoreHorizontal } from "lucide-react";
+import {
+  ArrowLeft,
+  Download,
+  LayoutGrid,
+  List,
+  MoreHorizontal,
+} from "lucide-react";
 import { InquiryCard } from "./components/service-inquiry-card";
 import { useEffect, useMemo, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
@@ -55,6 +61,7 @@ import { ViewNoteModal } from "./components/view-note-modal";
 import { toast } from "sonner";
 import { useExportCSV } from "./services";
 import { cn } from "@/lib/utils";
+import { InquiryPerformanceChart } from "./components/inquiry-performance-chart";
 
 const InquiryPage = () => {
   const { open, setOpen } = useInquiryStore();
@@ -106,11 +113,16 @@ const InquiryPage = () => {
     toDate: queryParams.toDate,
   };
 
+  const isSalesPersonFiltered = !!(
+    queryParams.salesPersonId || queryParams.search
+  );
+
   const apiParams = {
     page: listParams.currentPage,
     limit: listParams.pageSize,
     search: listParams.search,
-    pagination: true,
+    pagination:
+      isSalesPersonFiltered || activeTab === "inactive" ? true : false,
     status: activeTab,
     salesPersonId: listParams.salesPersonId,
     inquiryTypeId: listParams.inquiryTypeId,
@@ -134,12 +146,8 @@ const InquiryPage = () => {
 
   const inquiryList = (listData as any)?.data ?? [];
 
-  const isSalesPersonFiltered = !!(
-    queryParams.salesPersonId || queryParams.search
-  );
-
   const displayedInquiryList = useMemo(() => {
-    if (isSalesPersonFiltered) {
+    if (isSalesPersonFiltered || activeTab === "inactive") {
       return inquiryList;
     }
 
@@ -152,7 +160,37 @@ const InquiryPage = () => {
       }
       return false;
     });
-  }, [inquiryList, isSalesPersonFiltered]);
+  }, [inquiryList, isSalesPersonFiltered, activeTab]);
+
+  const salesPersonOptions = useMemo(() => {
+    const extraUsers = [
+      { value: 134, label: "Piyush Patel" },
+      { value: 1, label: "Jatin Vaghela" },
+    ];
+    if (!usersList?.data) return extraUsers;
+
+    const filteredUsers = usersList.data.filter(
+      (user: any) => user?.technology?.name !== "Accounts"
+    );
+
+    const baseUsers = filteredUsers.map((user: any) => ({
+      value: user.id,
+      label: user.fullName,
+    }));
+
+    const existingIds = new Set(baseUsers.map((u: any) => u.value));
+    const uniqueExtraUsers = extraUsers.filter((u) => !existingIds.has(u.value));
+
+    return [...uniqueExtraUsers, ...baseUsers];
+  }, [usersList]);
+
+  const selectedSalesPersonName = useMemo(() => {
+    if (queryParams.salesPersonId) {
+      const match = salesPersonOptions.find((o) => o.value === queryParams.salesPersonId);
+      return match?.label || "Sales Person";
+    }
+    return queryParams.search || null;
+  }, [salesPersonOptions, queryParams.salesPersonId, queryParams.search]);
 
   const totalCount = (listData as any)?.metadata?.totalCount;
 
@@ -172,11 +210,11 @@ const InquiryPage = () => {
   };
 
   const handleSalesPersonClick = (name: string) => {
-    const sp = usersList?.data?.find((u: any) => u.fullName === name);
-    if (sp) {
+    const match = salesPersonOptions.find((o) => o.label === name);
+    if (match) {
       setQueryParams({
         ...queryParams,
-        salesPersonId: sp.id,
+        salesPersonId: match.value,
         currentPage: 1,
       });
     } else {
@@ -187,22 +225,6 @@ const InquiryPage = () => {
       });
     }
   };
-
-  // const coordinatorOptions = useMemo(() => {
-  //   if (!usersList?.data) return [];
-
-  //   const baseUsers = usersList.data.map((s: any) => ({
-  //     value: s.id,
-  //     label: s.fullName,
-  //   }));
-
-  //   const extraUsers = [
-  //     { value: 134, label: "Piyush Patel" },
-  //     { value: 1, label: "Jatin Vaghela" },
-  //   ];
-
-  //   return [...extraUsers, ...baseUsers];
-  // }, [usersList]);
 
   const filters: FilterConfig[] = [
     {
@@ -233,10 +255,7 @@ const InquiryPage = () => {
       type: "select",
       key: "salesPersonId",
       placeholder: "Filter by Sales Person",
-      options: usersList?.data?.map((user: any) => ({
-        value: user.id,
-        label: user.fullName,
-      })),
+      options: salesPersonOptions,
       value: listParams.salesPersonId,
       onChange: (value: any) => {
         setQueryParams({
@@ -766,7 +785,7 @@ const InquiryPage = () => {
               </TabsTrigger>
             </TabsList>
 
-            {!isSalesPersonFiltered && (
+            {!isSalesPersonFiltered && activeTab === "active" && (
               <Tabs
                 value={view}
                 onValueChange={(v) => setView(v as any)}
@@ -802,6 +821,41 @@ const InquiryPage = () => {
             )}
           </div>
 
+          {/* Back navigation when drilled into a sales person */}
+          {activeTab === "active" && isSalesPersonFiltered && (
+            <div className="flex items-center gap-2 bg-muted/40 px-3 py-1 rounded-lg border border-border/50 w-fit shadow-sm">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex items-center gap-1 text-muted-foreground hover:text-foreground px-2 h-7 hover:bg-muted rounded text-xs font-semibold"
+                onClick={() => {
+                  setQueryParams({
+                    salesPersonId: null,
+                    search: null,
+                    currentPage: 1,
+                  });
+                }}
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                <span>All Sales Persons</span>
+              </Button>
+              <span className="text-muted-foreground/40 text-xs">/</span>
+              <span className="text-xs font-bold text-foreground pr-1">
+                {selectedSalesPersonName || "Sales Person"}
+              </span>
+            </div>
+          )}
+
+          {activeTab === "active" &&
+            isSalesPersonFiltered &&
+            queryParams.salesPersonId && (
+              <InquiryPerformanceChart
+                salesPersonId={queryParams.salesPersonId}
+                fromDate={queryParams.fromDate}
+                toDate={queryParams.toDate}
+              />
+            )}
+
           <GlobalFilterSection
             filters={filters ?? []}
             className={"!my-0 flex flex-wrap items-center gap-4"}
@@ -814,7 +868,7 @@ const InquiryPage = () => {
                   Loading leads...
                 </p>
               </div>
-            ) : isSalesPersonFiltered ? (
+            ) : isSalesPersonFiltered || activeTab === "inactive" ? (
               <GlobalTable
                 pageSize={queryParams.pageSize}
                 currentPage={queryParams.currentPage}
@@ -834,6 +888,14 @@ const InquiryPage = () => {
                     inquiry={inquiry}
                     view="grid"
                     onSalesPersonClick={handleSalesPersonClick}
+                    totalInquiries={
+                      inquiryList.filter((i: any) => {
+                        const spName = i?.salesPerson?.fullName || "Unassigned";
+                        const currentSpName =
+                          inquiry?.salesPerson?.fullName || "Unassigned";
+                        return spName === currentSpName;
+                      }).length
+                    }
                   />
                 ))}
               </div>
@@ -847,7 +909,7 @@ const InquiryPage = () => {
                     <div className="w-28 shrink-0 text-center">Industry</div>
                     <div className="w-28 shrink-0">Inquiry Date</div>
                     <div className="w-24 shrink-0">Client</div>
-                    <div className="w-[64px] shrink-0 text-right pr-4">
+                    <div className="w-[70px] shrink-0 text-right pr-4">
                       Actions
                     </div>
                   </div>
@@ -857,6 +919,15 @@ const InquiryPage = () => {
                       inquiry={inquiry}
                       view="list"
                       onSalesPersonClick={handleSalesPersonClick}
+                      totalInquiries={
+                        inquiryList.filter((i: any) => {
+                          const spName =
+                            i?.salesPerson?.fullName || "Unassigned";
+                          const currentSpName =
+                            inquiry?.salesPerson?.fullName || "Unassigned";
+                          return spName === currentSpName;
+                        }).length
+                      }
                     />
                   ))}
                 </div>

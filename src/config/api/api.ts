@@ -67,6 +67,7 @@ const API = {
     delete: "/project-leads",
     dashboard: "/project-leads/inquiry",
     export_csv: "/project-leads/export",
+    performance: "/project-leads/performance/pie-chart",
   },
   interview: {
     list: "/interviews",
@@ -138,6 +139,8 @@ const API = {
     report_analytics: "/daily-reports/reports-counts",
     export_csv: "/daily-reports/export-report",
     project_logs_csv: "/daily-reports/export-project-summary",
+    export_pending_reports: "/daily-reports/export-pending",
+    export_incomplete_reports: "/daily-reports/export-incomplete",
   },
   extra_hours: {
     create: "/extra-hours",
@@ -305,6 +308,33 @@ const API = {
         `/product-inquiries/${id}/comments/${commentId}`,
     },
     stats: "/product-inquiries/stats",
+  },
+  device_management: {
+    create: "/device-master",
+    list: "/device-master",
+    update: "/device-master",
+    delete: "/device-master",
+    dropdown: "/device-master/dropdown",
+  },
+  printer_type: {
+    create: "/printer-type",
+    list: "/printer-type",
+    update: "/printer-type",
+    delete: "/printer-type",
+    dropdown: "/printer-type/dropdown",
+  },
+  client_inventory_type: {
+    create: "/client-inventory-type",
+    list: "/client-inventory-type",
+    update: "/client-inventory-type",
+    delete: "/client-inventory-type",
+    dropdown: "/client-inventory-type/dropdown",
+  },
+  client_inventory: {
+    create: "/client-inventory",
+    list: "/client-inventory",
+    update: "/client-inventory",
+    delete: "/client-inventory",
   },
 };
 
