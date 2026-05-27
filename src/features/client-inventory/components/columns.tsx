@@ -34,10 +34,10 @@ export const columns: ColumnDef<any>[] = [
       return row.original?.inventoryType?.name ?? row.original?.inventoryTypeName ?? "-";
     },
   },
-  {
-    accessorKey: "quantity",
-    header: "Quantity",
-  },
+  // {
+  //   accessorKey: "quantity",
+  //   header: "Quantity",
+  // },
   {
     accessorKey: "brand.name",
     header: "Brand",
@@ -45,24 +45,24 @@ export const columns: ColumnDef<any>[] = [
       return row.original?.brand?.name ?? row.original?.brandName ?? "-";
     },
   },
-  {
-    header: "Specifications",
-    cell: ({ row }) => {
-      const parts = [];
-      const data = row.original;
-      if (data?.processor?.name || data?.processorName) parts.push(data?.processor?.name ?? data?.processorName);
-      if (data?.ram?.name || data?.ramName) parts.push(data?.ram?.name ?? data?.ramName);
-      if (data?.storage?.name || data?.storageName) parts.push(data?.storage?.name ?? data?.storageName);
-      if (data?.monitorSize?.name || data?.monitorSizeName) parts.push(`Monitor: ${data?.monitorSize?.name ?? data?.monitorSizeName}`);
-      if (data?.printerType?.name || data?.printerTypeName) parts.push(`Printer: ${data?.printerType?.name ?? data?.printerTypeName}`);
-      if (data?.device?.name || data?.deviceName) parts.push(`Device: ${data?.device?.name ?? data?.deviceName}`);
-      return parts.length > 0 ? parts.join(", ") : "-";
-    },
-  },
-  {
-    accessorKey: "notes",
-    header: "Notes",
-  },
+  // {
+  //   header: "Specifications",
+  //   cell: ({ row }) => {
+  //     const parts = [];
+  //     const data = row.original;
+  //     if (data?.processor?.name || data?.processorName) parts.push(data?.processor?.name ?? data?.processorName);
+  //     if (data?.ram?.name || data?.ramName) parts.push(data?.ram?.name ?? data?.ramName);
+  //     if (data?.storage?.name || data?.storageName) parts.push(data?.storage?.name ?? data?.storageName);
+  //     if (data?.monitorSize?.name || data?.monitorSizeName) parts.push(`Monitor: ${data?.monitorSize?.name ?? data?.monitorSizeName}`);
+  //     if (data?.printerType?.name || data?.printerTypeName) parts.push(`Printer: ${data?.printerType?.name ?? data?.printerTypeName}`);
+  //     if (data?.device?.name || data?.deviceName) parts.push(`Device: ${data?.device?.name ?? data?.deviceName}`);
+  //     return parts.length > 0 ? parts.join(", ") : "-";
+  //   },
+  // },
+  // {
+  //   accessorKey: "notes",
+  //   header: "Notes",
+  // },
   {
     id: "actions",
     header: "Actions",

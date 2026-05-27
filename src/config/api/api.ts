@@ -129,6 +129,7 @@ const API = {
     update: "/transaction-logs",
     delete: "/transaction-logs",
     request: "/transaction-logs/{id}/action",
+    export: "/transaction-logs/export-report",
   },
   daily_report: {
     create: "/daily-reports",

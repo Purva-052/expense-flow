@@ -19,8 +19,8 @@ export const DeviceSchema = z.object({
       message: "Model name must be at least 2 characters long.",
     })
     .max(50, { message: "Model name cannot exceed 50 characters." }),
-  osType: z.enum(["Android", "iOS", "other"], {
-    message: "OS type must be either 'Android' or 'iOS' or 'other'.",
+  osType: z.enum(["Android", "ios"], {
+    message: "OS type must be either 'Android' or 'ios'.",
   }),
   serialNumber: z
     .string()
