@@ -250,7 +250,7 @@ export function TransactionLogsActionForm({
                 }))}
                 placeholder="Select project"
                 isLoading={projectsListLoading}
-                sortOptions={false}
+                sortOptions={true}
                 disabled={!canEdit || (isEdit && !isPending)} // Disable when editing an approved/completed request
               />
 

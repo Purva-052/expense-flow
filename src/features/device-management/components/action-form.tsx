@@ -44,8 +44,8 @@ export function DeviceForm({
 
   const OPERATING_SYSTEM_OPTIONS = [
     { value: "Android", label: "Android" },
-    { value: "iOS", label: "iOS" },
-    { value: "other", label: "Other" },
+    { value: "ios", label: "iOS" },
+    // { value: "other", label: "Other" },
   ];
 
   const form = useForm<TDeviceSchema>({
@@ -87,14 +87,19 @@ export function DeviceForm({
               <CustomDropDownSearchable
                 form={form}
                 name="brandId"
-                label="Brand"
+                label={
+                  <span className="flex items-center gap-1">
+                    Brand
+                    <span className="text-red-500">*</span>
+                  </span>
+                }
                 options={brandDetails?.data?.map((b: any) => ({
                   value: b.id,
                   label: b.name,
                 }))}
-                placeholder="Select brand"
+                placeholder="Select Brand"
+                searchEnabled={false}
                 isLoading={brandLoading}
-                sortOptions={false}
               />
 
               <FormField
@@ -116,11 +121,17 @@ export function DeviceForm({
               <CustomDropDownSearchable
                 form={form}
                 name="osType"
-                label="Operating System"
+                label={
+                  <span className="flex items-center gap-1">
+                    Operating System
+                    <span className="text-red-500">*</span>
+                  </span>
+                }
                 options={OPERATING_SYSTEM_OPTIONS}
-                placeholder="Select operating system"
-                isLoading={brandLoading}
+                placeholder="Select Operating System"
+                searchEnabled={false}
                 sortOptions={false}
+                isLoading={brandLoading}
               />
 
               <FormField

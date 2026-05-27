@@ -9,7 +9,7 @@ import { ActionFormModal } from "./components/action";
 import { columns } from "./components/columns";
 import { ViewTransactionModal } from "./components/view-model";
 import { useTransactionStore } from "./stores";
-import { useGetTransactionData } from "./services";
+import { useGetTransactionData, useExportTransactionData } from "./services";
 import { useGetProjectSDropdownList } from "../Project-type/services";
 import {
   ACCOUNTANT_USER_IDS,
@@ -21,6 +21,10 @@ import { useGetUserDropdownList } from "../users/services";
 import { formatDate } from "@/utils/commonFunctions";
 import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
+import { toast } from "sonner";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 const TransactionPage = () => {
   const { open, setOpen } = useTransactionStore();
@@ -81,6 +85,8 @@ const TransactionPage = () => {
 
   const { data: listData, isPending: loading } =
     useGetTransactionData(apiParams);
+  const { mutate: exportCSV, isPending: exportCSVLoading } =
+    useExportTransactionData();
   const { data: projectsList, isPending: projectsListLoading }: any =
     useGetProjectSDropdownList();
   const totalCount = (listData as any)?.metadata?.totalCount;
@@ -89,6 +95,15 @@ const TransactionPage = () => {
       role: [roles.TEAM_LEAD, roles.ADMIN, roles.PROJECT_MANAGER, roles.BDE],
       status: "active",
     });
+
+  const user = useAuthStore((state) => state.user);
+  const userRole = user?.user?.role;
+  const isAccountManager = [169, 170, 171].includes(Number(user?.user.id));
+
+  const hasExportPermission =
+    userRole === roles.ADMIN ||
+    userRole === roles.PROJECT_MANAGER ||
+    isAccountManager;
 
   const filteredUsersList = usersList?.data?.filter(
     (user: any) => !ACCOUNTANT_USER_IDS.includes(Number(user?.id))
@@ -111,6 +126,51 @@ const TransactionPage = () => {
 
   const handleSearch = (search: string | undefined) => {
     setQueryParams({ ...listParams, search: search ?? "", currentPage: 1 });
+  };
+
+  const handleExportCSV = () => {
+    const payload = {
+      search: apiParams.search || undefined,
+      projectId: apiParams.projectId || undefined,
+      transactionType: apiParams.transactionType || undefined,
+      subscriptionCycle: apiParams.subscriptionCycle || undefined,
+      userId: apiParams.userId || undefined,
+      status: apiParams.status || undefined,
+      transactionStartDate: apiParams.transactionStartDate || undefined,
+      transactionEndDate: apiParams.transactionEndDate || undefined,
+    };
+
+    const cleanedPayload = Object.fromEntries(
+      Object.entries(payload).filter(
+        ([, value]) => value !== "" && value !== null && value !== undefined
+      )
+    );
+
+    exportCSV(cleanedPayload, {
+      onSuccess: (response: any) => {
+        const fileBlob = response?.blob;
+        const filename =
+          response?.filename ||
+          `transaction_logs_export_${new Date().toISOString().split("T")[0]}.xlsx`;
+
+        if (fileBlob) {
+          const fileUrl = URL.createObjectURL(fileBlob);
+          const link = document.createElement("a");
+          link.href = fileUrl;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(fileUrl);
+          toast.success("CSV export generated successfully");
+        } else {
+          toast.error("Failed to generate CSV file");
+        }
+      },
+      onError: (error: Error) => {
+        toast.error(error.message || "Failed to generate CSV file");
+      },
+    });
   };
 
   const handlePaginationChange = (newPagination: {
@@ -236,6 +296,14 @@ const TransactionPage = () => {
         title="Transaction Logs"
         buttonText="Request Transaction"
         onButtonClick={handleAdd}
+        actions={
+          hasExportPermission && (
+            <Button onClick={handleExportCSV} disabled={exportCSVLoading}>
+              <Download />
+              {exportCSVLoading ? "Exporting CSV ..." : "Export CSV"}
+            </Button>
+          )
+        }
       >
         Manage your Transaction Logs here.
       </TablePageHeader>

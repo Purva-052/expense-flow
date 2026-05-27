@@ -34,7 +34,6 @@ import { Route as AuthenticatedProjectTypeIndexRouteImport } from './routes/_aut
 import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authenticated/profile/index'
 import { Route as AuthenticatedProductInquiryIndexRouteImport } from './routes/_authenticated/product-inquiry/index'
 import { Route as AuthenticatedProcessorIndexRouteImport } from './routes/_authenticated/processor/index'
-import { Route as AuthenticatedPrinterTypesIndexRouteImport } from './routes/_authenticated/printer-types/index'
 import { Route as AuthenticatedOutboundSourcesIndexRouteImport } from './routes/_authenticated/outbound-sources/index'
 import { Route as AuthenticatedNewJoineesIndexRouteImport } from './routes/_authenticated/new-joinees/index'
 import { Route as AuthenticatedMonitorSizeIndexRouteImport } from './routes/_authenticated/monitor-size/index'
@@ -197,12 +196,6 @@ const AuthenticatedProcessorIndexRoute =
   AuthenticatedProcessorIndexRouteImport.update({
     id: '/processor/',
     path: '/processor/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedPrinterTypesIndexRoute =
-  AuthenticatedPrinterTypesIndexRouteImport.update({
-    id: '/printer-types/',
-    path: '/printer-types/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedOutboundSourcesIndexRoute =
@@ -397,7 +390,6 @@ export interface FileRoutesByFullPath {
   '/monitor-size/': typeof AuthenticatedMonitorSizeIndexRoute
   '/new-joinees/': typeof AuthenticatedNewJoineesIndexRoute
   '/outbound-sources/': typeof AuthenticatedOutboundSourcesIndexRoute
-  '/printer-types/': typeof AuthenticatedPrinterTypesIndexRoute
   '/processor/': typeof AuthenticatedProcessorIndexRoute
   '/product-inquiry/': typeof AuthenticatedProductInquiryIndexRoute
   '/profile/': typeof AuthenticatedProfileIndexRoute
@@ -450,7 +442,6 @@ export interface FileRoutesByTo {
   '/monitor-size': typeof AuthenticatedMonitorSizeIndexRoute
   '/new-joinees': typeof AuthenticatedNewJoineesIndexRoute
   '/outbound-sources': typeof AuthenticatedOutboundSourcesIndexRoute
-  '/printer-types': typeof AuthenticatedPrinterTypesIndexRoute
   '/processor': typeof AuthenticatedProcessorIndexRoute
   '/product-inquiry': typeof AuthenticatedProductInquiryIndexRoute
   '/profile': typeof AuthenticatedProfileIndexRoute
@@ -505,7 +496,6 @@ export interface FileRoutesById {
   '/_authenticated/monitor-size/': typeof AuthenticatedMonitorSizeIndexRoute
   '/_authenticated/new-joinees/': typeof AuthenticatedNewJoineesIndexRoute
   '/_authenticated/outbound-sources/': typeof AuthenticatedOutboundSourcesIndexRoute
-  '/_authenticated/printer-types/': typeof AuthenticatedPrinterTypesIndexRoute
   '/_authenticated/processor/': typeof AuthenticatedProcessorIndexRoute
   '/_authenticated/product-inquiry/': typeof AuthenticatedProductInquiryIndexRoute
   '/_authenticated/profile/': typeof AuthenticatedProfileIndexRoute
@@ -560,7 +550,6 @@ export interface FileRouteTypes {
     | '/monitor-size/'
     | '/new-joinees/'
     | '/outbound-sources/'
-    | '/printer-types/'
     | '/processor/'
     | '/product-inquiry/'
     | '/profile/'
@@ -613,7 +602,6 @@ export interface FileRouteTypes {
     | '/monitor-size'
     | '/new-joinees'
     | '/outbound-sources'
-    | '/printer-types'
     | '/processor'
     | '/product-inquiry'
     | '/profile'
@@ -667,7 +655,6 @@ export interface FileRouteTypes {
     | '/_authenticated/monitor-size/'
     | '/_authenticated/new-joinees/'
     | '/_authenticated/outbound-sources/'
-    | '/_authenticated/printer-types/'
     | '/_authenticated/processor/'
     | '/_authenticated/product-inquiry/'
     | '/_authenticated/profile/'
@@ -874,13 +861,6 @@ declare module '@tanstack/react-router' {
       path: '/processor'
       fullPath: '/processor/'
       preLoaderRoute: typeof AuthenticatedProcessorIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/printer-types/': {
-      id: '/_authenticated/printer-types/'
-      path: '/printer-types'
-      fullPath: '/printer-types/'
-      preLoaderRoute: typeof AuthenticatedPrinterTypesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/outbound-sources/': {
@@ -1094,7 +1074,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMonitorSizeIndexRoute: typeof AuthenticatedMonitorSizeIndexRoute
   AuthenticatedNewJoineesIndexRoute: typeof AuthenticatedNewJoineesIndexRoute
   AuthenticatedOutboundSourcesIndexRoute: typeof AuthenticatedOutboundSourcesIndexRoute
-  AuthenticatedPrinterTypesIndexRoute: typeof AuthenticatedPrinterTypesIndexRoute
   AuthenticatedProcessorIndexRoute: typeof AuthenticatedProcessorIndexRoute
   AuthenticatedProductInquiryIndexRoute: typeof AuthenticatedProductInquiryIndexRoute
   AuthenticatedProfileIndexRoute: typeof AuthenticatedProfileIndexRoute
@@ -1150,7 +1129,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedNewJoineesIndexRoute: AuthenticatedNewJoineesIndexRoute,
   AuthenticatedOutboundSourcesIndexRoute:
     AuthenticatedOutboundSourcesIndexRoute,
-  AuthenticatedPrinterTypesIndexRoute: AuthenticatedPrinterTypesIndexRoute,
   AuthenticatedProcessorIndexRoute: AuthenticatedProcessorIndexRoute,
   AuthenticatedProductInquiryIndexRoute: AuthenticatedProductInquiryIndexRoute,
   AuthenticatedProfileIndexRoute: AuthenticatedProfileIndexRoute,

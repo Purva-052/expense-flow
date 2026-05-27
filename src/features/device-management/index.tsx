@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { useMemo } from "react";
 import PageLayout from "@/components/layout/layout-provider";
 import { GlobalTable } from "@/components/table/global-table";
 import GlobalFilterSection from "@/components/table/global-table-filter";
@@ -9,6 +10,7 @@ import { ActionFormModal } from "./components/actions";
 import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import { useDeviceStore } from "./stores/useDeviceStore";
 import { useGetDeviceList } from "./services";
+import { useGetBrandDropdown } from "@/features/system-inventory/services";
 
 const DevicePage = () => {
   const { open, setOpen } = useDeviceStore();
@@ -17,12 +19,16 @@ const DevicePage = () => {
     pageSize: parseAsInteger.withDefault(10),
     currentPage: parseAsInteger.withDefault(1),
     search: parseAsString.withDefault(""),
+    brandId: parseAsInteger,
+    osType: parseAsString,
   });
 
   const listParams = {
     currentPage: queryParams.currentPage,
     pageSize: queryParams.pageSize,
     search: queryParams.search,
+    brandId: queryParams.brandId ?? undefined,
+    osType: queryParams.osType ?? undefined,
   };
 
   const apiParams = {
@@ -30,14 +36,31 @@ const DevicePage = () => {
     limit: listParams.pageSize,
     search: listParams.search,
     pagination: true,
+    brandId: listParams.brandId,
+    osType: listParams.osType,
   };
 
   const { data: listData, isPending: loading } = useGetDeviceList(apiParams);
+  const { data: brandDetails, isPending: brandLoading } = useGetBrandDropdown();
 
   const totalCount = (listData as any)?.metadata?.totalCount;
 
+  const extractArray = (res: any) => {
+    if (!res) return [];
+    if (Array.isArray(res)) return res;
+    if (res.data && Array.isArray(res.data)) return res.data;
+    return [];
+  };
+
+  const brandList = useMemo(() => extractArray(brandDetails), [brandDetails]);
+
+  const OPERATING_SYSTEM_OPTIONS = [
+    { value: "Android", label: "Android" },
+    { value: "ios", label: "iOS" },
+  ];
+
   const handleSearch = (search: string | undefined) => {
-    setQueryParams({ ...listParams, search: search ?? "", currentPage: 1 });
+    setQueryParams({ search: search ?? "", currentPage: 1 });
   };
 
   const handlePaginationChange = (newPagination: {
@@ -45,7 +68,6 @@ const DevicePage = () => {
     pageSize: number;
   }) => {
     setQueryParams({
-      ...listParams,
       pageSize: newPagination.pageSize,
       currentPage: newPagination.pageIndex + 1,
     });
@@ -58,6 +80,36 @@ const DevicePage = () => {
       key: "search",
       value: listParams.search,
       onChange: handleSearch,
+    },
+    {
+      type: "select",
+      key: "brandId",
+      placeholder: "Filter by Brand",
+      options: brandList?.map((b: any) => ({
+        value: b.id ?? b._id ?? b.value,
+        label: b.name ?? b.fullName ?? b.label,
+      })),
+      value: listParams.brandId,
+      onChange: (value: any) => {
+        setQueryParams({
+          brandId: value ?? null,
+          currentPage: 1,
+        });
+      },
+      isLoading: brandLoading,
+    },
+    {
+      type: "select",
+      key: "osType",
+      placeholder: "Filter by OS",
+      options: OPERATING_SYSTEM_OPTIONS,
+      value: listParams.osType,
+      onChange: (value: any) => {
+        setQueryParams({
+          osType: value ?? null,
+          currentPage: 1,
+        });
+      },
     },
   ];
 
