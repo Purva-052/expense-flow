@@ -114,7 +114,7 @@ export default function DailyReportPage() {
   const { mutate: deleteReport, isPending: isDeleting } = useDeleteDailyReport(
     () => {
       toast.success("Daily report deleted successfully");
-      queryClient.invalidateQueries({ queryKey: ["daily-reports"] });
+      queryClient.invalidateQueries({ queryKey: ["/daily-reports"] });
       setDeleteOpen(false);
     }
   );
