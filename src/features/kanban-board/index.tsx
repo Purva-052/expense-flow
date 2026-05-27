@@ -37,8 +37,13 @@ const ProjectBoard = () => {
   const [resourceCount, setResourceCount] = useState<number | null>(null);
   const [certificateCount, _] = useState<number | null>(null);
   const user = useAuthStore((state) => state.user);
+  console.log('user: ', user);
+  const currentUserId = Number(user?.user?.id ?? user?.user_id);
+  const accountTechUser = [169, 170, 171, 190].includes(currentUserId);
   const userRole = user?.user?.role;
-  const userId = user?.user?.id;
+  const userId = currentUserId;
+  const canAccessInquiryTab =
+    userId === 1 || (userRole === roles.BDE && !accountTechUser);
   const { mutate: exportCSV, isPending: exportCSVLoading } = useExportCSV();
   const canExportCSV =
     userRole === roles.ADMIN || userRole === roles.PROJECT_MANAGER;
@@ -278,7 +283,7 @@ const ProjectBoard = () => {
                         )}
                       </TabsTrigger>
                     )}
-                    {(userId === 1 || userRole === roles.BDE) && (
+                    {canAccessInquiryTab && (
                       <TabsTrigger value="inquiry" className={tabTriggerClass}>
                         Inquiries
                       </TabsTrigger>
@@ -387,7 +392,7 @@ const ProjectBoard = () => {
               >
                 <CertificateTab />
               </TabsContent>
-              {userId === 1 || userRole === roles.BDE ? (
+              {canAccessInquiryTab ? (
                 <TabsContent
                   value="inquiry"
                   className="flex-1 min-h-0 flex flex-col"
