@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { SubmitHandler, useForm } from "react-hook-form";
+import { SubmitHandler, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
@@ -20,11 +20,11 @@ import CustomButton from "@/components/shared/custom-button";
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useEffect, useMemo } from "react";
-import {
-  ClientInventorySchema,
-  TClientInventorySchema,
-} from "../schema";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Printer } from "lucide-react";
+import { ComponentType, ReactNode, useEffect, useMemo } from "react";
+import { ClientInventorySchema, TClientInventorySchema, PrinterType } from "../schema";
+import { cn } from "@/lib/utils";
 
 interface Props {
   currentRow?: any;
@@ -42,12 +42,13 @@ interface Props {
   processorsList?: any[];
   ramsList?: any[];
   storagesList?: any[];
-  printerTypesList?: any[];
   devicesList?: any[];
   dropdownLoading?: boolean;
 }
 
-export const isObjectCheck = (value: unknown): value is Record<string, unknown> =>
+export const isObjectCheck = (
+  value: unknown
+): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
 
 export const pickDefined = (...values: unknown[]) =>
@@ -69,7 +70,12 @@ export const mapDropdownOptions = (items: unknown[] | undefined) => {
 
       if (isObjectCheck(item)) {
         const value = pickDefined(item.id, item.value, item._id, item.key);
-        const label = pickDefined(item.name, item.label, item.title, item.fullName);
+        const label = pickDefined(
+          item.name,
+          item.label,
+          item.title,
+          item.fullName
+        );
 
         if (
           (typeof value === "string" || typeof value === "number") &&
@@ -84,8 +90,60 @@ export const mapDropdownOptions = (items: unknown[] | undefined) => {
 
       return null;
     })
-    .filter((item): item is { label: string; value: string | number } => item !== null);
+    .filter(
+      (item): item is { label: string; value: string | number } => item !== null
+    );
 };
+
+export const printerTypeStaticOptions = [
+  { value: PrinterType.INKJET_PRINTER, label: "Inkjet Printer" },
+  { value: PrinterType.LASER_PRINTER, label: "Laser Printer" },
+  { value: PrinterType.THREE_D_PRINTER, label: "3D Printer" },
+  { value: PrinterType.LED_PRINTER, label: "LED Printer" },
+  { value: PrinterType.SOLID_INK_PRINTER, label: "Solid Ink Printer" },
+  { value: PrinterType.DOT_MATRIX_PRINTER, label: "Dot Matrix Printer" },
+  { value: PrinterType.MULTIFUNCTION_ALL_IN_ONE_PRINTER, label: "Multifunction / All-In-One Printer" },
+  { value: PrinterType.THERMAL_PRINTER, label: "Thermal Printer" },
+  { value: PrinterType.PLOTTER, label: "Plotter" },
+];
+
+function InventorySection({
+  title,
+  enabled,
+  onEnabledChange,
+  disabled,
+  icon,
+  showAsterisk,
+  children,
+}: Readonly<{
+  title: string;
+  enabled: boolean;
+  onEnabledChange: (checked: boolean) => void;
+  disabled?: boolean;
+  icon: ComponentType<{ className?: string }>;
+  showAsterisk?: boolean;
+  children: ReactNode;
+}>) {
+  const Icon = icon;
+
+  return (
+    <div className="space-y-4 rounded-md border bg-card p-4">
+      <div className="flex items-center gap-2">
+        <Checkbox
+          checked={enabled}
+          onCheckedChange={(checked) => onEnabledChange(checked === true)}
+          disabled={disabled}
+        />
+        <Icon className="h-4 w-4 text-muted-foreground" />
+        <span className="text-sm font-semibold">
+          {title}
+          {showAsterisk && <span className="ml-1 text-red-500">*</span>}
+        </span>
+      </div>
+      <div>{children}</div>
+    </div>
+  );
+}
 
 export function ClientInventoryActionForm({
   currentRow,
@@ -101,7 +159,6 @@ export function ClientInventoryActionForm({
   processorsList,
   ramsList,
   storagesList,
-  printerTypesList,
   devicesList,
   dropdownLoading,
 }: Readonly<Props>) {
@@ -119,6 +176,7 @@ export function ClientInventoryActionForm({
         processorId: "",
         ramId: "",
         storageId: "",
+        printerEnabled: false,
         printerTypeId: "",
         deviceId: "",
         notes: "",
@@ -128,20 +186,26 @@ export function ClientInventoryActionForm({
     // Normalizing row data keys
     const getVal = (fieldObj: any) => {
       if (!fieldObj) return "";
-      return typeof fieldObj === "object" ? (fieldObj.id ?? fieldObj._id ?? "") : fieldObj;
+      return typeof fieldObj === "object"
+        ? (fieldObj.id ?? fieldObj._id ?? "")
+        : fieldObj;
     };
+
+    const printerVal = currentRow.printerTypeId ?? getVal(currentRow.printerType);
 
     return {
       clientId: currentRow.clientId ?? getVal(currentRow.client),
       projectId: currentRow.projectId ?? getVal(currentRow.project),
-      inventoryTypeId: currentRow.inventoryTypeId ?? getVal(currentRow.inventoryType),
+      inventoryTypeId:
+        currentRow.inventoryTypeId ?? getVal(currentRow.inventoryType),
       quantity: Number(currentRow.quantity ?? 1),
       brandId: currentRow.brandId ?? getVal(currentRow.brand),
       monitorSizeId: currentRow.monitorSizeId ?? getVal(currentRow.monitorSize),
       processorId: currentRow.processorId ?? getVal(currentRow.processor),
       ramId: currentRow.ramId ?? getVal(currentRow.ram),
       storageId: currentRow.storageId ?? getVal(currentRow.storage),
-      printerTypeId: currentRow.printerTypeId ?? getVal(currentRow.printerType),
+      printerEnabled: !!printerVal,
+      printerTypeId: printerVal || "",
       deviceId: currentRow.deviceId ?? getVal(currentRow.device),
       notes: currentRow.notes ?? "",
     };
@@ -162,16 +226,44 @@ export function ClientInventoryActionForm({
     onSubmitValues(values);
   };
 
-  const clientOptions = useMemo(() => mapDropdownOptions(clientsList), [clientsList]);
-  const projectOptions = useMemo(() => mapDropdownOptions(projectsList), [projectsList]);
-  const inventoryTypeOptions = useMemo(() => mapDropdownOptions(inventoryTypesList), [inventoryTypesList]);
-  const brandOptions = useMemo(() => mapDropdownOptions(brandsList), [brandsList]);
-  const monitorSizeOptions = useMemo(() => mapDropdownOptions(monitorSizesList), [monitorSizesList]);
-  const processorOptions = useMemo(() => mapDropdownOptions(processorsList), [processorsList]);
+  const clientOptions = useMemo(
+    () => mapDropdownOptions(clientsList),
+    [clientsList]
+  );
+  const projectOptions = useMemo(
+    () => mapDropdownOptions(projectsList),
+    [projectsList]
+  );
+  const inventoryTypeOptions = useMemo(
+    () => mapDropdownOptions(inventoryTypesList),
+    [inventoryTypesList]
+  );
+  const brandOptions = useMemo(
+    () => mapDropdownOptions(brandsList),
+    [brandsList]
+  );
+  const monitorSizeOptions = useMemo(
+    () => mapDropdownOptions(monitorSizesList),
+    [monitorSizesList]
+  );
+  const processorOptions = useMemo(
+    () => mapDropdownOptions(processorsList),
+    [processorsList]
+  );
   const ramOptions = useMemo(() => mapDropdownOptions(ramsList), [ramsList]);
-  const storageOptions = useMemo(() => mapDropdownOptions(storagesList), [storagesList]);
-  const printerTypeOptions = useMemo(() => mapDropdownOptions(printerTypesList), [printerTypesList]);
-  const deviceOptions = useMemo(() => mapDropdownOptions(devicesList), [devicesList]);
+  const storageOptions = useMemo(
+    () => mapDropdownOptions(storagesList),
+    [storagesList]
+  );
+  const deviceOptions = useMemo(
+    () => mapDropdownOptions(devicesList),
+    [devicesList]
+  );
+
+  const printerEnabled = useWatch({
+    control: form.control,
+    name: "printerEnabled",
+  });
 
   return (
     <Dialog
@@ -245,9 +337,7 @@ export function ClientInventoryActionForm({
                 name="quantity"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>
-                      Quantity <span className="text-red-500">*</span>
-                    </FormLabel>
+                    <FormLabel>Quantity</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -256,7 +346,7 @@ export function ClientInventoryActionForm({
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage />
+                    {/* <FormMessage /> */}
                   </FormItem>
                 )}
               />
@@ -328,17 +418,43 @@ export function ClientInventoryActionForm({
               />
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <CustomDropDownSearchable
-                form={form}
-                name="printerTypeId"
-                label="Printer Type"
-                options={printerTypeOptions}
-                placeholder="Select printer type"
-                disabled={dropdownLoading}
-                isLoading={dropdownLoading}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="printerEnabled"
+              render={({ field }) => (
+                <InventorySection
+                  title="Printer"
+                  icon={Printer}
+                  enabled={field.value ?? false}
+                  onEnabledChange={(checked) => {
+                    field.onChange(checked);
+                    if (!checked) {
+                      form.setValue("printerTypeId", "");
+                    }
+                  }}
+                  disabled={dropdownLoading}
+                >
+                  <div
+                    className={cn(
+                      "grid grid-cols-1 gap-4",
+                      !printerEnabled && "opacity-50 pointer-events-none"
+                    )}
+                  >
+                    <CustomDropDownSearchable
+                      form={form}
+                      name="printerTypeId"
+                      label="Printer Type"
+                      options={printerTypeStaticOptions}
+                      placeholder="Select printer type"
+                      disabled={dropdownLoading || !printerEnabled}
+                      isLoading={false}
+                      searchEnabled={false}
+                      sortOptions={false}
+                    />
+                  </div>
+                </InventorySection>
+              )}
+            />
 
             <FormField
               control={form.control}

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMemo } from "react";
 import { DeleteModal } from "@/components/model/delete-model";
 import {
@@ -12,7 +13,6 @@ import {
   useGetProcessorsDropdown,
   useGetRamsDropdown,
   useGetStoragesDropdown,
-  useGetPrinterTypesDropdown,
   useGetDevicesDropdown,
 } from "../services";
 import { useClientInventoryStore } from "../stores/useClientInventory";
@@ -41,7 +41,6 @@ export function ActionFormModal() {
   const { data: processorsRes, isPending: processorsLoading } = useGetProcessorsDropdown();
   const { data: ramsRes, isPending: ramsLoading } = useGetRamsDropdown();
   const { data: storagesRes, isPending: storagesLoading } = useGetStoragesDropdown();
-  const { data: printerTypesRes, isPending: printerTypesLoading } = useGetPrinterTypesDropdown();
   const { data: devicesRes, isPending: devicesLoading } = useGetDevicesDropdown();
 
   const dropdownLoading =
@@ -53,7 +52,6 @@ export function ActionFormModal() {
     processorsLoading ||
     ramsLoading ||
     storagesLoading ||
-    printerTypesLoading ||
     devicesLoading;
 
   // Extract arrays from API responses
@@ -72,7 +70,6 @@ export function ActionFormModal() {
   const processorsList = useMemo(() => extractArray(processorsRes), [processorsRes]);
   const ramsList = useMemo(() => extractArray(ramsRes), [ramsRes]);
   const storagesList = useMemo(() => extractArray(storagesRes), [storagesRes]);
-  const printerTypesList = useMemo(() => extractArray(printerTypesRes), [printerTypesRes]);
   const devicesList = useMemo(() => extractArray(devicesRes), [devicesRes]);
 
   const parseIdValue = (value: any) => {
@@ -100,7 +97,7 @@ export function ActionFormModal() {
       processorId: parseIdValue(values.processorId),
       ramId: parseIdValue(values.ramId),
       storageId: parseIdValue(values.storageId),
-      printerTypeId: parseIdValue(values.printerTypeId),
+      printerTypeId: values.printerEnabled ? parseIdValue(values.printerTypeId) : null,
       deviceId: parseIdValue(values.deviceId),
       notes: values.notes?.trim() || null,
     };
@@ -149,7 +146,6 @@ export function ActionFormModal() {
         processorsList={processorsList}
         ramsList={ramsList}
         storagesList={storagesList}
-        printerTypesList={printerTypesList}
         devicesList={devicesList}
         dropdownLoading={dropdownLoading}
       />
@@ -171,7 +167,6 @@ export function ActionFormModal() {
             processorsList={processorsList}
             ramsList={ramsList}
             storagesList={storagesList}
-            printerTypesList={printerTypesList}
             devicesList={devicesList}
             dropdownLoading={dropdownLoading}
           />

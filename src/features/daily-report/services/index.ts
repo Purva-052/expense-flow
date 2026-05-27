@@ -62,7 +62,10 @@ export const useDeleteDailyReport = (onSuccess?: () => void) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [GET_DAILY_REPORT_LIST, API.daily_report.report_analytics],
+        queryKey: [GET_DAILY_REPORT_LIST],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [API.daily_report.report_analytics],
       });
       onSuccess?.();
     },
@@ -331,4 +334,3 @@ export const useExportIncompleteReports = () => {
     },
   });
 };
-
