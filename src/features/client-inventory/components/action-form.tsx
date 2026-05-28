@@ -74,7 +74,8 @@ export const mapDropdownOptions = (items: unknown[] | undefined) => {
           item.name,
           item.label,
           item.title,
-          item.fullName
+          item.fullName,
+          item.modelName
         );
 
         if (
