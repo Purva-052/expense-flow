@@ -45,6 +45,7 @@ export function DeviceForm({
   const OPERATING_SYSTEM_OPTIONS = [
     { value: "Android", label: "Android" },
     { value: "ios", label: "iOS" },
+    { value: "windows", label: "Windows" },
     // { value: "other", label: "Other" },
   ];
 
