@@ -7,6 +7,11 @@ import { useDroppable } from "@dnd-kit/core";
 import { cn } from "@/lib/utils";
 import { Briefcase, Zap } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // ✅ Helper: Get initials from full name (e.g. "John Doe" → "JD")
 const getInitials = (fullName?: string | null): string => {
@@ -171,15 +176,26 @@ export const ResourceCard = ({
                     Skills
                   </p>
                 </div>
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex min-w-0 flex-wrap gap-1.5">
                   {developer.skills.map((s: any) => (
-                    <Badge
-                      key={s.skill.id}
-                      variant="secondary"
-                      className="rounded-full bg-primary/10 text-primary hover:bg-primary/20 border-transparent px-2.5 py-0.5 font-semibold text-[10px] transition-colors duration-200 uppercase"
-                    >
-                      {s.skill.skillName}
-                    </Badge>
+                    <Tooltip key={s.skill.id}>
+                      <TooltipTrigger asChild>
+                        <Badge
+                          variant="secondary"
+                          className="min-w-0 max-w-full shrink cursor-default rounded-full bg-primary/10 text-primary hover:bg-primary/20 border-transparent px-2.5 py-0.5 font-semibold text-[10px] transition-colors duration-200 uppercase"
+                        >
+                          <span className="block max-w-full truncate">
+                            {s.skill.skillName}
+                          </span>
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent
+                        side="top"
+                        className="max-w-64 break-words text-xs"
+                      >
+                        {s.skill.skillName}
+                      </TooltipContent>
+                    </Tooltip>
                   ))}
                 </div>
               </div>

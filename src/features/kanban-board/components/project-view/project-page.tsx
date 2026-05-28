@@ -604,41 +604,41 @@ const ProjectPage = ({
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-4">
       {/* {!isBdeView && ( */}
-        <div className="flex flex-wrap items-start gap-3">
-          <div className="flex-1 min-w-0">
-            <GlobalFilterSection filters={filters ?? []} className="" />
-          </div>
-          <Tabs
-            value={view}
-            onValueChange={(v: any) => setView(v)}
-            className="flex-none"
-          >
-            <TabsList className="bg-rose-50 dark:bg-muted rounded-full h-9 border border-rose-100/50 dark:border-white/10">
-              <TabsTrigger
-                value="grid"
-                className={cn(
-                  tabTriggerClass,
-                  "gap-2 px-3 h-8 text-xs font-medium transition-all",
-                  view === "grid" && "bg-background text-foreground shadow-sm"
-                )}
-              >
-                <LayoutGrid className="h-4 w-4" />
-                Grid
-              </TabsTrigger>
-              <TabsTrigger
-                value="list"
-                className={cn(
-                  tabTriggerClass,
-                  "gap-2 px-3 h-8 text-xs font-medium transition-all",
-                  view === "list" && "bg-background text-foreground shadow-sm"
-                )}
-              >
-                <List className="h-4 w-4" />
-                List
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+      <div className="flex flex-wrap items-start gap-3">
+        <div className="flex-1 min-w-0">
+          <GlobalFilterSection filters={filters ?? []} className="" />
         </div>
+        <Tabs
+          value={view}
+          onValueChange={(v: any) => setView(v)}
+          className="flex-none"
+        >
+          <TabsList className="bg-rose-50 dark:bg-muted rounded-full h-9 border border-rose-100/50 dark:border-white/10">
+            <TabsTrigger
+              value="grid"
+              className={cn(
+                tabTriggerClass,
+                "gap-2 px-3 h-8 text-xs font-medium transition-all",
+                view === "grid" && "bg-background text-foreground shadow-sm"
+              )}
+            >
+              <LayoutGrid className="h-4 w-4" />
+              Grid
+            </TabsTrigger>
+            <TabsTrigger
+              value="list"
+              className={cn(
+                tabTriggerClass,
+                "gap-2 px-3 h-8 text-xs font-medium transition-all",
+                view === "list" && "bg-background text-foreground shadow-sm"
+              )}
+            >
+              <List className="h-4 w-4" />
+              List
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
       {/* )} */}
 
       <div
