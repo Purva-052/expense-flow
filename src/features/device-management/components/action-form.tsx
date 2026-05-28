@@ -43,7 +43,7 @@ export function DeviceForm({
     useGetBrandDropdown();
 
   const OPERATING_SYSTEM_OPTIONS = [
-    { value: "Android", label: "Android" },
+    { value: "android", label: "Android" },
     { value: "ios", label: "iOS" },
     { value: "windows", label: "Windows" },
     // { value: "other", label: "Other" },
