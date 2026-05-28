@@ -78,6 +78,13 @@ export function ViewClientsModal() {
             </p>
           </div>
 
+          <div>
+            <h3 className="text-sm font-medium">Priority</h3>
+            <p className="text-sm text-gray-600">
+              {currentRow.priority || "-"}
+            </p>
+          </div>
+
           {/* Country */}
           <div>
             <h3 className="text-sm font-medium">Country</h3>
