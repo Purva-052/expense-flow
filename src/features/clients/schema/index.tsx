@@ -16,6 +16,13 @@ export const clientFormSchema = z.object({
     .max(100, { message: "Company field cannot exceed 100 characters." })
     .optional(),
   countryId: z.coerce.number().min(1, "Country is required"),
+  priority: z.coerce
+    .number({
+      invalid_type_error: "Priority is required",
+    })
+    .refine((val) => [1, 2, 3].includes(val), {
+      message: "Priority is required",
+    }),
   timezone: z.string().regex(timezoneRegex, {
     message:
       "Invalid timezone format. Example: Asia/Kolkata, America/New_York, Europe/London",
