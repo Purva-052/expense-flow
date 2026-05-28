@@ -23,6 +23,7 @@ import { useTimezoneSelect, allTimezones } from "react-timezone-select";
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import { useGetCountryDropdownList } from "../services";
 import { Input } from "@/components/ui/input";
+import { PRIORITY_OPTIONS } from "@/utils/constant";
 
 interface Props {
   currentRow?: any;
@@ -61,12 +62,14 @@ export function ClientActionForm({
       ? {
           name: currentRow?.name ?? "",
           company: currentRow?.company ?? "",
+          priority: currentRow?.priority ?? 1,
           countryId: currentRow?.country?.id ?? "",
           timezone: currentRow?.timezone ?? "",
         }
       : {
           name: "",
           company: "",
+          priority: 1,
           countryId: "",
           timezone: "",
         },
@@ -118,6 +121,27 @@ export function ClientActionForm({
                 name="company"
                 label="Company"
                 placeholder="Enter company"
+              />
+
+              <FormField
+                control={form.control}
+                name="priority"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>
+                      Priority<span className="text-red-500">*</span>
+                    </FormLabel>
+                    <CustomDropDownSearchable
+                      form={form}
+                      name="priority"
+                      label=""
+                      placeholder="Select priority"
+                      sortOptions={false}
+                      options={PRIORITY_OPTIONS}
+                      // change for the country id fixing
+                    />
+                  </FormItem>
+                )}
               />
 
               <FormField

@@ -22,6 +22,7 @@ export function ActionFormModal() {
     const payload = {
       name: values.name,
       company: values.company,
+      priority: values.priority,
       countryId: values.countryId,
       timezone: values.timezone,
     };
@@ -32,6 +33,7 @@ export function ActionFormModal() {
     const payload = {
       name: values.name,
       company: values.company,
+      priority: values.priority,
       countryId: values.countryId,
       timezone: values.timezone,
     };
