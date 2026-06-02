@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as SignTokenRouteImport } from './routes/sign.$token'
 import { Route as errorsUnauthorizedRouteImport } from './routes/(errors)/unauthorized'
 import { Route as errors503RouteImport } from './routes/(errors)/503'
 import { Route as errors500RouteImport } from './routes/(errors)/500'
@@ -54,6 +55,7 @@ import { Route as AuthenticatedDeviceManagementIndexRouteImport } from './routes
 import { Route as AuthenticatedDailyReportIndexRouteImport } from './routes/_authenticated/daily-report/index'
 import { Route as AuthenticatedConferenceRoomBookingIndexRouteImport } from './routes/_authenticated/conference-room-booking/index'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
+import { Route as AuthenticatedClientNdaIndexRouteImport } from './routes/_authenticated/client-nda/index'
 import { Route as AuthenticatedClientInventoryIndexRouteImport } from './routes/_authenticated/client-inventory/index'
 import { Route as AuthenticatedClientInventoryTypeIndexRouteImport } from './routes/_authenticated/client-inventory-type/index'
 import { Route as AuthenticatedBrandsIndexRouteImport } from './routes/_authenticated/brands/index'
@@ -69,6 +71,11 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const SignTokenRoute = SignTokenRouteImport.update({
+  id: '/sign/$token',
+  path: '/sign/$token',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const errorsUnauthorizedRoute = errorsUnauthorizedRouteImport.update({
   id: '/(errors)/unauthorized',
@@ -318,6 +325,12 @@ const AuthenticatedClientsIndexRoute =
     path: '/clients/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedClientNdaIndexRoute =
+  AuthenticatedClientNdaIndexRouteImport.update({
+    id: '/client-nda/',
+    path: '/client-nda/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedClientInventoryIndexRoute =
   AuthenticatedClientInventoryIndexRouteImport.update({
     id: '/client-inventory/',
@@ -366,10 +379,12 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/unauthorized': typeof errorsUnauthorizedRoute
+  '/sign/$token': typeof SignTokenRoute
   '/admob-analytics/': typeof AuthenticatedAdmobAnalyticsIndexRoute
   '/brands/': typeof AuthenticatedBrandsIndexRoute
   '/client-inventory-type/': typeof AuthenticatedClientInventoryTypeIndexRoute
   '/client-inventory/': typeof AuthenticatedClientInventoryIndexRoute
+  '/client-nda/': typeof AuthenticatedClientNdaIndexRoute
   '/clients/': typeof AuthenticatedClientsIndexRoute
   '/conference-room-booking/': typeof AuthenticatedConferenceRoomBookingIndexRoute
   '/daily-report/': typeof AuthenticatedDailyReportIndexRoute
@@ -417,11 +432,13 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/unauthorized': typeof errorsUnauthorizedRoute
+  '/sign/$token': typeof SignTokenRoute
   '/': typeof AuthenticatedIndexRoute
   '/admob-analytics': typeof AuthenticatedAdmobAnalyticsIndexRoute
   '/brands': typeof AuthenticatedBrandsIndexRoute
   '/client-inventory-type': typeof AuthenticatedClientInventoryTypeIndexRoute
   '/client-inventory': typeof AuthenticatedClientInventoryIndexRoute
+  '/client-nda': typeof AuthenticatedClientNdaIndexRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
   '/conference-room-booking': typeof AuthenticatedConferenceRoomBookingIndexRoute
   '/daily-report': typeof AuthenticatedDailyReportIndexRoute
@@ -471,11 +488,13 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/(errors)/unauthorized': typeof errorsUnauthorizedRoute
+  '/sign/$token': typeof SignTokenRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/admob-analytics/': typeof AuthenticatedAdmobAnalyticsIndexRoute
   '/_authenticated/brands/': typeof AuthenticatedBrandsIndexRoute
   '/_authenticated/client-inventory-type/': typeof AuthenticatedClientInventoryTypeIndexRoute
   '/_authenticated/client-inventory/': typeof AuthenticatedClientInventoryIndexRoute
+  '/_authenticated/client-nda/': typeof AuthenticatedClientNdaIndexRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
   '/_authenticated/conference-room-booking/': typeof AuthenticatedConferenceRoomBookingIndexRoute
   '/_authenticated/daily-report/': typeof AuthenticatedDailyReportIndexRoute
@@ -526,10 +545,12 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/unauthorized'
+    | '/sign/$token'
     | '/admob-analytics/'
     | '/brands/'
     | '/client-inventory-type/'
     | '/client-inventory/'
+    | '/client-nda/'
     | '/clients/'
     | '/conference-room-booking/'
     | '/daily-report/'
@@ -577,11 +598,13 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/unauthorized'
+    | '/sign/$token'
     | '/'
     | '/admob-analytics'
     | '/brands'
     | '/client-inventory-type'
     | '/client-inventory'
+    | '/client-nda'
     | '/clients'
     | '/conference-room-booking'
     | '/daily-report'
@@ -630,11 +653,13 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/(errors)/unauthorized'
+    | '/sign/$token'
     | '/_authenticated/'
     | '/_authenticated/admob-analytics/'
     | '/_authenticated/brands/'
     | '/_authenticated/client-inventory-type/'
     | '/_authenticated/client-inventory/'
+    | '/_authenticated/client-nda/'
     | '/_authenticated/clients/'
     | '/_authenticated/conference-room-booking/'
     | '/_authenticated/daily-report/'
@@ -684,6 +709,7 @@ export interface RootRouteChildren {
   errors500Route: typeof errors500Route
   errors503Route: typeof errors503Route
   errorsUnauthorizedRoute: typeof errorsUnauthorizedRoute
+  SignTokenRoute: typeof SignTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -701,6 +727,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/sign/$token': {
+      id: '/sign/$token'
+      path: '/sign/$token'
+      fullPath: '/sign/$token'
+      preLoaderRoute: typeof SignTokenRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/(errors)/unauthorized': {
       id: '/(errors)/unauthorized'
@@ -1003,6 +1036,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClientsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/client-nda/': {
+      id: '/_authenticated/client-nda/'
+      path: '/client-nda'
+      fullPath: '/client-nda/'
+      preLoaderRoute: typeof AuthenticatedClientNdaIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/client-inventory/': {
       id: '/_authenticated/client-inventory/'
       path: '/client-inventory'
@@ -1054,6 +1094,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBrandsIndexRoute: typeof AuthenticatedBrandsIndexRoute
   AuthenticatedClientInventoryTypeIndexRoute: typeof AuthenticatedClientInventoryTypeIndexRoute
   AuthenticatedClientInventoryIndexRoute: typeof AuthenticatedClientInventoryIndexRoute
+  AuthenticatedClientNdaIndexRoute: typeof AuthenticatedClientNdaIndexRoute
   AuthenticatedClientsIndexRoute: typeof AuthenticatedClientsIndexRoute
   AuthenticatedConferenceRoomBookingIndexRoute: typeof AuthenticatedConferenceRoomBookingIndexRoute
   AuthenticatedDailyReportIndexRoute: typeof AuthenticatedDailyReportIndexRoute
@@ -1100,6 +1141,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedClientInventoryTypeIndexRoute,
   AuthenticatedClientInventoryIndexRoute:
     AuthenticatedClientInventoryIndexRoute,
+  AuthenticatedClientNdaIndexRoute: AuthenticatedClientNdaIndexRoute,
   AuthenticatedClientsIndexRoute: AuthenticatedClientsIndexRoute,
   AuthenticatedConferenceRoomBookingIndexRoute:
     AuthenticatedConferenceRoomBookingIndexRoute,
@@ -1166,6 +1208,7 @@ const rootRouteChildren: RootRouteChildren = {
   errors500Route: errors500Route,
   errors503Route: errors503Route,
   errorsUnauthorizedRoute: errorsUnauthorizedRoute,
+  SignTokenRoute: SignTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
