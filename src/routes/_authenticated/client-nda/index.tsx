@@ -6,7 +6,7 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/_authenticated/client-nda/")({
   component: RouteComponent,
   beforeLoad: () =>
-    requireRole([roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER]),
+    requireRole([roles.ADMIN, roles.BDE], { allowUserIDs: [134] }),
 });
 
 function RouteComponent() {
