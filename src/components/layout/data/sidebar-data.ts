@@ -133,7 +133,8 @@ export const sidebarData: SidebarData = {
           title: "Client NDA",
           url: "/client-nda",
           icon: FileCheck,
-          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER, roles.TEAM_LEAD],
+          allowUserIDs: [134],
+          requiredRoles: [roles.ADMIN, roles.BDE],
         },
         {
           title: "Extra Work Report",
