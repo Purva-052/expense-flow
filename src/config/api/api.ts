@@ -337,6 +337,20 @@ const API = {
     update: "/client-inventory",
     delete: "/client-inventory",
   },
+  client_NDA: {
+    create: "/nda",
+    send: (id: string) => `/nda/${id}/send`,
+    preview: (id: string) => `/nda/${id}/preview`,
+    download: (id: string) => `/nda/${id}/download-signed`,
+    list: "/nda",
+    update: "/nda",
+    delete: "/nda",
+  },
+  nda_signing: {
+    getSession: (token: string) => `/sign/${token}`,
+    submitSignature: (token: string) => `/sign/${token}/submit`,
+    rejectSignature: (token: string) => `/sign/${token}/reject`,
+  },
 };
 
 Object.freeze(API);
