@@ -10,7 +10,12 @@ import { ActionFormModal } from "./components/action";
 import { columns } from "./components/columns";
 import { ViewUserModal } from "./components/view-model";
 import { useUsersStore } from "./stores/useUsersStore";
-import { useGetUsersList, useGetUsersRoles, useExportCSV, useImportUsers } from "./services";
+import {
+  useGetUsersList,
+  useGetUsersRoles,
+  useExportCSV,
+  useImportUsers,
+} from "./services";
 import { useGetTechnologyDropdownList } from "../technology/services";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roleLabels, roles } from "@/utils/constant";
@@ -26,6 +31,8 @@ import {
 import * as ExcelJS from "exceljs";
 import { useQueryClient } from "@tanstack/react-query";
 import API from "@/config/api/api";
+import { OrgChart } from "./components/org-chart";
+import { cn } from "@/lib/utils";
 
 const UsersPage = () => {
   const { open, setOpen } = useUsersStore();
@@ -83,9 +90,23 @@ const UsersPage = () => {
     ...(isNewJoinee ? { is_joining: false } : { is_joining: true }),
   });
 
+  const [activeTab, setActiveTab] = useState<"directory" | "org-chart">(
+    "directory"
+  );
+
+  const { data: allUsersResponse, isPending: allUsersLoading } =
+    useGetUsersList({
+      pagination: false,
+      status: "active",
+    });
+  //@ts-ignore
+  const allActiveUsers = allUsersResponse?.data || [];
+
   const { mutate: exportCSV, isPending: exportCSVLoading } = useExportCSV();
-  const canExportCSV = UserRole === roles.ADMIN || UserRole === roles.PROJECT_MANAGER;
-  const canImportUsers = UserRole === roles.ADMIN || UserRole === roles.PROJECT_MANAGER;
+  const canExportCSV =
+    UserRole === roles.ADMIN || UserRole === roles.PROJECT_MANAGER;
+  const canImportUsers =
+    UserRole === roles.ADMIN || UserRole === roles.PROJECT_MANAGER;
 
   // --- Import Users state ---
   const queryClient = useQueryClient();
@@ -367,17 +388,50 @@ const UsersPage = () => {
           : "Manage your Users here"}
         .
       </TablePageHeader>
-      <GlobalFilterSection filters={filters ?? []} />
-      <GlobalTable
-        pageSize={listParams.pageSize}
-        currentPage={listParams.currentPage}
-        totalCount={totalCount ?? 0}
-        data={(listData as any)?.data ?? []}
-        onPaginationChange={handlePaginationChange}
-        columns={columns}
-        loading={loading}
-        isPaginationEnabled
-      />
+      <div className="border-b border-gray-200 mb-6">
+        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+          <button
+            onClick={() => setActiveTab("directory")}
+            className={cn(
+              "border-b-2 py-4 px-1 text-sm font-medium transition-all duration-200",
+              activeTab === "directory"
+                ? "border-primary text-primary"
+                : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+            )}
+          >
+            Directory
+          </button>
+          <button
+            onClick={() => setActiveTab("org-chart")}
+            className={cn(
+              "border-b-2 py-4 px-1 text-sm font-medium transition-all duration-200",
+              activeTab === "org-chart"
+                ? "border-primary text-primary"
+                : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+            )}
+          >
+            Org Chart
+          </button>
+        </nav>
+      </div>
+
+      {activeTab === "directory" ? (
+        <>
+          <GlobalFilterSection filters={filters ?? []} />
+          <GlobalTable
+            pageSize={listParams.pageSize}
+            currentPage={listParams.currentPage}
+            totalCount={totalCount ?? 0}
+            data={(listData as any)?.data ?? []}
+            onPaginationChange={handlePaginationChange}
+            columns={columns}
+            loading={loading}
+            isPaginationEnabled
+          />
+        </>
+      ) : (
+        <OrgChart users={allActiveUsers} loading={allUsersLoading} />
+      )}
       {open && (
         <ActionFormModal
           technologyList={technologyList}

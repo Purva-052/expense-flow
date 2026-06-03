@@ -38,6 +38,7 @@ const baseUserSchema = z.object({
     .min(1, { message: "Please select a technology." })
     .optional(),
   reportLogAccessIds: z.array(z.coerce.number()).optional(),
+  reportingToId: z.coerce.number().optional().nullable(),
   careerStartDate: z.any().refine((val) => !isNaN(Date.parse(val)), {
     message: "Career start date is required.",
   }),

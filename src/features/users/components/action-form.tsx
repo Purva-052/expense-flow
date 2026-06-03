@@ -29,6 +29,7 @@ import { roles } from "@/utils/constant";
 import { FileUpload } from "@/components/shared/custome-file-upload";
 import { useState, useEffect, useRef } from "react";
 import { useUploadTransactionFile } from "../../transaction-logs/services";
+import { useGetUserDropdownList } from "../services";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { Input } from "@/components/ui/input";
@@ -102,6 +103,7 @@ export function UserActionForm({
             currentRow?.reportLogAccess?.map((item: any) =>
               String(item.technology.id)
             ) ?? [],
+          reportingToId: currentRow?.reportingToId ?? currentRow?.reportingTo?.id ?? undefined,
           careerStartDate: currentRow?.careerStartDate
             ? currentRow.careerStartDate.slice(0, 10)
             : "",
@@ -123,6 +125,7 @@ export function UserActionForm({
           role: "",
           technologyId: undefined,
           reportLogAccessIds: [],
+          reportingToId: undefined,
           careerStartDate: "",
           dateOfBirth: null,
           status: true,
@@ -150,6 +153,16 @@ export function UserActionForm({
     name: "file",
   });
 
+  const { data: reportToData, isPending: reportToLoading }: any = useGetUserDropdownList({
+    role: [roles.ADMIN, roles.PROJECT_MANAGER, roles.TEAM_LEAD],
+    status: "active",
+  });
+
+  const reportToOptions = reportToData?.data?.map((u: any) => ({
+    value: u.id,
+    label: u.fullName,
+  })) || [];
+
   useEffect(() => {
     if (open && currentRow) {
       form.reset({
@@ -160,6 +173,7 @@ export function UserActionForm({
         reportLogAccessIds:
           currentRow?.reportLogAccess?.map((item: any) => item.technology.id) ??
           [],
+        reportingToId: currentRow?.reportingToId ?? currentRow?.reportingTo?.id ?? undefined,
         careerStartDate: currentRow?.careerStartDate
           ? currentRow.careerStartDate.slice(0, 10)
           : "",
@@ -457,7 +471,25 @@ export function UserActionForm({
                     </FormItem>
                   )}
                 />
-
+                <FormField
+                  control={form.control}
+                  name="reportingToId"
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>
+                        Reporting To
+                      </FormLabel>
+                      <CustomDropDownSearchable
+                        form={form}
+                        name="reportingToId"
+                        label=""
+                        options={reportToOptions}
+                        placeholder="Select Reporting Manager"
+                        isLoading={reportToLoading}
+                      />
+                    </FormItem>
+                  )}
+                />
                 {/* Technology Dropdown (disabled for project_manager) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <CustomDropDownSearchable
