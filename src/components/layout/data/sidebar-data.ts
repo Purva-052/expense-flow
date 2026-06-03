@@ -28,6 +28,7 @@ import {
   // Contact,
   Cpu,
   Database,
+  FileCheck,
   Flame,
   Globe,
   // CpuIcon,
@@ -127,6 +128,13 @@ export const sidebarData: SidebarData = {
           url: "/client-inventory",
           icon: Laptop,
           requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+        },
+        {
+          title: "Client NDA",
+          url: "/client-nda",
+          icon: FileCheck,
+          allowUserIDs: [134],
+          requiredRoles: [roles.ADMIN, roles.BDE],
         },
         {
           title: "Extra Work Report",
