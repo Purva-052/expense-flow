@@ -37,7 +37,6 @@ const ProjectBoard = () => {
   const [resourceCount, setResourceCount] = useState<number | null>(null);
   const [certificateCount, _] = useState<number | null>(null);
   const user = useAuthStore((state) => state.user);
-  console.log('user: ', user);
   const currentUserId = Number(user?.user?.id ?? user?.user_id);
   const accountTechUser = [169, 170, 171, 190].includes(currentUserId);
   const userRole = user?.user?.role;

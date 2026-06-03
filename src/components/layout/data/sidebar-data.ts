@@ -146,7 +146,12 @@ export const sidebarData: SidebarData = {
           title: "Leave Management",
           url: "/leave-management",
           icon: Plane,
-          requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
+          requiredRoles: [
+            roles.ADMIN,
+            roles.TEAM_LEAD,
+            roles.PROJECT_MANAGER,
+            roles.DEVELOPER,
+          ],
         },
         {
           title: "Meetings Overview",

@@ -17,6 +17,8 @@ const API = {
     remove_developer_from_project: "/developer-allocations/remove",
     reallocate_developer: "/developer-allocations/reallocate",
     project_handler: "/users/handled-projects",
+    export_csv: "/users/export",
+    import_users: "/users/import",
   },
   technology: {
     list: "/technology",
@@ -27,6 +29,7 @@ const API = {
     list: "/clients",
     create: "/clients",
     delete: "/clients",
+    export: "/clients/export",
   },
   projects: {
     list: "/projects",
@@ -183,6 +186,7 @@ const API = {
     list: "/leave-management",
     update: "/leave-management",
     delete: "/leave-management",
+    action: "/leave-management/{id}/action",
   },
   tools_management: {
     create: "/tools",
