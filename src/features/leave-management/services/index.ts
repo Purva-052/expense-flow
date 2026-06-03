@@ -34,14 +34,25 @@ export const useGetLeaveData = (params?: any) => {
   return useFetchData({ url: GET_API_URL, params });
 };
 
-export const useGeEmployeeData = (params?: any) => {
-  return useFetchData({ url: GET_EMPLOYEES_API_URL, params });
+export const useGeEmployeeData = (params?: any, enabled = true) => {
+  return useFetchData({ url: GET_EMPLOYEES_API_URL, params, enabled });
 };
 
 export const useDeleteLeaveData = (id: string) => {
   const { setOpen } = useLeaveStore();
   return useDeleteData({
     url: `${API.leave_management.delete}/${id}`,
+    refetchQueries: [GET_API_URL],
+    onSuccess: () => {
+      setOpen(null);
+    },
+  });
+};
+
+export const useApproveRejectLeave = (id: string) => {
+  const { setOpen } = useLeaveStore();
+  return usePatchData({
+    url: API.leave_management.action.replace("{id}", id),
     refetchQueries: [GET_API_URL],
     onSuccess: () => {
       setOpen(null);
