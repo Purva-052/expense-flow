@@ -8,13 +8,24 @@ import {
 } from "../services";
 import { useLeaveStore } from "../stores";
 import { LeaveActionForm } from "./action-form";
+import { LeaveApproveRejectModal } from "./approve-reject-modal";
+
+import { useAuthStore } from "@/stores/use-auth-store";
+import { roles } from "@/utils/constant";
 
 export function ActionFormModal() {
   const { open, setOpen, currentRow, setCurrentRow } = useLeaveStore();
 
+  const user = useAuthStore((state) => state.user);
+  const rawRole = user?.role || user?.user?.role;
+  const roleName = String(
+    rawRole && typeof rawRole === "object" ? rawRole?.name : (rawRole || "")
+  ).toLowerCase();
+  const isDeveloper = roleName === roles.DEVELOPER;
+
   // Project List removed as it is not in the Leave payload
   const { data: employeesList, isPending: employeesListLoading }: any =
-    useGeEmployeeData();
+    useGeEmployeeData(undefined, !isDeveloper);
 
   const { mutateAsync: createMutate, isPending: isCreateLoading } =
     useCreateLeaveData();
@@ -87,6 +98,13 @@ export function ActionFormModal() {
             onClose={handleCloseDialog}
             itemName={deleteInfoText}
             loading={isDeleteLoading}
+          />
+          <LeaveApproveRejectModal
+            open={open === "action"}
+            onOpenChange={(val) => {
+              if (!val) handleCloseDialog();
+            }}
+            currentRow={currentRow}
           />
         </>
       )}

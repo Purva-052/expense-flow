@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect } from "react";
 import { SubmitHandler, useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,6 +24,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { CustomDatePicker } from "@/components/shared/custome-datePicker";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { useAuthStore } from "@/stores/use-auth-store";
+import { roles } from "@/utils/constant";
 
 interface Props {
   currentRow?: any;
@@ -48,6 +49,14 @@ export function LeaveActionForm({
   isViewOnly,
 }: Readonly<Props>) {
   const isEdit = !!currentRow;
+
+  const user = useAuthStore((state) => state.user);
+  const rawRole = user?.role || user?.user?.role;
+  const roleName = String(
+    rawRole && typeof rawRole === "object" ? rawRole?.name : (rawRole || "")
+  ).toLowerCase();
+  const isDeveloper = roleName === roles.DEVELOPER;
+  const currentUserId = user?.user?.id || user?.user_id;
 
   const form = useForm<TLeaveFormSchema>({
     resolver: zodResolver(leaveSchema) as any,
@@ -90,7 +99,7 @@ export function LeaveActionForm({
       }
     } else if (!open) {
       form.reset({
-        employeeId: undefined,
+        employeeId: isDeveloper ? Number(currentUserId) : undefined,
         fromDate: undefined,
         toDate: undefined,
         reason: "",
@@ -99,7 +108,7 @@ export function LeaveActionForm({
       });
       replace([]);
     }
-  }, [currentRow, open, form, replace]);
+  }, [currentRow, open, form, replace, isDeveloper, currentUserId]);
 
   useEffect(() => {
     if (open && watchFromDate && watchToDate) {
@@ -198,21 +207,23 @@ export function LeaveActionForm({
               className="space-y-4 p-0.5"
             >
               {/* --- Common Fields --- */}
-              <div className="grid grid-cols-1 gap-4">
-                <CustomDropDownSearchable
-                  form={form}
-                  name="employeeId"
-                  label="Employee"
-                  options={employeesList?.data?.map((user: any) => ({
-                    value: user.id,
-                    label: user.fullName,
-                  }))}
-                  placeholder="Select employee"
-                  isLoading={employeesListLoading}
-                  disabled={isEdit || isViewOnly}
-                  showClearButton={!isEdit && !isViewOnly}
-                />
-              </div>
+              {!isDeveloper && (
+                <div className="grid grid-cols-1 gap-4">
+                  <CustomDropDownSearchable
+                    form={form}
+                    name="employeeId"
+                    label="Employee"
+                    options={employeesList?.data?.map((user: any) => ({
+                      value: user.id,
+                      label: user.fullName,
+                    }))}
+                    placeholder="Select employee"
+                    isLoading={employeesListLoading}
+                    disabled={isEdit || isViewOnly}
+                    showClearButton={!isEdit && !isViewOnly}
+                  />
+                </div>
+              )}
 
               <div className="space-y-4">
                 {/* Date Range Selectors */}
