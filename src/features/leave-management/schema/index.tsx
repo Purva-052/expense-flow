@@ -14,93 +14,53 @@ const numberField = (fieldName: string) =>
     })
   );
 
-// Schema for an individual day row in the table
-const dayRowSchema = z
-  .object({
-    date: z.string(),
-    dayName: z.string().optional(),
-    dayType: z.enum(["full", "half"]),
-    halfType: z.enum(["first_half", "second_half"]).nullable().optional(),
-    description: z.string().optional(),
-  })
-  .refine(
-    (data) => {
-      if (data.dayType === "half") {
-        return !!data.halfType;
-      }
-      return true;
-    },
-    {
-      message: "Session required",
-      path: ["halfType"],
-    }
-  );
+const leaveDaySchema = z.object({
+  date: z.string(),
+  dayName: z.string(),
+  isWeekend: z.boolean().optional(),
+  dayType: z.enum(["full", "half"]),
+  halfType: z.enum(["first_half", "second_half"]).nullable().optional(),
+});
 
 export const leaveSchema = z
   .object({
-    employeeId: numberField("Employee"),
+    // Optional – only required when applying for another employee (Admin/PM "For Others" tab)
+    employeeId: numberField("Employee").optional(),
+
+    // Leave type — "1" = Casual, "2" = Paid (maps to LEAVE_TYPE constant values)
+    leaveTypeId: z.string().min(1, "Leave type is required"),
+
     reason: z.string().trim().min(2, "Reason is required"),
 
-    // Create Mode Fields
-    fromDate: z.date().optional(),
-    toDate: z.date().optional(),
-
-    // The array of days for the table
-    leaveDays: z.array(dayRowSchema).optional(),
-
-    // Edit Mode Fields (Single day)
-    leaveDate: z.date().optional(),
-    dayType: z.enum(["full", "half"]).optional(),
-    halfType: z.enum(["first_half", "second_half"]).optional(),
     description: z.string().optional(),
+
+    fromDate: z.date({ required_error: "Start date is required" }),
+    toDate: z.date({ required_error: "End date is required" }),
+
+    // Per-day configuration (generated from date range)
+    leaveDays: z
+      .array(leaveDaySchema)
+      .min(1, "At least one leave day is required"),
   })
   .superRefine((data, ctx) => {
-    // Validation logic
-    if (!data.leaveDate) {
-      // Create Mode Validations
-      if (!data.fromDate) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Start date is required",
-          path: ["fromDate"],
-        });
-      }
-      if (!data.toDate) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "End date is required",
-          path: ["toDate"],
-        });
-      }
-      if (data.fromDate && data.toDate && data.fromDate > data.toDate) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Invalid Date Range",
-          path: ["fromDate"],
-        });
-      }
-      // Ensure days array is populated in Create Mode
-      if (
-        (!data.leaveDays || data.leaveDays.length === 0) &&
-        data.fromDate &&
-        data.toDate
-      ) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Please configure leave days",
-          path: ["leaveDays"],
-        });
-      }
-    } else {
-      // Edit Mode Validations
-      if (data.dayType === "half" && !data.halfType) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Session is required",
-          path: ["halfType"],
-        });
-      }
+    if (data.fromDate && data.toDate && data.fromDate > data.toDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Invalid Date Range",
+        path: ["fromDate"],
+      });
     }
+    // Validate each half day has a halfType
+    data.leaveDays?.forEach((day, idx) => {
+      if (day.dayType === "half" && !day.halfType) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Session required for half day",
+          path: ["leaveDays", idx, "halfType"],
+        });
+      }
+    });
   });
 
 export type TLeaveFormSchema = z.infer<typeof leaveSchema>;
+export type TLeaveDaySchema = z.infer<typeof leaveDaySchema>;

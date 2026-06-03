@@ -12,24 +12,24 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useLeaveStore } from "../stores";
 import { useAuthStore } from "@/stores/use-auth-store";
-import { Badge } from "@/components/ui/badge";
+// import { Badge } from "@/components/ui/badge";
 import { roles } from "@/utils/constant";
 
 // Status badge variant mapping
-const statusVariantMap: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline" | "success" | "warning"
-> = {
-  pending: "warning",
-  approved: "success",
-  rejected: "destructive",
-};
+// const statusVariantMap: Record<
+//   string,
+//   "default" | "secondary" | "destructive" | "outline" | "success" | "warning"
+// > = {
+//   pending: "warning",
+//   approved: "success",
+//   rejected: "destructive",
+// };
 
-const statusLabelMap: Record<string, string> = {
-  pending: "Pending",
-  approved: "Approved",
-  rejected: "Rejected",
-};
+// const statusLabelMap: Record<string, string> = {
+//   pending: "Pending",
+//   approved: "Approved",
+//   rejected: "Rejected",
+// };
 
 export const columns: ColumnDef<any>[] = [
   {
@@ -135,27 +135,27 @@ export const columns: ColumnDef<any>[] = [
   },
 
   // ✅ Status
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => {
-      const status = row.original.status;
-      if (!status) return <span className="text-sm">-</span>;
+  // {
+  //   accessorKey: "status",
+  //   header: "Status",
+  //   cell: ({ row }) => {
+  //     const status = row.original.status;
+  //     if (!status) return <span className="text-sm">-</span>;
 
-      const variant = statusVariantMap[status] || "default";
-      const label = statusLabelMap[status] || status;
+  //     const variant = statusVariantMap[status] || "default";
+  //     const label = statusLabelMap[status] || status;
 
-      return <Badge variant={variant}>{label}</Badge>;
-    },
-  },
-
+  //     return <Badge variant={variant}>{label}</Badge>;
+  //   },
+  // },
   // ✅ Rejection Reason (shown when rejected)
   {
     accessorKey: "rejectionReason",
     header: "Rejection Reason",
     cell: ({ row }) => {
       const reason = row.original.rejectionReason;
-      if (!reason) return <span className="text-sm text-muted-foreground">-</span>;
+      if (!reason)
+        return <span className="text-sm text-muted-foreground">-</span>;
 
       const truncated =
         reason.length > 40 ? `${reason.slice(0, 40)}...` : reason;
@@ -179,7 +179,7 @@ export const columns: ColumnDef<any>[] = [
       const user = useAuthStore((state) => state.user);
       const rawRole = user?.role || user?.user?.role;
       const roleName = String(
-        rawRole && typeof rawRole === "object" ? rawRole?.name : (rawRole || "")
+        rawRole && typeof rawRole === "object" ? rawRole?.name : rawRole || ""
       ).toLowerCase();
       const currentUserId = user?.user?.id || user?.user_id;
 
@@ -187,23 +187,26 @@ export const columns: ColumnDef<any>[] = [
       const isPM = roleName === roles.PROJECT_MANAGER;
       const isTL = roleName === roles.TEAM_LEAD;
       const isDeveloper = roleName === roles.DEVELOPER;
+      const isBDE = roleName === roles.BDE;
 
       const creatorId = row.original.employeeId || row.original.employee?.id;
       const isCreator = String(creatorId) === String(currentUserId);
 
-      // Developers can only apply (create), not approve/reject.
-      // PM, Admin, TL associated with the technology can approve/reject pending leaves.
-      const canApproveReject =
-        (isAdmin || isPM || isTL) && row.original.status === "pending";
+      // Normalize status to lowercase for case-insensitive comparison
+      const rowStatus = String(row.original.status || "").toLowerCase();
 
-      // Developer can edit/delete their own pending leaves; Admin & PM can edit/delete any
+      // ✅ Only Admin & PM can approve/reject (not TL anymore)
+      const canApproveReject = isAdmin || isPM;
+
+      // ✅ Edit/Delete rules:
+      //   - Admin & PM: can edit/delete any record
+      //   - TL, Developer, BDE: can only edit/delete their own pending leave
       const canEditDelete =
         isAdmin ||
         isPM ||
-        (isDeveloper && isCreator && row.original.status === "pending");
-
-      // Developer can only apply a leave (the "Add Leave" button is role-gated in index.tsx)
-      const canAdd = !isDeveloper || isCreator;
+        ((isTL || isDeveloper || isBDE) &&
+          isCreator &&
+          rowStatus === "pending");
 
       const handleEdit = () => {
         setOpen("edit");
@@ -225,7 +228,7 @@ export const columns: ColumnDef<any>[] = [
         setCurrentRow(data);
       };
 
-      const hasActions = canApproveReject || canEditDelete || canAdd;
+      const hasActions = canApproveReject || canEditDelete;
 
       return (
         <DropdownMenu>

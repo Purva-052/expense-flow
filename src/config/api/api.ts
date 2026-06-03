@@ -188,6 +188,11 @@ const API = {
     delete: "/leave-management",
     action: "/leave-management/{id}/action",
   },
+  leave_balance: {
+    get: "/leave-balances",
+    add: "/leave-balances/admin/set-allocations",
+    import: "/leave-balances/admin/import-excel",
+  },
   tools_management: {
     create: "/tools",
     list: "/tools",
