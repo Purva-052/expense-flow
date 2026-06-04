@@ -34,6 +34,14 @@ import API from "@/config/api/api";
 import { OrgChart } from "./components/org-chart";
 import { cn } from "@/lib/utils";
 
+function extractUsersArray(response: unknown) {
+  if (Array.isArray(response)) return response;
+  if (Array.isArray((response as any)?.data)) return (response as any).data;
+  if (Array.isArray((response as any)?.data?.data))
+    return (response as any).data.data;
+  return [];
+}
+
 const UsersPage = () => {
   const { open, setOpen } = useUsersStore();
   const user = useAuthStore((state) => state.user);
@@ -97,10 +105,8 @@ const UsersPage = () => {
   const { data: allUsersResponse, isPending: allUsersLoading } =
     useGetUsersList({
       pagination: false,
-      status: "active",
     });
-  //@ts-ignore
-  const allActiveUsers = allUsersResponse?.data || [];
+  const allActiveUsers = extractUsersArray(allUsersResponse);
 
   const { mutate: exportCSV, isPending: exportCSVLoading } = useExportCSV();
   const canExportCSV =

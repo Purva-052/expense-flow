@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowDown, ArrowUp, ArrowUpDown, MoreHorizontal, Info } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  MoreHorizontal,
+  Info,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,7 +21,12 @@ import { useAuthStore } from "@/stores/use-auth-store";
 import { Badge } from "@/components/ui/badge";
 import { roles, TransactionTypeStatus } from "@/utils/constant";
 import { useGetUserDetails } from "@/features/users/services";
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 
 // Status to badge variant mapping
 const statusVariantMap: Record<
@@ -39,8 +50,10 @@ const statusLabelMap = TransactionTypeStatus.reduce(
 
 // Transaction type styling maps
 const transactionTypeStyleMap: Record<string, string> = {
-  onetime: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800/30",
-  subscription: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800/30",
+  onetime:
+    "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800/30",
+  subscription:
+    "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800/30",
 };
 
 const transactionTypeLabelMap: Record<string, string> = {
@@ -50,8 +63,10 @@ const transactionTypeLabelMap: Record<string, string> = {
 
 // Subscription cycle styling maps
 const subscriptionCycleStyleMap: Record<string, string> = {
-  monthly: "bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-300 dark:border-cyan-800/30",
-  yearly: "bg-pink-50 text-pink-700 border-pink-200 dark:bg-pink-900/20 dark:text-pink-300 dark:border-pink-800/30",
+  monthly:
+    "bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-300 dark:border-cyan-800/30",
+  yearly:
+    "bg-pink-50 text-pink-700 border-pink-200 dark:bg-pink-900/20 dark:text-pink-300 dark:border-pink-800/30",
 };
 
 const subscriptionCycleLabelMap: Record<string, string> = {
@@ -84,6 +99,16 @@ export const columns: ColumnDef<any>[] = [
           : Number(amount).toFixed(2);
 
       return <span className="text-sm">{formattedAmount}</span>;
+    },
+  },
+  {
+    accessorKey: "currency",
+    header: "Currency",
+    cell: ({ row }) => {
+      const currency = row.original.currency;
+      return (
+        <span className="text-sm uppercase">{currency ? currency : "-"}</span>
+      );
     },
   },
   {
@@ -129,7 +154,8 @@ export const columns: ColumnDef<any>[] = [
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="top">
-                  Please edit transaction to enter transaction date and card details.
+                  Please edit transaction to enter transaction date and card
+                  details.
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -182,10 +208,10 @@ export const columns: ColumnDef<any>[] = [
       );
     },
   },
-  {
-    accessorKey: "cardLast4",
-    header: "Card Last 4 Digits",
-  },
+  // {
+  //   accessorKey: "cardLast4",
+  //   header: "Card Last 4 Digits",
+  // },
   {
     accessorKey: "project.name",
     header: "Project",
@@ -255,7 +281,7 @@ export const columns: ColumnDef<any>[] = [
       const user = useAuthStore((state) => state.user);
       const rawRole = user?.role || user?.user?.role;
       const roleName = String(
-        rawRole && typeof rawRole === "object" ? rawRole?.name : (rawRole || "")
+        rawRole && typeof rawRole === "object" ? rawRole?.name : rawRole || ""
       ).toLowerCase();
       const currentUserId = user?.user?.id || user?.user_id;
       const isAdmin = roleName === roles.ADMIN;
