@@ -67,7 +67,7 @@ const AdminLogin = () => {
                 <Lock className="h-8 w-8 text-white" />
               </div>
               <h1 className="text-3xl font-bold text-white">
-                {showForgotPassword ? "Forgot Password" : "Welcome Back"}
+                {showForgotPassword ? "Forgot Password" : "Welcome"}
               </h1>
               <p className="text-gray-400">
                 {showForgotPassword
