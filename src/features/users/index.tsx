@@ -407,7 +407,7 @@ const UsersPage = () => {
           >
             Directory
           </button>
-          <button
+          {/* <button
             onClick={() => setActiveTab("org-chart")}
             className={cn(
               "border-b-2 py-4 px-1 text-sm font-medium transition-all duration-200",
@@ -417,7 +417,7 @@ const UsersPage = () => {
             )}
           >
             Org Chart
-          </button>
+          </button> */}
         </nav>
       </div>
 
