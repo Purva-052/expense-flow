@@ -18,7 +18,6 @@ const API = {
     reallocate_developer: "/developer-allocations/reallocate",
     project_handler: "/users/handled-projects",
     export_csv: "/users/export",
-    import_users: "/users/import",
   },
   technology: {
     list: "/technology",
