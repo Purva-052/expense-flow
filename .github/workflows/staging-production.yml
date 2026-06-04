@@ -1,0 +1,81 @@
+name: CI/CD Pipeline for both development and production environmnents
+
+on:
+  push:
+    branches:
+      - staging
+      - production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    environment:
+      name: ${{ github.ref_name == 'production' && 'production' || 'staging' }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to staging Server
+        if: github.ref_name == 'staging'
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+
+          script: |
+            set -e
+            
+            export NVM_DIR="/root/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+            nvm use 20.19.0
+
+            echo "Deploying to staging server..."
+
+            echo "going to project directory"
+            cd /var/www/html/staging-Devstree-Project-Management
+
+            echo "pulling latest changes from staging branch"
+            git pull origin staging
+
+            echo "installing dependencies and building the project"
+            npm i
+
+            echo "building the project"
+            npm run build
+   
+            echo "Deployment to staging server completed successfully!"
+
+      - name: Deploy to Production Server
+        if: github.ref_name == 'production'
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+
+          script: |
+            set -e
+            export NVM_DIR="/root/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+            nvm use 20.19.0
+
+            echo "Deploying to production server..."
+
+            echo "going to project directory"
+            cd /var/www/html/Devstree-Project-Management
+
+            echo "pulling latest changes from production branch"
+            git pull origin production
+
+            echo "installing dependencies and building the project"
+            npm i
+
+            echo "building the project"
+            npm run build
+
+            echo "Deployment to production server completed successfully!"
