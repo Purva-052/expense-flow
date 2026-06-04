@@ -17,6 +17,7 @@ import { Download } from "lucide-react";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
 import { Button } from "@/components/ui/button";
+import { useGetCountryDropdown } from "../client-nda/services";
 
 const ClientsPage = () => {
   const { open, setOpen } = useClientsStore();
@@ -24,18 +25,21 @@ const ClientsPage = () => {
     pageSize: parseAsInteger.withDefault(10),
     currentPage: parseAsInteger.withDefault(1),
     search: parseAsString.withDefault(""),
+    countryId: parseAsString.withDefault(""),
   });
 
   const listParams = {
     pageSize: queryParams.pageSize,
     currentPage: queryParams.currentPage,
     search: queryParams.search,
+    countryId: queryParams.countryId,
   };
 
   const apiParams = {
     page: listParams.currentPage,
     limit: listParams.pageSize,
     search: listParams.search,
+    countryId: listParams.countryId || undefined,
     pagination: true,
   };
   const { user } = useAuthStore();
@@ -53,6 +57,14 @@ const ClientsPage = () => {
 
   const totalCount = (listData as any)?.metadata?.totalCount;
 
+  const { data: countryData } = useGetCountryDropdown();
+
+  const countryOptions =
+    (countryData as any)?.data?.map((country: any) => ({
+      value: String(country.id),
+      label: country.name,
+    })) || [];
+
   const handleSearch = (search: string | undefined) => {
     setQueryParams({ ...listParams, search: search ?? "", currentPage: 1 });
   };
@@ -68,6 +80,14 @@ const ClientsPage = () => {
     });
   };
 
+  const handleCountryChange = (country: string | undefined) => {
+    setQueryParams({
+      ...listParams,
+      countryId: country ?? "",
+      currentPage: 1,
+    });
+  };
+
   const filters: FilterConfig[] = [
     {
       type: "search",
@@ -75,6 +95,14 @@ const ClientsPage = () => {
       key: "search",
       value: listParams.search,
       onChange: handleSearch,
+    },
+    {
+      type: "select",
+      placeholder: "Filter by Country",
+      key: "country",
+      value: listParams.countryId || undefined,
+      options: countryOptions,
+      onChange: handleCountryChange,
     },
   ];
 
