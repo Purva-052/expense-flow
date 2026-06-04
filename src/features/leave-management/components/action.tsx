@@ -8,13 +8,27 @@ import {
 } from "../services";
 import { useLeaveStore } from "../stores";
 import { LeaveActionForm } from "./action-form";
+import { LeaveApproveRejectModal } from "./approve-reject-modal";
+
+import { useAuthStore } from "@/stores/use-auth-store";
+import { roles } from "@/utils/constant";
 
 export function ActionFormModal() {
   const { open, setOpen, currentRow, setCurrentRow } = useLeaveStore();
 
-  // Project List removed as it is not in the Leave payload
+  const user = useAuthStore((state) => state.user);
+  const rawRole = user?.role || user?.user?.role;
+  const roleName = String(
+    rawRole && typeof rawRole === "object" ? rawRole?.name : (rawRole || "")
+  ).toLowerCase();
+
+  const isAdmin = roleName === roles.ADMIN;
+  const isPM = roleName === roles.PROJECT_MANAGER;
+  // Only Admin & PM need the employee list (for applying on behalf of others)
+  const canApplyForOthers = isAdmin || isPM;
+
   const { data: employeesList, isPending: employeesListLoading }: any =
-    useGeEmployeeData();
+    useGeEmployeeData(undefined, canApplyForOthers);
 
   const { mutateAsync: createMutate, isPending: isCreateLoading } =
     useCreateLeaveData();
@@ -27,12 +41,13 @@ export function ActionFormModal() {
     ? `the leave record for ${currentRow.employee.fullName} on ${currentRow.leaveDate}.`
     : "this leave record.";
 
-  const handleCreate = (values: any) => {
-    createMutate(values);
+  const handleCreate = (formData: FormData) => {
+    createMutate(formData as any);
   };
 
-  const handleEdit = (values: any) => {
-    updateMutate(values);
+  const handleEdit = (payload: { id: string | number; data: FormData }) => {
+    // The URL in useUpdateLeaveData already contains the id; we just send the FormData body
+    updateMutate(payload.data as any);
   };
 
   const handleDelete = () => {
@@ -87,6 +102,13 @@ export function ActionFormModal() {
             onClose={handleCloseDialog}
             itemName={deleteInfoText}
             loading={isDeleteLoading}
+          />
+          <LeaveApproveRejectModal
+            open={open === "action"}
+            onOpenChange={(val) => {
+              if (!val) handleCloseDialog();
+            }}
+            currentRow={currentRow}
           />
         </>
       )}

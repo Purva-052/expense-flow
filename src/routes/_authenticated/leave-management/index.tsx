@@ -6,7 +6,12 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/_authenticated/leave-management/")({
   component: RouteComponent,
   beforeLoad: () =>
-    requireRole([roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER]),
+    requireRole([
+      roles.ADMIN,
+      roles.TEAM_LEAD,
+      roles.PROJECT_MANAGER,
+      roles.DEVELOPER,
+    ]),
 });
 
 function RouteComponent() {

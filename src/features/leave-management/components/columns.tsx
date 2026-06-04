@@ -11,6 +11,25 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useLeaveStore } from "../stores";
+import { useAuthStore } from "@/stores/use-auth-store";
+// import { Badge } from "@/components/ui/badge";
+import { roles } from "@/utils/constant";
+
+// Status badge variant mapping
+// const statusVariantMap: Record<
+//   string,
+//   "default" | "secondary" | "destructive" | "outline" | "success" | "warning"
+// > = {
+//   pending: "warning",
+//   approved: "success",
+//   rejected: "destructive",
+// };
+
+// const statusLabelMap: Record<string, string> = {
+//   pending: "Pending",
+//   approved: "Approved",
+//   rejected: "Rejected",
+// };
 
 export const columns: ColumnDef<any>[] = [
   {
@@ -115,6 +134,40 @@ export const columns: ColumnDef<any>[] = [
     },
   },
 
+  // ✅ Status
+  // {
+  //   accessorKey: "status",
+  //   header: "Status",
+  //   cell: ({ row }) => {
+  //     const status = row.original.status;
+  //     if (!status) return <span className="text-sm">-</span>;
+
+  //     const variant = statusVariantMap[status] || "default";
+  //     const label = statusLabelMap[status] || status;
+
+  //     return <Badge variant={variant}>{label}</Badge>;
+  //   },
+  // },
+  // ✅ Rejection Reason (shown when rejected)
+  {
+    accessorKey: "rejectionReason",
+    header: "Rejection Reason",
+    cell: ({ row }) => {
+      const reason = row.original.rejectionReason;
+      if (!reason)
+        return <span className="text-sm text-muted-foreground">-</span>;
+
+      const truncated =
+        reason.length > 40 ? `${reason.slice(0, 40)}...` : reason;
+
+      return (
+        <span className="text-sm text-destructive" title={reason}>
+          {truncated}
+        </span>
+      );
+    },
+  },
+
   // ✅ Actions
   {
     id: "actions",
@@ -122,6 +175,38 @@ export const columns: ColumnDef<any>[] = [
     cell: function Cell({ row }) {
       const data = row.original;
       const { setOpen, setCurrentRow } = useLeaveStore();
+
+      const user = useAuthStore((state) => state.user);
+      const rawRole = user?.role || user?.user?.role;
+      const roleName = String(
+        rawRole && typeof rawRole === "object" ? rawRole?.name : rawRole || ""
+      ).toLowerCase();
+      const currentUserId = user?.user?.id || user?.user_id;
+
+      const isAdmin = roleName === roles.ADMIN;
+      const isPM = roleName === roles.PROJECT_MANAGER;
+      const isTL = roleName === roles.TEAM_LEAD;
+      const isDeveloper = roleName === roles.DEVELOPER;
+      const isBDE = roleName === roles.BDE;
+
+      const creatorId = row.original.employeeId || row.original.employee?.id;
+      const isCreator = String(creatorId) === String(currentUserId);
+
+      // Normalize status to lowercase for case-insensitive comparison
+      const rowStatus = String(row.original.status || "").toLowerCase();
+
+      // ✅ Only Admin & PM can approve/reject (not TL anymore)
+      const canApproveReject = isAdmin || isPM;
+
+      // ✅ Edit/Delete rules:
+      //   - Admin & PM: can edit/delete any record
+      //   - TL, Developer, BDE: can only edit/delete their own pending leave
+      const canEditDelete =
+        isAdmin ||
+        isPM ||
+        ((isTL || isDeveloper || isBDE) &&
+          isCreator &&
+          rowStatus === "pending");
 
       const handleEdit = () => {
         setOpen("edit");
@@ -137,6 +222,13 @@ export const columns: ColumnDef<any>[] = [
         setOpen("view");
         setCurrentRow(data);
       };
+
+      const handleReviewRequest = () => {
+        setOpen("action");
+        setCurrentRow(data);
+      };
+
+      const hasActions = canApproveReject || canEditDelete;
 
       return (
         <DropdownMenu>
@@ -154,16 +246,30 @@ export const columns: ColumnDef<any>[] = [
               View Details
             </DropdownMenuItem>
 
-            <DropdownMenuItem onClick={handleEdit}>
-              Edit Details
-            </DropdownMenuItem>
+            {canApproveReject && (
+              <DropdownMenuItem onClick={handleReviewRequest}>
+                Review Request
+              </DropdownMenuItem>
+            )}
 
-            <DropdownMenuItem
-              className="text-red-600 focus:bg-red-50"
-              onClick={handleDelete}
-            >
-              Delete Details
-            </DropdownMenuItem>
+            {canEditDelete && (
+              <DropdownMenuItem onClick={handleEdit}>
+                Edit Details
+              </DropdownMenuItem>
+            )}
+
+            {canEditDelete && (
+              <DropdownMenuItem
+                className="text-red-600 focus:bg-red-50 focus:text-red-600"
+                onClick={handleDelete}
+              >
+                Delete Details
+              </DropdownMenuItem>
+            )}
+
+            {!hasActions && (
+              <DropdownMenuItem disabled>No actions available</DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       );
