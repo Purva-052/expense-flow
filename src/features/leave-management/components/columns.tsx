@@ -12,24 +12,24 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useLeaveStore } from "../stores";
 import { useAuthStore } from "@/stores/use-auth-store";
-// import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { roles } from "@/utils/constant";
 
 // Status badge variant mapping
-// const statusVariantMap: Record<
-//   string,
-//   "default" | "secondary" | "destructive" | "outline" | "success" | "warning"
-// > = {
-//   pending: "warning",
-//   approved: "success",
-//   rejected: "destructive",
-// };
+const statusVariantMap: Record<
+  string,
+  "default" | "secondary" | "destructive" | "outline" | "success" | "warning"
+> = {
+  pending: "warning",
+  approved: "success",
+  rejected: "destructive",
+};
 
-// const statusLabelMap: Record<string, string> = {
-//   pending: "Pending",
-//   approved: "Approved",
-//   rejected: "Rejected",
-// };
+const statusLabelMap: Record<string, string> = {
+  pending: "Pending",
+  approved: "Approved",
+  rejected: "Rejected",
+};
 
 export const columns: ColumnDef<any>[] = [
   {
@@ -135,19 +135,19 @@ export const columns: ColumnDef<any>[] = [
   },
 
   // ✅ Status
-  // {
-  //   accessorKey: "status",
-  //   header: "Status",
-  //   cell: ({ row }) => {
-  //     const status = row.original.status;
-  //     if (!status) return <span className="text-sm">-</span>;
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => {
+      const status = row.original.status;
+      if (!status) return <span className="text-sm">-</span>;
 
-  //     const variant = statusVariantMap[status] || "default";
-  //     const label = statusLabelMap[status] || status;
+      const variant = statusVariantMap[status] || "default";
+      const label = statusLabelMap[status] || status;
 
-  //     return <Badge variant={variant}>{label}</Badge>;
-  //   },
-  // },
+      return <Badge variant={variant}>{label}</Badge>;
+    },
+  },
   // ✅ Rejection Reason (shown when rejected)
   {
     accessorKey: "rejectionReason",
@@ -196,7 +196,7 @@ export const columns: ColumnDef<any>[] = [
       const rowStatus = String(row.original.status || "").toLowerCase();
 
       // ✅ Only Admin & PM can approve/reject (not TL anymore)
-      const canApproveReject = isAdmin || isPM;
+      const canApproveReject = (isAdmin || isPM) && rowStatus === "pending";
 
       // ✅ Edit/Delete rules:
       //   - Admin & PM: can edit/delete any record

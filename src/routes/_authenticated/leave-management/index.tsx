@@ -11,6 +11,7 @@ export const Route = createFileRoute("/_authenticated/leave-management/")({
       roles.TEAM_LEAD,
       roles.PROJECT_MANAGER,
       roles.DEVELOPER,
+      roles.BDE,
     ]),
 });
 

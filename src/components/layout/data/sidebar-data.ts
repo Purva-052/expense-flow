@@ -151,6 +151,7 @@ export const sidebarData: SidebarData = {
             roles.TEAM_LEAD,
             roles.PROJECT_MANAGER,
             roles.DEVELOPER,
+            roles.BDE,
           ],
         },
         {

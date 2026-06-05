@@ -47,13 +47,15 @@ import {
   Mail,
   LayoutGrid,
   List,
+  Network,
 } from "lucide-react";
 import { useEffect, useState, useRef, useMemo } from "react";
 import { toast } from "sonner";
 import { FormProvider, useForm } from "react-hook-form";
 // import { toast } from "sonner";
 import { useUploadTransactionFile } from "../../transaction-logs/services";
-import { useUpdateUserData } from "../../users/services";
+import { useUpdateUserData, useGetUsersList } from "../../users/services";
+import { OrgChart } from "../../users/components/org-chart";
 import { CreatableSkillsSelect } from "./creatable-skills-select";
 import {
   useGetSkillsList,
@@ -143,6 +145,7 @@ interface UserProfileCardProps {
 export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [localIsUploading, setLocalIsUploading] = useState(false);
+  const [orgModalOpen, setOrgModalOpen] = useState(false);
   const [selectedSkills, setSelectedSkills] = useState<Skill[]>([]);
   const [certInput, setCertInput] = useState("");
   const [editingCertId, setEditingCertId] = useState<number | null>(null);
@@ -201,6 +204,18 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
   const { mutateAsync: updateProfile, isPending: isUpdating } =
     useUpdateUserData(user?.id);
   const { data: skillsList, isLoading: skillsLoading } = useGetSkillsList();
+  const { data: allUsersResponse, isPending: allUsersLoading } =
+    useGetUsersList({
+      pagination: false,
+    });
+
+  const allActiveUsers = useMemo(() => {
+    if (!allUsersResponse) return [];
+    if (Array.isArray(allUsersResponse)) return allUsersResponse;
+    if (Array.isArray((allUsersResponse as any)?.data)) return (allUsersResponse as any).data;
+    if (Array.isArray((allUsersResponse as any)?.data?.data)) return (allUsersResponse as any).data.data;
+    return [];
+  }, [allUsersResponse]);
   const { data: skillReferenceData } = useGetSkillReference(user?.id);
   const { mutateAsync: createSkill, isPending: isCreatingSkill } =
     useCreateSkill();
@@ -610,61 +625,73 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
     <div className="w-full">
       {/* ================= HEADER ================= */}
       <div className="bg-linear-to-r from-[#1a1a1a] via-[#3b0a14] to-[#e80339] text-white py-12">
-        <div className="max-w-6xl mx-auto px-6 flex items-center gap-6">
-          <FormProvider {...methods}>
-            <div className="flex flex-col items-center">
-              {isReadOnly ? (
-                <Avatar className="h-24 w-24 text-3xl border-4 border-white overflow-hidden">
-                  <AvatarImage
-                    src={previewUrl || ""}
-                    alt={user?.fullName}
-                    className="object-cover"
-                  />
-                  <AvatarFallback className="bg-gray-600 text-white">
-                    {getInitials(user?.fullName)}
-                  </AvatarFallback>
-                </Avatar>
-              ) : (
-                <FileUpload
-                  name="file"
-                  label=""
-                  onFileSelect={handleFileSelect}
-                  hideDefaultUI
-                  acceptedFormats={{
-                    "image/jpeg": [".jpg", ".jpeg"],
-                    "image/png": [".png"],
-                  }}
-                  className="flex flex-col items-center"
-                >
-                  <div className="relative group cursor-pointer">
-                    <Avatar className="h-24 w-24 text-3xl border-4 border-white overflow-hidden relative transition-all duration-300 group-hover:opacity-90">
-                      {(localIsUploading || isUpdating) && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/10 z-10 transition-opacity">
-                          <Loader2 className="h-8 w-8 animate-spin text-white" />
-                        </div>
-                      )}
-                      <AvatarImage
-                        src={previewUrl || ""}
-                        alt={user?.fullName}
-                        className="object-cover"
-                      />
-                      <AvatarFallback className="bg-gray-600 text-white">
-                        {getInitials(user?.fullName)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="absolute bottom-0 right-0 h-8 w-8 bg-primary rounded-full flex items-center justify-center border-2 border-white shadow-sm text-white group-hover:scale-110 transition-all duration-200">
-                      <Pencil className="h-4 w-4" />
+        <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+          <div className="flex items-center gap-6">
+            <FormProvider {...methods}>
+              <div className="flex flex-col items-center">
+                {isReadOnly ? (
+                  <Avatar className="h-24 w-24 text-3xl border-4 border-white overflow-hidden">
+                    <AvatarImage
+                      src={previewUrl || ""}
+                      alt={user?.fullName}
+                      className="object-cover"
+                    />
+                    <AvatarFallback className="bg-gray-600 text-white">
+                      {getInitials(user?.fullName)}
+                    </AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <FileUpload
+                    name="file"
+                    label=""
+                    onFileSelect={handleFileSelect}
+                    hideDefaultUI
+                    acceptedFormats={{
+                      "image/jpeg": [".jpg", ".jpeg"],
+                      "image/png": [".png"],
+                    }}
+                    className="flex flex-col items-center"
+                  >
+                    <div className="relative group cursor-pointer">
+                      <Avatar className="h-24 w-24 text-3xl border-4 border-white overflow-hidden relative transition-all duration-300 group-hover:opacity-90">
+                        {(localIsUploading || isUpdating) && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/10 z-10 transition-opacity">
+                            <Loader2 className="h-8 w-8 animate-spin text-white" />
+                          </div>
+                        )}
+                        <AvatarImage
+                          src={previewUrl || ""}
+                          alt={user?.fullName}
+                          className="object-cover"
+                        />
+                        <AvatarFallback className="bg-gray-600 text-white">
+                          {getInitials(user?.fullName)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="absolute bottom-0 right-0 h-8 w-8 bg-primary rounded-full flex items-center justify-center border-2 border-white shadow-sm text-white group-hover:scale-110 transition-all duration-200">
+                        <Pencil className="h-4 w-4" />
+                      </div>
                     </div>
-                  </div>
-                </FileUpload>
-              )}
+                  </FileUpload>
+                )}
+              </div>
+            </FormProvider>
+            <div>
+              <h1 className="text-3xl font-bold">{user?.fullName}</h1>
+              {/* <p className="text-xs text-white/80 mt-1 uppercase tracking-wider font-medium">
+                Max Size: 2 MB
+              </p> */}
             </div>
-          </FormProvider>
+          </div>
           <div>
-            <h1 className="text-3xl font-bold">{user?.fullName}</h1>
-            {/* <p className="text-xs text-white/80 mt-1 uppercase tracking-wider font-medium">
-              Max Size: 2 MB
-            </p> */}
+            <Button
+              onClick={() => setOrgModalOpen(true)}
+              variant="outline"
+              className="bg-white/10 hover:bg-white/20 border-white/20 hover:border-white/40 text-white gap-2 transition-all duration-200"
+            >
+              <Network className="h-4 w-4" />
+              Org Chart
+            </Button>
           </div>
         </div>
       </div>
@@ -1329,6 +1356,27 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
           </DialogContent>
         </Dialog>
       )}
+
+      <Dialog open={orgModalOpen} onOpenChange={setOrgModalOpen}>
+        <DialogContent className="w-[96vw] sm:max-w-[96vw] md:max-w-[94vw] lg:max-w-[92vw] xl:max-w-[90vw] h-[92vh] flex flex-col p-6 overflow-hidden">
+          <DialogHeader className="pb-4 border-b">
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Network className="h-5 w-5 text-blue-500" />
+              Organization Chart
+            </DialogTitle>
+            <DialogDescription>
+              View the hierarchy and structure of devstree team members.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto min-h-0 mt-4">
+            <OrgChart
+              users={allActiveUsers}
+              loading={allUsersLoading}
+              activeUserId={user?.id}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

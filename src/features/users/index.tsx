@@ -31,16 +31,7 @@ import {
 import * as ExcelJS from "exceljs";
 import { useQueryClient } from "@tanstack/react-query";
 import API from "@/config/api/api";
-import { OrgChart } from "./components/org-chart";
-import { cn } from "@/lib/utils";
 
-function extractUsersArray(response: unknown) {
-  if (Array.isArray(response)) return response;
-  if (Array.isArray((response as any)?.data)) return (response as any).data;
-  if (Array.isArray((response as any)?.data?.data))
-    return (response as any).data.data;
-  return [];
-}
 
 const UsersPage = () => {
   const { open, setOpen } = useUsersStore();
@@ -98,15 +89,7 @@ const UsersPage = () => {
     ...(isNewJoinee ? { is_joining: false } : { is_joining: true }),
   });
 
-  const [activeTab, setActiveTab] = useState<"directory" | "org-chart">(
-    "directory"
-  );
 
-  const { data: allUsersResponse, isPending: allUsersLoading } =
-    useGetUsersList({
-      pagination: false,
-    });
-  const allActiveUsers = extractUsersArray(allUsersResponse);
 
   const { mutate: exportCSV, isPending: exportCSVLoading } = useExportCSV();
   const canExportCSV =
@@ -394,50 +377,17 @@ const UsersPage = () => {
           : "Manage your Users here"}
         .
       </TablePageHeader>
-      <div className="border-b border-gray-200 mb-6">
-        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-          <button
-            onClick={() => setActiveTab("directory")}
-            className={cn(
-              "border-b-2 py-4 px-1 text-sm font-medium transition-all duration-200",
-              activeTab === "directory"
-                ? "border-primary text-primary"
-                : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-            )}
-          >
-            Directory
-          </button>
-          {/* <button
-            onClick={() => setActiveTab("org-chart")}
-            className={cn(
-              "border-b-2 py-4 px-1 text-sm font-medium transition-all duration-200",
-              activeTab === "org-chart"
-                ? "border-primary text-primary"
-                : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-            )}
-          >
-            Org Chart
-          </button> */}
-        </nav>
-      </div>
-
-      {activeTab === "directory" ? (
-        <>
-          <GlobalFilterSection filters={filters ?? []} />
-          <GlobalTable
-            pageSize={listParams.pageSize}
-            currentPage={listParams.currentPage}
-            totalCount={totalCount ?? 0}
-            data={(listData as any)?.data ?? []}
-            onPaginationChange={handlePaginationChange}
-            columns={columns}
-            loading={loading}
-            isPaginationEnabled
-          />
-        </>
-      ) : (
-        <OrgChart users={allActiveUsers} loading={allUsersLoading} />
-      )}
+      <GlobalFilterSection filters={filters ?? []} />
+      <GlobalTable
+        pageSize={listParams.pageSize}
+        currentPage={listParams.currentPage}
+        totalCount={totalCount ?? 0}
+        data={(listData as any)?.data ?? []}
+        onPaginationChange={handlePaginationChange}
+        columns={columns}
+        loading={loading}
+        isPaginationEnabled
+      />
       {open && (
         <ActionFormModal
           technologyList={technologyList}
