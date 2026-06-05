@@ -62,14 +62,14 @@ export function ClientActionForm({
       ? {
           name: currentRow?.name ?? "",
           company: currentRow?.company ?? "",
-          priority: currentRow?.priority ?? 1,
+          priority: currentRow?.priority ?? 2,
           countryId: currentRow?.country?.id ?? "",
           timezone: currentRow?.timezone ?? "",
         }
       : {
           name: "",
           company: "",
-          priority: 1,
+          priority: 2,
           countryId: "",
           timezone: "",
         },

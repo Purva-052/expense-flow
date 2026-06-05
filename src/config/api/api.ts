@@ -186,6 +186,8 @@ const API = {
     update: "/leave-management",
     delete: "/leave-management",
     action: "/leave-management/{id}/action",
+    leave_dashboard: "/leave-management/dashboard",
+    leave_adjust: "/leave-management/adjust/balance",
   },
   leave_balance: {
     get: "/leave-balances",

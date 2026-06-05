@@ -57,6 +57,7 @@ const ClientsPage = () => {
   const userRole = user?.user?.role;
 
   const isPMUser = user?.user_id === "126";
+  const isAdminUser = userRole === roles.ADMIN;
 
   const { mutate: exportCSV, isPending: exportCSVLoading } =
     useExportClientsData();
@@ -145,16 +146,22 @@ const ClientsPage = () => {
       ],
       onChange: handlePriorityChange,
     },
-    {
-      type: "dateRange",
-      key: "dateRange",
-      placeholder: "Filter by Log Date",
-      value: {
-        from: listParams.fromDate ? new Date(listParams.fromDate) : undefined,
-        to: listParams.toDate ? new Date(listParams.toDate) : undefined,
-      },
-      onChange: handleDateRangeChange,
-    },
+    ...(isAdminUser
+      ? [
+          {
+            type: "dateRange",
+            key: "dateRange",
+            placeholder: "Filter by Log Date",
+            value: {
+              from: listParams.fromDate
+                ? new Date(listParams.fromDate)
+                : undefined,
+              to: listParams.toDate ? new Date(listParams.toDate) : undefined,
+            },
+            onChange: handleDateRangeChange,
+          },
+        ]
+      : []),
   ];
 
   const handleAdd = () => {

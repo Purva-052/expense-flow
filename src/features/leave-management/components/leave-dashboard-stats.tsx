@@ -1,0 +1,129 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import {
+  UserCheck,
+  CalendarDays,
+  CalendarRange,
+  Clock,
+} from "lucide-react";
+import { StatCard } from "@/features/admob-analytics/components/stat-card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+
+interface LeaveDashboardStatsProps {
+  onLeaveToday: number;
+  onLeaveTomorrow: number;
+  thisWeek: number;
+  pendingCount: number;
+  lowBalanceCount: number;
+  loading?: boolean;
+  onTodayCardClick?: () => void;
+}
+
+export function LeaveDashboardStats({
+  onLeaveToday,
+  onLeaveTomorrow,
+  thisWeek,
+  pendingCount,
+  loading,
+  onTodayCardClick,
+}: LeaveDashboardStatsProps) {
+  const cards = [
+    {
+      key: "today",
+      label: "On Leave Today",
+      value: String(onLeaveToday),
+      helperText: "Click to view by technology",
+      icon: (
+        <UserCheck className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
+      ),
+      iconBg: "bg-emerald-100 dark:bg-emerald-900/30",
+      clickable: true,
+    },
+    {
+      key: "tomorrow",
+      label: "On Leave Tomorrow",
+      value: String(onLeaveTomorrow),
+      helperText: "Scheduled for tomorrow",
+      icon: (
+        <CalendarDays className="h-5 w-5 text-violet-700 dark:text-violet-400" />
+      ),
+      iconBg: "bg-violet-100 dark:bg-violet-900/30",
+      clickable: false,
+    },
+    {
+      key: "week",
+      label: "This Week",
+      value: String(thisWeek),
+      helperText: "Leave days this week",
+      icon: (
+        <CalendarRange className="h-5 w-5 text-blue-700 dark:text-blue-400" />
+      ),
+      iconBg: "bg-blue-100 dark:bg-blue-900/30",
+      clickable: false,
+    },
+    {
+      key: "pending",
+      label: "Pending Approvals",
+      value: String(pendingCount),
+      helperText: "Awaiting your action",
+      icon: <Clock className="h-5 w-5 text-amber-700 dark:text-amber-400" />,
+      iconBg: "bg-amber-100 dark:bg-amber-900/30",
+      clickable: false,
+    },
+    // {
+    //   key: "low-balance",
+    //   label: "Low Balance",
+    //   value: String(lowBalanceCount),
+    //   helperText: "Employees with ≤2 days left",
+    //   icon: (
+    //     <AlertTriangle className="h-5 w-5 text-rose-700 dark:text-rose-400" />
+    //   ),
+    //   iconBg: "bg-rose-100 dark:bg-rose-900/30",
+    //   clickable: false,
+    // },
+  ];
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+        {[...Array(4)].map((_, i) => (
+          <Skeleton key={i} className="h-[120px] rounded-xl" />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+      {cards.map((card) => {
+        const content = (
+          <StatCard
+            label={card.label}
+            value={card.value}
+            helperText={card.helperText}
+            icon={card.icon}
+            iconBg={card.iconBg}
+          />
+        );
+
+        if (card.clickable && onTodayCardClick) {
+          return (
+            <button
+              key={card.key}
+              type="button"
+              onClick={onTodayCardClick}
+              className={cn(
+                "text-left rounded-xl transition-all",
+                "hover:ring-2 hover:ring-emerald-500/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              )}
+            >
+              {content}
+            </button>
+          );
+        }
+
+        return <div key={card.key}>{content}</div>;
+      })}
+    </div>
+  );
+}

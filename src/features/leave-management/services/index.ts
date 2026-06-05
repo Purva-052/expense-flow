@@ -7,14 +7,21 @@ import useFetchData from "@/hooks/use-fetch-data";
 import { useLeaveStore } from "../stores";
 
 // Assuming your API structure has a leaves endpoint
-const GET_API_URL = API.leave_management.list; // Update this in your API config
-const GET_EMPLOYEES_API_URL = API.leave_management.employee; // Update this in your API config
+const GET_API_URL = API.leave_management.list;
+const GET_EMPLOYEES_API_URL = API.leave_management.employee;
+const LEAVE_DASHBOARD_URL = API.leave_management.leave_dashboard;
+
+const leaveRefetchQueries = [
+  GET_API_URL,
+  API.leave_balance.get,
+  LEAVE_DASHBOARD_URL,
+];
 
 export const useCreateLeaveData = () => {
   const { setOpen } = useLeaveStore();
   return usePostData({
     url: API.leave_management.create,
-    refetchQueries: [GET_API_URL],
+    refetchQueries: leaveRefetchQueries,
     onSuccess: () => {
       setOpen(null);
     },
@@ -25,13 +32,29 @@ export const useUpdateLeaveData = (id: string) => {
   const { setOpen } = useLeaveStore();
   return usePatchData({
     url: `${API.leave_management.update}/${id}`,
-    refetchQueries: [GET_API_URL],
+    refetchQueries: leaveRefetchQueries,
     onSuccess: () => setOpen(null),
   });
 };
 
-export const useGetLeaveData = (params?: any) => {
-  return useFetchData({ url: GET_API_URL, params });
+export const useGetLeaveData = (params?: any, enabled = true) => {
+  return useFetchData({ url: GET_API_URL, params, enabled });
+};
+
+/**
+ * Leave dashboard — grouped by technology for a given filter.
+ * @param params.filter - today | tomorrow | week | upcoming | low_balance
+ * @param params.date - optional yyyy-MM-dd for a specific day (today board navigation)
+ */
+export const useGetLeaveDashboard = (
+  params?: { filter?: string | string[]; date?: string },
+  enabled = true
+) => {
+  return useFetchData({
+    url: LEAVE_DASHBOARD_URL,
+    params,
+    enabled,
+  });
 };
 
 export const useGeEmployeeData = (params?: any, enabled = true) => {
@@ -42,7 +65,7 @@ export const useDeleteLeaveData = (id: string) => {
   const { setOpen } = useLeaveStore();
   return useDeleteData({
     url: `${API.leave_management.delete}/${id}`,
-    refetchQueries: [GET_API_URL],
+    refetchQueries: leaveRefetchQueries,
     onSuccess: () => {
       setOpen(null);
     },
@@ -53,7 +76,7 @@ export const useApproveRejectLeave = (id: string) => {
   const { setOpen } = useLeaveStore();
   return usePatchData({
     url: API.leave_management.action.replace("{id}", id),
-    refetchQueries: [GET_API_URL],
+    refetchQueries: leaveRefetchQueries,
     onSuccess: () => {
       setOpen(null);
     },
@@ -91,5 +114,37 @@ export const useGetAllLeaveBalances = (
     url: API.leave_balance.get,
     params: { employeeId },
     enabled: enabled && !!employeeId,
+  });
+};
+
+/**
+ * Adjust leave balance for a specific employee and leave type.
+ */
+export const useAdjustLeaveBalance = (onSuccess?: () => void) => {
+  return usePatchData({
+    url: API.leave_management.leave_adjust,
+    refetchQueries: leaveRefetchQueries,
+    onSuccess,
+  });
+};
+
+/**
+ * Set leave allocations for an employee.
+ */
+export const useSetLeaveAllocations = (onSuccess?: () => void) => {
+  return usePostData({
+    url: API.leave_balance.add,
+    refetchQueries: leaveRefetchQueries,
+    onSuccess,
+  });
+};
+
+/**
+ * Fetch available leave types.
+ */
+export const useGetLeaveTypes = (enabled = true) => {
+  return useFetchData({
+    url: "/leave-types",
+    enabled,
   });
 };

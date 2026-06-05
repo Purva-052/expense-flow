@@ -283,4 +283,6 @@ export const PRIORITY_OPTIONS = [
 export const LEAVE_TYPE = [
   { label: "Casual Leave", value: "1" },
   { label: "Paid Leave", value: "2" },
+  { label: "Loss of Pay", value: "3" },
+  { label: "Exam Leave", value: "4" },
 ] as const;

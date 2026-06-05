@@ -5,13 +5,15 @@ import { formatRole } from "@/utils/commonFunctions";
 import { Loader2 } from "lucide-react";
 
 interface OrgUser {
-  id: number;
+  id: number | string;
   fullName: string;
   email: string;
   role: string;
   reportingToId?: number | null;
+  reportToId?: number | null;
+  reporttoId?: number | null;
   reportingTo?: {
-    id: number;
+    id: number | string;
     fullName: string;
   } | null;
   profilePicUrl?: string;
@@ -21,9 +23,9 @@ interface OrgUser {
 interface Props {
   users: OrgUser[];
   loading: boolean;
+  activeUserId?: string | number | null;
 }
 
-// Helper to get initials
 function getInitials(name: string) {
   const parts = name.trim().split(/\s+/);
   if (parts.length === 0) return "";
@@ -31,7 +33,6 @@ function getInitials(name: string) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-// Background colors for avatars
 const AVATAR_BG_CLASSES = [
   "bg-blue-600 text-white",
   "bg-green-700 text-white",
@@ -43,127 +44,143 @@ const AVATAR_BG_CLASSES = [
   "bg-cyan-600 text-white",
 ];
 
-function getAvatarBg(userId: number) {
-  return AVATAR_BG_CLASSES[userId % AVATAR_BG_CLASSES.length];
+function getAvatarBg(userId: number | string) {
+  const numericId = Number(userId);
+  const safeId = Number.isFinite(numericId) ? numericId : 0;
+  return AVATAR_BG_CLASSES[safeId % AVATAR_BG_CLASSES.length];
 }
 
-export function OrgChart({ users, loading }: Readonly<Props>) {
+function normalizeId(value: unknown) {
+  if (value === null || value === undefined || value === "") return null;
+  return String(value);
+}
+
+function getManagerId(user: OrgUser) {
+  return normalizeId(
+    user.reportingToId ??
+      user.reportToId ??
+      user.reporttoId ??
+      user.reportingTo?.id
+  );
+}
+
+function computeUserDepths(users: OrgUser[]) {
+  const userMap = new Map<string, OrgUser>();
+  users.forEach((u) => {
+    userMap.set(normalizeId(u.id) ?? String(u.id), u);
+  });
+
+  const depths = new Map<string, number>();
+  const visiting = new Set<string>();
+
+  const getDepth = (userId: string): number => {
+    if (depths.has(userId)) return depths.get(userId)!;
+    if (visiting.has(userId)) return 0;
+
+    const user = userMap.get(userId);
+    if (!user) return 0;
+
+    const managerId = getManagerId(user);
+    if (!managerId || !userMap.has(managerId)) {
+      depths.set(userId, 0);
+      return 0;
+    }
+
+    visiting.add(userId);
+    const depth = 1 + getDepth(managerId);
+    visiting.delete(userId);
+    depths.set(userId, depth);
+    return depth;
+  };
+
+  users.forEach((u) => {
+    const userId = normalizeId(u.id) ?? String(u.id);
+    getDepth(userId);
+  });
+
+  return depths;
+}
+
+export function OrgChart({ users, loading, activeUserId }: Readonly<Props>) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
-  const [lines, setLines] = useState<{ x1: number; y1: number; x2: number; y2: number }[]>([]);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [lines, setLines] = useState<
+    { x1: number; y1: number; x2: number; y2: number }[]
+  >([]);
 
-  // 1. Build adjacency maps
-  const { userMap, adjacency, roots } = useMemo(() => {
-    const map = new Map<number, OrgUser>();
-    const adj = new Map<number, number[]>();
+  useEffect(() => {
+    if (activeUserId) {
+      setHighlightedId(String(activeUserId));
+    }
+  }, [activeUserId]);
 
-    // Only active users in org chart
-    const activeUsers = users.filter((u) => u.status === "active");
+  const { userMap, columns, directReportsCount } = useMemo(() => {
+    const map = new Map<string, OrgUser>();
+    const adj = new Map<string, string[]>();
 
-    activeUsers.forEach((u) => {
-      map.set(u.id, u);
+    users.forEach((u) => {
+      map.set(normalizeId(u.id) ?? String(u.id), u);
     });
 
-    activeUsers.forEach((u) => {
-      const managerId = u.reportingToId ?? u.reportingTo?.id;
+    users.forEach((u) => {
+      const userId = normalizeId(u.id) ?? String(u.id);
+      const managerId = getManagerId(u);
       if (managerId && map.has(managerId)) {
         const children = adj.get(managerId) || [];
-        children.push(u.id);
+        children.push(userId);
         adj.set(managerId, children);
       }
     });
 
-    // Roots are users with no manager or whose manager is not active/in the list
-    const rts = activeUsers.filter((u) => {
-      const managerId = u.reportingToId ?? u.reportingTo?.id;
-      return !managerId || !map.has(managerId);
+    const depths = computeUserDepths(users);
+    const maxDepth = Math.max(0, ...Array.from(depths.values()));
+
+    const cols: OrgUser[][] = [];
+    for (let depth = 0; depth <= maxDepth; depth++) {
+      const levelUsers = users
+        .filter((u) => depths.get(normalizeId(u.id) ?? String(u.id)) === depth)
+        .sort((a, b) => a.fullName.localeCompare(b.fullName));
+      if (levelUsers.length > 0) cols.push(levelUsers);
+    }
+
+    const directCounts = new Map<string, number>();
+    adj.forEach((children, managerId) => {
+      directCounts.set(managerId, children.length);
     });
 
-    return { userMap: map, adjacency: adj, roots: rts };
+    return {
+      userMap: map,
+      columns: cols,
+      directReportsCount: directCounts,
+    };
   }, [users]);
 
-  // 2. Precompute direct + indirect descendants count (Subtree size)
-  const subtreeSizes = useMemo(() => {
-    const sizes = new Map<number, number>();
-
-    const calculateSize = (id: number): number => {
-      const children = adjacency.get(id) || [];
-      let size = children.length;
-      children.forEach((cid) => {
-        size += calculateSize(cid);
-      });
-      sizes.set(id, size);
-      return size;
-    };
-
-    roots.forEach((rt) => {
-      calculateSize(rt.id);
-    });
-
-    return sizes;
-  }, [roots, adjacency]);
-
-  // Initialize selectedIds when roots load
-  useEffect(() => {
-    if (roots.length > 0 && selectedIds.length === 0) {
-      setSelectedIds([roots[0].id]);
-    }
-  }, [roots, selectedIds]);
-
-  // 3. Render Columns dynamically
-  const columns = useMemo(() => {
-    const cols: OrgUser[][] = [];
-    cols.push(roots);
-
-    for (let i = 0; i < selectedIds.length; i++) {
-      const parentId = selectedIds[i];
-      const childrenIds = adjacency.get(parentId) || [];
-      const children = childrenIds
-        .map((cid) => userMap.get(cid))
-        .filter(Boolean) as OrgUser[];
-
-      if (children.length > 0) {
-        cols.push(children);
-      } else {
-        break;
-      }
-    }
-
-    return cols;
-  }, [roots, selectedIds, adjacency, userMap]);
-
-  // 4. Calculate connector lines
   const updateLines = () => {
-    const newLines: any[] = [];
+    const newLines: { x1: number; y1: number; x2: number; y2: number }[] = [];
     const container = containerRef.current;
     if (!container) return;
 
     const containerRect = container.getBoundingClientRect();
 
-    selectedIds.forEach((parentId, levelIndex) => {
-      const parentEl = document.getElementById(`org-card-${parentId}`);
-      if (!parentEl) return;
+    users.forEach((user) => {
+      const userId = normalizeId(user.id) ?? String(user.id);
+      const managerId = getManagerId(user);
+      if (!managerId || !userMap.has(managerId)) return;
+
+      const parentEl = document.getElementById(`org-card-${managerId}`);
+      const childEl = document.getElementById(`org-card-${userId}`);
+      if (!parentEl || !childEl) return;
 
       const parentRect = parentEl.getBoundingClientRect();
+      const childRect = childEl.getBoundingClientRect();
+
       const startX = parentRect.right - containerRect.left;
-      const startY = parentRect.top + parentRect.height / 2 - containerRect.top;
+      const startY =
+        parentRect.top + parentRect.height / 2 - containerRect.top;
+      const endX = childRect.left - containerRect.left;
+      const endY = childRect.top + childRect.height / 2 - containerRect.top;
 
-      // Children list shows in the NEXT column (levelIndex + 1)
-      const nextColUsers = columns[levelIndex + 1] || [];
-      const parentChildren = adjacency.get(parentId) || [];
-
-      nextColUsers.forEach((child) => {
-        if (!parentChildren.includes(child.id)) return;
-
-        const childEl = document.getElementById(`org-card-${child.id}`);
-        if (!childEl) return;
-
-        const childRect = childEl.getBoundingClientRect();
-        const endX = childRect.left - containerRect.left;
-        const endY = childRect.top + childRect.height / 2 - containerRect.top;
-
-        newLines.push({ x1: startX, y1: startY, x2: endX, y2: endY });
-      });
+      newLines.push({ x1: startX, y1: startY, x2: endX, y2: endY });
     });
 
     setLines(newLines);
@@ -171,10 +188,8 @@ export function OrgChart({ users, loading }: Readonly<Props>) {
 
   useEffect(() => {
     const timer = setTimeout(updateLines, 100);
-
     window.addEventListener("resize", updateLines);
 
-    // Scroll listeners (capture scrolling on columns)
     const container = containerRef.current;
     if (container) {
       container.addEventListener("scroll", updateLines, { capture: true });
@@ -187,13 +202,7 @@ export function OrgChart({ users, loading }: Readonly<Props>) {
         container.removeEventListener("scroll", updateLines, { capture: true });
       }
     };
-  }, [columns, selectedIds]);
-
-  const handleCardClick = (userId: number, levelIndex: number) => {
-    const newSelection = selectedIds.slice(0, levelIndex);
-    newSelection.push(userId);
-    setSelectedIds(newSelection);
-  };
+  }, [columns, users, userMap]);
 
   if (loading) {
     return (
@@ -203,22 +212,28 @@ export function OrgChart({ users, loading }: Readonly<Props>) {
     );
   }
 
+  if (columns.length === 0) {
+    return (
+      <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
+        No users to display in the org chart.
+      </div>
+    );
+  }
+
   return (
     <div
       ref={containerRef}
       className="relative flex gap-12 overflow-x-auto pb-8 pt-4 px-2 select-none min-h-[500px]"
     >
-      {/* SVG Canvas for drawing connecting lines */}
       <svg className="absolute inset-0 pointer-events-none z-0 w-full h-full">
         {lines.map((line, idx) => {
-          // Draw smooth cubic bezier curve
           const midX = (line.x1 + line.x2) / 2;
           const pathD = `M ${line.x1} ${line.y1} C ${midX} ${line.y1}, ${midX} ${line.y2}, ${line.x2} ${line.y2}`;
           return (
             <path
               key={`line-${idx}`}
               d={pathD}
-              stroke="#93c5fd" // soft blue-300
+              stroke="#93c5fd"
               strokeWidth="2"
               fill="none"
             />
@@ -226,53 +241,44 @@ export function OrgChart({ users, loading }: Readonly<Props>) {
         })}
       </svg>
 
-      {/* Render Columns */}
       {columns.map((colUsers, colIdx) => {
         const levelNum = colIdx + 1;
         return (
           <div
             key={`col-${colIdx}`}
-            className="flex flex-col gap-4 min-w-[300px] max-w-[300px] z-10"
+            className="flex flex-col gap-4 min-w-[300px] max-w-[300px] z-10 shrink-0"
           >
-            {/* Header */}
             <div className="flex items-center gap-2 px-1">
-              <span className="font-semibold text-gray-600 text-sm">
+              <span className="font-semibold text-gray-600 dark:text-gray-400 text-sm">
                 Level {levelNum}
               </span>
-              <span className="flex items-center justify-center bg-gray-100 text-gray-500 rounded-full px-2 py-0.5 text-xs font-semibold">
+              <span className="flex items-center justify-center bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 rounded-full px-2 py-0.5 text-xs font-semibold">
                 {colUsers.length}
               </span>
             </div>
 
-            {/* List of cards */}
-            <div className="flex flex-col gap-3 max-h-[600px] overflow-y-auto pr-1">
+            <div className="flex flex-col gap-3 max-h-[68vh] overflow-y-auto pr-1">
               {colUsers.map((user) => {
-                const isSelected = selectedIds[colIdx] === user.id;
-                const isLeafSelected =
-                  isSelected &&
-                  (colIdx === selectedIds.length - 1 ||
-                    (adjacency.get(user.id)?.length ?? 0) === 0);
-
-                const reportsCount = subtreeSizes.get(user.id) ?? 0;
+                const userId = normalizeId(user.id) ?? String(user.id);
+                const isHighlighted = highlightedId === userId;
+                const reportsCount = directReportsCount.get(userId) ?? 0;
 
                 return (
                   <div
-                    key={user.id}
-                    id={`org-card-${user.id}`}
-                    onClick={() => handleCardClick(user.id, colIdx)}
+                    key={userId}
+                    id={`org-card-${userId}`}
+                    onClick={() =>
+                      setHighlightedId(isHighlighted ? null : userId)
+                    }
                     className={cn(
                       "flex items-center justify-between p-3.5 rounded-xl border cursor-pointer transition-all duration-200 shadow-sm",
-                      isLeafSelected
-                        ? "bg-blue-600 border-blue-600 text-white shadow-blue-200"
-                        : isSelected
-                        ? "bg-blue-50 border-blue-200 text-blue-900"
-                        : "bg-white border-gray-100 hover:border-gray-200 text-gray-900"
+                      isHighlighted
+                        ? "bg-blue-600 dark:bg-blue-600 border-blue-600 dark:border-blue-500 text-white shadow-blue-200 dark:shadow-blue-900/30"
+                        : "bg-white dark:bg-slate-900 border-gray-100 dark:border-slate-800 hover:border-gray-200 dark:hover:border-slate-700 text-gray-900 dark:text-slate-100"
                     )}
                   >
-                    {/* User Info */}
                     <div className="flex items-center gap-3 overflow-hidden">
-                      {/* Avatar */}
-                      <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full border border-gray-200/50 shadow-sm flex items-center justify-center font-bold text-sm">
+                      <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full border border-gray-200/50 dark:border-slate-800 shadow-sm flex items-center justify-center font-bold text-sm">
                         {user.profilePicUrl ? (
                           <img
                             src={user.profilePicUrl}
@@ -283,7 +289,9 @@ export function OrgChart({ users, loading }: Readonly<Props>) {
                           <div
                             className={cn(
                               "h-full w-full flex items-center justify-center",
-                              isLeafSelected ? "bg-blue-700 text-white" : getAvatarBg(user.id)
+                              isHighlighted
+                                ? "bg-blue-700 text-white"
+                                : getAvatarBg(userId)
                             )}
                           >
                             {getInitials(user.fullName)}
@@ -291,12 +299,11 @@ export function OrgChart({ users, loading }: Readonly<Props>) {
                         )}
                       </div>
 
-                      {/* Text */}
                       <div className="flex flex-col min-w-0">
                         <span
                           className={cn(
                             "font-semibold text-sm truncate",
-                            isLeafSelected ? "text-white" : "text-gray-900"
+                            isHighlighted ? "text-white" : "text-gray-900 dark:text-slate-100"
                           )}
                         >
                           {user.fullName}
@@ -304,12 +311,12 @@ export function OrgChart({ users, loading }: Readonly<Props>) {
                         <span
                           className={cn(
                             "text-xs truncate capitalize",
-                            isLeafSelected ? "text-blue-100" : "text-gray-500"
+                            isHighlighted ? "text-blue-100" : "text-gray-500 dark:text-slate-400"
                           )}
                         >
                           {formatRole(user.role)}
                         </span>
-                        {isLeafSelected && (
+                        {isHighlighted && (
                           <span className="text-[10px] text-blue-100/90 truncate mt-0.5">
                             {user.email}
                           </span>
@@ -317,16 +324,13 @@ export function OrgChart({ users, loading }: Readonly<Props>) {
                       </div>
                     </div>
 
-                    {/* Direct reports count pill */}
                     {reportsCount > 0 && (
                       <div
                         className={cn(
                           "flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold transition-colors duration-150 select-none shrink-0",
-                          isLeafSelected
+                          isHighlighted
                             ? "bg-blue-700 text-white"
-                            : isSelected
-                            ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
-                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                            : "bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300"
                         )}
                       >
                         <span>{reportsCount}</span>

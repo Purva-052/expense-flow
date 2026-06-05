@@ -1,149 +1,47 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { useMemo, useState } from "react";
 import PageLayout from "@/components/layout/layout-provider";
 import { GlobalTable } from "@/components/table/global-table";
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import TablePageHeader from "@/components/table/table-page-header";
 import { FilterConfig } from "@/components/table/table-toolbar";
 import { ActionFormModal } from "./components/action";
+import {
+  LeaveActionForm,
+} from "./components/action-form";
 import { columns } from "./components/columns";
 import { useLeaveStore } from "./stores";
 import {
   useGeEmployeeData,
   useGetAllLeaveBalances,
   useGetLeaveData,
+  useCreateLeaveData,
+  useUpdateLeaveData,
 } from "./services";
 import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import { formatDate } from "@/utils/commonFunctions";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAuthStore } from "@/stores/use-auth-store";
-import { LEAVE_TYPE, roles } from "@/utils/constant";
-import { Skeleton } from "@/components/ui/skeleton";
-import { CalendarDays, Clock, CheckCircle2 } from "lucide-react";
+import { roles } from "@/utils/constant";
+import { LayoutDashboard, FileText, Plus, Coins } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { LeaveBalanceCards } from "./components/leave-balance-cards";
+import { LeaveDashboardTab } from "./components/leave-dashboard-tab";
+import { AdjustBalanceModal } from "./components/adjust-balance-modal";
+import { SetAllocationsModal } from "./components/set-allocations-modal";
 
-import { Card, CardContent } from "@/components/ui/card";
 
-// ─── Leave Balance Summary Card ────────────────────────────────────────────────
-interface BalanceRecord {
-  leaveTypeId: number;
-  allocatedDays: string | null;
-  usedDays: string | null;
-  pendingDays: string | null;
-  availableDays: string | null;
-  leaveType: { id: number; name: string; isPaid: boolean };
-}
-
-function LeaveBalanceCards({
-  balanceData,
-  loading,
-}: {
-  balanceData: BalanceRecord[];
-  loading: boolean;
-}) {
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {[...Array(4)].map((_, i) => (
-          <Skeleton key={i} className="h-[110px] rounded-xl" />
-        ))}
-      </div>
-    );
-  }
-
-  if (!balanceData || balanceData.length === 0) return null;
-
-  // Compute totals across all leave types
-  const totalUsed = balanceData.reduce(
-    (sum, r) => sum + parseFloat(r.usedDays || "0"),
-    0
-  );
-  const totalPending = balanceData.reduce(
-    (sum, r) => sum + parseFloat(r.pendingDays || "0"),
-    0
-  );
-
-  // Per-type cards
-  const balanceCards = balanceData.map((record) => {
-    const label =
-      LEAVE_TYPE.find((t) => Number(t.value) === record.leaveTypeId)?.label ??
-      record.leaveType?.name ??
-      `Type ${record.leaveTypeId}`;
-    const isCasual = label.toLowerCase().includes("casual");
-
-    return {
-      key: `balance-${record.leaveTypeId}`,
-      label: `${label} Balance`,
-      value: parseFloat(record.availableDays ?? "0").toFixed(0),
-      icon: CalendarDays,
-      activeColor: isCasual ? "blue" : "violet",
-      // colors when inactive (default)
-      labelClass: isCasual ? "text-blue-400" : "text-violet-400",
-      iconBgClass: isCasual
-        ? "bg-blue-50 text-blue-500 dark:bg-blue-900/30 dark:text-blue-400"
-        : "bg-violet-50 text-violet-500 dark:bg-violet-900/30 dark:text-violet-400",
-      valueClass: "text-slate-900 dark:text-slate-100",
-    };
-  });
-
-  const summaryCards = [
-    {
-      key: "taken",
-      label: "Taken (Used Days)",
-      value: totalUsed.toFixed(0),
-      icon: CheckCircle2,
-      labelClass: "text-emerald-400",
-      iconBgClass:
-        "bg-emerald-50 text-emerald-500 dark:bg-emerald-900/30 dark:text-emerald-400",
-      valueClass: "text-slate-900 dark:text-slate-100",
-    },
-    {
-      key: "pending-count",
-      label: "Pending Approval",
-      value: totalPending.toFixed(0),
-      icon: Clock,
-      labelClass: "text-amber-400",
-      iconBgClass:
-        "bg-amber-50 text-amber-500 dark:bg-amber-900/30 dark:text-amber-400",
-      valueClass: "text-slate-900 dark:text-slate-100",
-    },
-  ];
-
-  const allCards = [...balanceCards, ...summaryCards];
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-      {allCards.map((card) => {
-        const Icon = card.icon;
-        return (
-          <Card
-            key={card.key}
-            className="border border-slate-200 dark:border-slate-800 transition-all"
-          >
-            <CardContent className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <span
-                  className={`text-xs font-semibold uppercase tracking-wide ${card.labelClass}`}
-                >
-                  {card.label}
-                </span>
-                <div className={`p-2 rounded-xl ${card.iconBgClass}`}>
-                  <Icon size={20} />
-                </div>
-              </div>
-              <div
-                className={`text-3xl font-bold tracking-tight ${card.valueClass}`}
-              >
-                {card.value}
-              </div>
-            </CardContent>
-          </Card>
-        );
-      })}
-    </div>
-  );
-}
+const tabTriggerClass =
+  "flex items-center gap-2 rounded-[50px] !px-3 !py-2 transition-all h-[35px] " +
+  "text-foreground/70 hover:text-foreground " +
+  "data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-sm " +
+  "dark:text-muted-foreground dark:hover:text-foreground " +
+  "dark:data-[state=active]:bg-primary dark:data-[state=active]:text-white dark:data-[state=active]:shadow-[0_2px_8px_oklch(0_0_0/0.5)]";
 
 const LeaveManagementPage = () => {
-  const { setOpen } = useLeaveStore();
+  const { open, setOpen, currentRow, setCurrentRow } = useLeaveStore();
+  const [adjustBalanceOpen, setAdjustBalanceOpen] = useState(false);
+  const [setAllocationsOpen, setSetAllocationsOpen] = useState(false);
 
   const user = useAuthStore((state) => state.user);
   const rawRole = user?.role || user?.user?.role;
@@ -155,13 +53,15 @@ const LeaveManagementPage = () => {
   const isPM = roleName === roles.PROJECT_MANAGER;
   const isDeveloper = roleName === roles.DEVELOPER;
   const isBDE = roleName === roles.BDE;
-  // Only Admin & PM can see the employee filter (they can apply for others)
-  const canApplyForOthers = isAdmin || isPM;
-  // Developer & BDE only see their own leaves — no need for status tabs
+  // Dashboard tab is only visible to admin
+  const canViewDashboard = isAdmin;
+  // Manager-level features (employee filter, status tabs) remain for admin + PM
+  const canViewManagerTabs = isAdmin || isPM;
   const showStatusTabs = !isDeveloper && !isBDE;
 
-  // Current logged-in user's employee id
   const currentEmployeeId = user?.user?.id || user?.user_id;
+
+  const defaultSection = canViewDashboard ? "dashboard" : "leaves";
 
   const [queryParams, setQueryParams] = useQueryStates({
     pageSize: parseAsInteger.withDefault(10),
@@ -171,7 +71,15 @@ const LeaveManagementPage = () => {
     startDate: parseAsString,
     endDate: parseAsString,
     tab: parseAsString.withDefault("pending"),
+    section: parseAsString.withDefault(defaultSection),
   });
+
+  const activeSection =
+    canViewDashboard && queryParams.section === "leaves"
+      ? "leaves"
+      : canViewDashboard
+        ? "dashboard"
+        : "leaves";
 
   const listParams = {
     pageSize: queryParams.pageSize,
@@ -194,25 +102,89 @@ const LeaveManagementPage = () => {
     limit: listParams.pageSize,
     search: listParams.search,
     pagination: true,
-    // Employee filter only applicable for Admin/PM
-    employeeId: canApplyForOthers ? listParams.employeeId : undefined,
+    employeeId: canViewManagerTabs ? listParams.employeeId : undefined,
     fromDate: listParams.startDate,
     toDate: listParams.endDate,
-    // All roles now see tabs (pending/approved/rejected)
     status: getStatusFromTab(queryParams.tab),
   };
 
   const { data: listData, isPending: loading } = useGetLeaveData(apiParams);
 
-  // Only fetch employee list for Admin & PM (to use in filter dropdown)
+  // Employee list only fetched for admin (dashboard features)
   const { data: employeesList, isPending: employeesListLoading }: any =
-    useGeEmployeeData(undefined, canApplyForOthers);
+    useGeEmployeeData(undefined, isAdmin);
 
-  // Fetch all leave balances for current user (shown as summary cards for all roles)
+  const balanceUserId =
+    (canViewManagerTabs && listParams.employeeId) || currentEmployeeId;
+
   const { data: allBalanceData, isPending: balanceLoading } =
-    useGetAllLeaveBalances(currentEmployeeId) as any;
+    useGetAllLeaveBalances(balanceUserId) as any;
 
-  const balanceArray: BalanceRecord[] = Array.isArray(allBalanceData)
+  const { isPending: pendingLeavesLoading } =
+    useGetLeaveData({
+      employeeId: balanceUserId,
+      status: ["pending"],
+      pagination: false,
+    });
+
+  // Dashboard-only API calls — only fire for admin
+  const { data: approvedLeavesData, isPending: approvedLeavesLoading } =
+    useGetLeaveData(
+      { status: ["approved"], pagination: false },
+      isAdmin
+    );
+
+  const { data: allPendingLeavesData } = useGetLeaveData(
+      { status: ["pending"], pagination: false },
+      isAdmin
+    );
+
+
+
+  const approvedLeaves = useMemo(
+    () => (approvedLeavesData as any)?.data ?? [],
+    [approvedLeavesData]
+  );
+
+  const pendingApprovalCount = useMemo(
+    () => (allPendingLeavesData as any)?.data?.length ?? 0,
+    [allPendingLeavesData]
+  );
+
+  const lowBalanceCount = useMemo(() => {
+    const employees = employeesList?.data ?? [];
+    return employees.filter((emp: any) => {
+      const balances = emp.leaveBalances ?? emp.balances ?? [];
+      if (!Array.isArray(balances) || balances.length === 0) return false;
+      return balances.some(
+        (b: any) => parseFloat(b.availableDays ?? "0") <= 2 && parseFloat(b.availableDays ?? "0") >= 0
+      );
+    }).length;
+  }, [employeesList]);
+
+  const dashboardChartLoading = approvedLeavesLoading;
+
+  const { mutateAsync: createMutate, isPending: isCreateLoading } =
+    useCreateLeaveData();
+  const { mutateAsync: updateMutate, isPending: isUpdateLoading } =
+    useUpdateLeaveData(currentRow?.id || "");
+
+  const handleCreate = (formData: FormData) => {
+    createMutate(formData as any);
+  };
+
+  const handleEdit = (payload: { id: string | number; data: FormData }) => {
+    updateMutate(payload.data as any);
+  };
+
+  const handleCloseForm = () => {
+    setOpen(null);
+    setTimeout(() => {
+      setCurrentRow(null);
+    }, 300);
+  };
+
+  const balanceArray = Array.isArray(allBalanceData)
     ? allBalanceData
     : Array.isArray(allBalanceData?.data)
       ? allBalanceData.data
@@ -235,10 +207,18 @@ const LeaveManagementPage = () => {
     });
   };
 
-  const handleTabChange = (val: string) => {
+  const handleStatusTabChange = (val: string) => {
     setQueryParams({
       ...listParams,
       tab: val,
+      currentPage: 1,
+    });
+  };
+
+  const handleSectionChange = (val: string) => {
+    setQueryParams({
+      ...listParams,
+      section: val,
       currentPage: 1,
     });
   };
@@ -268,8 +248,7 @@ const LeaveManagementPage = () => {
         });
       },
     },
-    // Employee filter only shown to Admin & PM
-    ...(canApplyForOthers
+    ...(canViewManagerTabs
       ? [
           {
             type: "select" as const,
@@ -297,70 +276,179 @@ const LeaveManagementPage = () => {
     setOpen("add");
   };
 
-  const tabTriggerClass =
-    "flex items-center gap-2 rounded-[50px] !px-3 !py-2 transition-all h-[35px] " +
-    "text-foreground/70 hover:text-foreground " +
-    "data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-sm " +
-    "dark:text-muted-foreground dark:hover:text-foreground " +
-    "dark:data-[state=active]:bg-primary dark:data-[state=active]:text-white dark:data-[state=active]:shadow-[0_2px_8px_oklch(0_0_0/0.5)]";
+  const tableColumns = useMemo(() => {
+    const isDevOrBDE = isDeveloper || isBDE;
+    return columns.filter((col: any) => {
+      if (col.accessorKey === "status") {
+        return isDevOrBDE;
+      }
+      if (col.accessorKey === "rejectionReason") {
+        return isDevOrBDE || queryParams.tab === "rejected";
+      }
+      return true;
+    });
+  }, [isDeveloper, isBDE, queryParams.tab]);
+
+  const isFormActive = open === "add" || open === "edit" || open === "view";
+
+  const leavesTabContent = (
+    <div className="flex flex-col gap-4">
+      <LeaveBalanceCards
+        balanceData={balanceArray}
+        loading={balanceLoading || pendingLeavesLoading}
+      />
+
+      {showStatusTabs && (
+        <Tabs
+          value={queryParams.tab}
+          onValueChange={handleStatusTabChange}
+          className="w-full"
+        >
+          <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border border-rose-100/50 h-9 w-fit">
+            <TabsTrigger value="pending" className={tabTriggerClass}>
+              Pending
+            </TabsTrigger>
+            <TabsTrigger value="approved" className={tabTriggerClass}>
+              Approved
+            </TabsTrigger>
+            <TabsTrigger value="rejected" className={tabTriggerClass}>
+              Rejected
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      )}
+
+      <GlobalFilterSection filters={filters ?? []} />
+
+      <GlobalTable
+        pageSize={listParams.pageSize}
+        currentPage={listParams.currentPage}
+        totalCount={totalCount ?? 0}
+        data={(listData as any)?.data ?? []}
+        onPaginationChange={handlePaginationChange}
+        columns={tableColumns}
+        loading={loading}
+        isPaginationEnabled
+      />
+    </div>
+  );
 
   return (
     <PageLayout>
-      <TablePageHeader
-        title="Leave Management"
-        buttonText="Apply Leave"
-        onButtonClick={handleAdd}
-      >
-        Manage employee leaves and track attendance.
-      </TablePageHeader>
-
-      <div className="flex flex-col gap-4 py-2">
-        {/* ── Leave Balance Summary Cards (all roles) ── */}
-        <LeaveBalanceCards
-          balanceData={balanceArray}
-          loading={balanceLoading}
-        />
-
-        {/* Tabs — hidden for Developer & BDE */}
-        {showStatusTabs && (
-          <Tabs
-            value={queryParams.tab}
-            onValueChange={handleTabChange}
-            className="w-full"
-          >
-            <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border border-rose-100/50 h-9 w-fit">
-              <TabsTrigger value="pending" className={tabTriggerClass}>
-                Pending
-              </TabsTrigger>
-              <TabsTrigger value="approved" className={tabTriggerClass}>
-                Approved
-              </TabsTrigger>
-              <TabsTrigger value="rejected" className={tabTriggerClass}>
-                Rejected
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        )}
-
-        <GlobalFilterSection filters={filters ?? []} />
-
-        <GlobalTable
-          pageSize={listParams.pageSize}
-          currentPage={listParams.currentPage}
-          totalCount={totalCount ?? 0}
-          data={(listData as any)?.data ?? []}
-          onPaginationChange={handlePaginationChange}
-          columns={columns.filter((col: any) =>
-            col.accessorKey === "rejectionReason"
-              ? queryParams.tab === "rejected"
-              : true
+      {isFormActive ? (
+        <div className="py-2">
+          {open === "add" && (
+            <LeaveActionForm
+              key="add-leave"
+              open={open === "add"}
+              loading={isCreateLoading}
+              onOpenChange={(value) => setOpen(value ? "add" : null)}
+              onSubmit={handleCreate}
+              employeesList={employeesList}
+              employeesListLoading={employeesListLoading}
+            />
           )}
-          loading={loading}
-          isPaginationEnabled
-        />
-      </div>
+
+          {open === "edit" && currentRow && (
+            <LeaveActionForm
+              key={`leave-edit-${currentRow.id}`}
+              open={open === "edit"}
+              onSubmit={handleEdit}
+              loading={isUpdateLoading}
+              onOpenChange={handleCloseForm}
+              currentRow={currentRow}
+              employeesList={employeesList}
+              employeesListLoading={employeesListLoading}
+            />
+          )}
+
+          {open === "view" && currentRow && (
+            <LeaveActionForm
+              key={`leave-view-${currentRow.id}`}
+              open={open === "view"}
+              onOpenChange={handleCloseForm}
+              currentRow={currentRow}
+              employeesList={employeesList}
+              employeesListLoading={employeesListLoading}
+              onSubmit={() => {}}
+              isViewOnly
+            />
+          )}
+        </div>
+      ) : (
+        <>
+          <div className="flex flex-col gap-4">
+            <TablePageHeader
+              title="Leave Management"
+              buttonText="Apply Leave"
+              onButtonClick={handleAdd}
+              showActionButton={activeSection === "leaves"}
+              actions={
+                canViewDashboard && activeSection === "dashboard" && (
+                  <div className="flex items-center gap-2">
+                    <Button onClick={() => setSetAllocationsOpen(true)} variant="outline">
+                      <Coins className="mr-2 h-4 w-4" />
+                      Set Allocations
+                    </Button>
+                    <Button onClick={() => setAdjustBalanceOpen(true)}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add Balance
+                    </Button>
+                  </div>
+                )
+              }
+            >
+              Manage employee leaves and track attendance.
+            </TablePageHeader>
+
+            {canViewDashboard ? (
+              <Tabs
+                value={activeSection}
+                onValueChange={handleSectionChange}
+                className="w-full gap-4"
+              >
+                <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border border-rose-100/50 h-9 w-fit shrink-0">
+                  <TabsTrigger value="dashboard" className={tabTriggerClass}>
+                    <LayoutDashboard className="h-4 w-4" />
+                    Leave Dashboard
+                  </TabsTrigger>
+                  <TabsTrigger value="leaves" className={tabTriggerClass}>
+                    <FileText className="h-4 w-4" />
+                    Apply for Leave
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="dashboard" className="mt-0 focus-visible:outline-none">
+                  <LeaveDashboardTab
+                    approvedLeaves={approvedLeaves}
+                    pendingCount={pendingApprovalCount}
+                    lowBalanceCount={lowBalanceCount}
+                    chartLoading={dashboardChartLoading}
+                  />
+                </TabsContent>
+
+                <TabsContent value="leaves" className="mt-0 focus-visible:outline-none">
+                  {leavesTabContent}
+                </TabsContent>
+              </Tabs>
+            ) : (
+              <div className="pb-2">{leavesTabContent}</div>
+            )}
+          </div>
+        </>
+      )}
 
       <ActionFormModal />
+      <AdjustBalanceModal
+        open={adjustBalanceOpen}
+        onOpenChange={setAdjustBalanceOpen}
+        employeesList={employeesList}
+        employeesListLoading={employeesListLoading}
+      />
+      <SetAllocationsModal
+        open={setAllocationsOpen}
+        onOpenChange={setSetAllocationsOpen}
+      />
     </PageLayout>
   );
 };
