@@ -18,6 +18,7 @@ import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
 import { Button } from "@/components/ui/button";
 import { useGetCountryDropdown } from "../client-nda/services";
+import { formatDate } from "@/utils/commonFunctions";
 
 const ClientsPage = () => {
   const { open, setOpen } = useClientsStore();
@@ -26,6 +27,9 @@ const ClientsPage = () => {
     currentPage: parseAsInteger.withDefault(1),
     search: parseAsString.withDefault(""),
     countryId: parseAsString.withDefault(""),
+    priority: parseAsString.withDefault(""),
+    fromDate: parseAsString,
+    toDate: parseAsString,
   });
 
   const listParams = {
@@ -33,6 +37,9 @@ const ClientsPage = () => {
     currentPage: queryParams.currentPage,
     search: queryParams.search,
     countryId: queryParams.countryId,
+    priority: queryParams.priority,
+    fromDate: queryParams.fromDate,
+    toDate: queryParams.toDate,
   };
 
   const apiParams = {
@@ -40,6 +47,9 @@ const ClientsPage = () => {
     limit: listParams.pageSize,
     search: listParams.search,
     countryId: listParams.countryId || undefined,
+    priority: listParams.priority ? Number(listParams.priority) : undefined,
+    fromDate: listParams.fromDate || undefined,
+    toDate: listParams.toDate || undefined,
     pagination: true,
   };
   const { user } = useAuthStore();
@@ -88,6 +98,25 @@ const ClientsPage = () => {
     });
   };
 
+  const handlePriorityChange = (priority: string | undefined) => {
+    setQueryParams({
+      ...listParams,
+      priority: priority ?? "",
+      currentPage: 1,
+    });
+  };
+
+  const handleDateRangeChange = (
+    range: { from?: Date; to?: Date } | undefined
+  ) => {
+    setQueryParams({
+      ...listParams,
+      fromDate: formatDate(range?.from) ?? null,
+      toDate: formatDate(range?.to) ?? null,
+      currentPage: 1,
+    });
+  };
+
   const filters: FilterConfig[] = [
     {
       type: "search",
@@ -103,6 +132,28 @@ const ClientsPage = () => {
       value: listParams.countryId || undefined,
       options: countryOptions,
       onChange: handleCountryChange,
+    },
+    {
+      type: "select",
+      placeholder: "Filter by Priority",
+      key: "priority",
+      value: listParams.priority || undefined,
+      options: [
+        { value: "1", label: "1" },
+        { value: "2", label: "2" },
+        { value: "3", label: "3" },
+      ],
+      onChange: handlePriorityChange,
+    },
+    {
+      type: "dateRange",
+      key: "dateRange",
+      placeholder: "Filter by Log Date",
+      value: {
+        from: listParams.fromDate ? new Date(listParams.fromDate) : undefined,
+        to: listParams.toDate ? new Date(listParams.toDate) : undefined,
+      },
+      onChange: handleDateRangeChange,
     },
   ];
 

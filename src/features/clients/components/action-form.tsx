@@ -138,6 +138,7 @@ export function ClientActionForm({
                       placeholder="Select priority"
                       sortOptions={false}
                       options={PRIORITY_OPTIONS}
+                      searchEnabled={false}
                       // change for the country id fixing
                     />
                   </FormItem>
