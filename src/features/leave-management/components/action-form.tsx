@@ -280,21 +280,56 @@ export function LeaveActionForm({
   const isSelfApplyMode = !canApplyForOthers || applyTab === "self";
   const balanceUserId = isSelfApplyMode ? currentUserId : watchEmployeeId;
 
-  // Auto-regenerate leaveDays table whenever date range changes (add mode only)
+  // Auto-regenerate or merge leaveDays table whenever date range changes
   useEffect(() => {
-    if (isEdit || isViewOnly) return;
+    if (isViewOnly) return;
     if (watchFromDate && watchToDate) {
       const from = startOfDay(new Date(watchFromDate));
       const to = startOfDay(new Date(watchToDate));
       if (from <= to) {
-        replace(buildLeaveDays(from, to));
+        const newDays = buildLeaveDays(from, to);
+        if (isEdit) {
+          // Merge with current form values to preserve selections
+          const currentLeaveDays = form.getValues("leaveDays") || [];
+          const mergedDays = newDays.map((newDay) => {
+            const existing = currentLeaveDays.find(
+              (d: any) => d.date === newDay.date
+            );
+            if (existing) {
+              return {
+                ...newDay,
+                dayType: existing.dayType || "full",
+                halfType: existing.halfType || null,
+              };
+            }
+            return newDay;
+          });
+
+          // Only replace if there is a mismatch to avoid unnecessary state updates
+          const isIdentical =
+            currentLeaveDays.length === mergedDays.length &&
+            currentLeaveDays.every((d: any, idx: number) => {
+              const m = mergedDays[idx];
+              return (
+                d.date === m.date &&
+                d.dayType === m.dayType &&
+                d.halfType === m.halfType
+              );
+            });
+
+          if (!isIdentical) {
+            replace(mergedDays);
+          }
+        } else {
+          replace(newDays);
+        }
       } else {
         replace([]);
       }
     } else {
       replace([]);
     }
-  }, [watchFromDate, watchToDate, isEdit, isViewOnly, replace]);
+  }, [watchFromDate, watchToDate, isEdit, isViewOnly, replace, form]);
 
   // Reset toDate if it is earlier than fromDate
   useEffect(() => {
