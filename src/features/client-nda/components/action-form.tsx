@@ -25,7 +25,6 @@ import {
   useCreateNDA,
   useUpdateNDA,
   useSendNDA,
-  useGetClientsDropdown,
   useGetNDAPreviewBlob,
   useGetCountryDropdown,
 } from "../services";
@@ -39,6 +38,7 @@ import {
   FileText,
   Send,
   ArrowLeft,
+  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -60,8 +60,6 @@ export function ClientNDAActionForm({
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
   // API hooks
-  const { data: clientsData, isPending: loadingClients }: any =
-    useGetClientsDropdown();
   const { data: countryData, isPending: loadingCountries }: any =
     useGetCountryDropdown();
   const { mutateAsync: createNDA, isPending: isCreating } = useCreateNDA();
@@ -74,11 +72,6 @@ export function ClientNDAActionForm({
   const { mutateAsync: getPreviewBlob, isPending: isFetchingPreview } =
     useGetNDAPreviewBlob();
 
-  const clientOptions =
-    clientsData?.data?.map((c: any) => ({
-      value: c.id,
-      label: c.name,
-    })) || [];
 
   const countryOptions =
     countryData?.data?.map((country: any) => ({
@@ -89,7 +82,7 @@ export function ClientNDAActionForm({
   const form = useForm<TClientNDAFormSchema>({
     resolver: zodResolver(clientNDAFormSchema) as any,
     defaultValues: {
-      clientId: "",
+      clientName: "",
       clientEmail: "",
       clientPhoneNumber: "",
       clientCountry: "",
@@ -138,7 +131,9 @@ export function ClientNDAActionForm({
         setStep(1);
         setCreatedNda(currentRow);
         form.reset({
-          clientId: currentRow.clientId ? String(currentRow.clientId) : "",
+          clientName: currentRow.clientName
+            ? String(currentRow.clientName)
+            : "",
           clientEmail: currentRow.clientEmail || "",
           clientPhoneNumber: currentRow.clientPhoneNumber || "",
           clientCountry: currentRow.clientCountry || "",
@@ -149,7 +144,7 @@ export function ClientNDAActionForm({
         setStep(1);
         setCreatedNda(null);
         form.reset({
-          clientId: "",
+          clientName: "",
           clientEmail: "",
           clientPhoneNumber: "",
           clientCountry: "",
@@ -265,18 +260,25 @@ export function ClientNDAActionForm({
               </div>
 
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <CustomDropDownSearchable
-                  form={form}
-                  name="clientId"
-                  label={
-                    <span className="flex items-center gap-1">
-                      Select Client <span className="text-red-500">*</span>
-                    </span>
-                  }
-                  options={clientOptions}
-                  placeholder="Select client from dropdown"
-                  disabled={!isDraft || loadingClients}
-                  isLoading={loadingClients}
+                <FormField
+                  control={form.control}
+                  name="clientName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-1.5">
+                        <User className="w-3.5 h-3.5 text-muted-foreground" />
+                        Client Name <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="John Doe"
+                          disabled={!isDraft}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
 
                 <FormField

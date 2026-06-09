@@ -43,7 +43,7 @@ export function LeaveDashboardStats({
       key: "tomorrow",
       label: "On Leave Tomorrow",
       value: String(onLeaveTomorrow),
-      helperText: "Scheduled for tomorrow",
+      helperText: "Employees scheduled for tomorrow",
       icon: (
         <CalendarDays className="h-5 w-5 text-violet-700 dark:text-violet-400" />
       ),
@@ -54,7 +54,7 @@ export function LeaveDashboardStats({
       key: "week",
       label: "This Week",
       value: String(thisWeek),
-      helperText: "Leave days this week",
+      helperText: "Employees on leave this week",
       icon: (
         <CalendarRange className="h-5 w-5 text-blue-700 dark:text-blue-400" />
       ),

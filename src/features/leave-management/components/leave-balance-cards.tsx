@@ -46,7 +46,7 @@ export function LeaveBalanceCards({
       label: `${label} Balance`,
       value: isUnlimited
         ? "Unlimited"
-        : parseFloat(record.availableDays ?? "0").toFixed(0),
+        : String(parseFloat(record.availableDays ?? "0")),
       icon: CalendarDays,
       labelClass: isCasual ? "text-blue-400" : "text-violet-400",
       iconBgClass: isCasual

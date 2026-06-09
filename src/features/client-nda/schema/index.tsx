@@ -1,11 +1,11 @@
 import { z } from "zod";
 
 export const clientNDAFormSchema = z.object({
-  clientId: z
-    .union([z.string(), z.number()])
-    .refine((val) => val !== null && val !== undefined && val !== "", {
-      message: "Client is required",
-    }),
+  clientName: z
+    .string()
+    .trim()
+    .min(1, "Client name is required")
+    .max(50, "Client name must be at most 50 characters"),
   clientEmail: z
     .string()
     .trim()
