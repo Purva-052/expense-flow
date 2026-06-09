@@ -277,9 +277,10 @@ export default function NDASigningPage({ token }: Readonly<Props>) {
                 NDA Signed Successfully
               </p>
               <p className="text-sm text-muted-foreground leading-relaxed max-w-md mx-auto">
-                The Non-Disclosure Agreement has been successfully reviewed,
-                signed, and submitted. A copy has been saved to your records,
-                and our team has been notified.
+                Thank you for signing the Non-Disclosure Agreement. Your signed
+                NDA has been securely submitted and recorded. A copy of the
+                signed agreement has been sent to your email address, and our
+                team has been notified.
               </p>
             </div>
 
