@@ -9,6 +9,8 @@ import {
   startOfDay,
   startOfMonth,
   startOfWeek,
+  isSaturday,
+  isSunday,
 } from "date-fns";
 import { addDays } from "date-fns";
 import { LEAVE_TYPE } from "@/utils/constant";
@@ -100,13 +102,52 @@ export function countLeavesInWeek(leaves: any[], weekDate: Date): number {
   return ids.size;
 }
 
+export function parseLeaveTypeIds(leaveTypeId: any): number[] {
+  if (leaveTypeId == null) return [];
+  
+  if (Array.isArray(leaveTypeId)) {
+    return leaveTypeId.map((x) => Number(x)).filter((n) => !isNaN(n));
+  }
+  
+  if (typeof leaveTypeId === "string") {
+    const trimmed = leaveTypeId.trim();
+    if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) {
+          return parsed.map((x) => Number(x)).filter((n) => !isNaN(n));
+        }
+      } catch {
+        // ignore and fall through
+      }
+    }
+    return trimmed
+      .split(",")
+      .map((s) => Number(s.trim()))
+      .filter((n) => !isNaN(n));
+  }
+  
+  if (typeof leaveTypeId === "number") {
+    return [leaveTypeId];
+  }
+  
+  return [];
+}
+
 export function getLeaveTypeLabel(leave: any, leaveTypesMap?: Map<number, string>): string {
-  const idVal = leave.leaveTypeId ?? leave.leaveType?.id;
-  if (idVal != null) {
-    const idStr = String(idVal);
-    // Support comma separated IDs like "1,2,3"
-    const ids = idStr.split(",").map((s) => Number(s.trim())).filter((n) => !isNaN(n));
-    if (ids.length > 0 && leaveTypesMap) {
+  const idVal = leave?.leaveTypeId ?? leave?.leaveType?.id;
+  const ids = parseLeaveTypeIds(idVal);
+
+  if (ids.length === 0) {
+    if (leave?.leaveType?.name) {
+      return leave.leaveType.name;
+    }
+    // Default fallback to Casual Leave (ID 1)
+    ids.push(1);
+  }
+
+  if (ids.length > 0) {
+    if (leaveTypesMap) {
       const resolvedNames = ids
         .map((id) => leaveTypesMap.get(id))
         .filter(Boolean);
@@ -114,17 +155,18 @@ export function getLeaveTypeLabel(leave: any, leaveTypesMap?: Map<number, string
         return resolvedNames.join(", ");
       }
     }
+
+    const resolvedFromConstant = ids
+      .map((id) => LEAVE_TYPE.find((t) => Number(t.value) === id)?.label)
+      .filter(Boolean);
+    if (resolvedFromConstant.length > 0) {
+      return resolvedFromConstant.join(", ");
+    }
+
+    return `Leave Type ${ids[0]}`;
   }
 
-  const id = leave.leaveTypeId ?? leave.leaveType?.id;
-  const fromConstant = LEAVE_TYPE.find(
-    (t) => Number(t.value) === Number(id)
-  )?.label;
-  return (
-    fromConstant ??
-    leave.leaveType?.name ??
-    (id ? `Leave Type ${id}` : "Leave")
-  );
+  return "Casual Leave";
 }
 
 export function getLeaveTypeChartColor(leaveTypeId: number | string): string {
@@ -147,24 +189,79 @@ export function aggregateLeaveTypeBreakdown(
   const counts = new Map<string, { name: string; value: number; color: string }>();
 
   leaves.forEach((leave) => {
-    if (String(leave?.status || "").toLowerCase() !== "approved") return;
-    const typeId = leave.leaveTypeId ?? leave.leaveType?.id ?? "other";
-    const label = getLeaveTypeLabel(leave, leaveTypesMap);
-    const color = getLeaveTypeChartColor(typeId);
+    // Detect if this is a dashboard leaf or a normal list leaf
+    const isDashboardLeave = leave.leaveId !== undefined || leave.leaveStatus !== undefined;
+    const status = isDashboardLeave ? leave.leaveStatus : leave.status;
+    if (String(status || "").toLowerCase() !== "approved") return;
 
-    getLeaveDatesWithTypes(leave).forEach((day) => {
-      const d = parseISO(day.date);
-      if (!isWithinInterval(d, { start: rangeStart, end: rangeEnd })) return;
-
-      const weight = day.dayType === "half" ? 0.5 : 1;
-      const key = String(typeId);
-      const existing = counts.get(key);
-      if (existing) {
-        existing.value += weight;
-      } else {
-        counts.set(key, { name: label, value: weight, color });
+    if (isDashboardLeave) {
+      const fromD = parseISO(leave.fromDate);
+      const toD = leave.toDate ? parseISO(leave.toDate) : fromD;
+      
+      const label = leave.leaveTypeName || "Casual Leave";
+      
+      let color = "#94a3b8"; // grey default
+      const normLabel = label.toLowerCase();
+      if (normLabel.includes("casual")) {
+        color = "#10b981"; // green
+      } else if (normLabel.includes("paid")) {
+        color = "#3b82f6"; // blue
+      } else if (normLabel.includes("loss of pay") || normLabel.includes("lop")) {
+        color = "#f59e0b"; // yellow
+      } else if (normLabel.includes("exam")) {
+        color = "#8b5cf6"; // purple
       }
-    });
+
+      let days: Date[] = [];
+      try {
+        days = eachDayOfInterval({ start: startOfDay(fromD), end: startOfDay(toD) });
+      } catch {
+        // ignore
+      }
+
+      days.forEach((day) => {
+        if (isSaturday(day) || isSunday(day)) return;
+        if (!isWithinInterval(day, { start: rangeStart, end: rangeEnd })) return;
+
+        const weight = 1;
+        const key = normLabel;
+        const existing = counts.get(key);
+        if (existing) {
+          existing.value += weight;
+        } else {
+          counts.set(key, { name: label, value: weight, color });
+        }
+      });
+    } else {
+      const idVal = leave.leaveTypeId ?? leave.leaveType?.id;
+      const ids = parseLeaveTypeIds(idVal);
+      
+      if (ids.length === 0) {
+        if (leave?.leaveType?.id != null) {
+          ids.push(Number(leave.leaveType.id));
+        } else {
+          ids.push(1); // Default to Casual Leave (ID 1)
+        }
+      }
+      
+      const firstId = ids[0];
+      const label = getLeaveTypeLabel(leave, leaveTypesMap);
+      const color = getLeaveTypeChartColor(firstId);
+
+      getLeaveDatesWithTypes(leave).forEach((day) => {
+        const d = parseISO(day.date);
+        if (!isWithinInterval(d, { start: rangeStart, end: rangeEnd })) return;
+
+        const weight = day.dayType === "half" ? 0.5 : 1;
+        const key = String(firstId);
+        const existing = counts.get(key);
+        if (existing) {
+          existing.value += weight;
+        } else {
+          counts.set(key, { name: label, value: weight, color });
+        }
+      });
+    }
   });
 
   return Array.from(counts.values()).filter((d) => d.value > 0);

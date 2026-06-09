@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import PageLayout from "@/components/layout/layout-provider";
 import { GlobalTable } from "@/components/table/global-table";
 import GlobalFilterSection from "@/components/table/global-table-filter";
@@ -136,17 +136,9 @@ const LeaveManagementPage = () => {
   });
 
   // Dashboard-only API calls — only fire for admin
-  const { data: approvedLeavesData, isPending: approvedLeavesLoading } =
-    useGetLeaveData({ status: ["approved"], pagination: false }, isAdmin);
-
   const { data: allPendingLeavesData } = useGetLeaveData(
     { status: ["pending"], pagination: false },
     isAdmin
-  );
-
-  const approvedLeaves = useMemo(
-    () => (approvedLeavesData as any)?.data ?? [],
-    [approvedLeavesData]
   );
 
   const pendingApprovalCount = useMemo(
@@ -167,7 +159,7 @@ const LeaveManagementPage = () => {
     }).length;
   }, [employeeList]);
 
-  const dashboardChartLoading = approvedLeavesLoading;
+
 
   const creditHistoryApiParams = {
     page: queryParams.currentPage,
@@ -321,6 +313,52 @@ const LeaveManagementPage = () => {
   }, [isDeveloper, isBDE, queryParams.tab]);
 
   const isFormActive = open === "add" || open === "edit" || open === "view";
+
+  const isAnyModalOpen =
+    isFormActive ||
+    adjustBalanceOpen ||
+    setAllocationsOpen ||
+    open === "delete" ||
+    open === "action";
+
+  useEffect(() => {
+    if (!isAnyModalOpen) return;
+
+    window.history.pushState({ isModal: true }, "");
+
+    let popstateTriggered = false;
+
+    const handlePopState = () => {
+      popstateTriggered = true;
+      if (isFormActive || open === "delete" || open === "action") {
+        setOpen(null);
+        setCurrentRow(null);
+      }
+      if (adjustBalanceOpen) {
+        setAdjustBalanceOpen(false);
+      }
+      if (setAllocationsOpen) {
+        setSetAllocationsOpen(false);
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+      if (!popstateTriggered && window.history.state?.isModal) {
+        window.history.back();
+      }
+    };
+  }, [
+    isAnyModalOpen,
+    isFormActive,
+    adjustBalanceOpen,
+    setAllocationsOpen,
+    open,
+    setOpen,
+    setCurrentRow,
+  ]);
 
   const balanceLogColumns = useMemo(
     () => [
@@ -622,10 +660,8 @@ const LeaveManagementPage = () => {
                   className="mt-0 focus-visible:outline-none"
                 >
                   <LeaveDashboardTab
-                    approvedLeaves={approvedLeaves}
                     pendingCount={pendingApprovalCount}
                     lowBalanceCount={lowBalanceCount}
-                    chartLoading={dashboardChartLoading}
                   />
                 </TabsContent>
               )}

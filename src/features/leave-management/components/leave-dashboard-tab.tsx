@@ -9,17 +9,13 @@ import { useGetLeaveDashboard } from "../services";
 import { parseLeaveDashboardResponse } from "../utils/leave-helpers";
 
 interface LeaveDashboardTabProps {
-  approvedLeaves: any[];
   pendingCount: number;
   lowBalanceCount: number;
-  chartLoading?: boolean;
 }
 
 export function LeaveDashboardTab({
-  approvedLeaves,
   pendingCount,
   lowBalanceCount,
-  chartLoading,
 }: LeaveDashboardTabProps) {
   const [todayModalOpen, setTodayModalOpen] = useState(false);
   const [boardDate, setBoardDate] = useState(() => startOfDay(new Date()));
@@ -65,6 +61,7 @@ export function LeaveDashboardTab({
     [boardRes]
   );
 
+
   const statsLoading = todayLoading || tomorrowLoading || weekLoading;
 
   return (
@@ -84,7 +81,12 @@ export function LeaveDashboardTab({
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="xl:col-span-2">
-          <LeaveSummaryChart leaves={approvedLeaves} loading={chartLoading} />
+          <LeaveSummaryChart
+            monthGroups={upcomingData?.groups ?? []}
+            weekGroups={weekData?.groups ?? []}
+            dayGroups={todayData?.groups ?? []}
+            loading={statsLoading || upcomingLoading}
+          />
         </div>
         <UpcomingLeavesList
           groups={upcomingData?.groups ?? []}

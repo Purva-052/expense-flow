@@ -519,12 +519,21 @@ export function LeaveActionForm({
 
     formData.append(
       "leaveTypeId",
-      isEdit ? values.leaveTypeId : JSON.stringify(leaveTypeIds)
+      JSON.stringify(leaveTypeIds)
     );
     formData.append("fromDate", format(values.fromDate, "yyyy-MM-dd"));
     formData.append("toDate", format(values.toDate, "yyyy-MM-dd"));
     formData.append("reason", values.reason);
     formData.append("description", values.description || "");
+
+    const firstDay = values.leaveDays?.[0];
+    const dayTypeVal = firstDay?.dayType || "full";
+    formData.append("dayType", dayTypeVal);
+
+    if (dayTypeVal === "half") {
+      const halfTypeVal = firstDay?.halfType || "first_half";
+      formData.append("halfType", halfTypeVal);
+    }
     formData.append(
       "leaveDays",
       JSON.stringify(

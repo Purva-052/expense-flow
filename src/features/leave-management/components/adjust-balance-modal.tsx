@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import CustomButton from "@/components/shared/custom-button";
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import { useAdjustLeaveBalance, useGetLeaveTypes } from "../services";
-import { Scale } from "lucide-react";
+// import { Scale } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -99,12 +99,16 @@ export function AdjustBalanceModal({
       ? leaveTypesRes
       : Array.isArray((leaveTypesRes as any)?.data)
         ? (leaveTypesRes as any).data
-        : [];
+        : Array.isArray((leaveTypesRes as any)?.data?.data)
+          ? (leaveTypesRes as any).data.data
+          : [];
 
-    return rawList.map((item: any) => ({
-      value: item.id ?? item.value ?? item.code,
-      label: item.name ?? item.label ?? item.title,
-    }));
+    return rawList
+      .map((item: any) => ({
+        value: item.id ?? item.value ?? item.code,
+        label: item.name ?? item.label ?? item.title,
+      }))
+      .filter((option: any) => String(option.value) !== "3");
   }, [leaveTypesRes]);
 
   // Reset form when dialog opens/closes
@@ -132,7 +136,6 @@ export function AdjustBalanceModal({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-rose-500 font-bold text-lg dark:text-rose-400">
-            <Scale className="h-5 w-5 text-rose-500 animate-pulse" />
             Adjust Leave Balance
           </DialogTitle>
           <DialogDescription>
@@ -154,7 +157,7 @@ export function AdjustBalanceModal({
                 </span>
               }
               options={employeeOptions}
-              placeholder="Search and select employee"
+              placeholder="Select employee"
               isLoading={employeesListLoading}
               showClearButton={true}
             />
@@ -168,7 +171,7 @@ export function AdjustBalanceModal({
                 </span>
               }
               options={leaveTypeOptions}
-              placeholder="Search and select leave type"
+              placeholder="Select leave type"
               isLoading={leaveTypesLoading}
               showClearButton={true}
               searchEnabled={false}

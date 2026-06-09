@@ -6,66 +6,42 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import {
-  aggregateLeaveTypeBreakdown,
-  getMonthRange,
-} from "../utils/leave-helpers";
-import { useGetLeaveTypes } from "../services";
-import {
-  endOfWeek,
-  startOfWeek,
-  startOfDay,
-  endOfDay,
-} from "date-fns";
 
 interface LeaveSummaryChartProps {
-  leaves: any[];
+  monthGroups: any[];
+  weekGroups: any[];
+  dayGroups: any[];
   loading?: boolean;
 }
 
 type GroupBy = "month" | "week" | "day";
 
-function getRange(groupBy: GroupBy) {
-  const now = new Date();
-  if (groupBy === "week") {
-    return {
-      start: startOfWeek(now, { weekStartsOn: 1 }),
-      end: endOfWeek(now, { weekStartsOn: 1 }),
-    };
-  }
-  if (groupBy === "day") {
-    return { start: startOfDay(now), end: endOfDay(now) };
-  }
-  return getMonthRange(now);
-}
-
-export function LeaveSummaryChart({ leaves, loading }: LeaveSummaryChartProps) {
+export function LeaveSummaryChart({
+  monthGroups,
+  weekGroups,
+  dayGroups,
+  loading,
+}: LeaveSummaryChartProps) {
   const [groupBy, setGroupBy] = useState<GroupBy>("month");
 
-  const { data: leaveTypesRes } = useGetLeaveTypes();
-
-  const leaveTypesList = useMemo(() => {
-    return Array.isArray(leaveTypesRes)
-      ? leaveTypesRes
-      : Array.isArray((leaveTypesRes as any)?.data)
-        ? (leaveTypesRes as any).data
-        : [];
-  }, [leaveTypesRes]);
-
-  const leaveTypesMap = useMemo(() => {
-    const map = new Map<number, string>();
-    leaveTypesList.forEach((item: any) => {
-      if (item.id != null) {
-        map.set(Number(item.id), item.name || item.label || item.title);
-      }
-    });
-    return map;
-  }, [leaveTypesList]);
-
   const chartData = useMemo(() => {
-    const { start, end } = getRange(groupBy);
-    return aggregateLeaveTypeBreakdown(leaves, start, end, leaveTypesMap);
-  }, [leaves, groupBy, leaveTypesMap]);
+    const activeGroups =
+      groupBy === "month"
+        ? monthGroups
+        : groupBy === "week"
+          ? weekGroups
+          : dayGroups;
+
+    if (!Array.isArray(activeGroups)) return [];
+
+    return activeGroups
+      .map((g: any) => ({
+        name: g.technologyName || "Other",
+        value: Number(g.count || 0),
+        color: g.technologyColor || "#94a3b8",
+      }))
+      .filter((item) => item.value > 0);
+  }, [groupBy, monthGroups, weekGroups, dayGroups]);
 
   const total = useMemo(
     () => chartData.reduce((sum, d) => sum + d.value, 0),
@@ -86,10 +62,10 @@ export function LeaveSummaryChart({ leaves, loading }: LeaveSummaryChartProps) {
           <div className="w-1.5 h-7 rounded-full bg-primary" />
           <div>
             <h3 className="text-sm font-bold text-foreground tracking-tight">
-              Leave Summary
+              Employees on Leave
             </h3>
             <p className="text-[11px] text-muted-foreground mt-0.5">
-              Leave type breakdown · {periodLabel}
+              Department breakdown · {periodLabel}
             </p>
           </div>
         </div>
@@ -130,7 +106,7 @@ export function LeaveSummaryChart({ leaves, loading }: LeaveSummaryChartProps) {
               No leave data
             </span>
             <span className="text-xs text-muted-foreground">
-              No approved leaves found for {periodLabel.toLowerCase()}.
+              No employees on leave found for {periodLabel.toLowerCase()}.
             </span>
           </div>
         ) : (
@@ -165,7 +141,7 @@ export function LeaveSummaryChart({ leaves, loading }: LeaveSummaryChartProps) {
                       }}
                       itemStyle={{ color: "var(--foreground)" }}
                       formatter={(value: any, name: any) => [
-                        `${value} days`,
+                        `${value} ${value === 1 ? "employee" : "employees"}`,
                         name,
                       ]}
                     />
@@ -174,10 +150,10 @@ export function LeaveSummaryChart({ leaves, loading }: LeaveSummaryChartProps) {
 
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                   <span className="text-2xl font-extrabold text-foreground leading-none">
-                    {Number.isInteger(total) ? total : total.toFixed(1)}
+                    {total}
                   </span>
                   <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mt-0.5">
-                    Total Leaves
+                    {total === 1 ? "Employee" : "Employees"}
                   </span>
                 </div>
               </div>
@@ -187,9 +163,7 @@ export function LeaveSummaryChart({ leaves, loading }: LeaveSummaryChartProps) {
               {chartData.map((entry, index) => {
                 const percent =
                   total > 0 ? Math.round((entry.value / total) * 100) : 0;
-                const displayValue = Number.isInteger(entry.value)
-                  ? entry.value
-                  : entry.value.toFixed(1);
+                const displayValue = entry.value;
                 return (
                   <div key={index} className="flex items-center gap-3">
                     <span
@@ -203,7 +177,7 @@ export function LeaveSummaryChart({ leaves, loading }: LeaveSummaryChartProps) {
                         </span>
                         <div className="flex items-center gap-2 shrink-0 ml-3">
                           <span className="text-xs text-muted-foreground">
-                            {displayValue} days
+                            {displayValue} {displayValue === 1 ? "employee" : "employees"}
                           </span>
                           <span
                             className="text-[11px] font-bold px-1.5 py-0.5 rounded"
