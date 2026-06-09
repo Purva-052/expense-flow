@@ -27,14 +27,19 @@ export function LeaveApproveRejectModal({
   const [rejectionReason, setRejectionReason] = useState("");
   const [error, setError] = useState("");
 
-  const { mutateAsync: approveRejectMutate, isPending } =
-    useApproveRejectLeave(currentRow?.id || "");
+  const { mutateAsync: approveRejectMutate, isPending } = useApproveRejectLeave(
+    currentRow?.id || ""
+  );
 
   const handleClose = () => {
     setStep("main");
     setRejectionReason("");
     setError("");
     onOpenChange(false);
+  };
+
+  const formatDays = (days: number | string) => {
+    return parseFloat(String(days)).toString();
   };
 
   const handleApprove = async () => {
@@ -123,7 +128,7 @@ export function LeaveApproveRejectModal({
                     Total Days:
                   </span>
                   <span className="font-semibold text-foreground">
-                    {currentRow.leaveDays.length} day(s)
+                    {formatDays(currentRow.totalDays)} day(s)
                   </span>
                 </div>
               )}
