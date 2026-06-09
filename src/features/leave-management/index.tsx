@@ -452,7 +452,9 @@ const LeaveManagementPage = () => {
             Manual Balance Log History
           </h3>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Logs of manual adjustments made to employee leave balances.
+            {isAdmin
+              ? `Logs of manual adjustments made to employee leave balances.`
+              : `Logs of manual adjustments made to your leave balance.`}
           </p>
         </div>
         {isAdmin && (
