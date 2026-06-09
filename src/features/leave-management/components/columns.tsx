@@ -258,7 +258,7 @@ export const columns: ColumnDef<any>[] = [
               </DropdownMenuItem>
             )}
 
-            {canEditDelete && (
+            {rowStatus === "pending" && isAdmin && (
               <DropdownMenuItem
                 className="text-red-600 focus:bg-red-50 focus:text-red-600"
                 onClick={handleDelete}
