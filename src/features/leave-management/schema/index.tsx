@@ -41,6 +41,33 @@ export const leaveSchema = z
     leaveDays: z
       .array(leaveDaySchema)
       .min(1, "At least one leave day is required"),
+
+    attachments: z
+      .any()
+      .optional()
+      .nullable()
+      .refine(
+        (file) => {
+          if (!file) return true;
+          return file instanceof File || typeof file === "string";
+        },
+        { message: "Attachment must be a file or URL" }
+      )
+      .refine(
+        (file) => {
+          if (!file || !(file instanceof File)) return true;
+          return file.size <= 5 * 1024 * 1024; // 5 MB
+        },
+        { message: "File size must be less than 5MB" }
+      )
+      .refine(
+        (file) => {
+          if (!file || !(file instanceof File)) return true;
+          const validTypes = ["application/pdf", "image/jpeg", "image/jpg"];
+          return validTypes.includes(file.type);
+        },
+        { message: "Only PDF and JPEG formats are allowed" }
+      ),
   })
   .superRefine((data, ctx) => {
     if (data.fromDate && data.toDate && data.fromDate > data.toDate) {
