@@ -523,7 +523,29 @@ export function parseLeaveDashboardResponse(
   const raw = response as any;
   const data = raw?.data?.data ?? raw?.data;
   if (!data || !Array.isArray(data.groups)) return null;
-  return data;
+
+  const mappedGroups = data.groups.map((group: any) => {
+    const isUnassigned =
+      !group.technologyName ||
+      group.technologyName === "Unassigned" ||
+      group.technologyName.trim() === "";
+
+    return {
+      ...group,
+      technologyName: isUnassigned ? "Management / Administration" : group.technologyName,
+      technologyColor: isUnassigned ? "#475569" : (group.technologyColor || "#94a3b8"),
+      employees: group.employees?.map((emp: any) => ({
+        ...emp,
+        technologyName: isUnassigned ? "Management / Administration" : emp.technologyName || group.technologyName,
+        technologyColor: isUnassigned ? "#475569" : emp.technologyColor || group.technologyColor || "#94a3b8",
+      })) || [],
+    };
+  });
+
+  return {
+    ...data,
+    groups: mappedGroups,
+  };
 }
 
 export function formatDashboardEmployeeDateRange(emp: {
