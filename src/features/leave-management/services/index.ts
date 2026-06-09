@@ -8,13 +8,13 @@ import { useLeaveStore } from "../stores";
 
 // Assuming your API structure has a leaves endpoint
 const GET_API_URL = API.leave_management.list;
-const GET_EMPLOYEES_API_URL = API.leave_management.employee;
 const LEAVE_DASHBOARD_URL = API.leave_management.leave_dashboard;
 
 const leaveRefetchQueries = [
   GET_API_URL,
   API.leave_balance.get,
   LEAVE_DASHBOARD_URL,
+  API.leave_management.leave_balance,
 ];
 
 export const useCreateLeaveData = () => {
@@ -41,6 +41,14 @@ export const useGetLeaveData = (params?: any, enabled = true) => {
   return useFetchData({ url: GET_API_URL, params, enabled });
 };
 
+export const useGetLeaveCreditHistory = (params?: any, enabled = true) => {
+  return useFetchData({
+    url: API.leave_management.leave_balance,
+    params,
+    enabled,
+  });
+};
+
 /**
  * Leave dashboard — grouped by technology for a given filter.
  * @param params.filter - today | tomorrow | week | upcoming | low_balance
@@ -55,10 +63,6 @@ export const useGetLeaveDashboard = (
     params,
     enabled,
   });
-};
-
-export const useGeEmployeeData = (params?: any, enabled = true) => {
-  return useFetchData({ url: GET_EMPLOYEES_API_URL, params, enabled });
 };
 
 export const useDeleteLeaveData = (id: string) => {

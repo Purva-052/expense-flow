@@ -55,7 +55,10 @@ import { FormProvider, useForm } from "react-hook-form";
 // import { toast } from "sonner";
 import { useUploadTransactionFile } from "../../transaction-logs/services";
 import { useUpdateUserData, useGetUsersList } from "../../users/services";
-import { OrgChart } from "../../users/components/org-chart";
+import {
+  OrgChart,
+  extractOrgChartUsers,
+} from "../../users/components/org-chart";
 import { CreatableSkillsSelect } from "./creatable-skills-select";
 import {
   useGetSkillsList,
@@ -209,13 +212,10 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
       pagination: false,
     });
 
-  const allActiveUsers = useMemo(() => {
-    if (!allUsersResponse) return [];
-    if (Array.isArray(allUsersResponse)) return allUsersResponse;
-    if (Array.isArray((allUsersResponse as any)?.data)) return (allUsersResponse as any).data;
-    if (Array.isArray((allUsersResponse as any)?.data?.data)) return (allUsersResponse as any).data.data;
-    return [];
-  }, [allUsersResponse]);
+  const allActiveUsers = useMemo(
+    () => extractOrgChartUsers(allUsersResponse),
+    [allUsersResponse]
+  );
   const { data: skillReferenceData } = useGetSkillReference(user?.id);
   const { mutateAsync: createSkill, isPending: isCreatingSkill } =
     useCreateSkill();

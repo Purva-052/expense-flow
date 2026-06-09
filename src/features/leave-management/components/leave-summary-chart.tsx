@@ -10,6 +10,7 @@ import {
   aggregateLeaveTypeBreakdown,
   getMonthRange,
 } from "../utils/leave-helpers";
+import { useGetLeaveTypes } from "../services";
 import {
   endOfWeek,
   startOfWeek,
@@ -41,10 +42,30 @@ function getRange(groupBy: GroupBy) {
 export function LeaveSummaryChart({ leaves, loading }: LeaveSummaryChartProps) {
   const [groupBy, setGroupBy] = useState<GroupBy>("month");
 
+  const { data: leaveTypesRes } = useGetLeaveTypes();
+
+  const leaveTypesList = useMemo(() => {
+    return Array.isArray(leaveTypesRes)
+      ? leaveTypesRes
+      : Array.isArray((leaveTypesRes as any)?.data)
+        ? (leaveTypesRes as any).data
+        : [];
+  }, [leaveTypesRes]);
+
+  const leaveTypesMap = useMemo(() => {
+    const map = new Map<number, string>();
+    leaveTypesList.forEach((item: any) => {
+      if (item.id != null) {
+        map.set(Number(item.id), item.name || item.label || item.title);
+      }
+    });
+    return map;
+  }, [leaveTypesList]);
+
   const chartData = useMemo(() => {
     const { start, end } = getRange(groupBy);
-    return aggregateLeaveTypeBreakdown(leaves, start, end);
-  }, [leaves, groupBy]);
+    return aggregateLeaveTypeBreakdown(leaves, start, end, leaveTypesMap);
+  }, [leaves, groupBy, leaveTypesMap]);
 
   const total = useMemo(
     () => chartData.reduce((sum, d) => sum + d.value, 0),
