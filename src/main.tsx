@@ -99,7 +99,7 @@ if (!rootElement.innerHTML) {
   root.render(
     <StrictMode>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider defaultTheme="light" storageKey="mode">
+        <ThemeProvider defaultTheme="dark" storageKey="mode">
           <FontProvider>
             <RouterProvider router={router} />
             {/* <Toaster /> */}
