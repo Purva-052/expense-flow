@@ -258,14 +258,15 @@ export const columns: ColumnDef<any>[] = [
               </DropdownMenuItem>
             )}
 
-            {rowStatus === "pending" && isAdmin && (
-              <DropdownMenuItem
-                className="text-red-600 focus:bg-red-50 focus:text-red-600"
-                onClick={handleDelete}
-              >
-                Delete Details
-              </DropdownMenuItem>
-            )}
+            {rowStatus === "pending" ||
+              (isAdmin && (
+                <DropdownMenuItem
+                  className="text-red-600 focus:bg-red-50 focus:text-red-600"
+                  onClick={handleDelete}
+                >
+                  Delete Details
+                </DropdownMenuItem>
+              ))}
 
             {!hasActions && (
               <DropdownMenuItem disabled>No actions available</DropdownMenuItem>
