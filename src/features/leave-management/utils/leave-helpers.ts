@@ -100,7 +100,22 @@ export function countLeavesInWeek(leaves: any[], weekDate: Date): number {
   return ids.size;
 }
 
-export function getLeaveTypeLabel(leave: any): string {
+export function getLeaveTypeLabel(leave: any, leaveTypesMap?: Map<number, string>): string {
+  const idVal = leave.leaveTypeId ?? leave.leaveType?.id;
+  if (idVal != null) {
+    const idStr = String(idVal);
+    // Support comma separated IDs like "1,2,3"
+    const ids = idStr.split(",").map((s) => Number(s.trim())).filter((n) => !isNaN(n));
+    if (ids.length > 0 && leaveTypesMap) {
+      const resolvedNames = ids
+        .map((id) => leaveTypesMap.get(id))
+        .filter(Boolean);
+      if (resolvedNames.length > 0) {
+        return resolvedNames.join(", ");
+      }
+    }
+  }
+
   const id = leave.leaveTypeId ?? leave.leaveType?.id;
   const fromConstant = LEAVE_TYPE.find(
     (t) => Number(t.value) === Number(id)
@@ -126,14 +141,15 @@ export function getLeaveTypeChartColor(leaveTypeId: number | string): string {
 export function aggregateLeaveTypeBreakdown(
   leaves: any[],
   rangeStart: Date,
-  rangeEnd: Date
+  rangeEnd: Date,
+  leaveTypesMap?: Map<number, string>
 ) {
   const counts = new Map<string, { name: string; value: number; color: string }>();
 
   leaves.forEach((leave) => {
     if (String(leave?.status || "").toLowerCase() !== "approved") return;
     const typeId = leave.leaveTypeId ?? leave.leaveType?.id ?? "other";
-    const label = getLeaveTypeLabel(leave);
+    const label = getLeaveTypeLabel(leave, leaveTypesMap);
     const color = getLeaveTypeChartColor(typeId);
 
     getLeaveDatesWithTypes(leave).forEach((day) => {

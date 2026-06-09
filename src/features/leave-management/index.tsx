@@ -6,30 +6,29 @@ import GlobalFilterSection from "@/components/table/global-table-filter";
 import TablePageHeader from "@/components/table/table-page-header";
 import { FilterConfig } from "@/components/table/table-toolbar";
 import { ActionFormModal } from "./components/action";
-import {
-  LeaveActionForm,
-} from "./components/action-form";
+import { LeaveActionForm } from "./components/action-form";
 import { columns } from "./components/columns";
 import { useLeaveStore } from "./stores";
 import {
-  useGeEmployeeData,
   useGetAllLeaveBalances,
   useGetLeaveData,
   useCreateLeaveData,
   useUpdateLeaveData,
+  useGetLeaveCreditHistory,
 } from "./services";
 import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import { formatDate } from "@/utils/commonFunctions";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
-import { LayoutDashboard, FileText, Plus, Coins } from "lucide-react";
+import { LayoutDashboard, FileText, Plus, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LeaveBalanceCards } from "./components/leave-balance-cards";
 import { LeaveDashboardTab } from "./components/leave-dashboard-tab";
 import { AdjustBalanceModal } from "./components/adjust-balance-modal";
 import { SetAllocationsModal } from "./components/set-allocations-modal";
-
+import { useGetUserDropdownList } from "../users/services";
+import { cn } from "@/lib/utils";
 
 const tabTriggerClass =
   "flex items-center gap-2 rounded-[50px] !px-3 !py-2 transition-all h-[35px] " +
@@ -50,13 +49,12 @@ const LeaveManagementPage = () => {
   ).toLowerCase();
 
   const isAdmin = roleName === roles.ADMIN;
-  const isPM = roleName === roles.PROJECT_MANAGER;
   const isDeveloper = roleName === roles.DEVELOPER;
   const isBDE = roleName === roles.BDE;
   // Dashboard tab is only visible to admin
   const canViewDashboard = isAdmin;
   // Manager-level features (employee filter, status tabs) remain for admin + PM
-  const canViewManagerTabs = isAdmin || isPM;
+  const canViewManagerTabs = isAdmin;
   const showStatusTabs = !isDeveloper && !isBDE;
 
   const currentEmployeeId = user?.user?.id || user?.user_id;
@@ -75,11 +73,13 @@ const LeaveManagementPage = () => {
   });
 
   const activeSection =
-    canViewDashboard && queryParams.section === "leaves"
+    queryParams.section === "leaves"
       ? "leaves"
-      : canViewDashboard
-        ? "dashboard"
-        : "leaves";
+      : queryParams.section === "balance-logs"
+        ? "balance-logs"
+        : canViewDashboard
+          ? "dashboard"
+          : "leaves";
 
   const listParams = {
     pageSize: queryParams.pageSize,
@@ -111,8 +111,17 @@ const LeaveManagementPage = () => {
   const { data: listData, isPending: loading } = useGetLeaveData(apiParams);
 
   // Employee list only fetched for admin (dashboard features)
-  const { data: employeesList, isPending: employeesListLoading }: any =
-    useGeEmployeeData(undefined, isAdmin);
+  const { data: employeeList, isPending: usersListLoading }: any =
+    useGetUserDropdownList({
+      role: [
+        roles.TEAM_LEAD,
+        roles.ADMIN,
+        roles.PROJECT_MANAGER,
+        roles.DEVELOPER,
+        roles.BDE,
+      ],
+      status: "active",
+    });
 
   const balanceUserId =
     (canViewManagerTabs && listParams.employeeId) || currentEmployeeId;
@@ -120,26 +129,20 @@ const LeaveManagementPage = () => {
   const { data: allBalanceData, isPending: balanceLoading } =
     useGetAllLeaveBalances(balanceUserId) as any;
 
-  const { isPending: pendingLeavesLoading } =
-    useGetLeaveData({
-      employeeId: balanceUserId,
-      status: ["pending"],
-      pagination: false,
-    });
+  const { isPending: pendingLeavesLoading } = useGetLeaveData({
+    employeeId: balanceUserId,
+    status: ["pending"],
+    pagination: false,
+  });
 
   // Dashboard-only API calls — only fire for admin
   const { data: approvedLeavesData, isPending: approvedLeavesLoading } =
-    useGetLeaveData(
-      { status: ["approved"], pagination: false },
-      isAdmin
-    );
+    useGetLeaveData({ status: ["approved"], pagination: false }, isAdmin);
 
   const { data: allPendingLeavesData } = useGetLeaveData(
-      { status: ["pending"], pagination: false },
-      isAdmin
-    );
-
-
+    { status: ["pending"], pagination: false },
+    isAdmin
+  );
 
   const approvedLeaves = useMemo(
     () => (approvedLeavesData as any)?.data ?? [],
@@ -152,17 +155,45 @@ const LeaveManagementPage = () => {
   );
 
   const lowBalanceCount = useMemo(() => {
-    const employees = employeesList?.data ?? [];
+    const employees = employeeList?.data ?? [];
     return employees.filter((emp: any) => {
       const balances = emp.leaveBalances ?? emp.balances ?? [];
       if (!Array.isArray(balances) || balances.length === 0) return false;
       return balances.some(
-        (b: any) => parseFloat(b.availableDays ?? "0") <= 2 && parseFloat(b.availableDays ?? "0") >= 0
+        (b: any) =>
+          parseFloat(b.availableDays ?? "0") <= 2 &&
+          parseFloat(b.availableDays ?? "0") >= 0
       );
     }).length;
-  }, [employeesList]);
+  }, [employeeList]);
 
   const dashboardChartLoading = approvedLeavesLoading;
+
+  const creditHistoryApiParams = {
+    page: queryParams.currentPage,
+    limit: queryParams.pageSize,
+    search: queryParams.search || undefined,
+    employeeId: canViewManagerTabs
+      ? queryParams.employeeId || undefined
+      : undefined,
+    pagination: true,
+  };
+
+  const { data: creditHistoryData, isPending: creditHistoryLoading } =
+    useGetLeaveCreditHistory(
+      creditHistoryApiParams,
+      activeSection === "balance-logs"
+    );
+
+  const creditHistoryList = useMemo(
+    () => (creditHistoryData as any)?.data ?? [],
+    [creditHistoryData]
+  );
+
+  const creditHistoryTotalCount = useMemo(
+    () => (creditHistoryData as any)?.metadata?.totalCount ?? 0,
+    [creditHistoryData]
+  );
 
   const { mutateAsync: createMutate, isPending: isCreateLoading } =
     useCreateLeaveData();
@@ -254,7 +285,7 @@ const LeaveManagementPage = () => {
             type: "select" as const,
             key: "employeeId",
             placeholder: "Filter by employee",
-            options: employeesList?.data?.map((emp: any) => ({
+            options: employeeList?.data?.map((emp: any) => ({
               value: emp.id,
               label: emp.fullName,
             })),
@@ -266,7 +297,7 @@ const LeaveManagementPage = () => {
                 currentPage: 1,
               });
             },
-            isLoading: employeesListLoading,
+            isLoading: usersListLoading,
           },
         ]
       : []),
@@ -290,6 +321,165 @@ const LeaveManagementPage = () => {
   }, [isDeveloper, isBDE, queryParams.tab]);
 
   const isFormActive = open === "add" || open === "edit" || open === "view";
+
+  const balanceLogColumns = useMemo(
+    () => [
+      {
+        accessorKey: "employee",
+        header: "Employee Name",
+        cell: ({ row }: any) => {
+          const emp = row.getValue("employee");
+          return (
+            <span className="font-semibold text-gray-900 dark:text-slate-100">
+              {emp?.fullName ?? "-"}
+            </span>
+          );
+        },
+      },
+      {
+        accessorKey: "leaveType",
+        header: "Leave Type",
+        cell: ({ row }: any) => {
+          const lt = row.getValue("leaveType");
+          return <span>{lt?.name ?? "-"}</span>;
+        },
+      },
+      {
+        accessorKey: "adjustment",
+        header: "Adjustment",
+        cell: ({ row }: any) => {
+          const val = row.getValue("adjustment");
+          if (val === null || val === undefined) return <span>-</span>;
+          const num = parseFloat(val);
+          const isNegative = num < 0;
+          const formatted = isNegative
+            ? `${num.toFixed(2)}`
+            : `+${num.toFixed(2)}`;
+          return (
+            <span
+              className={cn(
+                "font-bold px-2 py-0.5 rounded-full text-xs",
+                isNegative
+                  ? "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400"
+                  : "bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400"
+              )}
+            >
+              {formatted} Days
+            </span>
+          );
+        },
+      },
+      {
+        accessorKey: "previousBalance",
+        header: "Previous Balance",
+        cell: ({ row }: any) => {
+          const val = row.getValue("previousBalance");
+          if (val === null || val === undefined) return <span>-</span>;
+          return <span>{parseFloat(val).toFixed(2)} Days</span>;
+        },
+      },
+      {
+        accessorKey: "newBalance",
+        header: "New Balance",
+        cell: ({ row }: any) => {
+          const val = row.getValue("newBalance");
+          if (val === null || val === undefined) return <span>-</span>;
+          return <span>{parseFloat(val).toFixed(2)} Days</span>;
+        },
+      },
+      {
+        accessorKey: "dateAdded",
+        header: "Date Added",
+        cell: ({ row }: any) => {
+          const dateStr = row.getValue("dateAdded");
+          if (!dateStr) return <span>-</span>;
+          const date = new Date(dateStr);
+          return (
+            <span>
+              {date.toLocaleDateString("en-IN", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              })}{" "}
+              {date.toLocaleTimeString("en-IN", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
+          );
+        },
+      },
+      {
+        accessorKey: "adjustedBy",
+        header: "Adjusted By",
+        cell: ({ row }: any) => {
+          const adjBy = row.getValue("adjustedBy");
+          return <span>{adjBy?.fullName ?? "System / Auto"}</span>;
+        },
+      },
+      {
+        accessorKey: "reason",
+        header: "Reason",
+        cell: ({ row }: any) => {
+          const reason = row.getValue("reason");
+          const source = row.original.source;
+          if (reason) return <span>{reason}</span>;
+          if (source) {
+            const formattedSource = source
+              .split("_")
+              .map(
+                (word: string) => word.charAt(0).toUpperCase() + word.slice(1)
+              )
+              .join(" ");
+            return (
+              <span className="text-muted-foreground italic">
+                {formattedSource}
+              </span>
+            );
+          }
+          return <span>-</span>;
+        },
+      },
+    ],
+    []
+  );
+
+  const balanceLogsTabContent = (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-100 dark:border-slate-800 shadow-xs">
+        <div>
+          <h3 className="font-semibold text-sm text-gray-900 dark:text-slate-100">
+            Manual Balance Log History
+          </h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Logs of manual adjustments made to employee leave balances.
+          </p>
+        </div>
+        {isAdmin && (
+          <Button
+            onClick={() => setAdjustBalanceOpen(true)}
+            className="shrink-0 w-fit"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add Balance
+          </Button>
+        )}
+      </div>
+
+      <GlobalFilterSection filters={filters ?? []} />
+
+      <GlobalTable
+        pageSize={listParams.pageSize}
+        currentPage={listParams.currentPage}
+        totalCount={creditHistoryTotalCount}
+        data={creditHistoryList}
+        columns={balanceLogColumns}
+        loading={creditHistoryLoading}
+        isPaginationEnabled
+        onPaginationChange={handlePaginationChange}
+      />
+    </div>
+  );
 
   const leavesTabContent = (
     <div className="flex flex-col gap-4">
@@ -344,8 +534,8 @@ const LeaveManagementPage = () => {
               loading={isCreateLoading}
               onOpenChange={(value) => setOpen(value ? "add" : null)}
               onSubmit={handleCreate}
-              employeesList={employeesList}
-              employeesListLoading={employeesListLoading}
+              employeesList={employeeList}
+              employeesListLoading={usersListLoading}
             />
           )}
 
@@ -357,8 +547,8 @@ const LeaveManagementPage = () => {
               loading={isUpdateLoading}
               onOpenChange={handleCloseForm}
               currentRow={currentRow}
-              employeesList={employeesList}
-              employeesListLoading={employeesListLoading}
+              employeesList={employeeList}
+              employeesListLoading={usersListLoading}
             />
           )}
 
@@ -368,8 +558,8 @@ const LeaveManagementPage = () => {
               open={open === "view"}
               onOpenChange={handleCloseForm}
               currentRow={currentRow}
-              employeesList={employeesList}
-              employeesListLoading={employeesListLoading}
+              employeesList={employeeList}
+              employeesListLoading={usersListLoading}
               onSubmit={() => {}}
               isViewOnly
             />
@@ -384,16 +574,17 @@ const LeaveManagementPage = () => {
               onButtonClick={handleAdd}
               showActionButton={activeSection === "leaves"}
               actions={
-                canViewDashboard && activeSection === "dashboard" && (
+                canViewDashboard &&
+                activeSection === "leaves" && (
                   <div className="flex items-center gap-2">
-                    <Button onClick={() => setSetAllocationsOpen(true)} variant="outline">
+                    {/* <Button onClick={() => setSetAllocationsOpen(true)} variant="outline">
                       <Coins className="mr-2 h-4 w-4" />
                       Set Allocations
-                    </Button>
-                    <Button onClick={() => setAdjustBalanceOpen(true)}>
+                    </Button> */}
+                    {/* <Button onClick={() => setAdjustBalanceOpen(true)}>
                       <Plus className="mr-2 h-4 w-4" />
                       Add Balance
-                    </Button>
+                    </Button> */}
                   </div>
                 )
               }
@@ -401,24 +592,33 @@ const LeaveManagementPage = () => {
               Manage employee leaves and track attendance.
             </TablePageHeader>
 
-            {canViewDashboard ? (
-              <Tabs
-                value={activeSection}
-                onValueChange={handleSectionChange}
-                className="w-full gap-4"
-              >
-                <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border border-rose-100/50 h-9 w-fit shrink-0">
+            <Tabs
+              value={activeSection}
+              onValueChange={handleSectionChange}
+              className="w-full gap-4"
+            >
+              <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border border-rose-100/50 h-9 w-fit shrink-0">
+                {canViewDashboard && (
                   <TabsTrigger value="dashboard" className={tabTriggerClass}>
                     <LayoutDashboard className="h-4 w-4" />
                     Leave Dashboard
                   </TabsTrigger>
-                  <TabsTrigger value="leaves" className={tabTriggerClass}>
-                    <FileText className="h-4 w-4" />
-                    Apply for Leave
-                  </TabsTrigger>
-                </TabsList>
+                )}
+                <TabsTrigger value="leaves" className={tabTriggerClass}>
+                  <FileText className="h-4 w-4" />
+                  Leave Status
+                </TabsTrigger>
+                <TabsTrigger value="balance-logs" className={tabTriggerClass}>
+                  <History className="h-4 w-4" />
+                  Balance Logs
+                </TabsTrigger>
+              </TabsList>
 
-                <TabsContent value="dashboard" className="mt-0 focus-visible:outline-none">
+              {canViewDashboard && (
+                <TabsContent
+                  value="dashboard"
+                  className="mt-0 focus-visible:outline-none"
+                >
                   <LeaveDashboardTab
                     approvedLeaves={approvedLeaves}
                     pendingCount={pendingApprovalCount}
@@ -426,14 +626,22 @@ const LeaveManagementPage = () => {
                     chartLoading={dashboardChartLoading}
                   />
                 </TabsContent>
+              )}
 
-                <TabsContent value="leaves" className="mt-0 focus-visible:outline-none">
-                  {leavesTabContent}
-                </TabsContent>
-              </Tabs>
-            ) : (
-              <div className="pb-2">{leavesTabContent}</div>
-            )}
+              <TabsContent
+                value="leaves"
+                className="mt-0 focus-visible:outline-none"
+              >
+                {leavesTabContent}
+              </TabsContent>
+
+              <TabsContent
+                value="balance-logs"
+                className="mt-0 focus-visible:outline-none"
+              >
+                {balanceLogsTabContent}
+              </TabsContent>
+            </Tabs>
           </div>
         </>
       )}
@@ -442,8 +650,8 @@ const LeaveManagementPage = () => {
       <AdjustBalanceModal
         open={adjustBalanceOpen}
         onOpenChange={setAdjustBalanceOpen}
-        employeesList={employeesList}
-        employeesListLoading={employeesListLoading}
+        employeesList={employeeList}
+        employeesListLoading={usersListLoading}
       />
       <SetAllocationsModal
         open={setAllocationsOpen}

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -23,6 +23,8 @@ import CustomButton from "@/components/shared/custom-button";
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import { useAdjustLeaveBalance, useGetLeaveTypes } from "../services";
 import { Scale } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 interface AdjustBalanceModalProps {
   open: boolean;
@@ -35,17 +37,26 @@ const adjustBalanceSchema = z.object({
   employeeId: z
     .union([z.string(), z.number()], { required_error: "Employee is required" })
     .transform((val) => Number(val))
-    .refine((val) => !isNaN(val) && val > 0, { message: "Employee is required" }),
+    .refine((val) => !isNaN(val) && val > 0, {
+      message: "Employee is required",
+    }),
   leaveTypeId: z
-    .union([z.string(), z.number()], { required_error: "Leave type is required" })
+    .union([z.string(), z.number()], {
+      required_error: "Leave type is required",
+    })
     .transform((val) => Number(val))
-    .refine((val) => !isNaN(val) && val > 0, { message: "Leave type is required" }),
+    .refine((val) => !isNaN(val) && val > 0, {
+      message: "Leave type is required",
+    }),
   balance: z
-    .union([z.string(), z.number()], { required_error: "Balance to add is required" })
+    .union([z.string(), z.number()], {
+      required_error: "Balance to add is required",
+    })
     .transform((val) => Number(val))
     .refine((val) => !isNaN(val) && val >= 0 && val <= 100, {
       message: "Balance to add must be between 0 and 100",
     }),
+  reason: z.string().optional(),
 });
 
 type TAdjustBalanceFormSchema = z.infer<typeof adjustBalanceSchema>;
@@ -73,6 +84,8 @@ export function AdjustBalanceModal({
       onOpenChange(false);
     });
 
+  const [reason, setReason] = useState("");
+
   const employeeOptions = useMemo(() => {
     const list = employeesList?.data || [];
     return list.map((u: any) => ({
@@ -85,8 +98,8 @@ export function AdjustBalanceModal({
     const rawList = Array.isArray(leaveTypesRes)
       ? leaveTypesRes
       : Array.isArray((leaveTypesRes as any)?.data)
-      ? (leaveTypesRes as any).data
-      : [];
+        ? (leaveTypesRes as any).data
+        : [];
 
     return rawList.map((item: any) => ({
       value: item.id ?? item.value ?? item.code,
@@ -101,6 +114,7 @@ export function AdjustBalanceModal({
         employeeId: undefined,
         leaveTypeId: undefined,
         balance: undefined,
+        reason: "",
       });
     }
   }, [open, form]);
@@ -127,7 +141,10 @@ export function AdjustBalanceModal({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-2">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-4 py-2"
+          >
             <CustomDropDownSearchable
               form={form}
               name="employeeId"
@@ -181,12 +198,24 @@ export function AdjustBalanceModal({
                     />
                   </FormControl>
                   <p className="text-[11px] text-muted-foreground mt-1">
-                    Maximum allowed number is 100. Decimal values (e.g. 0.5) are supported.
+                    Maximum allowed number is 100. Decimal values (e.g. 0.5) are
+                    supported.
                   </p>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            <div className="grid gap-2">
+              <Label htmlFor="reason">Reason</Label>
+              <Textarea
+                id="reason"
+                placeholder="Add reason for adding balance..."
+                className="resize-none min-h-[80px]"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+              />
+            </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
               <CustomButton
