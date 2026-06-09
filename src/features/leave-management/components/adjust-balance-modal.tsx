@@ -25,6 +25,13 @@ import { useAdjustLeaveBalance, useGetLeaveTypes } from "../services";
 // import { Scale } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { HelpCircle } from "lucide-react";
 
 interface AdjustBalanceModalProps {
   open: boolean;
@@ -50,11 +57,11 @@ const adjustBalanceSchema = z.object({
     }),
   balance: z
     .union([z.string(), z.number()], {
-      required_error: "Balance to add is required",
+      required_error: "Balance is required",
     })
     .transform((val) => Number(val))
-    .refine((val) => !isNaN(val) && val >= 0 && val <= 100, {
-      message: "Balance to add must be between 0 and 100",
+    .refine((val) => !isNaN(val) && val >= -100 && val <= 100, {
+      message: "Balance must be between -100 and 100",
     }),
   reason: z.string().optional(),
 });
@@ -125,7 +132,10 @@ export function AdjustBalanceModal({
 
   const onSubmit = async (values: TAdjustBalanceFormSchema) => {
     try {
-      await adjustBalance(values);
+      await adjustBalance({
+        ...values,
+        reason,
+      });
     } catch (error) {
       console.error("Failed to adjust leave balance:", error);
     }
@@ -182,14 +192,28 @@ export function AdjustBalanceModal({
               name="balance"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-semibold">
-                    Balance to Add <span className="text-red-500">*</span>
-                  </FormLabel>
+                  <div className="flex items-center gap-1.5">
+                    <FormLabel className="text-sm font-semibold">
+                      Balance to Add / Deduct <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="text-xs">
+                            Use positive values (e.g. 5, 0.5) to add balance, or negative values (e.g. -5, -0.5) to deduct balance.
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                   <FormControl>
                     <Input
                       type="number"
-                      placeholder="e.g. 5"
-                      min={0}
+                      placeholder="e.g. 5 or -5"
+                      min={-100}
                       max={100}
                       step={0.5}
                       {...field}
@@ -201,8 +225,7 @@ export function AdjustBalanceModal({
                     />
                   </FormControl>
                   <p className="text-[11px] text-muted-foreground mt-1">
-                    Maximum allowed number is 100. Decimal values (e.g. 0.5) are
-                    supported.
+                    Accepts values from -100 to 100. Decimal values (e.g. 0.5 or -0.5) are supported.
                   </p>
                   <FormMessage />
                 </FormItem>
@@ -213,7 +236,7 @@ export function AdjustBalanceModal({
               <Label htmlFor="reason">Reason</Label>
               <Textarea
                 id="reason"
-                placeholder="Add reason for adding balance..."
+                placeholder="Add reason for adjusting balance..."
                 className="resize-none min-h-[80px]"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}

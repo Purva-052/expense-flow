@@ -36,6 +36,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useGetAllLeaveBalances } from "../services";
 import { Wallet, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { FileUpload } from "@/components/shared/custome-file-upload";
 
 interface Props {
   currentRow?: any;
@@ -240,6 +241,7 @@ export function LeaveActionForm({
       description: "",
       leaveTypeId: CASUAL_LEAVE_TYPE_ID,
       leaveDays: [],
+      attachments: null,
     },
   });
 
@@ -439,6 +441,7 @@ export function LeaveActionForm({
     reason: "",
     description: "",
     leaveDays: [] as any[],
+    attachments: null,
   };
 
   // Reset form on open/close
@@ -501,6 +504,7 @@ export function LeaveActionForm({
         reason: currentRow.reason,
         description: currentRow.description || "",
         leaveDays: days,
+        attachments: currentRow.attachmentUrl || currentRow.attachment || null,
       });
     } else if (!open) {
       form.reset(emptyDefaults);
@@ -534,6 +538,13 @@ export function LeaveActionForm({
         }))
       )
     );
+
+    const attachmentVal = (values as any).attachment;
+    if (attachmentVal instanceof File) {
+      formData.append("attachments", attachmentVal);
+    } else if (!attachmentVal) {
+      formData.append("attachments", "");
+    }
 
     if (!isEdit) {
       formData.append("totalLeaveDays", String(leaveAllocation.requestedDays));
@@ -945,6 +956,29 @@ export function LeaveActionForm({
         </FormItem>
       </div>
 
+      {(!isViewOnly || form.watch("attachments")) && (
+        <FileUpload
+          name="attachments"
+          label="Attachment (Optional)"
+          fileLabel="Only PDF and JPEG allowed (Max 5MB)"
+          acceptedFormats={{
+            "application/pdf": [".pdf"],
+            "image/jpeg": [".jpg", ".jpeg"],
+          }}
+          disabled={isViewOnly}
+          existingFileUrl={
+            typeof form.watch("attachments") === "string"
+              ? (form.watch("attachments") as string)
+              : undefined
+          }
+          existingFileName={
+            typeof form.watch("attachments") === "string"
+              ? (form.watch("attachments") as string).split("/").pop()
+              : undefined
+          }
+        />
+      )}
+
       {/* General Reason */}
       <FormField
         control={form.control}
@@ -966,6 +1000,8 @@ export function LeaveActionForm({
           </FormItem>
         )}
       />
+
+      {/* Attachment Upload */}
 
       {/* leaveDays array-level error */}
       {form.formState.errors.leaveDays &&
@@ -1048,7 +1084,7 @@ export function LeaveActionForm({
                         Apply for Employee
                       </TabsTrigger>
                     </TabsList>
-                    <TabsContent value="self" className="mt-0 space-y-4">
+                    <TabsContent value="self" className="mt-0 space-y-6">
                       {renderMainFormFields()}
                     </TabsContent>
                     <TabsContent value="others" className="mt-0 space-y-4">
