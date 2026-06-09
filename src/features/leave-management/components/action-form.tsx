@@ -517,23 +517,11 @@ export function LeaveActionForm({
     );
     const leaveTypeIds = allocationItems.map((item) => item.leaveTypeId);
 
-    formData.append(
-      "leaveTypeId",
-      JSON.stringify(leaveTypeIds)
-    );
+    formData.append("leaveTypeId", JSON.stringify(leaveTypeIds));
     formData.append("fromDate", format(values.fromDate, "yyyy-MM-dd"));
     formData.append("toDate", format(values.toDate, "yyyy-MM-dd"));
     formData.append("reason", values.reason);
     formData.append("description", values.description || "");
-
-    const firstDay = values.leaveDays?.[0];
-    const dayTypeVal = firstDay?.dayType || "full";
-    formData.append("dayType", dayTypeVal);
-
-    if (dayTypeVal === "half") {
-      const halfTypeVal = firstDay?.halfType || "first_half";
-      formData.append("halfType", halfTypeVal);
-    }
     formData.append(
       "leaveDays",
       JSON.stringify(
@@ -627,10 +615,12 @@ export function LeaveActionForm({
     const hasDatesSelected = !!(watchFromDate && watchToDate);
 
     return (
-      <div className={cn(
-        "space-y-4 rounded-xl border border-slate-200 bg-card p-6 shadow-sm dark:border-slate-800",
-        fields.length === 0 && "flex-1"
-      )}>
+      <div
+        className={cn(
+          "space-y-4 rounded-xl border border-slate-200 bg-card p-6 shadow-sm dark:border-slate-800",
+          fields.length === 0 && "flex-1"
+        )}
+      >
         <div className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-200">
           <Wallet className="h-4.5 w-4.5 text-rose-500 shrink-0" />
           <span className="text-sm">Complete Leave Balance</span>
@@ -1028,15 +1018,19 @@ export function LeaveActionForm({
           {/* Top Section - Side-by-side Columns */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Left Column - Main Form Fields & Daily Breakdown */}
-            <div className={cn(
-              isEdit || isViewOnly
-                ? "lg:col-span-12 max-w-3xl mx-auto w-full space-y-6"
-                : "lg:col-span-7 space-y-6 flex flex-col"
-            )}>
-              <div className={cn(
-                "rounded-xl border border-slate-200 bg-card p-6 shadow-sm dark:border-slate-800",
-                fields.length === 0 && "flex-1"
-              )}>
+            <div
+              className={cn(
+                isEdit || isViewOnly
+                  ? "lg:col-span-12 max-w-3xl mx-auto w-full space-y-6"
+                  : "lg:col-span-7 space-y-6 flex flex-col"
+              )}
+            >
+              <div
+                className={cn(
+                  "rounded-xl border border-slate-200 bg-card p-6 shadow-sm dark:border-slate-800",
+                  fields.length === 0 && "flex-1"
+                )}
+              >
                 {canApplyForOthers && !isEdit && !isViewOnly ? (
                   <Tabs
                     value={applyTab}
@@ -1093,10 +1087,12 @@ export function LeaveActionForm({
       </Form>
 
       {/* Footer / Action buttons */}
-      <div className={cn(
-        "flex items-center justify-end gap-3 border-t border-slate-200 dark:border-slate-800 pt-4 mt-6",
-        (isEdit || isViewOnly) && "max-w-3xl mx-auto w-full"
-      )}>
+      <div
+        className={cn(
+          "flex items-center justify-end gap-3 border-t border-slate-200 dark:border-slate-800 pt-4 mt-6",
+          (isEdit || isViewOnly) && "max-w-3xl mx-auto w-full"
+        )}
+      >
         <CustomButton
           type="button"
           variant="outline"
