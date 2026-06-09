@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any, no-console */
 import { useEffect, useMemo, useState } from "react";
 import {
   SubmitHandler,
@@ -618,7 +618,10 @@ export function LeaveActionForm({
     const hasDatesSelected = !!(watchFromDate && watchToDate);
 
     return (
-      <div className="space-y-4 rounded-xl border border-slate-200 bg-card p-6 shadow-sm dark:border-slate-800">
+      <div className={cn(
+        "space-y-4 rounded-xl border border-slate-200 bg-card p-6 shadow-sm dark:border-slate-800",
+        fields.length === 0 && "flex-1"
+      )}>
         <div className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-200">
           <Wallet className="h-4.5 w-4.5 text-rose-500 shrink-0" />
           <span className="text-sm">Complete Leave Balance</span>
@@ -697,11 +700,11 @@ export function LeaveActionForm({
     return (
       <div className="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden text-sm shadow-sm bg-white dark:bg-slate-950">
         {/* Header */}
-        <div className="grid grid-cols-[1.2fr_1.1fr_1.5fr_1.2fr] gap-2 bg-slate-50 dark:bg-slate-900/50 px-4 py-2.5 font-semibold text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
-          <span>Leave Date</span>
+        <div className="grid grid-cols-[1.2fr_1.1fr_1.5fr_1.2fr] gap-2 bg-slate-50 dark:bg-slate-900/50 px-4 py-2.5 font-semibold text-slate-500 dark:text-slate-400 text-[11px] uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
+          <span>Date</span>
           <span>Day</span>
-          <span>Half / Full Day</span>
-          <span>1st / 2nd Half</span>
+          <span>Half / Full</span>
+          <span>1st / 2nd</span>
         </div>
 
         {/* Rows */}
@@ -976,7 +979,7 @@ export function LeaveActionForm({
   );
 
   return (
-    <div className="w-full space-y-6">
+    <div className="mx-auto w-full max-w-5xl space-y-6 px-4 md:px-0">
       {/* Header section with back button */}
       <div className="flex items-center justify-between border-b pb-4 border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-3">
@@ -1015,9 +1018,16 @@ export function LeaveActionForm({
         >
           {/* Top Section - Side-by-side Columns */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Left Column - Main Form Fields */}
-            <div className="lg:col-span-7">
-              <div className="rounded-xl border border-slate-200 bg-card p-6 shadow-sm dark:border-slate-800">
+            {/* Left Column - Main Form Fields & Daily Breakdown */}
+            <div className={cn(
+              isEdit || isViewOnly
+                ? "lg:col-span-12 max-w-3xl mx-auto w-full space-y-6"
+                : "lg:col-span-7 space-y-6 flex flex-col"
+            )}>
+              <div className={cn(
+                "rounded-xl border border-slate-200 bg-card p-6 shadow-sm dark:border-slate-800",
+                fields.length === 0 && "flex-1"
+              )}>
                 {canApplyForOthers && !isEdit && !isViewOnly ? (
                   <Tabs
                     value={applyTab}
@@ -1027,7 +1037,7 @@ export function LeaveActionForm({
                       replace([]);
                     }}
                   >
-                    <TabsList className="bg-rose-50/70 rounded-full dark:bg-slate-900/80 dark:border-slate-800 border border-rose-100/50 h-9 w-fit mb-6 p-1">
+                    <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border border-rose-100/50 h-9 w-fit mb-6 p-1">
                       <TabsTrigger value="self" className={tabTriggerClass}>
                         Apply for Myself
                       </TabsTrigger>
@@ -1046,33 +1056,38 @@ export function LeaveActionForm({
                   <div className="space-y-4">{renderMainFormFields()}</div>
                 )}
               </div>
+
+              {/* Per-day Details Breakdown inside the main flow */}
+              {fields.length > 0 && (
+                <div className="rounded-xl border border-slate-200 bg-card p-6 shadow-sm dark:border-slate-800 space-y-4">
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                      Daily Breakdown
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Configure half/full day settings for each leave date.
+                    </p>
+                  </div>
+                  <LeaveDaysTable />
+                </div>
+              )}
             </div>
 
             {/* Right Column - Leave Balance Summary */}
-            <div className="lg:col-span-5">
-              <LeaveBalanceSummary />
-            </div>
-          </div>
-
-          {/* Bottom Section - Per-day Details Breakdown */}
-          {fields.length > 0 && (
-            <div className="rounded-xl border border-slate-200 bg-card p-6 shadow-sm dark:border-slate-800 space-y-4">
-              <div>
-                <h3 className="text-sm font-semibold text-slate-850 dark:text-slate-200">
-                  Daily Breakdown
-                </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Configure half/full day settings for each leave date.
-                </p>
+            {!(isEdit || isViewOnly) && (
+              <div className="lg:col-span-5 flex flex-col">
+                <LeaveBalanceSummary />
               </div>
-              <LeaveDaysTable />
-            </div>
-          )}
+            )}
+          </div>
         </form>
       </Form>
 
       {/* Footer / Action buttons */}
-      <div className="flex items-center justify-end gap-3 border-t border-slate-200 dark:border-slate-800 pt-4 mt-6">
+      <div className={cn(
+        "flex items-center justify-end gap-3 border-t border-slate-200 dark:border-slate-800 pt-4 mt-6",
+        (isEdit || isViewOnly) && "max-w-3xl mx-auto w-full"
+      )}>
         <CustomButton
           type="button"
           variant="outline"
