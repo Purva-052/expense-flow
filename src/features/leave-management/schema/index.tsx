@@ -49,7 +49,12 @@ export const leaveSchema = z
       .refine(
         (file) => {
           if (!file) return true;
-          return file instanceof File || typeof file === "string";
+          // Accept: new File upload, plain string URL, or array of attachment objects from API
+          return (
+            file instanceof File ||
+            typeof file === "string" ||
+            Array.isArray(file)
+          );
         },
         { message: "Attachment must be a file or URL" }
       )
