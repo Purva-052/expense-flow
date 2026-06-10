@@ -260,7 +260,7 @@ export const columns: ColumnDef<any>[] = [
               </DropdownMenuItem>
             )}
 
-            {canEditDelete && (
+            {canEditDelete && rowStatus != "rejected" && (
               <DropdownMenuItem onClick={handleEdit}>
                 Edit Details
               </DropdownMenuItem>
