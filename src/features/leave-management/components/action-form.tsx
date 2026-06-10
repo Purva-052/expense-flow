@@ -235,7 +235,7 @@ export function LeaveActionForm({
 
   const form = useForm<TLeaveFormSchema>({
     resolver: zodResolver(leaveSchema) as any,
-    mode: "onSubmit",
+    mode: "onTouched",
     defaultValues: {
       reason: "",
       description: "",
@@ -280,7 +280,14 @@ export function LeaveActionForm({
   }, [employeesList, currentRow]);
 
   const isSelfApplyMode = !canApplyForOthers || applyTab === "self";
-  const balanceUserId = isSelfApplyMode ? currentUserId : watchEmployeeId;
+  const editEmployeeId = isEdit
+    ? (currentRow?.employeeId ?? currentRow?.employee?.id)
+    : undefined;
+  const balanceUserId = isEdit
+    ? editEmployeeId
+    : isSelfApplyMode
+      ? currentUserId
+      : watchEmployeeId;
 
   // Auto-regenerate or merge leaveDays table whenever date range changes
   useEffect(() => {
@@ -344,9 +351,9 @@ export function LeaveActionForm({
     }
   }, [watchFromDate, watchToDate, form]);
 
-  // Fetch complete leave balance in add mode
+  // Fetch complete leave balance
   const { data: leaveBalanceData, isPending: leaveBalanceLoading } =
-    useGetAllLeaveBalances(balanceUserId, open && !isEdit) as any;
+    useGetAllLeaveBalances(balanceUserId, open) as any;
 
   // Fetch public holidays
   const { data: holidayData } = useGetReportDetails({
@@ -504,7 +511,11 @@ export function LeaveActionForm({
         reason: currentRow.reason,
         description: currentRow.description || "",
         leaveDays: days,
-        attachments: currentRow.attachmentUrl || currentRow.attachment || null,
+        attachments:
+          currentRow.attachments ||
+          currentRow.attachmentUrl ||
+          currentRow.attachment ||
+          null,
       });
     } else if (!open) {
       form.reset(emptyDefaults);
@@ -539,18 +550,16 @@ export function LeaveActionForm({
       )
     );
 
-    const attachmentVal = (values as any).attachment;
+    const attachmentVal = values.attachments;
     if (attachmentVal instanceof File) {
       formData.append("attachments", attachmentVal);
     } else if (!attachmentVal) {
       formData.append("attachments", "");
     }
 
-    if (!isEdit) {
-      formData.append("totalLeaveDays", String(leaveAllocation.requestedDays));
-      formData.append("lossOfPayDays", String(leaveAllocation.lossOfPayDays));
-      formData.append("leaveAllocations", JSON.stringify(allocationItems));
-    }
+    formData.append("totalLeaveDays", String(leaveAllocation.requestedDays));
+    formData.append("lossOfPayDays", String(leaveAllocation.lossOfPayDays));
+    formData.append("leaveAllocations", JSON.stringify(allocationItems));
 
     if (isEdit) {
       onSubmitValues({ id: currentRow.id, data: formData });
@@ -575,8 +584,12 @@ export function LeaveActionForm({
 
   // ── Leave Balance Summary ──────────────────────────────────────────────────
   const LeaveBalanceSummary = () => {
-    if (isEdit || isViewOnly) return null;
-    const targetUserId = isSelfApplyMode ? currentUserId : watchEmployeeId;
+    if (isViewOnly) return null;
+    const targetUserId = isEdit
+      ? editEmployeeId
+      : isSelfApplyMode
+        ? currentUserId
+        : watchEmployeeId;
     if (!targetUserId) return null;
 
     const casualBalance = getLeaveTypeBalance(
@@ -956,7 +969,47 @@ export function LeaveActionForm({
         </FormItem>
       </div>
 
-      {(!isViewOnly || form.watch("attachments")) && (
+      {isViewOnly ? (
+        <div className="space-y-1">
+          <FormLabel>Attachment</FormLabel>
+          <div className="pt-1">
+            {(() => {
+              const attachmentsVal = form.watch("attachments");
+              if (Array.isArray(attachmentsVal) && attachmentsVal.length > 0) {
+                return (
+                  <div className="space-y-1.5">
+                    {attachmentsVal.map((att: any, idx: number) => (
+                      <div key={att.id || idx}>
+                        <a
+                          href={att.referenceFileLink || att.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-blue-500 hover:underline font-medium inline-flex items-center gap-1.5"
+                        >
+                          View/Download {att.name || `Attachment ${idx + 1}`}
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                );
+              }
+              if (typeof attachmentsVal === "string" && attachmentsVal) {
+                return (
+                  <a
+                    href={attachmentsVal}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-500 hover:underline font-medium"
+                  >
+                    View/Download Attachment
+                  </a>
+                );
+              }
+              return <p className="text-sm text-muted-foreground">-</p>;
+            })()}
+          </div>
+        </div>
+      ) : (
         <FileUpload
           name="attachments"
           label="Attachment (Optional)"
@@ -969,12 +1022,19 @@ export function LeaveActionForm({
           existingFileUrl={
             typeof form.watch("attachments") === "string"
               ? (form.watch("attachments") as string)
-              : undefined
+              : Array.isArray(form.watch("attachments")) &&
+                  form.watch("attachments").length > 0
+                ? form.watch("attachments")[0]?.referenceFileLink ||
+                  form.watch("attachments")[0]?.url
+                : undefined
           }
           existingFileName={
             typeof form.watch("attachments") === "string"
               ? (form.watch("attachments") as string).split("/").pop()
-              : undefined
+              : Array.isArray(form.watch("attachments")) &&
+                  form.watch("attachments").length > 0
+                ? form.watch("attachments")[0]?.name
+                : undefined
           }
         />
       )}
@@ -1056,9 +1116,11 @@ export function LeaveActionForm({
             {/* Left Column - Main Form Fields & Daily Breakdown */}
             <div
               className={cn(
-                isEdit || isViewOnly
+                isViewOnly
                   ? "lg:col-span-12 max-w-3xl mx-auto w-full space-y-6"
-                  : "lg:col-span-7 space-y-6 flex flex-col"
+                  : isEdit
+                    ? "lg:col-span-7 space-y-6 flex flex-col"
+                    : "lg:col-span-7 space-y-6 flex flex-col"
               )}
             >
               <div
@@ -1113,36 +1175,36 @@ export function LeaveActionForm({
             </div>
 
             {/* Right Column - Leave Balance Summary */}
-            {!(isEdit || isViewOnly) && (
+            {!isViewOnly && (
               <div className="lg:col-span-5 flex flex-col">
                 <LeaveBalanceSummary />
               </div>
             )}
           </div>
+
+          {/* Footer / Action buttons — inside the form so handleSubmit fires correctly */}
+          <div
+            className={cn(
+              "flex items-center justify-end gap-3 border-t border-slate-200 dark:border-slate-800 pt-4 mt-6",
+              isViewOnly && "max-w-3xl mx-auto w-full"
+            )}
+          >
+            <CustomButton
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={loading}
+            >
+              {isViewOnly ? "Close" : "Cancel"}
+            </CustomButton>
+            {!isViewOnly && (
+              <CustomButton type="submit" loading={loading}>
+                {isEdit ? "Update Request" : "Submit Request"}
+              </CustomButton>
+            )}
+          </div>
         </form>
       </Form>
-
-      {/* Footer / Action buttons */}
-      <div
-        className={cn(
-          "flex items-center justify-end gap-3 border-t border-slate-200 dark:border-slate-800 pt-4 mt-6",
-          (isEdit || isViewOnly) && "max-w-3xl mx-auto w-full"
-        )}
-      >
-        <CustomButton
-          type="button"
-          variant="outline"
-          onClick={() => onOpenChange(false)}
-          disabled={loading}
-        >
-          {isViewOnly ? "Close" : "Cancel"}
-        </CustomButton>
-        {!isViewOnly && (
-          <CustomButton type="submit" form="leave-form" loading={loading}>
-            {isEdit ? "Update Request" : "Submit Request"}
-          </CustomButton>
-        )}
-      </div>
     </div>
   );
 }

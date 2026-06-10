@@ -54,7 +54,7 @@ const LeaveManagementPage = () => {
   // Dashboard tab is only visible to admin
   const canViewDashboard = isAdmin;
   // Manager-level features (employee filter, status tabs) remain for admin + PM
-  const canViewManagerTabs = isAdmin;
+  const canViewManagerTabs = isAdmin || roleName === roles.PROJECT_MANAGER;
   const showStatusTabs = !isDeveloper && !isBDE;
 
   const currentEmployeeId = user?.user?.id || user?.user_id;
@@ -124,7 +124,10 @@ const LeaveManagementPage = () => {
     });
 
   const balanceUserId =
-    (canViewManagerTabs && listParams.employeeId) || currentEmployeeId;
+    (canViewManagerTabs &&
+      !(roleName === roles.PROJECT_MANAGER && activeSection === "balance-logs") &&
+      listParams.employeeId) ||
+    currentEmployeeId;
 
   const { data: allBalanceData, isPending: balanceLoading } =
     useGetAllLeaveBalances(balanceUserId) as any;
@@ -165,9 +168,7 @@ const LeaveManagementPage = () => {
     page: queryParams.currentPage,
     limit: queryParams.pageSize,
     search: queryParams.search || undefined,
-    employeeId: canViewManagerTabs
-      ? queryParams.employeeId || undefined
-      : undefined,
+    employeeId: isAdmin ? queryParams.employeeId || undefined : undefined,
     pagination: true,
   };
 
@@ -190,14 +191,14 @@ const LeaveManagementPage = () => {
   const { mutateAsync: createMutate, isPending: isCreateLoading } =
     useCreateLeaveData();
   const { mutateAsync: updateMutate, isPending: isUpdateLoading } =
-    useUpdateLeaveData(currentRow?.id || "");
+    useUpdateLeaveData();
 
   const handleCreate = (formData: FormData) => {
     createMutate(formData as any);
   };
 
   const handleEdit = (payload: { id: string | number; data: FormData }) => {
-    updateMutate(payload.data as any);
+    updateMutate({ id: payload.id, data: payload.data });
   };
 
   const handleCloseForm = () => {
@@ -271,7 +272,8 @@ const LeaveManagementPage = () => {
         });
       },
     },
-    ...(canViewManagerTabs
+    ...(canViewManagerTabs &&
+    !(roleName === roles.PROJECT_MANAGER && activeSection === "balance-logs")
       ? [
           {
             type: "select" as const,
