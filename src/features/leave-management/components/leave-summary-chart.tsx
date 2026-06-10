@@ -56,8 +56,8 @@ export function LeaveSummaryChart({
         : "Today";
 
   return (
-    <Card className="overflow-hidden border border-border/60 shadow-md bg-card">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-border/40 bg-muted/30">
+    <Card className="overflow-hidden border border-border/60 shadow-md bg-card h-full flex flex-col">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border/40 bg-muted/30 shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-1.5 h-7 rounded-full bg-primary" />
           <div>
@@ -89,16 +89,16 @@ export function LeaveSummaryChart({
         </div>
       </div>
 
-      <CardContent className="p-0">
+      <CardContent className="p-0 flex-1 flex flex-col min-h-0">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-14 gap-3">
+          <div className="flex flex-col items-center justify-center py-14 gap-3 flex-1">
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
             <span className="text-xs text-muted-foreground font-medium">
               Loading leave summary...
             </span>
           </div>
         ) : total === 0 ? (
-          <div className="flex flex-col items-center justify-center py-14 gap-2">
+          <div className="flex flex-col items-center justify-center py-14 gap-2 flex-1">
             <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
               <span className="text-lg">📊</span>
             </div>
@@ -110,8 +110,8 @@ export function LeaveSummaryChart({
             </span>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] divide-y lg:divide-y-0 lg:divide-x divide-border/40">
-            <div className="flex flex-col items-center justify-center px-8 py-6 gap-4 min-w-[220px]">
+          <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] divide-y lg:divide-y-0 lg:divide-x divide-border/40 flex-1 min-h-0">
+            <div className="flex flex-col items-center justify-center px-8 py-6 gap-4 min-w-[220px] shrink-0">
               <div className="relative w-[160px] h-[160px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -159,7 +159,7 @@ export function LeaveSummaryChart({
               </div>
             </div>
 
-            <div className="flex flex-col justify-center gap-2.5 px-6 py-6">
+            <div className="flex-1 overflow-y-auto max-h-[320px] [scrollbar-gutter:stable] pr-1 px-6 py-6 flex flex-col justify-start gap-2.5">
               {chartData.map((entry, index) => {
                 const percent =
                   total > 0 ? Math.round((entry.value / total) * 100) : 0;

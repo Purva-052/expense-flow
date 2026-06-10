@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LEAVE_TYPE } from "@/utils/constant";
 import { LeaveDashboardGroup } from "../types/leave-dashboard";
 import {
   flattenDashboardEmployees,
@@ -12,13 +13,44 @@ interface UpcomingLeavesListProps {
   loading?: boolean;
 }
 
+function getLeaveTypeName(leaveTypeIdVal: any, fallbackName?: string): string {
+  if (!leaveTypeIdVal) return fallbackName || "Casual Leave";
+
+  let ids: number[] = [];
+  if (Array.isArray(leaveTypeIdVal)) {
+    ids = leaveTypeIdVal.map((x) => Number(x)).filter((n) => !isNaN(n));
+  } else if (typeof leaveTypeIdVal === "string") {
+    ids = leaveTypeIdVal
+      .split(",")
+      .map((s) => Number(s.trim()))
+      .filter((n) => !isNaN(n));
+  } else if (typeof leaveTypeIdVal === "number") {
+    ids = [leaveTypeIdVal];
+  }
+
+  if (ids.length === 0) return fallbackName || "Casual Leave";
+
+  const resolved = ids
+    .map((id) => LEAVE_TYPE.find((t) => Number(t.value) === id)?.label)
+    .filter(Boolean);
+
+  if (resolved.length > 0) {
+    return resolved.join(" + ");
+  }
+
+  return fallbackName || "Casual Leave";
+}
+
 function getInitials(name: string) {
   const parts = name.trim().split(/\s+/);
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-export function UpcomingLeavesList({ groups, loading }: UpcomingLeavesListProps) {
+export function UpcomingLeavesList({
+  groups,
+  loading,
+}: UpcomingLeavesListProps) {
   const upcoming = flattenDashboardEmployees(groups, 50);
 
   return (
@@ -85,7 +117,10 @@ export function UpcomingLeavesList({ groups, loading }: UpcomingLeavesListProps)
                       </div>
                     </div>
                     <span className="text-[11px] font-medium text-primary shrink-0 text-right">
-                      {emp.leaveTypeName}
+                      {getLeaveTypeName(
+                        (emp as any).leaveTypeId,
+                        emp.leaveTypeName
+                      )}
                     </span>
                   </li>
                 );

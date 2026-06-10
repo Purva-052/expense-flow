@@ -80,7 +80,7 @@ export function LeaveDashboardTab({
       />
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2">
+        <div className="xl:col-span-2 flex flex-col">
           <LeaveSummaryChart
             monthGroups={upcomingData?.groups ?? []}
             weekGroups={weekData?.groups ?? []}
