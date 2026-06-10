@@ -167,7 +167,8 @@ export const FileUpload = ({
     }
   };
 
-  const hasExistingFile = !file && existingFileUrl;
+  const isNewFile = file instanceof File;
+  const hasExistingFile = !isNewFile && !!existingFileUrl;
   const displayFileName = existingFileName || "Uploaded File";
 
 
@@ -188,7 +189,7 @@ export const FileUpload = ({
                 <input {...getInputProps()} />
                 {children}
               </div>
-            ) : file ? (
+            ) : isNewFile ? (
               <div className="space-y-2">
                 <div
                   className={cn(

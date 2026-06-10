@@ -19,7 +19,7 @@ function getInitials(name: string) {
 }
 
 export function UpcomingLeavesList({ groups, loading }: UpcomingLeavesListProps) {
-  const upcoming = flattenDashboardEmployees(groups, 10);
+  const upcoming = flattenDashboardEmployees(groups, 50);
 
   return (
     <Card className="border border-border/60 shadow-md h-full">
@@ -41,55 +41,57 @@ export function UpcomingLeavesList({ groups, loading }: UpcomingLeavesListProps)
             No upcoming approved leaves.
           </p>
         ) : (
-          <ul className="space-y-3">
-            {upcoming.map((emp) => {
-              const techColor = emp.technologyColor ?? "#94a3b8";
-              return (
-                <li
-                  key={`${emp.employeeId}-${emp.leaveId}`}
-                  className="flex items-center gap-3 rounded-lg border border-border/40 p-3 bg-muted/20"
-                >
-                  {emp.profilePicUrl ? (
-                    <img
-                      src={emp.profilePicUrl}
-                      alt={emp.employeeName}
-                      className="h-9 w-9 rounded-full object-cover shrink-0"
-                    />
-                  ) : (
-                    <div
-                      className="h-9 w-9 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
-                      style={{ backgroundColor: techColor }}
-                    >
-                      {getInitials(emp.employeeName)}
-                    </div>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-foreground truncate">
-                      {emp.employeeName}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {formatDashboardEmployeeDateRange(emp)}
-                    </p>
-                    <div className="flex items-center gap-1.5 mt-1">
-                      <span
-                        className="w-2 h-2 rounded-full shrink-0"
-                        style={{ backgroundColor: techColor }}
+          <div className="max-h-[320px] overflow-y-auto [scrollbar-gutter:stable] pr-1">
+            <ul className="space-y-3">
+              {upcoming.map((emp) => {
+                const techColor = emp.technologyColor ?? "#94a3b8";
+                return (
+                  <li
+                    key={`${emp.employeeId}-${emp.leaveId}`}
+                    className="flex items-center gap-3 rounded-lg border border-border/40 p-3 bg-muted/20"
+                  >
+                    {emp.profilePicUrl ? (
+                      <img
+                        src={emp.profilePicUrl}
+                        alt={emp.employeeName}
+                        className="h-9 w-9 rounded-full object-cover shrink-0"
                       />
-                      <span
-                        className="text-[10px] font-semibold truncate"
-                        style={{ color: techColor }}
+                    ) : (
+                      <div
+                        className="h-9 w-9 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
+                        style={{ backgroundColor: techColor }}
                       >
-                        {emp.technologyName}
-                      </span>
+                        {getInitials(emp.employeeName)}
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-foreground truncate">
+                        {emp.employeeName}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {formatDashboardEmployeeDateRange(emp)}
+                      </p>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <span
+                          className="w-2 h-2 rounded-full shrink-0"
+                          style={{ backgroundColor: techColor }}
+                        />
+                        <span
+                          className="text-[10px] font-semibold truncate"
+                          style={{ color: techColor }}
+                        >
+                          {emp.technologyName}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  <span className="text-[11px] font-medium text-primary shrink-0 text-right">
-                    {emp.leaveTypeName}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
+                    <span className="text-[11px] font-medium text-primary shrink-0 text-right">
+                      {emp.leaveTypeName}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         )}
       </CardContent>
     </Card>

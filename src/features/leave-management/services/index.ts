@@ -5,6 +5,10 @@ import usePatchData from "@/hooks/use-patch-data";
 import useDeleteData from "@/hooks/use-delete-data";
 import useFetchData from "@/hooks/use-fetch-data";
 import { useLeaveStore } from "../stores";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import instance from "@/config/instance/instance";
+import { toast } from "sonner";
+import { extractErrorInfo } from "@/utils/error-response";
 
 // Assuming your API structure has a leaves endpoint
 const GET_API_URL = API.leave_management.list;
@@ -28,12 +32,35 @@ export const useCreateLeaveData = () => {
   });
 };
 
-export const useUpdateLeaveData = (id: string) => {
+export const useUpdateLeaveData = () => {
   const { setOpen } = useLeaveStore();
-  return usePatchData({
-    url: `${API.leave_management.update}/${id}`,
-    refetchQueries: leaveRefetchQueries,
-    onSuccess: () => setOpen(null),
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string | number; data: FormData }) => {
+      const response = await instance.patch({
+        url: `${API.leave_management.update}/${id}`,
+        data,
+      });
+      return response;
+    },
+    onSuccess: (data: any) => {
+      toast.success(data?.message ?? "Leave updated successfully", {
+        position: "top-right",
+      });
+      leaveRefetchQueries.forEach((query) =>
+        queryClient.invalidateQueries({ queryKey: [query] })
+      );
+      setOpen(null);
+    },
+    onError: (error: any) => {
+      const errorInfo = extractErrorInfo(error);
+      toast.error(errorInfo.title, {
+        description: errorInfo.description,
+        duration: 3000,
+        position: "top-right",
+      });
+    },
   });
 };
 
