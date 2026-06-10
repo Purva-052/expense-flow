@@ -501,9 +501,13 @@ export function LeaveActionForm({
 
       form.reset({
         employeeId: currentRow.employeeId ?? currentRow.employee?.id,
-        leaveTypeId: currentRow.leaveTypeId
-          ? String(currentRow.leaveTypeId)
-          : "",
+        leaveTypeId: Array.isArray(currentRow.leaveTypeId)
+          ? currentRow.leaveTypeId.length > 0
+            ? String(currentRow.leaveTypeId[0])
+            : CASUAL_LEAVE_TYPE_ID
+          : currentRow.leaveTypeId
+            ? String(currentRow.leaveTypeId)
+            : CASUAL_LEAVE_TYPE_ID,
         fromDate: currentRow.fromDate
           ? new Date(currentRow.fromDate)
           : undefined,
@@ -554,8 +558,11 @@ export function LeaveActionForm({
     if (attachmentVal instanceof File) {
       formData.append("attachments", attachmentVal);
     } else if (!attachmentVal) {
+      // User explicitly removed the attachment — signal removal to backend
       formData.append("attachments", "");
     }
+    // If it's an array (existing API attachment objects), don't append anything
+    // so the backend leaves existing attachments untouched
 
     formData.append("totalLeaveDays", String(leaveAllocation.requestedDays));
     formData.append("lossOfPayDays", String(leaveAllocation.lossOfPayDays));
