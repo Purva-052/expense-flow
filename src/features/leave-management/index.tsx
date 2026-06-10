@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo, useState } from "react";
 import PageLayout from "@/components/layout/layout-provider";
@@ -21,7 +22,13 @@ import { formatDate } from "@/utils/commonFunctions";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
-import { LayoutDashboard, FileText, Plus, History } from "lucide-react";
+import {
+  LayoutDashboard,
+  FileText,
+  Plus,
+  History,
+  FileDown,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LeaveBalanceCards } from "./components/leave-balance-cards";
 import { LeaveDashboardTab } from "./components/leave-dashboard-tab";
@@ -29,6 +36,15 @@ import { AdjustBalanceModal } from "./components/adjust-balance-modal";
 import { SetAllocationsModal } from "./components/set-allocations-modal";
 import { useGetUserDropdownList } from "../users/services";
 import { cn } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import {
+  ExcelImportPreview,
+  ExcelPreviewData,
+} from "@/features/kanban-board/components/project-view/excel-import-preview";
+import { useImportUsers } from "@/features/users/services";
+import * as ExcelJS from "exceljs";
+import API from "@/config/api/api";
 
 const tabTriggerClass =
   "flex items-center gap-2 rounded-[50px] !px-3 !py-2 transition-all h-[35px] " +
@@ -41,6 +57,94 @@ const LeaveManagementPage = () => {
   const { open, setOpen, currentRow, setCurrentRow } = useLeaveStore();
   const [adjustBalanceOpen, setAdjustBalanceOpen] = useState(false);
   const [setAllocationsOpen, setSetAllocationsOpen] = useState(false);
+
+  const queryClient = useQueryClient();
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewData, setPreviewData] = useState<ExcelPreviewData | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isParsingFile, setIsParsingFile] = useState(false);
+
+  const { isUploading: isImportUploading, uploadFile: importUploadFile } =
+    useImportUsers();
+
+  const handleImportFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const allowedTypes = [
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.ms-excel",
+      "text/csv",
+    ];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Please upload a valid Excel or CSV file.");
+      event.target.value = "";
+      return;
+    }
+    setIsParsingFile(true);
+    setSelectedFile(file);
+    try {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const arrayBuffer = e.target?.result as ArrayBuffer;
+          const workbook = new ExcelJS.Workbook();
+          if (file.name.endsWith(".csv")) {
+            await workbook.csv.read(new Response(arrayBuffer).body! as any);
+          } else {
+            await workbook.xlsx.load(arrayBuffer);
+          }
+          const worksheet = workbook.worksheets[0];
+          if (!worksheet) throw new Error("No worksheet found");
+          const jsonData: any[][] = [];
+          worksheet.eachRow({ includeEmpty: true }, (row: ExcelJS.Row) => {
+            const values = Array.isArray(row.values) ? row.values.slice(1) : [];
+            const cleanValues = values.map((v: any) => {
+              if (v && typeof v === "object" && "richText" in v)
+                return v.richText.map((t: any) => t.text).join("");
+              if (v && typeof v === "object" && "result" in v) return v.result;
+              return v;
+            });
+            jsonData.push(cleanValues);
+          });
+          if (jsonData.length > 0) {
+            const headers = jsonData[0].map((h) => String(h || ""));
+            const rows = jsonData.slice(1);
+            setPreviewData({ headers, rows });
+            setPreviewOpen(true);
+          } else {
+            toast.error("No data found in the Excel file.");
+          }
+        } catch (error) {
+          console.error("Error parsing Excel file:", error);
+          toast.error("Please check the file format.");
+        } finally {
+          setIsParsingFile(false);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    } catch (error) {
+      console.error("Error reading file:", error);
+      setIsParsingFile(false);
+    }
+    event.target.value = "";
+  };
+
+  const handleImportPreviewConfirm = async () => {
+    if (!selectedFile) return;
+    const response = await importUploadFile(selectedFile);
+    if (response?.statusCode === 200 || response?.statusCode === 201) {
+      queryClient.invalidateQueries({
+        queryKey: [API.leave_management.leave_balance],
+      });
+      queryClient.invalidateQueries({ queryKey: [API.leave_balance.get] });
+      queryClient.invalidateQueries({ queryKey: [API.leave_management.list] });
+    }
+    setPreviewOpen(false);
+    setPreviewData(null);
+    setSelectedFile(null);
+  };
 
   const user = useAuthStore((state) => state.user);
   const rawRole = user?.role || user?.user?.role;
@@ -125,7 +229,9 @@ const LeaveManagementPage = () => {
 
   const balanceUserId =
     (canViewManagerTabs &&
-      !(roleName === roles.PROJECT_MANAGER && activeSection === "balance-logs") &&
+      !(
+        roleName === roles.PROJECT_MANAGER && activeSection === "balance-logs"
+      ) &&
       listParams.employeeId) ||
     currentEmployeeId;
 
@@ -161,8 +267,6 @@ const LeaveManagementPage = () => {
       );
     }).length;
   }, [employeeList]);
-
-
 
   const creditHistoryApiParams = {
     page: queryParams.currentPage,
@@ -498,13 +602,37 @@ const LeaveManagementPage = () => {
           </p>
         </div>
         {isAdmin && (
-          <Button
-            onClick={() => setAdjustBalanceOpen(true)}
-            className="shrink-0 w-fit"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Add Balance
-          </Button>
+          <div className="flex items-center gap-2 shrink-0">
+            <input
+              type="file"
+              accept=".xlsx,.xls,.csv"
+              onChange={handleImportFileChange}
+              disabled={isImportUploading}
+              className="hidden"
+              id="leave-balance-import-file-input"
+            />
+            <Button
+              onClick={() =>
+                document
+                  .getElementById("leave-balance-import-file-input")
+                  ?.click()
+              }
+              disabled={isImportUploading || isParsingFile}
+              // variant="outline"
+            >
+              <FileDown className="w-4 h-4 mr-2" />
+              {isImportUploading || isParsingFile
+                ? "Importing..."
+                : "Import Leaves"}
+            </Button>
+            <Button
+              onClick={() => setAdjustBalanceOpen(true)}
+              className="shrink-0 w-fit"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Add Balance
+            </Button>
+          </div>
         )}
       </div>
 
@@ -696,6 +824,14 @@ const LeaveManagementPage = () => {
       <SetAllocationsModal
         open={setAllocationsOpen}
         onOpenChange={setSetAllocationsOpen}
+      />
+      <ExcelImportPreview
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        data={previewData}
+        fileName={selectedFile?.name || ""}
+        isLoading={isParsingFile}
+        onConfirm={handleImportPreviewConfirm}
       />
     </PageLayout>
   );

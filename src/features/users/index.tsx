@@ -22,7 +22,7 @@ import { roleLabels, roles } from "@/utils/constant";
 import { ViewUserProfileModal } from "../profile/components/view-user-modal";
 import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import { Button } from "@/components/ui/button";
-import { Download, FileDown } from "lucide-react";
+import { Download } from "lucide-react";
 import { toast } from "sonner";
 import {
   ExcelImportPreview,
@@ -31,7 +31,6 @@ import {
 import * as ExcelJS from "exceljs";
 import { useQueryClient } from "@tanstack/react-query";
 import API from "@/config/api/api";
-
 
 const UsersPage = () => {
   const { open, setOpen } = useUsersStore();
@@ -88,8 +87,6 @@ const UsersPage = () => {
     ...apiParams,
     ...(isNewJoinee ? { is_joining: false } : { is_joining: true }),
   });
-
-
 
   const { mutate: exportCSV, isPending: exportCSVLoading } = useExportCSV();
   const canExportCSV =
@@ -344,7 +341,7 @@ const UsersPage = () => {
                   className="hidden"
                   id="user-import-file-input"
                 />
-                <Button
+                {/* <Button
                   onClick={() =>
                     document.getElementById("user-import-file-input")?.click()
                   }
@@ -355,7 +352,7 @@ const UsersPage = () => {
                   {isImportUploading || isParsingFile
                     ? "Importing..."
                     : "Import Users"}
-                </Button>
+                </Button> */}
               </>
             )}
             {canExportCSV && (
