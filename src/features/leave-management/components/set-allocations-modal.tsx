@@ -106,7 +106,7 @@ export function SetAllocationsModal({
               <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
               <div>
                 <span className="font-semibold">Note:</span> The entered leaves
-                will be added for all the users.
+                will be added for all the users Quaterly.
               </div>
             </div>
 
