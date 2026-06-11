@@ -21,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import CustomButton from "@/components/shared/custom-button";
 import { useSetLeaveAllocations } from "../services";
-import { Coins } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 
 interface SetAllocationsModalProps {
   open: boolean;
@@ -30,13 +30,17 @@ interface SetAllocationsModalProps {
 
 const setAllocationsSchema = z.object({
   casualLeave: z
-    .union([z.string(), z.number()], { required_error: "Casual Leave is required" })
+    .union([z.string(), z.number()], {
+      required_error: "Casual Leave is required",
+    })
     .transform((val) => Number(val))
     .refine((val) => !isNaN(val) && val >= 0 && val <= 100, {
       message: "Casual leave must be between 0 and 100",
     }),
   paidLeave: z
-    .union([z.string(), z.number()], { required_error: "Paid Leave is required" })
+    .union([z.string(), z.number()], {
+      required_error: "Paid Leave is required",
+    })
     .transform((val) => Number(val))
     .refine((val) => !isNaN(val) && val >= 0 && val <= 100, {
       message: "Paid leave must be between 0 and 100",
@@ -85,8 +89,8 @@ export function SetAllocationsModal({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-rose-500 font-bold text-lg dark:text-rose-400">
-            <Coins className="h-5 w-5 text-rose-500 animate-pulse" />
-            Set Leave Allocations
+            {/* <Coins className="h-5 w-5 text-rose-500 animate-pulse" /> */}
+            Leave Settings
           </DialogTitle>
           <DialogDescription>
             Configure default leave allocations for all employees.
@@ -94,7 +98,18 @@ export function SetAllocationsModal({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-2">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-4 py-2"
+          >
+            <div className="bg-amber-50 border border-amber-200 dark:bg-amber-950/20 dark:border-amber-900/30 rounded-lg p-3 flex items-start gap-2 text-xs text-amber-800 dark:text-amber-300">
+              <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-semibold">Note:</span> The entered leaves
+                will be added for all the users.
+              </div>
+            </div>
+
             <FormField
               control={form.control}
               name="casualLeave"

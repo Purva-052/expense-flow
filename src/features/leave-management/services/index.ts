@@ -19,6 +19,7 @@ const leaveRefetchQueries = [
   API.leave_balance.get,
   LEAVE_DASHBOARD_URL,
   API.leave_management.leave_balance,
+  API.users.list,
 ];
 
 export const useCreateLeaveData = () => {

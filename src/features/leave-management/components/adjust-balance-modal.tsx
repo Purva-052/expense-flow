@@ -38,6 +38,7 @@ interface AdjustBalanceModalProps {
   onOpenChange: (open: boolean) => void;
   employeesList: any;
   employeesListLoading: boolean;
+  selectedEmployeeId?: number | null;
 }
 
 const adjustBalanceSchema = z.object({
@@ -73,6 +74,7 @@ export function AdjustBalanceModal({
   onOpenChange,
   employeesList,
   employeesListLoading,
+  selectedEmployeeId,
 }: AdjustBalanceModalProps) {
   const form = useForm<any>({
     resolver: zodResolver(adjustBalanceSchema) as any,
@@ -101,6 +103,12 @@ export function AdjustBalanceModal({
     }));
   }, [employeesList]);
 
+  const selectedEmployeeName = useMemo(() => {
+    if (!selectedEmployeeId) return "";
+    const emp = employeesList?.data?.find((u: any) => u.id === selectedEmployeeId);
+    return emp ? emp.fullName : "";
+  }, [selectedEmployeeId, employeesList]);
+
   const leaveTypeOptions = useMemo(() => {
     const rawList = Array.isArray(leaveTypesRes)
       ? leaveTypesRes
@@ -122,13 +130,14 @@ export function AdjustBalanceModal({
   useEffect(() => {
     if (open) {
       form.reset({
-        employeeId: undefined,
+        employeeId: selectedEmployeeId || undefined,
         leaveTypeId: undefined,
         balance: undefined,
         reason: "",
       });
+      setReason("");
     }
-  }, [open, form]);
+  }, [open, form, selectedEmployeeId]);
 
   const onSubmit = async (values: TAdjustBalanceFormSchema) => {
     try {
@@ -146,10 +155,12 @@ export function AdjustBalanceModal({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-rose-500 font-bold text-lg dark:text-rose-400">
-            Adjust Leave Balance
+            Adjust Leave Balance {selectedEmployeeName ? `for ${selectedEmployeeName}` : ""}
           </DialogTitle>
           <DialogDescription>
-            Modify leave balance for a specific employee and leave type.
+            {selectedEmployeeName
+              ? `Modify leave balance for ${selectedEmployeeName}.`
+              : "Modify leave balance for a specific employee and leave type."}
           </DialogDescription>
         </DialogHeader>
 
@@ -158,19 +169,29 @@ export function AdjustBalanceModal({
             onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-4 py-2"
           >
-            <CustomDropDownSearchable
-              form={form}
-              name="employeeId"
-              label={
-                <span className="text-sm font-semibold">
-                  Select Employee <span className="text-red-500">*</span>
-                </span>
-              }
-              options={employeeOptions}
-              placeholder="Select employee"
-              isLoading={employeesListLoading}
-              showClearButton={true}
-            />
+            {selectedEmployeeId ? (
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Employee</Label>
+                <div className="px-3 py-2 border rounded-md bg-muted text-sm text-foreground">
+                  {selectedEmployeeName || "Loading..."}
+                </div>
+                <input type="hidden" {...form.register("employeeId")} />
+              </div>
+            ) : (
+              <CustomDropDownSearchable
+                form={form}
+                name="employeeId"
+                label={
+                  <span className="text-sm font-semibold">
+                    Select Employee <span className="text-red-500">*</span>
+                  </span>
+                }
+                options={employeeOptions}
+                placeholder="Select employee"
+                isLoading={employeesListLoading}
+                showClearButton={true}
+              />
+            )}
 
             <CustomDropDownSearchable
               form={form}

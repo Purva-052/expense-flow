@@ -42,8 +42,8 @@ export const useUpdateUserData = (id: string, onsuccess?: any) => {
   });
 };
 
-export const useGetUsersList = (params?: any) => {
-  return useFetchData({ url: GET_API_URL, params });
+export const useGetUsersList = (params?: any, enabled?: boolean) => {
+  return useFetchData({ url: GET_API_URL, params, enabled });
 };
 
 export const useGetUserDetails = (id: string, params?: any) => {
