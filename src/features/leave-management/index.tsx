@@ -496,9 +496,10 @@ const LeaveManagementPage = () => {
           if (val === null || val === undefined) return <span>-</span>;
           const num = parseFloat(val);
           const isNegative = num < 0;
-          const formatted = isNegative
-            ? `${num.toFixed(2)}`
-            : `+${num.toFixed(2)}`;
+          const absNum = Math.abs(num);
+          const formattedNum = Number(absNum.toFixed(2));
+          const formatted =
+            num === 0 ? "0" : isNegative ? `-${formattedNum}` : `+${formattedNum}`;
           return (
             <span
               className={cn(
@@ -519,7 +520,8 @@ const LeaveManagementPage = () => {
         cell: ({ row }: any) => {
           const val = row.getValue("previousBalance");
           if (val === null || val === undefined) return <span>-</span>;
-          return <span>{parseFloat(val).toFixed(2)} Days</span>;
+          const num = Number(parseFloat(val).toFixed(2));
+          return <span>{num} Days</span>;
         },
       },
       {
@@ -528,7 +530,8 @@ const LeaveManagementPage = () => {
         cell: ({ row }: any) => {
           const val = row.getValue("newBalance");
           if (val === null || val === undefined) return <span>-</span>;
-          return <span>{parseFloat(val).toFixed(2)} Days</span>;
+          const num = Number(parseFloat(val).toFixed(2));
+          return <span>{num} Days</span>;
         },
       },
       {
