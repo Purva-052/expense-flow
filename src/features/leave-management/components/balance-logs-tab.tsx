@@ -11,7 +11,7 @@ import {
   useImportUsers,
 } from "@/features/users/services";
 import { Button } from "@/components/ui/button";
-import { FileDown } from "lucide-react";
+import { FileDown, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -25,12 +25,12 @@ import { FilterConfig } from "@/components/table/table-toolbar";
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import { GlobalTable } from "@/components/table/global-table";
 
-// interface BalanceLogsTabProps {
-//   onAdjustLeavesClick: () => void;
-// }
+interface BalanceLogsTabProps {
+  onAdjustLeavesClick: () => void;
+}
 
-// export function BalanceLogsTab({ onAdjustLeavesClick }: BalanceLogsTabProps) {
-export function BalanceLogsTab() {
+export function BalanceLogsTab({ onAdjustLeavesClick }: BalanceLogsTabProps) {
+  // export function BalanceLogsTab() {
   const user = useAuthStore((state) => state.user);
   const rawRole = user?.role || user?.user?.role;
   const roleName = String(
@@ -424,10 +424,10 @@ export function BalanceLogsTab() {
                 ? "Importing..."
                 : "Import Leaves"}
             </Button>
-            {/* <Button onClick={onAdjustLeavesClick} className="shrink-0 w-fit">
+            <Button onClick={onAdjustLeavesClick} className="shrink-0 w-fit">
               <Settings className="mr-2 h-4 w-4" />
               Leave Settings
-            </Button> */}
+            </Button>
           </div>
         )}
       </div>

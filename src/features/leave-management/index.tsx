@@ -127,6 +127,31 @@ const LeaveManagementPage = () => {
   };
 
   const handleSectionChange = (val: string) => {
+    // Remove shared child filter/query params so filters don't persist across sections
+    try {
+      const params = new URLSearchParams(window.location.search);
+      [
+        "pageSize",
+        "currentPage",
+        "search",
+        "employeeId",
+        "startDate",
+        "endDate",
+        "tab",
+      ].forEach((k) => params.delete(k));
+
+      params.set("section", val);
+
+      const newSearch = params.toString() ? `?${params.toString()}` : "";
+      window.history.replaceState(
+        {},
+        "",
+        window.location.pathname + newSearch + window.location.hash
+      );
+    } catch (e) {
+      // ignore in non-browser environments
+    }
+
     setQueryParams({
       section: val,
       tab: null,
@@ -301,7 +326,7 @@ const LeaveManagementPage = () => {
                 className="mt-0 focus-visible:outline-none"
               >
                 <BalanceLogsTab
-                // onAdjustLeavesClick={() => setSetAllocationsOpen(true)}
+                  onAdjustLeavesClick={() => setSetAllocationsOpen(true)}
                 />
               </TabsContent>
 
