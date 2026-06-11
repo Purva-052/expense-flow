@@ -356,7 +356,35 @@ function roundCoord(value: number) {
   return Math.round(value * 2) / 2;
 }
 
+function isInColumnScroll(el: HTMLElement) {
+  return !!el.closest("[data-column-scroll]");
+}
 
+function isConnectorPointVisible(
+  el: HTMLElement,
+  centerY: number,
+  containerRect: DOMRect
+) {
+  if (!isInColumnScroll(el)) return true;
+
+  const scrollEl = el.closest("[data-column-scroll]") as HTMLElement;
+  const scrollRect = scrollEl.getBoundingClientRect();
+  const top = roundCoord(scrollRect.top - containerRect.top);
+  const bottom = roundCoord(scrollRect.bottom - containerRect.top);
+  return centerY >= top && centerY <= bottom;
+}
+
+function getConnectorChildIds(
+  children: OrgUser[],
+  pathChildId: string | null,
+  connectAll: boolean
+) {
+  const ids = children.map((u) => normalizeId(u.id) ?? String(u.id));
+  if (connectAll || ids.length <= 1 || !pathChildId || !ids.includes(pathChildId)) {
+    return ids;
+  }
+  return [pathChildId];
+}
 
 function buildConnectorPath(
   parentEl: HTMLDivElement,
@@ -370,37 +398,48 @@ function buildConnectorPath(
   const startY = roundCoord(
     parentRect.top + parentRect.height / 2 - containerRect.top
   );
+  const parentVisible = isConnectorPointVisible(parentEl, startY, containerRect);
 
-  // Compute all child rects regardless of scroll position
-  const allChildRects = childEls.map((el) => {
-    const rect = el.getBoundingClientRect();
-    return {
-      x: roundCoord(rect.left - containerRect.left),
-      y: roundCoord(rect.top + rect.height / 2 - containerRect.top),
-    };
-  });
+  const visibleChildRects = childEls
+    .map((el) => {
+      const rect = el.getBoundingClientRect();
+      const x = roundCoord(rect.left - containerRect.left);
+      const y = roundCoord(rect.top + rect.height / 2 - containerRect.top);
+      if (!isConnectorPointVisible(el, y, containerRect)) return null;
+      return { x, y };
+    })
+    .filter((child): child is { x: number; y: number } => child != null);
 
-  if (allChildRects.length === 0) return null;
+  if (visibleChildRects.length === 0) return null;
 
-  const childX = allChildRects[0].x;
+  const childX = visibleChildRects[0].x;
   const midX = roundCoord(startX + (childX - startX) / 2);
 
-  const childrenTop = Math.min(...allChildRects.map((c) => c.y));
-  const childrenBottom = Math.max(...allChildRects.map((c) => c.y));
-  const trunkTop = roundCoord(Math.min(startY, childrenTop));
-  const trunkBottom = roundCoord(Math.max(startY, childrenBottom));
+  const childYs = visibleChildRects.map((c) => c.y);
+  let trunkTop = Math.min(...childYs);
+  let trunkBottom = Math.max(...childYs);
+
+  if (parentVisible) {
+    trunkTop = Math.min(trunkTop, startY);
+    trunkBottom = Math.max(trunkBottom, startY);
+  }
 
   const segments: string[] = [];
 
-  // Always draw the parent horizontal connector (parent is always visible when children are shown)
-  segments.push(`M ${startX} ${startY} H ${midX}`);
+  if (parentVisible) {
+    segments.push(`M ${startX} ${startY} H ${midX}`);
+    if (startY < trunkTop - 0.5) {
+      segments.push(`M ${midX} ${startY} V ${trunkTop}`);
+    } else if (startY > trunkBottom + 0.5) {
+      segments.push(`M ${midX} ${startY} V ${trunkBottom}`);
+    }
+  }
 
   if (Math.abs(trunkTop - trunkBottom) > 0.5) {
     segments.push(`M ${midX} ${trunkTop} V ${trunkBottom}`);
   }
 
-  // Draw horizontal branch to every child (visible or scrolled)
-  allChildRects.forEach((child) => {
+  visibleChildRects.forEach((child) => {
     segments.push(`M ${midX} ${child.y} H ${child.x}`);
   });
 
@@ -798,25 +837,46 @@ function OrgChartInner({ users, activeUserId }: Readonly<Props>) {
     if (selectedLevel1Id && visibleLevel2.length > 0) {
       paths.push({
         parentId: selectedLevel1Id,
-        childIds: visibleLevel2.map((u) => normalizeId(u.id) ?? String(u.id)),
+        childIds: getConnectorChildIds(
+          visibleLevel2,
+          selectedLevel2Id,
+          true
+        ),
       });
     }
     if (selectedLevel2Id && visibleLevel3.length > 0) {
       paths.push({
         parentId: selectedLevel2Id,
-        childIds: visibleLevel3.map((u) => normalizeId(u.id) ?? String(u.id)),
+        childIds: getConnectorChildIds(
+          visibleLevel3,
+          selectedLevel3Id,
+          false
+        ),
       });
     }
     if (showLevel4 && selectedLevel3Id && visibleLevel4.length > 0) {
       paths.push({
         parentId: selectedLevel3Id,
-        childIds: visibleLevel4.map((u) => normalizeId(u.id) ?? String(u.id)),
+        childIds: getConnectorChildIds(
+          visibleLevel4,
+          selectedLevel4Id,
+          false
+        ),
       });
     }
     if (showLevel5 && selectedLevel4Id && visibleLevel5.length > 0) {
+      const level5PathId =
+        highlightedId &&
+        visibleLevel5.some((u) => normalizeId(u.id) === highlightedId)
+          ? highlightedId
+          : null;
       paths.push({
         parentId: selectedLevel4Id,
-        childIds: visibleLevel5.map((u) => normalizeId(u.id) ?? String(u.id)),
+        childIds: getConnectorChildIds(
+          visibleLevel5,
+          level5PathId,
+          false
+        ),
       });
     }
 
@@ -832,6 +892,7 @@ function OrgChartInner({ users, activeUserId }: Readonly<Props>) {
     visibleLevel5,
     showLevel4,
     showLevel5,
+    highlightedId,
   ]);
 
   const columns = useMemo(() => {
