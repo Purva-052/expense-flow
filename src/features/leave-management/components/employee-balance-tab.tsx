@@ -13,15 +13,15 @@ interface EmployeeBalanceTabProps {
 
 export function EmployeeBalanceTab({ onAdjustClick }: EmployeeBalanceTabProps) {
   const [queryParams, setQueryParams] = useQueryStates({
-    emp_pageSize: parseAsInteger.withDefault(10),
-    emp_currentPage: parseAsInteger.withDefault(1),
-    emp_search: parseAsString.withDefault(""),
+    pageSize: parseAsInteger.withDefault(10),
+    currentPage: parseAsInteger.withDefault(1),
+    search: parseAsString.withDefault(""),
   });
 
   const listParams = {
-    pageSize: queryParams.emp_pageSize,
-    currentPage: queryParams.emp_currentPage,
-    search: queryParams.emp_search,
+    pageSize: queryParams.pageSize,
+    currentPage: queryParams.currentPage,
+    search: queryParams.search,
   };
 
   const { data: employeeWiseLeaveData, isPending: employeeWiseLeaveLoading } =
@@ -42,7 +42,7 @@ export function EmployeeBalanceTab({ onAdjustClick }: EmployeeBalanceTabProps) {
       key: "search",
       value: listParams.search || "",
       onChange: (search: string | undefined) => {
-        setQueryParams({ emp_search: search ?? "", emp_currentPage: 1 });
+        setQueryParams({ ...listParams, search: search ?? "", currentPage: 1 });
       },
     },
   ];
@@ -142,8 +142,9 @@ export function EmployeeBalanceTab({ onAdjustClick }: EmployeeBalanceTabProps) {
     pageSize: number;
   }) => {
     setQueryParams({
-      emp_pageSize: newPagination.pageSize,
-      emp_currentPage: newPagination.pageIndex + 1,
+      ...listParams,
+      pageSize: newPagination.pageSize,
+      currentPage: newPagination.pageIndex + 1,
     });
   };
 
