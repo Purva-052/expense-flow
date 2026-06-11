@@ -11,11 +11,13 @@ import { parseLeaveDashboardResponse } from "../utils/leave-helpers";
 interface LeaveDashboardTabProps {
   pendingCount: number;
   lowBalanceCount: number;
+  onPendingCardClick?: () => void;
 }
 
 export function LeaveDashboardTab({
   pendingCount,
   lowBalanceCount,
+  onPendingCardClick,
 }: LeaveDashboardTabProps) {
   const [todayModalOpen, setTodayModalOpen] = useState(false);
   const [boardDate, setBoardDate] = useState(() => startOfDay(new Date()));
@@ -77,6 +79,7 @@ export function LeaveDashboardTab({
           setBoardDate(startOfDay(new Date()));
           setTodayModalOpen(true);
         }}
+        onPendingCardClick={onPendingCardClick}
       />
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">

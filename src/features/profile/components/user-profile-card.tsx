@@ -47,18 +47,13 @@ import {
   Mail,
   LayoutGrid,
   List,
-  Network,
 } from "lucide-react";
 import { useEffect, useState, useRef, useMemo } from "react";
 import { toast } from "sonner";
 import { FormProvider, useForm } from "react-hook-form";
 // import { toast } from "sonner";
 import { useUploadTransactionFile } from "../../transaction-logs/services";
-import { useUpdateUserData, useGetUsersList } from "../../users/services";
-import {
-  OrgChart,
-  extractOrgChartUsers,
-} from "../../users/components/org-chart";
+import { useUpdateUserData } from "../../users/services";
 import { CreatableSkillsSelect } from "./creatable-skills-select";
 import {
   useGetSkillsList,
@@ -148,7 +143,6 @@ interface UserProfileCardProps {
 export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [localIsUploading, setLocalIsUploading] = useState(false);
-  const [orgModalOpen, setOrgModalOpen] = useState(false);
   const [selectedSkills, setSelectedSkills] = useState<Skill[]>([]);
   const [certInput, setCertInput] = useState("");
   const [editingCertId, setEditingCertId] = useState<number | null>(null);
@@ -207,15 +201,6 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
   const { mutateAsync: updateProfile, isPending: isUpdating } =
     useUpdateUserData(user?.id);
   const { data: skillsList, isLoading: skillsLoading } = useGetSkillsList();
-  const { data: allUsersResponse, isPending: allUsersLoading } =
-    useGetUsersList({
-      pagination: false,
-    });
-
-  const allActiveUsers = useMemo(
-    () => extractOrgChartUsers(allUsersResponse),
-    [allUsersResponse]
-  );
   const { data: skillReferenceData } = useGetSkillReference(user?.id);
   const { mutateAsync: createSkill, isPending: isCreatingSkill } =
     useCreateSkill();
@@ -682,16 +667,6 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
                 Max Size: 2 MB
               </p> */}
             </div>
-          </div>
-          <div>
-            <Button
-              onClick={() => setOrgModalOpen(true)}
-              variant="outline"
-              className="bg-white/10 hover:bg-white/20 border-white/20 hover:border-white/40 text-white gap-2 transition-all duration-200"
-            >
-              <Network className="h-4 w-4" />
-              Org Chart
-            </Button>
           </div>
         </div>
       </div>
@@ -1356,27 +1331,6 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
           </DialogContent>
         </Dialog>
       )}
-
-      <Dialog open={orgModalOpen} onOpenChange={setOrgModalOpen}>
-        <DialogContent className="w-[96vw] sm:max-w-[96vw] md:max-w-[94vw] lg:max-w-[92vw] xl:max-w-[90vw] h-[92vh] flex flex-col p-6 overflow-hidden">
-          <DialogHeader className="pb-4 border-b">
-            <DialogTitle className="text-xl font-bold flex items-center gap-2">
-              <Network className="h-5 w-5 text-blue-500" />
-              Organization Chart
-            </DialogTitle>
-            <DialogDescription>
-              View the hierarchy and structure of devstree team members.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex-1 overflow-auto min-h-0 mt-4">
-            <OrgChart
-              users={allActiveUsers}
-              loading={allUsersLoading}
-              activeUserId={user?.id}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

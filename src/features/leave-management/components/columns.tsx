@@ -14,6 +14,7 @@ import { useLeaveStore } from "../stores";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { Badge } from "@/components/ui/badge";
 import { roles } from "@/utils/constant";
+import { useGetUserDetails } from "@/features/users/services";
 
 // Status badge variant mapping
 const statusVariantMap: Record<
@@ -185,6 +186,7 @@ export const columns: ColumnDef<any>[] = [
       const { setOpen, setCurrentRow } = useLeaveStore();
 
       const user = useAuthStore((state) => state.user);
+      const { data: userDetails }: any = useGetUserDetails(user?.user?.id);
       const rawRole = user?.role || user?.user?.role;
       const roleName = String(
         rawRole && typeof rawRole === "object" ? rawRole?.name : rawRole || ""
@@ -202,9 +204,13 @@ export const columns: ColumnDef<any>[] = [
 
       // Normalize status to lowercase for case-insensitive comparison
       const rowStatus = String(row.original.status || "").toLowerCase();
+      const isReportingManager =
+        userDetails?.reportingToId &&
+        String(userDetails.reportingToId) === String(currentUserId);
 
       // ✅ Only Admin & PM can approve/reject (not TL anymore)
-      const canApproveReject = (isAdmin || isPM) && rowStatus === "pending";
+      const canApproveReject =
+        (isAdmin || isPM || isReportingManager) && rowStatus === "pending";
 
       // ✅ Edit/Delete rules:
       //   - Admin & PM: can edit/delete any record
@@ -236,7 +242,8 @@ export const columns: ColumnDef<any>[] = [
         setCurrentRow(data);
       };
 
-      const hasActions = canApproveReject || canEditDelete;
+      const canDelete = rowStatus === "pending" && (isAdmin || isPM || isCreator);
+      const hasActions = canApproveReject || canEditDelete || canDelete;
 
       return (
         <DropdownMenu>
@@ -266,12 +273,12 @@ export const columns: ColumnDef<any>[] = [
               </DropdownMenuItem>
             )}
 
-            {rowStatus === "pending" && (isAdmin || isPM) && (
+            {canDelete && (
               <DropdownMenuItem
                 className="text-red-600 focus:bg-red-50 focus:text-red-600"
                 onClick={handleDelete}
               >
-                Delete Details
+                Delete Request
               </DropdownMenuItem>
             )}
 

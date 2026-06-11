@@ -17,6 +17,7 @@ interface LeaveDashboardStatsProps {
   lowBalanceCount: number;
   loading?: boolean;
   onTodayCardClick?: () => void;
+  onPendingCardClick?: () => void;
 }
 
 export function LeaveDashboardStats({
@@ -26,6 +27,7 @@ export function LeaveDashboardStats({
   pendingCount,
   loading,
   onTodayCardClick,
+  onPendingCardClick,
 }: LeaveDashboardStatsProps) {
   const cards = [
     {
@@ -68,7 +70,7 @@ export function LeaveDashboardStats({
       helperText: "Awaiting your action",
       icon: <Clock className="h-5 w-5 text-amber-700 dark:text-amber-400" />,
       iconBg: "bg-amber-100 dark:bg-amber-900/30",
-      clickable: false,
+      clickable: true,
     },
     // {
     //   key: "low-balance",
@@ -106,20 +108,25 @@ export function LeaveDashboardStats({
           />
         );
 
-        if (card.clickable && onTodayCardClick) {
-          return (
-            <button
-              key={card.key}
-              type="button"
-              onClick={onTodayCardClick}
-              className={cn(
-                "text-left rounded-xl transition-all",
-                "hover:ring-2 hover:ring-emerald-500/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              )}
-            >
-              {content}
-            </button>
-          );
+        if (card.clickable) {
+          const clickHandler = card.key === "today" ? onTodayCardClick : onPendingCardClick;
+          if (clickHandler) {
+            return (
+              <button
+                key={card.key}
+                type="button"
+                onClick={clickHandler}
+                className={cn(
+                  "text-left rounded-xl transition-all w-full",
+                  card.key === "today"
+                    ? "hover:ring-2 hover:ring-emerald-500/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    : "hover:ring-2 hover:ring-amber-500/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                )}
+              >
+                {content}
+              </button>
+            );
+          }
         }
 
         return <div key={card.key}>{content}</div>;

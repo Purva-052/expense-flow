@@ -3,9 +3,12 @@ import { useDeleteLeaveData } from "../services";
 import { useLeaveStore } from "../stores";
 import { LeaveApproveRejectModal } from "./approve-reject-modal";
 import { format } from "date-fns";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 export function ActionFormModal() {
   const { open, setOpen, currentRow, setCurrentRow } = useLeaveStore();
+  const user = useAuthStore((state) => state.user);
+  const currentUserId = user?.user?.id || user?.user_id;
 
   const { mutateAsync: deleteMutate, isPending: isDeleteLoading } =
     useDeleteLeaveData(currentRow?.id || "");
@@ -13,11 +16,15 @@ export function ActionFormModal() {
   const getDeleteInfoText = () => {
     if (!currentRow) return "this leave record.";
     const employeeName = currentRow.employee?.fullName || "this employee";
+    const employeeId = currentRow.employeeId || currentRow.employee?.id;
+    const isOwnLeave = String(employeeId) === String(currentUserId);
+    const subject = isOwnLeave ? "your leave record" : `the leave record for ${employeeName}`;
 
     const fromDateStr = currentRow.fromDate;
     const toDateStr = currentRow.toDate;
 
-    if (!fromDateStr) return `the leave record for ${employeeName}.`;
+    if (!fromDateStr) return `${subject}.`;
+    
 
     const formattedFrom = format(new Date(fromDateStr), "dd-MM-yyyy");
 
@@ -34,7 +41,7 @@ export function ActionFormModal() {
           typeLabel = "Half Day";
         }
       }
-      return `the leave record for ${employeeName} on ${formattedFrom} (${typeLabel}).`;
+      return `${subject} on ${formattedFrom} (${typeLabel}).`;
     }
 
     // Multiple Days Leave
@@ -54,7 +61,7 @@ export function ActionFormModal() {
     }
 
     const dayLabel = totalDays === 1 ? "1 day" : `${totalDays} days`;
-    return `the leave record for ${employeeName} from ${formattedFrom} to ${formattedTo} (${dayLabel}).`;
+    return `${subject} from ${formattedFrom} to ${formattedTo} (${dayLabel}).`;
   };
 
   const deleteInfoText = getDeleteInfoText();

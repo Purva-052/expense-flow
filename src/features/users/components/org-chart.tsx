@@ -1,7 +1,51 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { cn } from "@/lib/utils";
 import { formatRole } from "@/utils/commonFunctions";
-import { ChevronRight, Loader2 } from "lucide-react";
+import { ChevronRight } from "lucide-react";
+
+const CHART_MIN_HEIGHT = 520;
+
+function OrgChartSkeleton() {
+  const colCounts = [1, 5, 3, 4];
+  return (
+    <div className="relative min-h-[520px] w-full overflow-hidden rounded-2xl border border-gray-150 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
+      <div className="overflow-x-auto overflow-y-hidden">
+        <div className="relative flex min-h-[520px] gap-12 p-6 pr-10">
+          {colCounts.map((count, ci) => (
+            <div key={ci} className="relative shrink-0">
+              <div className="mb-3 flex w-[260px] items-center gap-2 border-b border-gray-150 pb-2 dark:border-slate-800">
+                <div className="h-4 w-16 animate-pulse rounded bg-gray-200 dark:bg-slate-700" />
+                <div className="h-4 w-6 animate-pulse rounded-full bg-gray-200 dark:bg-slate-700" />
+              </div>
+              <div className="flex flex-col gap-2.5">
+                {Array.from({ length: count }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="flex w-[260px] items-center gap-3 rounded-xl border border-gray-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900"
+                  >
+                    <div className="h-10 w-10 shrink-0 animate-pulse rounded-full bg-gray-200 dark:bg-slate-700" />
+                    <div className="flex flex-1 flex-col gap-1.5">
+                      <div className="h-3 w-28 animate-pulse rounded bg-gray-200 dark:bg-slate-700" />
+                      <div className="h-2.5 w-20 animate-pulse rounded bg-gray-100 dark:bg-slate-800" />
+                      <div className="h-2.5 w-32 animate-pulse rounded bg-gray-100 dark:bg-slate-800" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface OrgUser {
   id: number | string;
@@ -127,7 +171,9 @@ function buildOrgTree(users: OrgUser[]) {
   }
 
   rootIds.sort((a, b) =>
-    (userMap.get(a)?.fullName ?? "").localeCompare(userMap.get(b)?.fullName ?? "")
+    (userMap.get(a)?.fullName ?? "").localeCompare(
+      userMap.get(b)?.fullName ?? ""
+    )
   );
 
   return { userMap, adj, rootIds };
@@ -166,6 +212,7 @@ interface UserCardProps {
   reportsCount: number;
   onClick: () => void;
   cardRef?: (el: HTMLDivElement | null) => void;
+  isSticky?: boolean;
 }
 
 function UserCard({
@@ -175,6 +222,7 @@ function UserCard({
   reportsCount,
   onClick,
   cardRef,
+  isSticky,
 }: UserCardProps) {
   const userId = normalizeId(user.id) ?? String(user.id);
   const formattedRole = user.role ? formatRole(user.role) : "";
@@ -184,11 +232,12 @@ function UserCard({
       ref={cardRef}
       onClick={onClick}
       className={cn(
-        "flex w-[280px] cursor-pointer items-center justify-between rounded-xl border p-3.5 transition-all duration-200 select-none",
+        "relative flex w-[260px] cursor-pointer items-center justify-between rounded-xl border p-3 transition-all duration-200 select-none",
+        isSticky && "sticky top-0 z-10 shadow-md",
         isHighlighted
           ? "border-blue-600 bg-blue-600 text-white shadow-md shadow-blue-100 dark:border-blue-500 dark:bg-blue-600 dark:shadow-none"
           : isPathSelected
-            ? "border-blue-400 bg-blue-50/70 text-gray-900 dark:border-blue-500/50 dark:bg-blue-950/30 dark:text-slate-100"
+            ? "border-blue-400 bg-blue-50 text-gray-900 dark:border-blue-500/50 dark:bg-blue-950 dark:text-slate-100"
             : "border-gray-200 bg-white text-gray-900 hover:border-gray-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-slate-700"
       )}
     >
@@ -259,13 +308,20 @@ function UserCard({
           <ChevronRight className="h-2.5 w-2.5" />
         </div>
       )}
+
+      {user.status === "inactive" && (
+        <span className="absolute top-2 right-2 flex h-2 w-2">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+        </span>
+      )}
     </div>
   );
 }
 
 function LevelHeader({ label, count }: { label: string; count: number }) {
   return (
-    <div className="mb-4 flex w-[280px] items-center gap-2 border-b border-gray-150 pb-2.5 select-none dark:border-slate-800">
+    <div className="mb-3 flex w-[260px] items-center gap-2 border-b border-gray-150 pb-2 select-none dark:border-slate-800">
       <span className="text-sm font-semibold text-gray-700 dark:text-slate-300">
         {label}
       </span>
@@ -281,19 +337,77 @@ interface ConnectorPaths {
   childIds: string[];
 }
 
+function roundCoord(value: number) {
+  return Math.round(value * 2) / 2;
+}
+
+
+
+function buildConnectorPath(
+  parentEl: HTMLDivElement,
+  childEls: HTMLDivElement[],
+  containerRect: DOMRect
+): string | null {
+  if (childEls.length === 0) return null;
+
+  const parentRect = parentEl.getBoundingClientRect();
+  const startX = roundCoord(parentRect.right - containerRect.left);
+  const startY = roundCoord(
+    parentRect.top + parentRect.height / 2 - containerRect.top
+  );
+
+  // Compute all child rects regardless of scroll position
+  const allChildRects = childEls.map((el) => {
+    const rect = el.getBoundingClientRect();
+    return {
+      x: roundCoord(rect.left - containerRect.left),
+      y: roundCoord(rect.top + rect.height / 2 - containerRect.top),
+    };
+  });
+
+  if (allChildRects.length === 0) return null;
+
+  const childX = allChildRects[0].x;
+  const midX = roundCoord(startX + (childX - startX) / 2);
+
+  const childrenTop = Math.min(...allChildRects.map((c) => c.y));
+  const childrenBottom = Math.max(...allChildRects.map((c) => c.y));
+  const trunkTop = roundCoord(Math.min(startY, childrenTop));
+  const trunkBottom = roundCoord(Math.max(startY, childrenBottom));
+
+  const segments: string[] = [];
+
+  // Always draw the parent horizontal connector (parent is always visible when children are shown)
+  segments.push(`M ${startX} ${startY} H ${midX}`);
+
+  if (Math.abs(trunkTop - trunkBottom) > 0.5) {
+    segments.push(`M ${midX} ${trunkTop} V ${trunkBottom}`);
+  }
+
+  // Draw horizontal branch to every child (visible or scrolled)
+  allChildRects.forEach((child) => {
+    segments.push(`M ${midX} ${child.y} H ${child.x}`);
+  });
+
+  return segments.length > 0 ? segments.join(" ") : null;
+}
+
 function OrgChartConnectors({
   paths,
-  cardElements,
+  cardElementsRef,
   containerRef,
+  drawRef,
 }: {
   paths: ConnectorPaths[];
-  cardElements: Map<string, HTMLDivElement>;
+  cardElementsRef: React.RefObject<Map<string, HTMLDivElement>>;
   containerRef: React.RefObject<HTMLDivElement | null>;
+  drawRef: React.MutableRefObject<(() => void) | null>;
 }) {
   const [lines, setLines] = useState<{ d: string }[]>([]);
 
   const drawLines = useCallback(() => {
     const container = containerRef.current;
+    const cardElements = cardElementsRef.current;
     if (!container || paths.length === 0) {
       setLines([]);
       return;
@@ -306,57 +420,70 @@ function OrgChartConnectors({
       const parentEl = cardElements.get(parentId);
       if (!parentEl || childIds.length === 0) return;
 
-      const parentRect = parentEl.getBoundingClientRect();
-      const startX = parentRect.right - containerRect.left;
-      const startY =
-        parentRect.top + parentRect.height / 2 - containerRect.top;
+      const childEls = childIds
+        .map((id) => cardElements.get(id))
+        .filter((el): el is HTMLDivElement => !!el);
 
-      const childRects = childIds
-        .map((id) => {
-          const el = cardElements.get(id);
-          if (!el) return null;
-          const rect = el.getBoundingClientRect();
-          return {
-            x: rect.left - containerRect.left,
-            y: rect.top + rect.height / 2 - containerRect.top,
-          };
-        })
-        .filter(Boolean) as { x: number; y: number }[];
-
-      if (childRects.length === 0) return;
-
-      const midX = startX + (childRects[0].x - startX) / 2;
-      const topY = Math.min(startY, ...childRects.map((c) => c.y));
-      const bottomY = Math.max(startY, ...childRects.map((c) => c.y));
-
-      const segments: string[] = [];
-      segments.push(`M ${startX} ${startY} H ${midX}`);
-      segments.push(`M ${midX} ${topY} V ${bottomY}`);
-      childRects.forEach((child) => {
-        segments.push(`M ${midX} ${child.y} H ${child.x}`);
-      });
-
-      nextLines.push({ d: segments.join(" ") });
+      const pathD = buildConnectorPath(parentEl, childEls, containerRect);
+      if (pathD) nextLines.push({ d: pathD });
     });
 
     setLines(nextLines);
-  }, [paths, cardElements, containerRef]);
+  }, [paths, cardElementsRef, containerRef]);
 
   useLayoutEffect(() => {
+    drawRef.current = drawLines;
     drawLines();
-    const frame = requestAnimationFrame(() => drawLines());
+
+    // Schedule multiple animation frames to draw lines during modal layout settling
+    const frames: number[] = [];
+    const scheduleFrame = () => {
+      frames.push(
+        requestAnimationFrame(() => {
+          drawLines();
+          if (frames.length < 5) {
+            scheduleFrame();
+          }
+        })
+      );
+    };
+    scheduleFrame();
+
+    // Schedule timeouts to catch transitions after 100ms, 300ms, and 600ms
+    const t1 = setTimeout(drawLines, 100);
+    const t2 = setTimeout(drawLines, 300);
+    const t3 = setTimeout(drawLines, 600);
 
     const container = containerRef.current;
-    if (!container) return () => cancelAnimationFrame(frame);
+    if (!container) {
+      return () => {
+        frames.forEach(cancelAnimationFrame);
+        clearTimeout(t1);
+        clearTimeout(t2);
+        clearTimeout(t3);
+        drawRef.current = null;
+      };
+    }
+
+    const scrollEls = container.querySelectorAll("[data-column-scroll]");
+    scrollEls.forEach((el) =>
+      el.addEventListener("scroll", drawLines, { passive: true })
+    );
 
     const observer = new ResizeObserver(() => drawLines());
     observer.observe(container);
+    scrollEls.forEach((el) => observer.observe(el));
 
     return () => {
-      cancelAnimationFrame(frame);
+      frames.forEach(cancelAnimationFrame);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      scrollEls.forEach((el) => el.removeEventListener("scroll", drawLines));
       observer.disconnect();
+      drawRef.current = null;
     };
-  }, [drawLines, containerRef]);
+  }, [drawLines, containerRef, drawRef]);
 
   if (lines.length === 0) return null;
 
@@ -381,20 +508,46 @@ function OrgChartConnectors({
   );
 }
 
+function scrollCardWithinColumn(
+  cardEl: HTMLElement,
+  columnScrollEl: HTMLElement
+) {
+  const cardRect = cardEl.getBoundingClientRect();
+  const scrollRect = columnScrollEl.getBoundingClientRect();
+
+  if (cardRect.top < scrollRect.top) {
+    columnScrollEl.scrollTop -= scrollRect.top - cardRect.top + 8;
+  } else if (cardRect.bottom > scrollRect.bottom) {
+    columnScrollEl.scrollTop += cardRect.bottom - scrollRect.bottom + 8;
+  }
+}
+
+function handleColumnWheel(e: React.WheelEvent<HTMLDivElement>) {
+  const el = e.currentTarget;
+  const { scrollTop, scrollHeight, clientHeight } = el;
+  const canScrollUp = scrollTop > 0;
+  const canScrollDown = scrollTop + clientHeight < scrollHeight - 1;
+
+  if ((e.deltaY < 0 && canScrollUp) || (e.deltaY > 0 && canScrollDown)) {
+    e.stopPropagation();
+  }
+}
+
 function OrgChartInner({ users, activeUserId }: Readonly<Props>) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const horizontalScrollRef = useRef<HTMLDivElement>(null);
+  const drawConnectorsRef = useRef<(() => void) | null>(null);
   const cardElementsRef = useRef<Map<string, HTMLDivElement>>(new Map());
 
   const [selectedLevel1Id, setSelectedLevel1Id] = useState<string | null>(null);
   const [selectedLevel2Id, setSelectedLevel2Id] = useState<string | null>(null);
   const [selectedLevel3Id, setSelectedLevel3Id] = useState<string | null>(null);
+  const [selectedLevel4Id, setSelectedLevel4Id] = useState<string | null>(null);
   const [showLevel4, setShowLevel4] = useState(false);
+  const [showLevel5, setShowLevel5] = useState(false);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
 
-  const { userMap, adj, rootIds } = useMemo(
-    () => buildOrgTree(users),
-    [users]
-  );
+  const { userMap, adj, rootIds } = useMemo(() => buildOrgTree(users), [users]);
 
   const reportsCountMap = useMemo(() => {
     const counts = new Map<string, number>();
@@ -442,7 +595,9 @@ function OrgChartInner({ users, activeUserId }: Readonly<Props>) {
     let l1: string | null = null;
     let l2: string | null = null;
     let l3: string | null = null;
+    let l4: string | null = null;
     let expandLevel4 = false;
+    let expandLevel5 = false;
 
     if (activeUserId != null) {
       const activeIdStr = normalizeId(activeUserId) ?? String(activeUserId);
@@ -452,36 +607,82 @@ function OrgChartInner({ users, activeUserId }: Readonly<Props>) {
       if (path.length >= 1) l1 = path[0];
       if (path.length >= 2) l2 = path[1];
       if (path.length >= 3) l3 = path[2];
-      if (path.length >= 4) expandLevel4 = true;
+      if (path.length >= 4) {
+        l4 = path[3];
+        expandLevel4 = true;
+      }
+      if (path.length >= 5) expandLevel5 = true;
     }
 
-    if (!l1 || !userMap.has(l1)) {
-      l1 = rootIds[0] ?? null;
-    }
+    if (!l1 || !userMap.has(l1)) l1 = rootIds[0] ?? null;
 
     if (l1) {
       const level2Nodes = adj.get(l1) || [];
-      if (!l2 || !userMap.has(l2) || !level2Nodes.includes(l2)) {
+      if (!l2 || !userMap.has(l2) || !level2Nodes.includes(l2))
         l2 = level2Nodes[0] ?? null;
-      }
     } else {
       l2 = null;
     }
 
     if (l2) {
       const level3Nodes = adj.get(l2) || [];
-      if (!l3 || !userMap.has(l3) || !level3Nodes.includes(l3)) {
+      if (!l3 || !userMap.has(l3) || !level3Nodes.includes(l3))
         l3 = level3Nodes[0] ?? null;
-      }
     } else {
       l3 = null;
+    }
+
+    if (l3 && expandLevel4) {
+      const level4Nodes = adj.get(l3) || [];
+      if (!l4 || !userMap.has(l4) || !level4Nodes.includes(l4))
+        l4 = level4Nodes[0] ?? null;
+    } else {
+      l4 = null;
     }
 
     setSelectedLevel1Id(l1);
     setSelectedLevel2Id(l2);
     setSelectedLevel3Id(l3);
+    setSelectedLevel4Id(l4);
     setShowLevel4(expandLevel4);
+    setShowLevel5(expandLevel5);
   }, [activeUserId, users, userMap, adj, rootIds]);
+
+  const scheduleConnectorRedraw = useCallback(() => {
+    requestAnimationFrame(() => drawConnectorsRef.current?.());
+  }, []);
+
+  const handleColumnScroll = useCallback(() => {
+    drawConnectorsRef.current?.();
+  }, []);
+
+  useEffect(() => {
+    if (!highlightedId) return;
+    const el = cardElementsRef.current.get(highlightedId);
+    const horizontalScroll = horizontalScrollRef.current;
+    if (!el || !horizontalScroll) return;
+
+    const frame = requestAnimationFrame(() => {
+      const columnScroll = el.closest(
+        "[data-column-scroll]"
+      ) as HTMLElement | null;
+      if (columnScroll) {
+        scrollCardWithinColumn(el, columnScroll);
+      }
+
+      const elRect = el.getBoundingClientRect();
+      const scrollRect = horizontalScroll.getBoundingClientRect();
+      if (elRect.right > scrollRect.right - 24) {
+        horizontalScroll.scrollLeft += elRect.right - scrollRect.right + 48;
+      } else if (elRect.left < scrollRect.left + 24) {
+        horizontalScroll.scrollLeft -= scrollRect.left - elRect.left + 48;
+      }
+
+      scheduleConnectorRedraw();
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [highlightedId, showLevel4, showLevel5, scheduleConnectorRedraw]);
 
   const visibleLevel1 = useMemo(() => {
     const list = rootIds
@@ -503,8 +704,20 @@ function OrgChartInner({ users, activeUserId }: Readonly<Props>) {
   const visibleLevel4 = useMemo(() => {
     if (!showLevel4 || !selectedLevel3Id) return [];
     const list = getChildrenUsers(selectedLevel3Id);
+    return sortWithPriority(list, highlightedId ?? selectedLevel4Id);
+  }, [
+    showLevel4,
+    selectedLevel3Id,
+    getChildrenUsers,
+    highlightedId,
+    selectedLevel4Id,
+  ]);
+
+  const visibleLevel5 = useMemo(() => {
+    if (!showLevel5 || !selectedLevel4Id) return [];
+    const list = getChildrenUsers(selectedLevel4Id);
     return sortWithPriority(list, highlightedId);
-  }, [showLevel4, selectedLevel3Id, getChildrenUsers, highlightedId]);
+  }, [showLevel5, selectedLevel4Id, getChildrenUsers, highlightedId]);
 
   const handleCardClick = useCallback(
     (userId: string, depth: number) => {
@@ -513,6 +726,8 @@ function OrgChartInner({ users, activeUserId }: Readonly<Props>) {
       if (depth === 0) {
         setSelectedLevel1Id(userId);
         setShowLevel4(false);
+        setShowLevel5(false);
+        setSelectedLevel4Id(null);
         const children2 = adj.get(userId) || [];
         setSelectedLevel2Id(children2[0] ?? null);
         const nextL2 = children2[0];
@@ -525,20 +740,37 @@ function OrgChartInner({ users, activeUserId }: Readonly<Props>) {
       } else if (depth === 1) {
         setSelectedLevel2Id(userId);
         setShowLevel4(false);
+        setShowLevel5(false);
+        setSelectedLevel4Id(null);
         const children3 = adj.get(userId) || [];
         setSelectedLevel3Id(children3[0] ?? null);
       } else if (depth === 2) {
         setSelectedLevel3Id(userId);
-        setShowLevel4((adj.get(userId) || []).length > 0);
+        setShowLevel5(false);
+        setSelectedLevel4Id(null);
+        const hasChildren = (adj.get(userId) || []).length > 0;
+        setShowLevel4(hasChildren);
+        if (hasChildren) {
+          const children4 = adj.get(userId) || [];
+          setSelectedLevel4Id(children4[0] ?? null);
+        }
+      } else if (depth === 3) {
+        setSelectedLevel4Id(userId);
+        const hasChildren = (adj.get(userId) || []).length > 0;
+        setShowLevel5(hasChildren);
       }
     },
     [adj]
   );
 
-  const setCardRef = useCallback((userId: string, el: HTMLDivElement | null) => {
-    if (el) cardElementsRef.current.set(userId, el);
-    else cardElementsRef.current.delete(userId);
-  }, []);
+  const setCardRef = useCallback(
+    (userId: string, el: HTMLDivElement | null) => {
+      if (el) cardElementsRef.current.set(userId, el);
+      else cardElementsRef.current.delete(userId);
+      scheduleConnectorRedraw();
+    },
+    [scheduleConnectorRedraw]
+  );
 
   const connectorPaths = useMemo((): ConnectorPaths[] => {
     const paths: ConnectorPaths[] = [];
@@ -561,16 +793,25 @@ function OrgChartInner({ users, activeUserId }: Readonly<Props>) {
         childIds: visibleLevel4.map((u) => normalizeId(u.id) ?? String(u.id)),
       });
     }
+    if (showLevel5 && selectedLevel4Id && visibleLevel5.length > 0) {
+      paths.push({
+        parentId: selectedLevel4Id,
+        childIds: visibleLevel5.map((u) => normalizeId(u.id) ?? String(u.id)),
+      });
+    }
 
     return paths;
   }, [
     selectedLevel1Id,
     selectedLevel2Id,
     selectedLevel3Id,
+    selectedLevel4Id,
     visibleLevel2,
     visibleLevel3,
     visibleLevel4,
+    visibleLevel5,
     showLevel4,
+    showLevel5,
   ]);
 
   const columns = useMemo(() => {
@@ -605,6 +846,14 @@ function OrgChartInner({ users, activeUserId }: Readonly<Props>) {
         label: "Level 4",
         users: visibleLevel4,
         depth: 3,
+        selectedId: selectedLevel4Id,
+      });
+    }
+    if (showLevel5) {
+      cols.push({
+        label: "Level 5",
+        users: visibleLevel5,
+        depth: 4,
         selectedId: null,
       });
     }
@@ -615,49 +864,92 @@ function OrgChartInner({ users, activeUserId }: Readonly<Props>) {
     visibleLevel2,
     visibleLevel3,
     visibleLevel4,
+    visibleLevel5,
     showLevel4,
+    showLevel5,
     selectedLevel1Id,
     selectedLevel2Id,
     selectedLevel3Id,
+    selectedLevel4Id,
   ]);
 
+  // Scroll expanded levels into view horizontally
+  useEffect(() => {
+    if (!showLevel4 && !showLevel5) return;
+    const scrollEl = horizontalScrollRef.current;
+    if (!scrollEl) return;
+
+    const frame = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        scrollEl.scrollTo({
+          left: scrollEl.scrollWidth - scrollEl.clientWidth,
+          behavior: "smooth",
+        });
+        scheduleConnectorRedraw();
+      });
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [showLevel4, showLevel5, columns.length, scheduleConnectorRedraw]);
+
   return (
-    <div className="relative min-h-[600px] w-full overflow-x-auto rounded-2xl border border-gray-150 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
+    <div
+      className="relative w-full overflow-hidden rounded-2xl border border-gray-150 bg-slate-50 dark:border-slate-800 dark:bg-slate-950"
+      style={{ minHeight: CHART_MIN_HEIGHT }}
+    >
       <div
-        ref={containerRef}
-        className="relative flex min-h-[600px] gap-16 p-8"
+        ref={horizontalScrollRef}
+        className="overflow-x-auto overflow-y-hidden overscroll-x-contain"
+        onScroll={handleColumnScroll}
       >
-        <OrgChartConnectors
-          paths={connectorPaths}
-          cardElements={cardElementsRef.current}
-          containerRef={containerRef}
-        />
+        <div
+          ref={containerRef}
+          className="relative flex gap-12 p-6 pr-10"
+          style={{ minHeight: CHART_MIN_HEIGHT }}
+        >
+          <OrgChartConnectors
+            paths={connectorPaths}
+            cardElementsRef={cardElementsRef}
+            containerRef={containerRef}
+            drawRef={drawConnectorsRef}
+          />
 
-        {columns.map((column) => (
-          <div key={column.label} className="relative shrink-0">
-            <LevelHeader label={column.label} count={column.users.length} />
-            <div className="flex flex-col gap-3">
-              {column.users.map((user) => {
-                const userId = normalizeId(user.id) ?? String(user.id);
-                const isHighlighted = highlightedId === userId;
-                const isPathSelected = column.selectedId === userId;
-                const reportsCount = reportsCountMap.get(userId) ?? 0;
+          {columns.map((column) => (
+            <div
+              key={column.label}
+              className="relative flex w-[260px] shrink-0 flex-col"
+            >
+              <LevelHeader label={column.label} count={column.users.length} />
+              <div
+                data-column-scroll
+                className="no-scrollbar flex flex-col gap-2.5 overflow-y-auto overscroll-y-contain"
+                style={{ maxHeight: CHART_MIN_HEIGHT - 60 }}
+                onScroll={handleColumnScroll}
+                onWheel={handleColumnWheel}
+              >
+                {column.users.map((user, index) => {
+                  const userId = normalizeId(user.id) ?? String(user.id);
+                  const isHighlighted = highlightedId === userId;
+                  const isPathSelected = column.selectedId === userId;
+                  const reportsCount = reportsCountMap.get(userId) ?? 0;
 
-                return (
-                  <UserCard
-                    key={userId}
-                    user={user}
-                    isHighlighted={isHighlighted}
-                    isPathSelected={isPathSelected && !isHighlighted}
-                    reportsCount={reportsCount}
-                    onClick={() => handleCardClick(userId, column.depth)}
-                    cardRef={(el) => setCardRef(userId, el)}
-                  />
-                );
-              })}
+                  return (
+                    <UserCard
+                      key={userId}
+                      user={user}
+                      isHighlighted={isHighlighted}
+                      isPathSelected={isPathSelected && !isHighlighted}
+                      reportsCount={reportsCount}
+                      onClick={() => handleCardClick(userId, column.depth)}
+                      cardRef={(el) => setCardRef(userId, el)}
+                      isSticky={index === 0 && column.users.length > 1}
+                    />
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -699,11 +991,7 @@ export function OrgChart({ users, loading, activeUserId }: Readonly<Props>) {
   }, [users]);
 
   if (loading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <OrgChartSkeleton />;
   }
 
   if (normalizedUsers.length === 0) {
