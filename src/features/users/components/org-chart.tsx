@@ -124,6 +124,16 @@ function sortWithPriority(users: OrgUser[], priorityId: string | null) {
   return [item, ...copy];
 }
 
+function splitPinnedUser(users: OrgUser[], pinnedId: string | null) {
+  if (!pinnedId) return { pinned: null as OrgUser | null, rest: users };
+  const idx = users.findIndex((u) => normalizeId(u.id) === pinnedId);
+  if (idx < 0) return { pinned: null, rest: users };
+  return {
+    pinned: users[idx],
+    rest: [...users.slice(0, idx), ...users.slice(idx + 1)],
+  };
+}
+
 function buildOrgTree(users: OrgUser[]) {
   const userMap = new Map<string, OrgUser>();
   const adj = new Map<string, string[]>();
@@ -205,6 +215,8 @@ function getPathFromRoot(
   return path;
 }
 
+const MASKED_PRIVATE_VALUE = "*****";
+
 interface UserCardProps {
   user: OrgUser;
   isHighlighted: boolean;
@@ -212,7 +224,7 @@ interface UserCardProps {
   reportsCount: number;
   onClick: () => void;
   cardRef?: (el: HTMLDivElement | null) => void;
-  isSticky?: boolean;
+  maskPrivateInfo?: boolean;
 }
 
 function UserCard({
@@ -222,10 +234,14 @@ function UserCard({
   reportsCount,
   onClick,
   cardRef,
-  isSticky,
+  maskPrivateInfo = false,
 }: UserCardProps) {
   const userId = normalizeId(user.id) ?? String(user.id);
   const formattedRole = user.role ? formatRole(user.role) : "";
+  const displayRole = maskPrivateInfo
+    ? MASKED_PRIVATE_VALUE
+    : formattedRole || "No Role";
+  const displayEmail = maskPrivateInfo ? MASKED_PRIVATE_VALUE : user.email || "";
 
   return (
     <div
@@ -233,7 +249,6 @@ function UserCard({
       onClick={onClick}
       className={cn(
         "relative flex w-[260px] cursor-pointer items-center justify-between rounded-xl border p-3 transition-all duration-200 select-none",
-        isSticky && "sticky top-0 z-10 shadow-md",
         isHighlighted
           ? "border-blue-600 bg-blue-600 text-white shadow-md shadow-blue-100 dark:border-blue-500 dark:bg-blue-600 dark:shadow-none"
           : isPathSelected
@@ -278,7 +293,7 @@ function UserCard({
                 : "text-gray-400 dark:text-slate-500"
             )}
           >
-            {formattedRole || "No Role"}
+            {displayRole}
           </span>
           <span
             className={cn(
@@ -288,7 +303,7 @@ function UserCard({
                 : "text-gray-400/80 dark:text-slate-500/80"
             )}
           >
-            {user.email || ""}
+            {displayEmail}
           </span>
         </div>
       </div>
@@ -547,6 +562,11 @@ function OrgChartInner({ users, activeUserId }: Readonly<Props>) {
   const [showLevel5, setShowLevel5] = useState(false);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
 
+  const loggedInUserId = useMemo(() => {
+    if (activeUserId == null) return null;
+    return normalizeId(activeUserId) ?? String(activeUserId);
+  }, [activeUserId]);
+
   const { userMap, adj, rootIds } = useMemo(() => buildOrgTree(users), [users]);
 
   const reportsCountMap = useMemo(() => {
@@ -666,7 +686,8 @@ function OrgChartInner({ users, activeUserId }: Readonly<Props>) {
       const columnScroll = el.closest(
         "[data-column-scroll]"
       ) as HTMLElement | null;
-      if (columnScroll) {
+      // Only scroll within the list — pinned path cards sit outside the scroll area
+      if (columnScroll?.contains(el)) {
         scrollCardWithinColumn(el, columnScroll);
       }
 
@@ -688,35 +709,34 @@ function OrgChartInner({ users, activeUserId }: Readonly<Props>) {
     const list = rootIds
       .map((id) => userMap.get(id))
       .filter((u): u is OrgUser => !!u);
-    return sortWithPriority(list, highlightedId ?? selectedLevel1Id);
-  }, [rootIds, userMap, highlightedId, selectedLevel1Id]);
+    return sortWithPriority(list, selectedLevel1Id);
+  }, [rootIds, userMap, selectedLevel1Id]);
 
   const visibleLevel2 = useMemo(() => {
     const list = getChildrenUsers(selectedLevel1Id);
-    return sortWithPriority(list, highlightedId ?? selectedLevel2Id);
-  }, [selectedLevel1Id, getChildrenUsers, highlightedId, selectedLevel2Id]);
+    return sortWithPriority(list, selectedLevel2Id);
+  }, [selectedLevel1Id, getChildrenUsers, selectedLevel2Id]);
 
   const visibleLevel3 = useMemo(() => {
     const list = getChildrenUsers(selectedLevel2Id);
-    return sortWithPriority(list, highlightedId ?? selectedLevel3Id);
-  }, [selectedLevel2Id, getChildrenUsers, highlightedId, selectedLevel3Id]);
+    return sortWithPriority(list, selectedLevel3Id);
+  }, [selectedLevel2Id, getChildrenUsers, selectedLevel3Id]);
 
   const visibleLevel4 = useMemo(() => {
     if (!showLevel4 || !selectedLevel3Id) return [];
     const list = getChildrenUsers(selectedLevel3Id);
-    return sortWithPriority(list, highlightedId ?? selectedLevel4Id);
-  }, [
-    showLevel4,
-    selectedLevel3Id,
-    getChildrenUsers,
-    highlightedId,
-    selectedLevel4Id,
-  ]);
+    return sortWithPriority(list, selectedLevel4Id);
+  }, [showLevel4, selectedLevel3Id, getChildrenUsers, selectedLevel4Id]);
 
   const visibleLevel5 = useMemo(() => {
     if (!showLevel5 || !selectedLevel4Id) return [];
     const list = getChildrenUsers(selectedLevel4Id);
-    return sortWithPriority(list, highlightedId);
+    const pinId =
+      highlightedId &&
+      list.some((u) => normalizeId(u.id) === highlightedId)
+        ? highlightedId
+        : null;
+    return sortWithPriority(list, pinId);
   }, [showLevel5, selectedLevel4Id, getChildrenUsers, highlightedId]);
 
   const handleCardClick = useCallback(
@@ -820,24 +840,28 @@ function OrgChartInner({ users, activeUserId }: Readonly<Props>) {
       users: OrgUser[];
       depth: number;
       selectedId: string | null;
+      pinnedId: string | null;
     }[] = [
       {
         label: "Level 1",
         users: visibleLevel1,
         depth: 0,
         selectedId: selectedLevel1Id,
+        pinnedId: selectedLevel1Id,
       },
       {
         label: "Level 2",
         users: visibleLevel2,
         depth: 1,
         selectedId: selectedLevel2Id,
+        pinnedId: selectedLevel2Id,
       },
       {
         label: "Level 3",
         users: visibleLevel3,
         depth: 2,
         selectedId: selectedLevel3Id,
+        pinnedId: selectedLevel3Id,
       },
     ];
 
@@ -847,14 +871,21 @@ function OrgChartInner({ users, activeUserId }: Readonly<Props>) {
         users: visibleLevel4,
         depth: 3,
         selectedId: selectedLevel4Id,
+        pinnedId: selectedLevel4Id,
       });
     }
     if (showLevel5) {
+      const level5PinId =
+        highlightedId &&
+        visibleLevel5.some((u) => normalizeId(u.id) === highlightedId)
+          ? highlightedId
+          : null;
       cols.push({
         label: "Level 5",
         users: visibleLevel5,
         depth: 4,
         selectedId: null,
+        pinnedId: level5PinId,
       });
     }
 
@@ -871,6 +902,7 @@ function OrgChartInner({ users, activeUserId }: Readonly<Props>) {
     selectedLevel2Id,
     selectedLevel3Id,
     selectedLevel4Id,
+    highlightedId,
   ]);
 
   // Scroll expanded levels into view horizontally
@@ -914,41 +946,58 @@ function OrgChartInner({ users, activeUserId }: Readonly<Props>) {
             drawRef={drawConnectorsRef}
           />
 
-          {columns.map((column) => (
-            <div
-              key={column.label}
-              className="relative flex w-[260px] shrink-0 flex-col"
-            >
-              <LevelHeader label={column.label} count={column.users.length} />
-              <div
-                data-column-scroll
-                className="no-scrollbar flex flex-col gap-2.5 overflow-y-auto overscroll-y-contain"
-                style={{ maxHeight: CHART_MIN_HEIGHT - 60 }}
-                onScroll={handleColumnScroll}
-                onWheel={handleColumnWheel}
-              >
-                {column.users.map((user, index) => {
-                  const userId = normalizeId(user.id) ?? String(user.id);
-                  const isHighlighted = highlightedId === userId;
-                  const isPathSelected = column.selectedId === userId;
-                  const reportsCount = reportsCountMap.get(userId) ?? 0;
+          {columns.map((column) => {
+            const { pinned, rest } = splitPinnedUser(
+              column.users,
+              column.pinnedId
+            );
+            const shouldPin = pinned && rest.length > 0;
 
-                  return (
-                    <UserCard
-                      key={userId}
-                      user={user}
-                      isHighlighted={isHighlighted}
-                      isPathSelected={isPathSelected && !isHighlighted}
-                      reportsCount={reportsCount}
-                      onClick={() => handleCardClick(userId, column.depth)}
-                      cardRef={(el) => setCardRef(userId, el)}
-                      isSticky={index === 0 && column.users.length > 1}
-                    />
-                  );
-                })}
+            const renderCard = (user: OrgUser) => {
+              const userId = normalizeId(user.id) ?? String(user.id);
+              const isHighlighted = highlightedId === userId;
+              const isPathSelected = column.selectedId === userId;
+              const reportsCount = reportsCountMap.get(userId) ?? 0;
+              const maskPrivateInfo =
+                loggedInUserId != null && userId !== loggedInUserId;
+
+              return (
+                <UserCard
+                  key={userId}
+                  user={user}
+                  isHighlighted={isHighlighted}
+                  isPathSelected={isPathSelected && !isHighlighted}
+                  reportsCount={reportsCount}
+                  onClick={() => handleCardClick(userId, column.depth)}
+                  cardRef={(el) => setCardRef(userId, el)}
+                  maskPrivateInfo={maskPrivateInfo}
+                />
+              );
+            };
+
+            return (
+              <div
+                key={column.label}
+                className="relative flex w-[260px] shrink-0 flex-col"
+                style={{ height: CHART_MIN_HEIGHT - 48 }}
+              >
+                <LevelHeader label={column.label} count={column.users.length} />
+                {shouldPin && (
+                  <div className="mb-2.5 shrink-0">{renderCard(pinned)}</div>
+                )}
+                <div
+                  data-column-scroll
+                  className="no-scrollbar flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto overscroll-y-contain"
+                  onScroll={handleColumnScroll}
+                  onWheel={handleColumnWheel}
+                >
+                  {(shouldPin ? rest : column.users).map((user) =>
+                    renderCard(user)
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

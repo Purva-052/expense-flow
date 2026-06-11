@@ -24,7 +24,7 @@ const ProfilePage = () => {
   const [orgModalOpen, setOrgModalOpen] = useState(false);
   const { user } = useAuthStore();
   const userId = user?.user?.id;
-  
+
   const { data: userDetailsData }: any = useGetUserDetails(userId, {
     isLearning: true,
   });
@@ -33,6 +33,7 @@ const ProfilePage = () => {
   const { data: allUsersResponse, isPending: allUsersLoading } =
     useGetUsersList({
       pagination: false,
+      status: "active",
     });
 
   const allActiveUsers = useMemo(

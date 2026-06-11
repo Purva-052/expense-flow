@@ -120,9 +120,13 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
 
   const handleStatusTabChange = (val: string) => {
     setQueryParams({
-      ...listParams,
       tab: val,
       currentPage: 1,
+      pageSize: 10,
+      search: "",
+      employeeId: null,
+      startDate: null,
+      endDate: null,
     });
   };
 
