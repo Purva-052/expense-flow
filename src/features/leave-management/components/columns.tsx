@@ -13,7 +13,7 @@ import {
 import { useLeaveStore } from "../stores";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { Badge } from "@/components/ui/badge";
-import { roles } from "@/utils/constant";
+import { roles, LEAVE_TYPE } from "@/utils/constant";
 import { useGetUserDetails } from "@/features/users/services";
 
 // Status badge variant mapping
@@ -30,6 +30,11 @@ const statusLabelMap: Record<string, string> = {
   pending: "Pending",
   approved: "Approved",
   rejected: "Rejected",
+};
+
+const getLeaveTypeLabel = (id: any) => {
+  const match = LEAVE_TYPE.find((type) => String(type.value) === String(id));
+  return match ? match.label : `Type ${id}`;
 };
 
 export const getColumns = (tab: string): ColumnDef<any>[] => [
@@ -211,6 +216,29 @@ export const getColumns = (tab: string): ColumnDef<any>[] => [
 
       return a - b;
     },
+  },
+  {
+    header: "Leave Type",
+    accessorKey: "leaveTypeId",
+    cell: ({ row }) => {
+      const leaveTypeIds: any[] = row.original.leaveTypeId || [];
+      if (!leaveTypeIds || leaveTypeIds.length === 0) {
+        return <span className="text-sm">-</span>;
+      }
+      return (
+        <div className="flex flex-wrap gap-1">
+          {leaveTypeIds.map((id) => {
+            const label = getLeaveTypeLabel(id);
+            return (
+              <Badge key={id} variant="default" className="whitespace-nowrap">
+                {label}
+              </Badge>
+            );
+          })}
+        </div>
+      );
+    },
+    enableSorting: false,
   },
   {
     header: "Total Leaves Taken",
