@@ -32,13 +32,86 @@ const statusLabelMap: Record<string, string> = {
   rejected: "Rejected",
 };
 
-export const columns: ColumnDef<any>[] = [
+export const getColumns = (tab: string): ColumnDef<any>[] => [
   {
     accessorKey: "employee.fullName",
-    header: "Employee",
+    header: ({ column }) => {
+      const sorted = column.getIsSorted();
+
+      return (
+        <button
+          type="button"
+          onClick={() => column.toggleSorting(sorted === "asc")}
+          className="flex items-center gap-1 text-left text-sm font-medium hover:text-primary"
+        >
+          Employee
+          {sorted === "asc" && <ArrowUp className="h-4 w-4" />}
+          {sorted === "desc" && <ArrowDown className="h-4 w-4" />}
+          {!sorted && <ArrowUpDown className="h-4 w-4 opacity-50" />}
+        </button>
+      );
+    },
     cell: ({ row }) => {
       const employeeName = row.original.employee?.fullName;
       return <span className="text-sm font-medium">{employeeName || "-"}</span>;
+    },
+    enableSorting: true,
+    sortingFn: (rowA, rowB) => {
+      const a = rowA.original.employee?.fullName || "";
+      const b = rowB.original.employee?.fullName || "";
+      return a.localeCompare(b);
+    },
+  },
+  {
+    accessorKey:
+      tab === "pending"
+        ? "approver.fullName"
+        : "actionedByUser.fullName",
+    header: ({ column }) => {
+      const sorted = column.getIsSorted();
+      const headerText =
+        tab === "pending"
+          ? "Approver"
+          : tab === "approved"
+            ? "Approved by"
+            : "Rejected by";
+
+      return (
+        <button
+          type="button"
+          onClick={() => column.toggleSorting(sorted === "asc")}
+          className="flex items-center gap-1 text-left text-sm font-medium hover:text-primary"
+        >
+          {headerText}
+          {sorted === "asc" && <ArrowUp className="h-4 w-4" />}
+          {sorted === "desc" && <ArrowDown className="h-4 w-4" />}
+          {!sorted && <ArrowUpDown className="h-4 w-4 opacity-50" />}
+        </button>
+      );
+    },
+    cell: ({ row }) => {
+      if (tab === "pending") {
+        const approverName = row.original.approver?.fullName;
+        return <span className="text-sm">{approverName || "-"}</span>;
+      } else if (tab === "approved") {
+        const actionedByUserName = row.original.actionedByUser?.fullName;
+        return <span className="text-sm">{actionedByUserName || "-"}</span>;
+      } else {
+        const actionedByUserName = row.original.actionedByUser?.fullName;
+        return <span className="text-sm">{actionedByUserName || "-"}</span>;
+      }
+    },
+    enableSorting: true,
+    sortingFn: (rowA, rowB) => {
+      if (tab === "pending") {
+        const a = rowA.original.approver?.fullName || "";
+        const b = rowB.original.approver?.fullName || "";
+        return a.localeCompare(b);
+      } else {
+        const a = rowA.original.actionedByUser?.fullName || "";
+        const b = rowB.original.actionedByUser?.fullName || "";
+        return a.localeCompare(b);
+      }
     },
   },
 
@@ -77,6 +150,17 @@ export const columns: ColumnDef<any>[] = [
       );
     },
     enableSorting: true,
+    sortingFn: (rowA, rowB) => {
+      const a = rowA.original.fromDate
+        ? new Date(rowA.original.fromDate).getTime()
+        : 0;
+
+      const b = rowB.original.fromDate
+        ? new Date(rowB.original.fromDate).getTime()
+        : 0;
+
+      return a - b;
+    },
   },
 
   // ✅ To Date
@@ -114,6 +198,17 @@ export const columns: ColumnDef<any>[] = [
       );
     },
     enableSorting: true,
+    sortingFn: (rowA, rowB) => {
+      const a = rowA.original.toDate
+        ? new Date(rowA.original.toDate).getTime()
+        : 0;
+
+      const b = rowB.original.toDate
+        ? new Date(rowB.original.toDate).getTime()
+        : 0;
+
+      return a - b;
+    },
   },
   {
     header: "Total Leaves Taken",
@@ -122,6 +217,7 @@ export const columns: ColumnDef<any>[] = [
       const totalLeavesTaken = row.original.employee?.totalLeavesTaken;
       return <span className="text-sm">{totalLeavesTaken || "-"}</span>;
     },
+    enableSorting: false,
   },
 
   // ✅ Reason
@@ -141,6 +237,7 @@ export const columns: ColumnDef<any>[] = [
         </span>
       );
     },
+    enableSorting: false,
   },
 
   // ✅ Status
@@ -156,6 +253,7 @@ export const columns: ColumnDef<any>[] = [
 
       return <Badge variant={variant}>{label}</Badge>;
     },
+    enableSorting: false,
   },
   // ✅ Rejection Reason (shown when rejected)
   {
@@ -175,6 +273,7 @@ export const columns: ColumnDef<any>[] = [
         </span>
       );
     },
+    enableSorting: false,
   },
 
   // ✅ Actions
@@ -242,7 +341,8 @@ export const columns: ColumnDef<any>[] = [
         setCurrentRow(data);
       };
 
-      const canDelete = rowStatus === "pending" && (isAdmin || isPM || isCreator);
+      const canDelete =
+        rowStatus === "pending" && (isAdmin || isPM || isCreator);
       const hasActions = canApproveReject || canEditDelete || canDelete;
 
       return (
