@@ -116,6 +116,8 @@ export function GlobalTable<TData>({
                       header.column.getCanSort() &&
                       !header.isPlaceholder;
                     const sortState = header.column.getIsSorted();
+                    const isCustomHeader =
+                      typeof header.column.columnDef.header === "function";
 
                     return (
                       <th
@@ -123,7 +125,7 @@ export function GlobalTable<TData>({
                         className={`h-12 bg-muted text-foreground z-50 border-b px-4 text-left align-middle font-medium sticky top-0`}
                         style={{ width: header.getSize?.() }}
                       >
-                        {canSort ? (
+                        {canSort && !isCustomHeader ? (
                           <button
                             type="button"
                             onClick={header.column.getToggleSortingHandler()}

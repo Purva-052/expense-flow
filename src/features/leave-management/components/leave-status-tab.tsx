@@ -7,7 +7,7 @@ import { roles } from "@/utils/constant";
 import { useGetAllLeaveBalances, useGetLeaveData } from "../services";
 import { useGetUserDropdownList } from "@/features/users/services";
 import { LeaveBalanceCards } from "./leave-balance-cards";
-import { columns } from "./columns";
+import { getColumns } from "./columns";
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import { GlobalTable } from "@/components/table/global-table";
 import { FilterConfig } from "@/components/table/table-toolbar";
@@ -174,7 +174,7 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
 
   const tableColumns = useMemo(() => {
     const isDevOrBDE = isDeveloper || isBDE;
-    return columns.filter((col: any) => {
+    return getColumns(queryParams.tab).filter((col: any) => {
       if (col.accessorKey === "status") {
         return isDevOrBDE;
       }
@@ -222,6 +222,7 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
         columns={tableColumns}
         loading={loading}
         isPaginationEnabled
+        enableSorting
         onPaginationChange={handlePaginationChange}
       />
     </div>
