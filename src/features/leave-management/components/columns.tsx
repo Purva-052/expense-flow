@@ -34,6 +34,7 @@ const statusLabelMap: Record<string, string> = {
 
 export const getColumns = (tab: string): ColumnDef<any>[] => [
   {
+    id: "employeeName",
     accessorKey: "employee.fullName",
     header: ({ column }) => {
       const sorted = column.getIsSorted();
@@ -63,6 +64,7 @@ export const getColumns = (tab: string): ColumnDef<any>[] => [
     },
   },
   {
+    id: tab === "pending" ? "approver" : "actionedByUser",
     accessorKey:
       tab === "pending"
         ? "approver.fullName"

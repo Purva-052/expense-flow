@@ -43,6 +43,9 @@ interface GlobalTableProps<TData> {
   scrollY?: string;
   enableSorting?: boolean;
   getRowClassName?: (row: TData) => string;
+  sorting?: SortingState;
+  onSortingChange?: (sorting: SortingState) => void;
+  manualSorting?: boolean;
 }
 
 export function GlobalTable<TData>({
@@ -57,8 +60,11 @@ export function GlobalTable<TData>({
   scrollY = "55dvh",
   enableSorting = false,
   getRowClassName,
+  sorting,
+  onSortingChange,
+  manualSorting = false,
 }: Readonly<GlobalTableProps<TData>>) {
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [localSorting, setLocalSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
@@ -67,16 +73,28 @@ export function GlobalTable<TData>({
     pageSize,
   };
 
+  const isSortingControlled = sorting !== undefined;
+  const activeSorting = isSortingControlled ? sorting : localSorting;
+  const handleSortingChange = isSortingControlled
+    ? (updater: any) => {
+        if (onSortingChange) {
+          const nextVal =
+            typeof updater === "function" ? updater(sorting) : updater;
+          onSortingChange(nextVal);
+        }
+      }
+    : setLocalSorting;
+
   const table = useReactTable({
     data,
     columns,
     state: {
-      sorting,
+      sorting: activeSorting,
       columnVisibility,
       columnFilters,
       pagination,
     },
-    onSortingChange: setSorting,
+    onSortingChange: handleSortingChange,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: (updater) => {
@@ -85,6 +103,7 @@ export function GlobalTable<TData>({
       onPaginationChange(newPagination);
     },
     manualPagination: true,
+    manualSorting,
     enableSorting,
     enableSortingRemoval: false,
     pageCount: Math.ceil((totalCount ?? 0) / (pageSize ?? 10)),
