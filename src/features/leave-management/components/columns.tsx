@@ -71,9 +71,7 @@ export const getColumns = (tab: string): ColumnDef<any>[] => [
   {
     id: tab === "pending" ? "approver" : "actionedByUser",
     accessorKey:
-      tab === "pending"
-        ? "approver.fullName"
-        : "actionedByUser.fullName",
+      tab === "pending" ? "approver.fullName" : "actionedByUser.fullName",
     header: ({ column }) => {
       const sorted = column.getIsSorted();
       const headerText =
@@ -373,7 +371,12 @@ export const getColumns = (tab: string): ColumnDef<any>[] => [
 
       const canDelete =
         rowStatus === "pending" && (isAdmin || isPM || isCreator);
-      const hasActions = canApproveReject || canEditDelete || canDelete;
+
+      const adminDelete =
+        (rowStatus === "approved" || rowStatus === "rejected") && isAdmin;
+
+      // const hasActions =
+      //   canApproveReject || canEditDelete || canDelete || adminDelete;
 
       return (
         <DropdownMenu>
@@ -403,17 +406,13 @@ export const getColumns = (tab: string): ColumnDef<any>[] => [
               </DropdownMenuItem>
             )}
 
-            {canDelete && (
+            {(canDelete || adminDelete) && (
               <DropdownMenuItem
                 className="text-red-600 focus:bg-red-50 focus:text-red-600"
                 onClick={handleDelete}
               >
                 Delete Request
               </DropdownMenuItem>
-            )}
-
-            {!hasActions && (
-              <DropdownMenuItem disabled>No actions available</DropdownMenuItem>
             )}
           </DropdownMenuContent>
         </DropdownMenu>
