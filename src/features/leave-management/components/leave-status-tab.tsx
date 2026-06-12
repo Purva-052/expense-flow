@@ -11,6 +11,7 @@ import { getColumns } from "./columns";
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import { GlobalTable } from "@/components/table/global-table";
 import { FilterConfig } from "@/components/table/table-toolbar";
+import { SortingState } from "@tanstack/react-table";
 
 interface LeaveStatusTabProps {
   onEdit?: (row: any) => void;
@@ -40,6 +41,8 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
     startDate: parseAsString,
     endDate: parseAsString,
     tab: parseAsString.withDefault("pending"),
+    sortBy: parseAsString,
+    sortOrder: parseAsString,
   });
 
   const listParams = {
@@ -67,6 +70,8 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
     fromDate: listParams.startDate,
     toDate: listParams.endDate,
     status: getStatusFromTab(queryParams.tab),
+    sortBy: queryParams.sortBy ?? undefined,
+    sortOrder: queryParams.sortOrder ?? undefined,
   };
 
   const { data: listData, isPending: loading } = useGetLeaveData(apiParams);
@@ -127,6 +132,8 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
       employeeId: null,
       startDate: null,
       endDate: null,
+      sortBy: null,
+      sortOrder: null,
     });
   };
 
@@ -185,6 +192,32 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
     });
   }, [isDeveloper, isBDE, queryParams.tab]);
 
+  const sortingState = useMemo<SortingState>(() => {
+    if (!queryParams.sortBy) return [];
+    return [
+      {
+        id: queryParams.sortBy,
+        desc: queryParams.sortOrder === "desc",
+      },
+    ];
+  }, [queryParams.sortBy, queryParams.sortOrder]);
+
+  const handleSortingChange = (newSorting: SortingState) => {
+    if (newSorting.length > 0) {
+      const first = newSorting[0];
+      setQueryParams({
+        sortBy: first.id,
+        sortOrder: first.desc ? "desc" : "asc",
+        currentPage: 1,
+      });
+    } else {
+      setQueryParams({
+        sortBy: null,
+        sortOrder: null,
+      });
+    }
+  };
+
   const totalCount = (listData as any)?.metadata?.totalCount ?? 0;
 
   return (
@@ -223,6 +256,9 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
         loading={loading}
         isPaginationEnabled
         enableSorting
+        sorting={sortingState}
+        onSortingChange={handleSortingChange}
+        manualSorting
         onPaginationChange={handlePaginationChange}
       />
     </div>
