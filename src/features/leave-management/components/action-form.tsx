@@ -36,9 +36,18 @@ import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useGetAllLeaveBalances } from "../services";
-import { Wallet, ArrowLeft, AlertCircle } from "lucide-react";
+import {
+  Wallet,
+  ArrowLeft,
+  AlertCircle,
+  Calendar,
+  Briefcase,
+  GraduationCap,
+  Layers,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FileUpload } from "@/components/shared/custome-file-upload";
+import { Switch } from "@/components/ui/switch";
 
 interface Props {
   currentRow?: any;
@@ -106,6 +115,19 @@ const getLeaveTypeBalance = (balanceArray: any[], leaveTypeId: string) => {
   );
 
   return toNumber(record?.availableDays);
+};
+
+const getLeaveTypeAllocatedDays = (
+  balanceArray: any[],
+  leaveTypeId: string
+) => {
+  const record = balanceArray.find(
+    (item: any) => String(item.leaveTypeId) === String(leaveTypeId)
+  );
+
+  return record?.allocatedDays !== null && record?.allocatedDays !== undefined
+    ? toNumber(record.allocatedDays)
+    : 0;
 };
 
 const formatDays = (days: number) =>
@@ -176,11 +198,31 @@ const buildLeaveAllocation = ({
   requestedDays,
   casualBalance,
   paidBalance,
+  isExamLeave,
 }: {
   requestedDays: number;
   casualBalance: number;
   paidBalance: number;
+  isExamLeave?: boolean;
 }) => {
+  if (isExamLeave) {
+    return {
+      casualDays: 0,
+      paidDays: 0,
+      lossOfPayDays: 0,
+      examDays: requestedDays,
+      totalAvailableDays: casualBalance + paidBalance,
+      requestedDays,
+      items: [
+        {
+          leaveTypeId: "4",
+          leaveTypeName: "Exam Leave",
+          days: requestedDays,
+        },
+      ],
+    };
+  }
+
   const casualDays = Math.min(requestedDays, casualBalance);
   const paidDays = Math.min(
     Math.max(requestedDays - casualDays, 0),
@@ -192,6 +234,7 @@ const buildLeaveAllocation = ({
     casualDays,
     paidDays,
     lossOfPayDays,
+    examDays: 0,
     totalAvailableDays: casualBalance + paidBalance,
     requestedDays,
     items: [
@@ -248,6 +291,7 @@ export function LeaveActionForm({
     defaultValues: {
       reason: "",
       description: "",
+      isExamLeave: false,
       leaveTypeId: CASUAL_LEAVE_TYPE_ID,
       leaveDays: [],
       attachments: null,
@@ -262,10 +306,17 @@ export function LeaveActionForm({
   const watchFromDate = form.watch("fromDate");
   const watchToDate = form.watch("toDate");
   const watchEmployeeId = form.watch("employeeId");
+  const watchIsExamLeave = form.watch("isExamLeave");
   const watchLeaveDays = useWatch({
     control: form.control,
     name: "leaveDays",
   });
+
+  useEffect(() => {
+    if (!watchIsExamLeave) {
+      form.clearErrors("isExamLeave");
+    }
+  }, [watchIsExamLeave, form]);
 
   const employeeOptions = useMemo(() => {
     const list = employeesList?.data || [];
@@ -488,11 +539,13 @@ export function LeaveActionForm({
       requestedDays,
       casualBalance,
       paidBalance,
+      isExamLeave: watchIsExamLeave,
     });
-  }, [balanceArray, watchLeaveDays, holidayDatesSet]);
+  }, [balanceArray, watchLeaveDays, holidayDatesSet, watchIsExamLeave]);
 
   const emptyDefaults = {
     employeeId: undefined as number | undefined,
+    isExamLeave: false,
     leaveTypeId: CASUAL_LEAVE_TYPE_ID,
     fromDate: undefined as Date | undefined,
     toDate: undefined as Date | undefined,
@@ -559,6 +612,7 @@ export function LeaveActionForm({
 
       form.reset({
         employeeId: currentRow.employeeId ?? currentRow.employee?.id,
+        isExamLeave: !!currentRow.isExamLeave,
         leaveTypeId: Array.isArray(currentRow.leaveTypeId)
           ? currentRow.leaveTypeId.length > 0
             ? String(currentRow.leaveTypeId[0])
@@ -588,7 +642,9 @@ export function LeaveActionForm({
   }, [currentRow, open, targetTechnologyId]);
 
   const onSubmit: SubmitHandler<TLeaveFormSchema> = async (values) => {
+    const isExamLeave = !!values.isExamLeave;
     const formData = new FormData();
+    formData.append("isExamLeave", String(isExamLeave));
     const allocationItems = leaveAllocation.items.filter(
       (item) => item.days > 0
     );
@@ -662,44 +718,67 @@ export function LeaveActionForm({
       CASUAL_LEAVE_TYPE_ID
     );
     const paidBalance = getLeaveTypeBalance(balanceArray, PAID_LEAVE_TYPE_ID);
+    const examBalance = getLeaveTypeAllocatedDays(balanceArray, "4");
     const summaryItems = [
       {
         label: "Casual Leave",
         value: casualBalance,
+        icon: Calendar,
         className:
-          "border-emerald-100 bg-emerald-50 text-emerald-800 dark:border-emerald-900/40 dark:bg-emerald-950/20 dark:text-emerald-300",
+          "border-emerald-100/80 bg-emerald-50/50 text-emerald-800 dark:border-emerald-900/40 dark:bg-emerald-950/10 dark:text-emerald-300",
+        iconColor: "text-emerald-500 dark:text-emerald-400",
       },
       {
         label: "Paid Leave",
         value: paidBalance,
+        icon: Briefcase,
         className:
-          "border-blue-100 bg-blue-50 text-blue-800 dark:border-blue-900/40 dark:bg-blue-950/20 dark:text-blue-300",
+          "border-blue-100/80 bg-blue-50/50 text-blue-800 dark:border-blue-900/40 dark:bg-blue-950/10 dark:text-blue-300",
+        iconColor: "text-blue-500 dark:text-blue-400",
+      },
+      {
+        label: "Exam Leave",
+        value: examBalance,
+        icon: GraduationCap,
+        className:
+          "border-amber-100/80 bg-amber-50/50 text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/10 dark:text-amber-300",
+        iconColor: "text-amber-500 dark:text-amber-400",
       },
       {
         label: "Total Balance",
         value: leaveAllocation.totalAvailableDays,
+        icon: Layers,
         className:
-          "border-violet-100 bg-violet-50 text-violet-800 dark:border-violet-900/40 dark:bg-violet-950/20 dark:text-violet-300",
+          "border-violet-100/80 bg-violet-50/50 text-violet-800 dark:border-violet-900/40 dark:bg-violet-950/10 dark:text-violet-300",
+        iconColor: "text-violet-500 dark:text-violet-400",
       },
     ];
 
-    const allocationItems = [
-      {
-        label: "Casual Leave",
-        value: leaveAllocation.casualDays,
-        className: "text-emerald-700 dark:text-emerald-400 font-semibold",
-      },
-      {
-        label: "Paid Leave",
-        value: leaveAllocation.paidDays,
-        className: "text-blue-700 dark:text-blue-400 font-semibold",
-      },
-      {
-        label: "Loss of Pay",
-        value: leaveAllocation.lossOfPayDays,
-        className: "text-rose-700 dark:text-rose-400 font-semibold",
-      },
-    ];
+    const allocationItems = watchIsExamLeave
+      ? [
+          {
+            label: "Exam Leave",
+            value: leaveAllocation.examDays || 0,
+            className: "text-amber-700 dark:text-amber-400 font-semibold",
+          },
+        ]
+      : [
+          {
+            label: "Casual Leave",
+            value: leaveAllocation.casualDays,
+            className: "text-emerald-700 dark:text-emerald-400 font-semibold",
+          },
+          {
+            label: "Paid Leave",
+            value: leaveAllocation.paidDays,
+            className: "text-blue-700 dark:text-blue-400 font-semibold",
+          },
+          {
+            label: "Loss of Pay",
+            value: leaveAllocation.lossOfPayDays,
+            className: "text-rose-700 dark:text-rose-400 font-semibold",
+          },
+        ];
 
     const hasDatesSelected = !!(watchFromDate && watchToDate);
 
@@ -719,21 +798,28 @@ export function LeaveActionForm({
           )}
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3.5">
           {summaryItems.map((item) => (
             <div
               key={item.label}
               className={cn(
-                "rounded-lg border px-3 py-2.5 text-center transition-all",
+                "rounded-xl border p-3.5 transition-all flex flex-col justify-between h-[92px] shadow-sm relative overflow-hidden",
                 item.className
               )}
             >
-              <div className="text-[11px] font-semibold opacity-85 uppercase tracking-wider">
-                {item.label}
+              <div className="flex items-center justify-between gap-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider opacity-80 select-none">
+                  {item.label}
+                </span>
+                <item.icon
+                  className={cn("h-4 w-4 shrink-0 opacity-95", item.iconColor)}
+                />
               </div>
-              <div className="text-lg font-bold mt-1 tabular-nums">
+              <div className={cn("font-extrabold tracking-tight mt-1", item.label === "Exam Leave" && item.value === 0 ? "text-sm sm:text-base uppercase opacity-90" : "text-2xl tabular-nums")}>
                 {leaveBalanceLoading ? (
-                  <span className="inline-block h-5 w-4 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
+                  <span className="inline-block h-6 w-10 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
+                ) : item.label === "Exam Leave" && item.value === 0 ? (
+                  "Unlimited"
                 ) : (
                   formatDays(item.value)
                 )}
@@ -750,7 +836,7 @@ export function LeaveActionForm({
                 {formatDays(leaveAllocation.requestedDays)} day(s) requested
               </span>
             </div>
-            <div className="grid grid-cols-3 gap-2 text-center py-1">
+            <div className={cn("grid gap-2 text-center py-1", watchIsExamLeave ? "grid-cols-1" : "grid-cols-3")}>
               {allocationItems.map((item) => (
                 <div
                   key={item.label}
@@ -770,10 +856,12 @@ export function LeaveActionForm({
                 </div>
               ))}
             </div>
-            <p className="mt-2 text-[12px] text-muted-foreground text-center font-bold">
-              Priority: Casual leaves are allocated first, followed by Paid
-              leaves, and then Loss of Pay.
-            </p>
+            {!watchIsExamLeave && (
+              <p className="mt-2 text-[12px] text-muted-foreground text-center font-bold">
+                Priority: Casual leaves are allocated first, followed by Paid
+                leaves, and then Loss of Pay.
+              </p>
+            )}
           </div>
         )}
       </div>
@@ -1018,6 +1106,34 @@ export function LeaveActionForm({
           />
         </FormItem>
       </div>
+
+      {/* Exam Leave Toggle */}
+      <FormField
+        control={form.control}
+        name="isExamLeave"
+        render={({ field }) => (
+          <FormItem className="rounded-lg border border-slate-200 p-4 shadow-sm dark:border-slate-800">
+            <div className="flex flex-row items-center justify-between">
+              <div className="space-y-0.5">
+                <FormLabel className="text-sm font-semibold">
+                  Exam Leave
+                </FormLabel>
+                <div className="text-[12px] text-muted-foreground">
+                  Enable this option if the leave request is for an examination.
+                </div>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={!!field.value}
+                  onCheckedChange={field.onChange}
+                  disabled={isViewOnly}
+                />
+              </FormControl>
+            </div>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
       {isViewOnly ? (
         <div className="space-y-1">

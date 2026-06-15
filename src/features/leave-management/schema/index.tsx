@@ -27,6 +27,8 @@ export const leaveSchema = z
     // Optional – only required when applying for another employee (Admin/PM "For Others" tab)
     employeeId: numberField("Employee").optional(),
 
+    isExamLeave: z.boolean().optional(),
+
     // Leave type — "1" = Casual, "2" = Paid (maps to LEAVE_TYPE constant values)
     leaveTypeId: z.string().min(1, "Leave type is required"),
 
