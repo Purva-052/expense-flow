@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "@tanstack/react-router";
 import PageLayout from "@/components/layout/layout-provider";
 import TablePageHeader from "@/components/table/table-page-header";
 import { ActionFormModal } from "./components/action";
@@ -148,7 +149,7 @@ const LeaveManagementPage = () => {
         "",
         window.location.pathname + newSearch + window.location.hash
       );
-    } catch (e) {
+    } catch {
       // ignore in non-browser environments
     }
 
@@ -162,6 +163,12 @@ const LeaveManagementPage = () => {
     setOpen("add");
   };
 
+  const location = useLocation({
+    select: (location) => ({
+      pathname: location.pathname,
+      search: location.search,
+    }),
+  });
   const isFormActive = open === "add" || open === "edit" || open === "view";
 
   const isAnyModalOpen =
@@ -210,6 +217,16 @@ const LeaveManagementPage = () => {
     setOpen,
     setCurrentRow,
   ]);
+
+  useEffect(() => {
+    const path = location.pathname;
+    const sectionParam = new URLSearchParams(window.location.search).get("section");
+
+    if (path !== "/leave-management" || sectionParam !== "leaves") {
+      setOpen(null);
+      setCurrentRow(null);
+    }
+  }, [location, setOpen, setCurrentRow]);
 
   return (
     <PageLayout>
