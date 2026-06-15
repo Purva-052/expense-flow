@@ -14,7 +14,6 @@ import { useLeaveStore } from "../stores";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { Badge } from "@/components/ui/badge";
 import { roles, LEAVE_TYPE } from "@/utils/constant";
-import { useGetUserDetails } from "@/features/users/services";
 
 // Status badge variant mapping
 const statusVariantMap: Record<
@@ -313,7 +312,6 @@ export const getColumns = (tab: string): ColumnDef<any>[] => [
       const { setOpen, setCurrentRow } = useLeaveStore();
 
       const user = useAuthStore((state) => state.user);
-      const { data: userDetails }: any = useGetUserDetails(user?.user?.id);
       const rawRole = user?.role || user?.user?.role;
       const roleName = String(
         rawRole && typeof rawRole === "object" ? rawRole?.name : rawRole || ""
@@ -331,20 +329,33 @@ export const getColumns = (tab: string): ColumnDef<any>[] => [
 
       // Normalize status to lowercase for case-insensitive comparison
       const rowStatus = String(row.original.status || "").toLowerCase();
-      const isReportingManager =
-        userDetails?.reportingToId &&
-        String(userDetails.reportingToId) === String(currentUserId);
 
-      // ✅ Only Admin & PM can approve/reject (not TL anymore)
+      const employeeReportingToId =
+        row.original.employee?.reportingToId ??
+        row.original.employee?.reportToId ??
+        row.original.employee?.reporttoId ??
+        row.original.employee?.reportingTo?.id;
+
+      const isReportingManager =
+        (employeeReportingToId != null &&
+          String(employeeReportingToId) === String(currentUserId)) ||
+        (row.original.approverId != null &&
+          String(row.original.approverId) === String(currentUserId)) ||
+        (row.original.approver?.id != null &&
+          String(row.original.approver?.id) === String(currentUserId));
+
+      // ✅ Only Admin, PM, and Reporting Manager can approve/reject
       const canApproveReject =
         (isAdmin || isPM || isReportingManager) && rowStatus === "pending";
 
       // ✅ Edit/Delete rules:
       //   - Admin & PM: can edit/delete any record
+      //   - Reporting Manager: can edit/delete pending record of subordinates
       //   - TL, Developer, BDE: can only edit/delete their own pending leave
       const canEditDelete =
         isAdmin ||
         isPM ||
+        (isReportingManager && rowStatus === "pending") ||
         ((isTL || isDeveloper || isBDE) &&
           isCreator &&
           rowStatus === "pending");
@@ -370,7 +381,8 @@ export const getColumns = (tab: string): ColumnDef<any>[] => [
       };
 
       const canDelete =
-        rowStatus === "pending" && (isAdmin || isPM || isCreator);
+        rowStatus === "pending" &&
+        (isAdmin || isPM || isCreator || isReportingManager);
 
       const adminDelete =
         (rowStatus === "approved" || rowStatus === "rejected") && isAdmin;

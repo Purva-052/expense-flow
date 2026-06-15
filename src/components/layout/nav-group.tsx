@@ -1,5 +1,5 @@
-import { ReactNode, useState } from "react";
-import { Link, useLocation } from "@tanstack/react-router";
+import { ReactNode, useCallback, useState } from "react";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
 import {
   Collapsible,
@@ -102,6 +102,17 @@ const NavBadge = ({ children }: { children: ReactNode }) => (
 
 const SidebarMenuLink = ({ item, href }: { item: NavLink; href: string }) => {
   const { setOpenMobile } = useSidebar();
+  const navigate = useNavigate();
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      setOpenMobile(false);
+      navigate({ to: item.url });
+    },
+    [navigate, item.url, setOpenMobile]
+  );
+
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
@@ -109,7 +120,7 @@ const SidebarMenuLink = ({ item, href }: { item: NavLink; href: string }) => {
         isActive={checkIsActive(href, item)}
         tooltip={item.title}
       >
-        <Link to={item.url} onClick={() => setOpenMobile(false)}>
+        <Link to={item.url} onClick={handleClick}>
           {item.icon && <item.icon />}
           <span>{item.title}</span>
           {item.badge && <NavBadge>{item.badge}</NavBadge>}
@@ -127,6 +138,7 @@ const SidebarMenuCollapsible = ({
   href: string;
 }) => {
   const { setOpenMobile } = useSidebar();
+  const navigate = useNavigate();
   return (
     <Collapsible
       asChild
@@ -150,7 +162,14 @@ const SidebarMenuCollapsible = ({
                   asChild
                   isActive={checkIsActive(href, subItem)}
                 >
-                  <Link to={subItem.url} onClick={() => setOpenMobile(false)}>
+                  <Link
+                    to={subItem.url}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setOpenMobile(false);
+                      navigate({ to: subItem.url });
+                    }}
+                  >
                     {subItem.icon && <subItem.icon />}
                     <span>{subItem.title}</span>
                     {subItem.badge && <NavBadge>{subItem.badge}</NavBadge>}
@@ -172,6 +191,7 @@ const SidebarMenuCollapsedDropdown = ({
   item: NavCollapsible;
   href: string;
 }) => {
+  const navigate = useNavigate();
   return (
     <SidebarMenuItem>
       <DropdownMenu>
@@ -196,6 +216,10 @@ const SidebarMenuCollapsedDropdown = ({
               <Link
                 to={sub.url}
                 className={`${checkIsActive(href, sub) ? "bg-secondary" : ""}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate({ to: sub.url });
+                }}
               >
                 {sub.icon && <sub.icon />}
                 <span className="max-w-52 text-wrap">{sub.title}</span>
