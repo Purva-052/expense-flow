@@ -69,9 +69,11 @@ export function TransactionLogsActionForm({
   loading,
 }: Readonly<Props>) {
   const isEdit = !!currentRow;
+  const isPending = currentRow?.status === "pending";
+  const isRequiredFieldsEnabled = isEdit && !isPending;
 
   const form = useForm<TTransactionFormSchema>({
-    resolver: zodResolver(getTransactionLogSchema(isEdit)) as any,
+    resolver: zodResolver(getTransactionLogSchema(isRequiredFieldsEnabled)) as any,
     mode: "onSubmit", // or "onChange" / "onBlur" / "onTouched"
     reValidateMode: "onChange",
     defaultValues: isEdit
@@ -136,7 +138,6 @@ export function TransactionLogsActionForm({
     roleName === roles.PROJECT_MANAGER ||
     isAccountPerson ||
     (isPMorTL && isCreator);
-  const isPending = currentRow?.status === "pending";
 
   const [uploadedFileKey, setUploadedFileKey] = useState<string>("");
   const [hasExistingFile, setHasExistingFile] = useState(false);
@@ -145,11 +146,46 @@ export function TransactionLogsActionForm({
   const transactionType = form.watch("transactionType");
 
   useEffect(() => {
-    if (currentRow && open) {
-      setUploadedFileKey(currentRow.referenceFileLink || "");
-      setHasExistingFile(!!currentRow.referenceFileLink);
+    if (open) {
+      if (currentRow) {
+        setUploadedFileKey(currentRow.referenceFileLink || "");
+        setHasExistingFile(!!currentRow.referenceFileLink);
+        form.reset({
+          reason: currentRow?.reason ?? "",
+          projectId: currentRow?.projectId ? String(currentRow.projectId) : "",
+          currency: currentRow?.currency ?? "usd",
+          amount: currentRow?.amount ?? "",
+          cardLast4: currentRow?.cardLast4 ?? "",
+          transactionDate: currentRow?.transactionDate
+            ? new Date(currentRow.transactionDate)
+            : undefined,
+          transactionType: currentRow?.transactionType ?? "",
+          subscriptionCycle: currentRow?.subscriptionCycle ?? "",
+          subscriptionEndDate: currentRow?.subscriptionEndDate
+            ? new Date(currentRow.subscriptionEndDate)
+            : undefined,
+          referenceFileS3Key: currentRow?.referenceFileLink ?? "",
+          file: null,
+        });
+      } else {
+        setUploadedFileKey("");
+        setHasExistingFile(false);
+        form.reset({
+          reason: "",
+          projectId: "",
+          currency: "usd",
+          amount: 0,
+          cardLast4: "",
+          transactionDate: undefined,
+          transactionType: "",
+          subscriptionCycle: "",
+          subscriptionEndDate: undefined,
+          referenceFileS3Key: "",
+          file: null,
+        });
+      }
     }
-  }, [currentRow, open]);
+  }, [currentRow, open, form]);
 
   useEffect(() => {
     if (transactionType !== "subscription") {

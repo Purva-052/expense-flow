@@ -109,14 +109,14 @@ export const columns: ColumnDef<any>[] = [
       });
     },
   },
-  {
-    accessorKey: "experience",
-    header: "CL/PL Balance",
-    cell: ({ row }) => {
-      const exp = row.original.experience;
-      return exp !== undefined && exp !== null ? exp : "-";
-    },
-  },
+  // {
+  //   accessorKey: "experience",
+  //   header: "CL/PL Balance",
+  //   cell: ({ row }) => {
+  //     const exp = row.original.experience;
+  //     return exp !== undefined && exp !== null ? exp : "-";
+  //   },
+  // },
   {
     accessorKey: "status",
     header: "Status",

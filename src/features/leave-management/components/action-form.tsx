@@ -7,6 +7,7 @@ import {
   useWatch,
 } from "react-hook-form";
 import { useGetReportDetails } from "../../daily-report/services";
+import { useGetUserDetails } from "@/features/users/services";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   format,
@@ -14,6 +15,7 @@ import {
   isSaturday,
   isSunday,
   startOfDay,
+  formatDate,
 } from "date-fns";
 import {
   Form,
@@ -51,16 +53,24 @@ interface Props {
 
 // ─── helpers ───────────────────────────────────────────────────────────────────
 
-function buildLeaveDays(from: Date, to: Date) {
+function buildLeaveDays(from: Date, to: Date, isAccountsTech?: boolean) {
   const start = startOfDay(from);
   const end = startOfDay(to);
-  return eachDayOfInterval({ start, end }).map((d) => ({
-    date: format(d, "yyyy-MM-dd"),
-    dayName: format(d, "EEEE"),
-    isWeekend: isSaturday(d) || isSunday(d),
-    dayType: "full" as const,
-    halfType: null as null | "first_half" | "second_half",
-  }));
+  return eachDayOfInterval({ start, end }).map((d) => {
+    let isWeekend = isSaturday(d) || isSunday(d);
+    if (isAccountsTech && isSaturday(d)) {
+      const dayOfMonth = d.getDate();
+      const satIndex = Math.ceil(dayOfMonth / 7);
+      isWeekend = satIndex === 2 || satIndex === 4;
+    }
+    return {
+      date: format(d, "yyyy-MM-dd"),
+      dayName: format(d, "EEEE"),
+      isWeekend,
+      dayType: "full" as const,
+      halfType: null as null | "first_half" | "second_half",
+    };
+  });
 }
 
 const CASUAL_LEAVE_TYPE_ID = "1";
@@ -288,6 +298,39 @@ export function LeaveActionForm({
       ? currentUserId
       : watchEmployeeId;
 
+  const { data: activeUserDetails } = useGetUserDetails(
+    balanceUserId ? String(balanceUserId) : ""
+  ) as any;
+
+  const selectedEmployee = useMemo(() => {
+    const fromList = employeesList?.data?.find(
+      (u: any) => u.id === balanceUserId
+    );
+    if (fromList?.technology || fromList?.technologyId) {
+      return fromList;
+    }
+    if (isEdit || isViewOnly) {
+      if (
+        currentRow?.employee?.technology ||
+        currentRow?.employee?.technologyId
+      ) {
+        return currentRow.employee;
+      }
+    }
+    return activeUserDetails?.data;
+  }, [
+    balanceUserId,
+    employeesList,
+    isEdit,
+    isViewOnly,
+    currentRow,
+    activeUserDetails,
+  ]);
+
+  const targetTechnologyId = useMemo(() => {
+    return selectedEmployee?.technology?.id ?? selectedEmployee?.technologyId;
+  }, [selectedEmployee]);
+
   // Auto-regenerate or merge leaveDays table whenever date range changes
   useEffect(() => {
     if (isViewOnly) return;
@@ -295,7 +338,7 @@ export function LeaveActionForm({
       const from = startOfDay(new Date(watchFromDate));
       const to = startOfDay(new Date(watchToDate));
       if (from <= to) {
-        const newDays = buildLeaveDays(from, to);
+        const newDays = buildLeaveDays(from, to, targetTechnologyId === 35);
         if (isEdit) {
           // Merge with current form values to preserve selections
           const currentLeaveDays = form.getValues("leaveDays") || [];
@@ -321,7 +364,8 @@ export function LeaveActionForm({
               return (
                 d.date === m.date &&
                 d.dayType === m.dayType &&
-                d.halfType === m.halfType
+                d.halfType === m.halfType &&
+                d.isWeekend === m.isWeekend
               );
             });
 
@@ -337,7 +381,15 @@ export function LeaveActionForm({
     } else {
       replace([]);
     }
-  }, [watchFromDate, watchToDate, isEdit, isViewOnly, replace, form]);
+  }, [
+    watchFromDate,
+    watchToDate,
+    isEdit,
+    isViewOnly,
+    replace,
+    form,
+    targetTechnologyId,
+  ]);
 
   // Reset toDate if it is earlier than fromDate
   useEffect(() => {
@@ -486,7 +538,14 @@ export function LeaveActionForm({
             actualDate &&
             !isNaN(actualDate.getTime())
           ) {
-            isWeekend = isSaturday(actualDate) || isSunday(actualDate);
+            const isAccountsTech = targetTechnologyId === 35;
+            if (isAccountsTech && isSaturday(actualDate)) {
+              const dayOfMonth = actualDate.getDate();
+              const satIndex = Math.ceil(dayOfMonth / 7);
+              isWeekend = satIndex === 2 || satIndex === 4;
+            } else {
+              isWeekend = isSaturday(actualDate) || isSunday(actualDate);
+            }
           }
 
           return {
@@ -526,7 +585,7 @@ export function LeaveActionForm({
       setApplyTab("self");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentRow, open]);
+  }, [currentRow, open, targetTechnologyId]);
 
   const onSubmit: SubmitHandler<TLeaveFormSchema> = async (values) => {
     const formData = new FormData();
@@ -760,7 +819,7 @@ export function LeaveActionForm({
               >
                 {/* Date */}
                 <span className="font-semibold text-slate-800 dark:text-slate-200 tabular-nums text-xs">
-                  {field.date}
+                  {formatDate(field.date, "dd MMM yyyy")}
                 </span>
 
                 {/* Day name */}
