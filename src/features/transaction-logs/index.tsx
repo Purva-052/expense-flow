@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { SortingState } from "@tanstack/react-table";
 
 const TransactionPage = () => {
   const { open, setOpen } = useTransactionStore();
@@ -40,6 +41,8 @@ const TransactionPage = () => {
     transactionStartDate: parseAsString,
     transactionEndDate: parseAsString,
     tab: parseAsString.withDefault("requests"),
+    sortBy: parseAsString,
+    sortOrder: parseAsString,
   });
 
   const listParams = {
@@ -53,6 +56,8 @@ const TransactionPage = () => {
     tab: queryParams.tab,
     transactionStartDate: queryParams.transactionStartDate ?? undefined,
     transactionEndDate: queryParams.transactionEndDate ?? undefined,
+    sortBy: queryParams.sortBy ?? undefined,
+    sortOrder: queryParams.sortOrder ?? undefined,
   };
 
   const getStatusFromTab = (tab: string) => {
@@ -73,6 +78,7 @@ const TransactionPage = () => {
     status: getStatusFromTab(queryParams.tab),
     transactionStartDate: listParams.transactionStartDate,
     transactionEndDate: listParams.transactionEndDate,
+    sortOrder: listParams.sortOrder,
   };
 
   const handleProjectChange = (value: any) => {
@@ -138,6 +144,7 @@ const TransactionPage = () => {
       status: apiParams.status || undefined,
       transactionStartDate: apiParams.transactionStartDate || undefined,
       transactionEndDate: apiParams.transactionEndDate || undefined,
+      sortOrder: apiParams.sortOrder || undefined,
     };
 
     const cleanedPayload = Object.fromEntries(
@@ -171,6 +178,34 @@ const TransactionPage = () => {
         toast.error(error.message || "Failed to generate CSV file");
       },
     });
+  };
+
+  const sortingState = useMemo<SortingState>(() => {
+    if (!queryParams.sortBy) return [];
+    return [
+      {
+        id: queryParams.sortBy,
+        desc: queryParams.sortOrder === "desc",
+      },
+    ];
+  }, [queryParams.sortBy, queryParams.sortOrder]);
+
+  const handleSortingChange = (newSorting: SortingState) => {
+    if (newSorting.length > 0) {
+      const first = newSorting[0];
+      setQueryParams({
+        ...listParams,
+        sortBy: first.id,
+        sortOrder: first.desc ? "desc" : "asc",
+        currentPage: 1,
+      });
+    } else {
+      setQueryParams({
+        ...listParams,
+        sortBy: null,
+        sortOrder: null,
+      });
+    }
   };
 
   const handlePaginationChange = (newPagination: {
@@ -276,6 +311,8 @@ const TransactionPage = () => {
       ...listParams,
       tab: val,
       currentPage: 1,
+      sortBy: null,
+      sortOrder: null,
     });
   };
 
@@ -338,6 +375,10 @@ const TransactionPage = () => {
           columns={columns}
           loading={loading}
           isPaginationEnabled
+          enableSorting
+          sorting={sortingState}
+          onSortingChange={handleSortingChange}
+          manualSorting
         />
       </div>
 

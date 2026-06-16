@@ -82,6 +82,7 @@ export const columns: ColumnDef<any>[] = [
       const createdBy = row.original.user?.name;
       return <span className="text-sm">{createdBy ? createdBy : "-"}</span>;
     },
+    enableSorting: false,
   },
   {
     accessorKey: "amount",
@@ -100,6 +101,7 @@ export const columns: ColumnDef<any>[] = [
 
       return <span className="text-sm">{formattedAmount}</span>;
     },
+    enableSorting: false,
   },
   {
     accessorKey: "currency",
@@ -110,6 +112,7 @@ export const columns: ColumnDef<any>[] = [
         <span className="text-sm uppercase">{currency ? currency : "-"}</span>
       );
     },
+    enableSorting: false,
   },
   {
     accessorKey: "reason",
@@ -130,6 +133,7 @@ export const columns: ColumnDef<any>[] = [
         </span>
       );
     },
+    enableSorting: false,
   },
   {
     accessorKey: "status",
@@ -165,6 +169,7 @@ export const columns: ColumnDef<any>[] = [
 
       return <Badge variant={variant}>{label}</Badge>;
     },
+    enableSorting: false,
   },
   {
     accessorKey: "transactionType",
@@ -186,6 +191,7 @@ export const columns: ColumnDef<any>[] = [
         </Badge>
       );
     },
+    enableSorting: false,
   },
   {
     accessorKey: "subscriptionCycle",
@@ -207,6 +213,7 @@ export const columns: ColumnDef<any>[] = [
         </Badge>
       );
     },
+    enableSorting: false,
   },
   // {
   //   accessorKey: "cardLast4",
@@ -219,6 +226,7 @@ export const columns: ColumnDef<any>[] = [
       const projectName = row.original.project?.name;
       return <span className="text-sm">{projectName ? projectName : "-"}</span>;
     },
+    enableSorting: false,
   },
   {
     accessorKey: "transactionDate",
