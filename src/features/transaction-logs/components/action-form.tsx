@@ -555,7 +555,7 @@ export function TransactionLogsActionForm({
               />
 
               {/* Additional Notes (Only in edit transaction) */}
-              {!isPending && canEditApprovedOrRejectedFields && (
+              {isEdit && (
                 <FormField
                   control={form.control}
                   name="additionalNotes"
