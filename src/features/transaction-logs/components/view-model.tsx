@@ -21,7 +21,7 @@ export function ViewTransactionModal() {
 
   return (
     <Dialog open={open === "view"} onOpenChange={() => setOpen(null)}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg max-h-[80vh] overflow-auto">
         <DialogHeader>
           <DialogTitle>Transaction Details</DialogTitle>
         </DialogHeader>
@@ -53,6 +53,15 @@ export function ViewTransactionModal() {
               <h3 className="text-sm font-medium">Rejection Reason</h3>
               <p className="text-sm text-gray-600">
                 {currentRow.rejectionReason || "-"}
+              </p>
+            </div>
+          )}
+
+          {currentRow.status !== "pending" && (
+            <div>
+              <h3 className="text-sm font-medium">Additional Notes</h3>
+              <p className="text-sm text-gray-600">
+                {currentRow.additionalNotes || "-"}
               </p>
             </div>
           )}
