@@ -189,6 +189,7 @@ const API = {
     leave_dashboard: "/leave-management/dashboard",
     leave_adjust: "/leave-management/adjust/balance",
     leave_balance: "/leave-management/credit-history",
+    exam_leave: "/leave-management/exam-eligibility",
   },
   leave_balance: {
     get: "/leave-balances",

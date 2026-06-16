@@ -38,7 +38,13 @@ export const useUpdateLeaveData = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string | number; data: FormData }) => {
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string | number;
+      data: FormData;
+    }) => {
       const response = await instance.patch({
         url: `${API.leave_management.update}/${id}`,
         data,
@@ -180,3 +186,43 @@ export const useGetLeaveTypes = (enabled = true) => {
     enabled,
   });
 };
+
+export const useUpdateExamLeaveEligibility = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      employeeId,
+      isExamLeaveEligible,
+    }: {
+      employeeId: number | string;
+      isExamLeaveEligible: boolean;
+    }) => {
+      const response = await instance.patch({
+        url: `${API.leave_management.exam_leave}/${employeeId}`,
+        data: { isExamLeaveEligible },
+      });
+      return response;
+    },
+    onSuccess: (data: any) => {
+      toast.success(
+        data?.message ?? "Exam leave eligibility updated successfully",
+        {
+          position: "top-right",
+        }
+      );
+      leaveRefetchQueries.forEach((query) =>
+        queryClient.invalidateQueries({ queryKey: [query] })
+      );
+    },
+    onError: (error: any) => {
+      const errorInfo = extractErrorInfo(error);
+      toast.error(errorInfo.title, {
+        description: errorInfo.description,
+        duration: 3000,
+        position: "top-right",
+      });
+    },
+  });
+};
+

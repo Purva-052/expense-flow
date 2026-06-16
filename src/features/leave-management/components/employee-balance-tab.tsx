@@ -6,6 +6,10 @@ import { Button } from "@/components/ui/button";
 import { FilterConfig } from "@/components/table/table-toolbar";
 import GlobalFilterSection from "@/components/table/global-table-filter";
 import { GlobalTable } from "@/components/table/global-table";
+import { Switch } from "@/components/ui/switch";
+import { useUpdateExamLeaveEligibility } from "../services";
+import { useAuthStore } from "@/stores/use-auth-store";
+import { roles } from "@/utils/constant";
 
 interface EmployeeBalanceTabProps {
   onAdjustClick: (empId: number) => void;
@@ -25,15 +29,13 @@ export function EmployeeBalanceTab({ onAdjustClick }: EmployeeBalanceTabProps) {
   };
 
   const { data: employeeWiseLeaveData, isPending: employeeWiseLeaveLoading } =
-    useGetUsersList(
-      {
-        page: listParams.currentPage,
-        limit: listParams.pageSize,
-        search: listParams.search || undefined,
-        pagination: true,
-        status: "active",
-      }
-    );
+    useGetUsersList({
+      page: listParams.currentPage,
+      limit: listParams.pageSize,
+      search: listParams.search || undefined,
+      pagination: true,
+      status: "active",
+    });
 
   const employeeWiseFilters: FilterConfig[] = [
     {
@@ -99,7 +101,12 @@ export function EmployeeBalanceTab({ onAdjustClick }: EmployeeBalanceTabProps) {
         header: "Casual Leave Balance",
         cell: ({ row }: any) => {
           const val = row.getValue("casualLeaveBalance");
-          if (val === null || val === undefined || val === "null" || val === "undefined") {
+          if (
+            val === null ||
+            val === undefined ||
+            val === "null" ||
+            val === "undefined"
+          ) {
             return <span className="font-medium">0</span>;
           }
           const num = Number(parseFloat(val).toFixed(2));
@@ -111,11 +118,52 @@ export function EmployeeBalanceTab({ onAdjustClick }: EmployeeBalanceTabProps) {
         header: "Paid Leave Balance",
         cell: ({ row }: any) => {
           const val = row.getValue("paidLeaveBalance");
-          if (val === null || val === undefined || val === "null" || val === "undefined") {
+          if (
+            val === null ||
+            val === undefined ||
+            val === "null" ||
+            val === "undefined"
+          ) {
             return <span className="font-medium">0</span>;
           }
           const num = Number(parseFloat(val).toFixed(2));
           return <span className="font-medium">{num} Days</span>;
+        },
+      },
+      {
+        accessorKey: "isExamLeaveEligible",
+        header: "Exam Leave Eligible",
+        cell: function Cell({ row }: any) {
+          const isExamLeaveEligible = row.original.isExamLeaveEligible;
+          const employeeId = row.original.id;
+          const { mutate: updateExamLeaveEligibility, isPending } =
+            useUpdateExamLeaveEligibility();
+
+          const user = useAuthStore((state) => state.user);
+          const rawRole = user?.role || user?.user?.role;
+          const roleName = String(
+            rawRole && typeof rawRole === "object"
+              ? rawRole?.name
+              : rawRole || ""
+          ).toLowerCase();
+          const isAdmin = roleName === roles.ADMIN;
+
+          return (
+            <div className="flex">
+              <Switch
+                checked={!!isExamLeaveEligible}
+                disabled={!isAdmin || isPending}
+                onCheckedChange={(checked) => {
+                  if (employeeId != null) {
+                    updateExamLeaveEligibility({
+                      employeeId,
+                      isExamLeaveEligible: checked,
+                    });
+                  }
+                }}
+              />
+            </div>
+          );
         },
       },
       {

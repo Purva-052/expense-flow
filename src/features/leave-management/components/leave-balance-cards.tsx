@@ -15,14 +15,16 @@ interface BalanceRecord {
 export function LeaveBalanceCards({
   balanceData,
   loading,
+  isExamLeaveEligible = false,
 }: {
   balanceData: BalanceRecord[];
   loading: boolean;
+  isExamLeaveEligible?: boolean;
 }) {
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {[...Array(4)].map((_, i) => (
+        {[...Array(isExamLeaveEligible ? 4 : 3)].map((_, i) => (
           <Skeleton key={i} className="h-[110px] rounded-xl" />
         ))}
       </div>
@@ -31,53 +33,42 @@ export function LeaveBalanceCards({
 
   if (!balanceData || balanceData.length === 0) return null;
 
-  const balanceCards = balanceData.map((record) => {
-    const label =
-      LEAVE_TYPE.find((t) => Number(t.value) === record.leaveTypeId)?.label ??
-      record.leaveType?.name ??
-      `Type ${record.leaveTypeId}`;
-    const isCasual = label.toLowerCase().includes("casual");
-    const isUnlimited =
-      label.toLowerCase().includes("loss of pay") ||
-      label.toLowerCase().includes("exam");
+  const balanceCards = balanceData
+    .filter((record) => {
+      const label =
+        LEAVE_TYPE.find((t) => Number(t.value) === record.leaveTypeId)?.label ??
+        record.leaveType?.name ??
+        `Type ${record.leaveTypeId}`;
+      const isExam = label.toLowerCase().includes("exam");
+      if (isExam && !isExamLeaveEligible) {
+        return false;
+      }
+      return true;
+    })
+    .map((record) => {
+      const label =
+        LEAVE_TYPE.find((t) => Number(t.value) === record.leaveTypeId)?.label ??
+        record.leaveType?.name ??
+        `Type ${record.leaveTypeId}`;
+      const isCasual = label.toLowerCase().includes("casual");
+      const isUnlimited =
+        label.toLowerCase().includes("loss of pay") ||
+        label.toLowerCase().includes("exam");
 
-    return {
-      key: `balance-${record.leaveTypeId}`,
-      label: `${label} Balance`,
-      value: isUnlimited
-        ? "Unlimited"
-        : String(parseFloat(record.availableDays ?? "0")),
-      icon: CalendarDays,
-      labelClass: isCasual ? "text-blue-400" : "text-violet-400",
-      iconBgClass: isCasual
-        ? "bg-blue-50 text-blue-500 dark:bg-blue-900/30 dark:text-blue-400"
-        : "bg-violet-50 text-violet-500 dark:bg-violet-900/30 dark:text-violet-400",
-      valueClass: "text-slate-900 dark:text-slate-100",
-    };
-  });
-
-  // const summaryCards = [
-  //   {
-  //     key: "taken",
-  //     label: "Taken (Used Days)",
-  //     value: totalUsed.toFixed(0),
-  //     icon: CheckCircle2,
-  //     labelClass: "text-emerald-400",
-  //     iconBgClass:
-  //       "bg-emerald-50 text-emerald-500 dark:bg-emerald-900/30 dark:text-emerald-400",
-  //     valueClass: "text-slate-900 dark:text-slate-100",
-  //   },
-  //   {
-  //     key: "pending-count",
-  //     label: "Pending Approval",
-  //     value: totalPending.toFixed(0),
-  //     icon: Clock,
-  //     labelClass: "text-amber-400",
-  //     iconBgClass:
-  //       "bg-amber-50 text-amber-500 dark:bg-amber-900/30 dark:text-amber-400",
-  //     valueClass: "text-slate-900 dark:text-slate-100",
-  //   },
-  // ];
+      return {
+        key: `balance-${record.leaveTypeId}`,
+        label: `${label} Balance`,
+        value: isUnlimited
+          ? "Unlimited"
+          : String(parseFloat(record.availableDays ?? "0")),
+        icon: CalendarDays,
+        labelClass: isCasual ? "text-blue-400" : "text-violet-400",
+        iconBgClass: isCasual
+          ? "bg-blue-50 text-blue-500 dark:bg-blue-900/30 dark:text-blue-400"
+          : "bg-violet-50 text-violet-500 dark:bg-violet-900/30 dark:text-violet-400",
+        valueClass: "text-slate-900 dark:text-slate-100",
+      };
+    });
 
   const allCards = [...balanceCards];
 
