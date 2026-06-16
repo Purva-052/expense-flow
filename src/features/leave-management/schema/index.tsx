@@ -42,7 +42,7 @@ export const leaveSchema = z
     // Per-day configuration (generated from date range)
     leaveDays: z
       .array(leaveDaySchema)
-      .min(1, "At least one leave day is required"),
+      .min(1, "Please select at least a half-day or full-day leave."),
 
     attachments: z
       .any()
