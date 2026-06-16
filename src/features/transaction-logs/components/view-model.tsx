@@ -57,14 +57,14 @@ export function ViewTransactionModal() {
             </div>
           )}
 
-          {currentRow.status !== "pending" && (
+          {/* {currentRow.status !== "pending" && ( */}
             <div>
               <h3 className="text-sm font-medium">Additional Notes</h3>
               <p className="text-sm text-gray-600">
                 {currentRow.additionalNotes || "-"}
               </p>
             </div>
-          )}
+          {/* )} */}
 
           <div>
             <h3 className="text-sm font-medium">Currency</h3>

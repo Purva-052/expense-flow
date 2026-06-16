@@ -87,6 +87,7 @@ export function AdjustBalanceModal({
 
   const { data: leaveTypesRes, isPending: leaveTypesLoading } =
     useGetLeaveTypes(open);
+  console.log("leaveTypesRes: ", leaveTypesRes);
 
   const { mutateAsync: adjustBalance, isPending: isSubmitting } =
     useAdjustLeaveBalance(() => {
@@ -105,7 +106,9 @@ export function AdjustBalanceModal({
 
   const selectedEmployeeName = useMemo(() => {
     if (!selectedEmployeeId) return "";
-    const emp = employeesList?.data?.find((u: any) => u.id === selectedEmployeeId);
+    const emp = employeesList?.data?.find(
+      (u: any) => u.id === selectedEmployeeId
+    );
     return emp ? emp.fullName : "";
   }, [selectedEmployeeId, employeesList]);
 
@@ -123,7 +126,10 @@ export function AdjustBalanceModal({
         value: item.id ?? item.value ?? item.code,
         label: item.name ?? item.label ?? item.title,
       }))
-      .filter((option: any) => String(option.value) !== "3");
+      .filter(
+        (option: any) =>
+          String(option.value) !== "3" && String(option.value) !== "6"
+      ); // Exclude leave types with value "3" and "4"
   }, [leaveTypesRes]);
 
   // Reset form when dialog opens/closes
@@ -155,7 +161,8 @@ export function AdjustBalanceModal({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-rose-500 font-bold text-lg dark:text-rose-400">
-            Adjust Leave Balance {selectedEmployeeName ? `for ${selectedEmployeeName}` : ""}
+            Adjust Leave Balance{" "}
+            {selectedEmployeeName ? `for ${selectedEmployeeName}` : ""}
           </DialogTitle>
           <DialogDescription>
             {selectedEmployeeName
@@ -215,7 +222,8 @@ export function AdjustBalanceModal({
                 <FormItem>
                   <div className="flex items-center gap-1.5">
                     <FormLabel className="text-sm font-semibold">
-                      Balance to Add / Deduct <span className="text-red-500">*</span>
+                      Balance to Add / Deduct{" "}
+                      <span className="text-red-500">*</span>
                     </FormLabel>
                     <TooltipProvider>
                       <Tooltip>
@@ -224,7 +232,8 @@ export function AdjustBalanceModal({
                         </TooltipTrigger>
                         <TooltipContent>
                           <p className="text-xs">
-                            Use positive values (e.g. 5, 0.5) to add balance, or negative values (e.g. -5, -0.5) to deduct balance.
+                            Use positive values (e.g. 5, 0.5) to add balance, or
+                            negative values (e.g. -5, -0.5) to deduct balance.
                           </p>
                         </TooltipContent>
                       </Tooltip>
@@ -246,7 +255,8 @@ export function AdjustBalanceModal({
                     />
                   </FormControl>
                   <p className="text-[11px] text-muted-foreground mt-1">
-                    Accepts values from -100 to 100. Decimal values (e.g. 0.5 or -0.5) are supported.
+                    Accepts values from -100 to 100. Decimal values (e.g. 0.5 or
+                    -0.5) are supported.
                   </p>
                   <FormMessage />
                 </FormItem>
