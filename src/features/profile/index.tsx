@@ -44,22 +44,24 @@ const ProfilePage = () => {
   return (
     <Main>
       {/* --- Page Header --- */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">My Profile</h1>
-          <p className="text-muted-foreground mt-2 text-sm">
-            View your personal details and manage your account security.
-          </p>
-        </div>
-        <div>
-          <Button
-            onClick={() => setOrgModalOpen(true)}
-            variant="outline"
-            className="border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 gap-2 transition-all duration-200 shadow-sm"
-          >
-            <Network className="h-4 w-4 text-blue-500" />
-            <span>Organization Chart</span>
-          </Button>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 mb-10 mt-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">My Profile</h1>
+            <p className="text-muted-foreground mt-2 text-sm">
+              View your personal details and manage your account security.
+            </p>
+          </div>
+          <div>
+            <Button
+              onClick={() => setOrgModalOpen(true)}
+              variant="outline"
+              className="border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 gap-2 transition-all duration-200 shadow-sm"
+            >
+              <Network className="h-4 w-4 text-blue-500" />
+              <span>Organization Chart</span>
+            </Button>
+          </div>
         </div>
       </div>
 

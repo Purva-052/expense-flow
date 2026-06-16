@@ -59,6 +59,7 @@ import { Route as AuthenticatedClientNdaIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedClientInventoryIndexRouteImport } from './routes/_authenticated/client-inventory/index'
 import { Route as AuthenticatedClientInventoryTypeIndexRouteImport } from './routes/_authenticated/client-inventory-type/index'
 import { Route as AuthenticatedBrandsIndexRouteImport } from './routes/_authenticated/brands/index'
+import { Route as AuthenticatedAttendanceIndexRouteImport } from './routes/_authenticated/attendance/index'
 import { Route as AuthenticatedAdmobAnalyticsIndexRouteImport } from './routes/_authenticated/admob-analytics/index'
 import { Route as AuthenticatedProjectsDetailIdRouteImport } from './routes/_authenticated/projects/detail.$id'
 import { Route as AuthenticatedLinodeServerDashboardDetailIdRouteImport } from './routes/_authenticated/linode-server-dashboard/detail.$id'
@@ -349,6 +350,12 @@ const AuthenticatedBrandsIndexRoute =
     path: '/brands/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAttendanceIndexRoute =
+  AuthenticatedAttendanceIndexRouteImport.update({
+    id: '/attendance/',
+    path: '/attendance/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdmobAnalyticsIndexRoute =
   AuthenticatedAdmobAnalyticsIndexRouteImport.update({
     id: '/admob-analytics/',
@@ -381,6 +388,7 @@ export interface FileRoutesByFullPath {
   '/sign/$token': typeof SignTokenRoute
   '/': typeof AuthenticatedIndexRoute
   '/admob-analytics': typeof AuthenticatedAdmobAnalyticsIndexRoute
+  '/attendance': typeof AuthenticatedAttendanceIndexRoute
   '/brands': typeof AuthenticatedBrandsIndexRoute
   '/client-inventory-type': typeof AuthenticatedClientInventoryTypeIndexRoute
   '/client-inventory': typeof AuthenticatedClientInventoryIndexRoute
@@ -435,6 +443,7 @@ export interface FileRoutesByTo {
   '/sign/$token': typeof SignTokenRoute
   '/': typeof AuthenticatedIndexRoute
   '/admob-analytics': typeof AuthenticatedAdmobAnalyticsIndexRoute
+  '/attendance': typeof AuthenticatedAttendanceIndexRoute
   '/brands': typeof AuthenticatedBrandsIndexRoute
   '/client-inventory-type': typeof AuthenticatedClientInventoryTypeIndexRoute
   '/client-inventory': typeof AuthenticatedClientInventoryIndexRoute
@@ -491,6 +500,7 @@ export interface FileRoutesById {
   '/sign/$token': typeof SignTokenRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/admob-analytics/': typeof AuthenticatedAdmobAnalyticsIndexRoute
+  '/_authenticated/attendance/': typeof AuthenticatedAttendanceIndexRoute
   '/_authenticated/brands/': typeof AuthenticatedBrandsIndexRoute
   '/_authenticated/client-inventory-type/': typeof AuthenticatedClientInventoryTypeIndexRoute
   '/_authenticated/client-inventory/': typeof AuthenticatedClientInventoryIndexRoute
@@ -547,6 +557,7 @@ export interface FileRouteTypes {
     | '/sign/$token'
     | '/'
     | '/admob-analytics'
+    | '/attendance'
     | '/brands'
     | '/client-inventory-type'
     | '/client-inventory'
@@ -601,6 +612,7 @@ export interface FileRouteTypes {
     | '/sign/$token'
     | '/'
     | '/admob-analytics'
+    | '/attendance'
     | '/brands'
     | '/client-inventory-type'
     | '/client-inventory'
@@ -656,6 +668,7 @@ export interface FileRouteTypes {
     | '/sign/$token'
     | '/_authenticated/'
     | '/_authenticated/admob-analytics/'
+    | '/_authenticated/attendance/'
     | '/_authenticated/brands/'
     | '/_authenticated/client-inventory-type/'
     | '/_authenticated/client-inventory/'
@@ -1064,6 +1077,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBrandsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/attendance/': {
+      id: '/_authenticated/attendance/'
+      path: '/attendance'
+      fullPath: '/attendance'
+      preLoaderRoute: typeof AuthenticatedAttendanceIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admob-analytics/': {
       id: '/_authenticated/admob-analytics/'
       path: '/admob-analytics'
@@ -1091,6 +1111,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedAdmobAnalyticsIndexRoute: typeof AuthenticatedAdmobAnalyticsIndexRoute
+  AuthenticatedAttendanceIndexRoute: typeof AuthenticatedAttendanceIndexRoute
   AuthenticatedBrandsIndexRoute: typeof AuthenticatedBrandsIndexRoute
   AuthenticatedClientInventoryTypeIndexRoute: typeof AuthenticatedClientInventoryTypeIndexRoute
   AuthenticatedClientInventoryIndexRoute: typeof AuthenticatedClientInventoryIndexRoute
@@ -1136,6 +1157,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedAdmobAnalyticsIndexRoute: AuthenticatedAdmobAnalyticsIndexRoute,
+  AuthenticatedAttendanceIndexRoute: AuthenticatedAttendanceIndexRoute,
   AuthenticatedBrandsIndexRoute: AuthenticatedBrandsIndexRoute,
   AuthenticatedClientInventoryTypeIndexRoute:
     AuthenticatedClientInventoryTypeIndexRoute,
