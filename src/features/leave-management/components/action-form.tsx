@@ -543,6 +543,36 @@ export function LeaveActionForm({
     });
   }, [balanceArray, watchLeaveDays, holidayDatesSet, watchIsExamLeave]);
 
+  const allocationItems = useMemo(() => {
+    return watchIsExamLeave
+      ? [
+          {
+            label: "Exam Leave",
+            value: leaveAllocation.examDays || 0,
+            className: "text-amber-700 dark:text-amber-400 font-semibold",
+          },
+        ]
+      : [
+          {
+            label: "Casual Leave",
+            value: leaveAllocation.casualDays,
+            className: "text-emerald-700 dark:text-emerald-400 font-semibold",
+          },
+          {
+            label: "Paid Leave",
+            value: leaveAllocation.paidDays,
+            className: "text-blue-700 dark:text-blue-400 font-semibold",
+          },
+          {
+            label: "Loss of Pay",
+            value: leaveAllocation.lossOfPayDays,
+            className: "text-rose-700 dark:text-rose-400 font-semibold",
+          },
+        ];
+  }, [watchIsExamLeave, leaveAllocation]);
+
+  const hasDatesSelected = !!(watchFromDate && watchToDate);
+
   const emptyDefaults = {
     employeeId: undefined as number | undefined,
     isExamLeave: false,
@@ -725,7 +755,7 @@ export function LeaveActionForm({
         value: casualBalance,
         icon: Calendar,
         className:
-          "border-emerald-100/80 bg-emerald-50/50 text-emerald-800 dark:border-emerald-900/40 dark:bg-emerald-950/10 dark:text-emerald-300",
+          "border-emerald-100/85 bg-emerald-50/40 text-emerald-800 dark:border-emerald-900/30 dark:bg-emerald-950/10 dark:text-emerald-300",
         iconColor: "text-emerald-500 dark:text-emerald-400",
       },
       {
@@ -733,7 +763,7 @@ export function LeaveActionForm({
         value: paidBalance,
         icon: Briefcase,
         className:
-          "border-blue-100/80 bg-blue-50/50 text-blue-800 dark:border-blue-900/40 dark:bg-blue-950/10 dark:text-blue-300",
+          "border-blue-100/85 bg-blue-50/40 text-blue-800 dark:border-blue-900/30 dark:bg-blue-950/10 dark:text-blue-300",
         iconColor: "text-blue-500 dark:text-blue-400",
       },
       {
@@ -741,7 +771,7 @@ export function LeaveActionForm({
         value: examBalance,
         icon: GraduationCap,
         className:
-          "border-amber-100/80 bg-amber-50/50 text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/10 dark:text-amber-300",
+          "border-amber-100/85 bg-amber-50/40 text-amber-800 dark:border-amber-900/30 dark:bg-amber-950/10 dark:text-amber-300",
         iconColor: "text-amber-500 dark:text-amber-400",
       },
       {
@@ -749,48 +779,20 @@ export function LeaveActionForm({
         value: leaveAllocation.totalAvailableDays,
         icon: Layers,
         className:
-          "border-violet-100/80 bg-violet-50/50 text-violet-800 dark:border-violet-900/40 dark:bg-violet-950/10 dark:text-violet-300",
+          "border-violet-100/85 bg-violet-50/40 text-violet-800 dark:border-violet-900/30 dark:bg-violet-950/10 dark:text-violet-300",
         iconColor: "text-violet-500 dark:text-violet-400",
       },
     ];
 
-    const allocationItems = watchIsExamLeave
-      ? [
-          {
-            label: "Exam Leave",
-            value: leaveAllocation.examDays || 0,
-            className: "text-amber-700 dark:text-amber-400 font-semibold",
-          },
-        ]
-      : [
-          {
-            label: "Casual Leave",
-            value: leaveAllocation.casualDays,
-            className: "text-emerald-700 dark:text-emerald-400 font-semibold",
-          },
-          {
-            label: "Paid Leave",
-            value: leaveAllocation.paidDays,
-            className: "text-blue-700 dark:text-blue-400 font-semibold",
-          },
-          {
-            label: "Loss of Pay",
-            value: leaveAllocation.lossOfPayDays,
-            className: "text-rose-700 dark:text-rose-400 font-semibold",
-          },
-        ];
-
-    const hasDatesSelected = !!(watchFromDate && watchToDate);
-
     return (
       <div
         className={cn(
-          "space-y-4 rounded-xl border border-slate-200 bg-card p-6 shadow-sm dark:border-slate-800 w-full"
+          "space-y-3 rounded-xl border border-slate-200 bg-card p-4 shadow-sm dark:border-slate-800 w-full"
         )}
       >
         <div className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-200">
-          <Wallet className="h-4.5 w-4.5 text-rose-500 shrink-0" />
-          <span className="text-sm">Complete Leave Balance</span>
+          <Wallet className="h-4 w-4 text-rose-500 shrink-0" />
+          <span className="text-xs uppercase tracking-wider font-bold opacity-80">Complete Leave Balance</span>
           {leaveBalanceLoading && (
             <span className="text-xs font-normal text-muted-foreground italic animate-pulse">
               (Updating...)
@@ -798,82 +800,57 @@ export function LeaveActionForm({
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-3.5">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {summaryItems.map((item) => (
             <div
               key={item.label}
               className={cn(
-                "rounded-xl border p-3.5 transition-all flex flex-col justify-between h-[92px] shadow-sm relative overflow-hidden",
+                "rounded-xl border p-3 transition-all flex items-center justify-between h-[88px] shadow-sm relative overflow-hidden",
                 item.className
               )}
             >
-              <div className="flex items-center justify-between gap-1.5">
+              <div className="flex flex-col justify-between h-full">
                 <span className="text-[10px] font-bold uppercase tracking-wider opacity-80 select-none">
                   {item.label}
                 </span>
-                <item.icon
-                  className={cn("h-4 w-4 shrink-0 opacity-95", item.iconColor)}
-                />
+                <div
+                  className={cn(
+                    "font-extrabold tracking-tight mt-0.5",
+                    item.label === "Exam Leave" && item.value === 0
+                      ? "text-xs sm:text-sm uppercase opacity-90"
+                      : "text-xl sm:text-2xl tabular-nums"
+                  )}
+                >
+                  {leaveBalanceLoading ? (
+                    <span className="inline-block h-4 w-8 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
+                  ) : item.label === "Exam Leave" && item.value === 0 ? (
+                    "Unlimited"
+                  ) : (
+                    formatDays(item.value)
+                  )}
+                </div>
               </div>
-              <div className={cn("font-extrabold tracking-tight mt-1", item.label === "Exam Leave" && item.value === 0 ? "text-sm sm:text-base uppercase opacity-90" : "text-2xl tabular-nums")}>
-                {leaveBalanceLoading ? (
-                  <span className="inline-block h-6 w-10 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
-                ) : item.label === "Exam Leave" && item.value === 0 ? (
-                  "Unlimited"
-                ) : (
-                  formatDays(item.value)
-                )}
-              </div>
+              <item.icon
+                className={cn("h-5 w-5 shrink-0 opacity-80", item.iconColor)}
+              />
             </div>
           ))}
         </div>
-
-        {hasDatesSelected && (
-          <div className="rounded-lg border border-slate-200 bg-white px-3 py-3 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-            <div className="mb-2 flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-slate-400">
-              <span>Auto Allocation Breakdown</span>
-              <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-900 tabular-nums">
-                {formatDays(leaveAllocation.requestedDays)} day(s) requested
-              </span>
-            </div>
-            <div className={cn("grid gap-2 text-center py-1", watchIsExamLeave ? "grid-cols-1" : "grid-cols-3")}>
-              {allocationItems.map((item) => (
-                <div
-                  key={item.label}
-                  className="flex flex-col items-center justify-center p-1.5 rounded bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800"
-                >
-                  <span className="text-[10px] text-muted-foreground uppercase">
-                    {item.label.split(" ")[0]}
-                  </span>
-                  <span
-                    className={cn(
-                      "text-xs font-bold mt-0.5 tabular-nums",
-                      item.className
-                    )}
-                  >
-                    {formatDays(item.value)}
-                  </span>
-                </div>
-              ))}
-            </div>
-            {!watchIsExamLeave && (
-              <p className="mt-2 text-[12px] text-muted-foreground text-center font-bold">
-                Priority: Casual leaves are allocated first, followed by Paid
-                leaves, and then Loss of Pay.
-              </p>
-            )}
-          </div>
-        )}
       </div>
     );
   };
 
   // ── Per-day table ──────────────────────────────────────────────────────────
-  const LeaveDaysTable = () => {
+  const LeaveDaysTable = ({ className }: { className?: string }) => {
     if (fields.length === 0) return null;
 
     return (
-      <div className="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden text-sm shadow-sm bg-white dark:bg-slate-950">
+      <div
+        className={cn(
+          "rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden text-sm shadow-sm bg-white dark:bg-slate-950 flex flex-col flex-1 min-h-0",
+          className
+        )}
+      >
         {/* Header */}
         <div className="grid grid-cols-[1.1fr_1fr_1.4fr_1.1fr] gap-1.5 bg-slate-50 dark:bg-slate-900/50 px-3 py-2 font-semibold text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
           <span>Date</span>
@@ -883,7 +860,7 @@ export function LeaveActionForm({
         </div>
 
         {/* Rows */}
-        <div className="max-h-[300px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-900">
+        <div className="overflow-y-auto divide-y divide-slate-100 dark:divide-slate-900 flex-1 min-h-[200px]">
           {fields.map((field, idx) => {
             const isWeekend = field.isWeekend;
             const isDayHoliday = getIsHoliday(field.date);
@@ -1082,29 +1059,27 @@ export function LeaveActionForm({
 
       {/* Date Range */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormItem>
-          <FormLabel>
-            From Date <span className="text-red-500">*</span>
-          </FormLabel>
-          <CustomDatePicker
-            control={form.control}
-            name="fromDate"
-            label=""
-            disabled={isViewOnly}
-          />
-        </FormItem>
-        <FormItem>
-          <FormLabel>
-            To Date <span className="text-red-500">*</span>
-          </FormLabel>
-          <CustomDatePicker
-            control={form.control}
-            name="toDate"
-            label=""
-            disabled={isViewOnly}
-            minDate={watchFromDate}
-          />
-        </FormItem>
+        <CustomDatePicker
+          control={form.control}
+          name="fromDate"
+          label={
+            <>
+              From Date <span className="text-red-500">*</span>
+            </>
+          }
+          disabled={isViewOnly}
+        />
+        <CustomDatePicker
+          control={form.control}
+          name="toDate"
+          label={
+            <>
+              To Date <span className="text-red-500">*</span>
+            </>
+          }
+          disabled={isViewOnly || !watchFromDate}
+          minDate={watchFromDate}
+        />
       </div>
 
       {/* Exam Leave Toggle */}
@@ -1276,8 +1251,11 @@ export function LeaveActionForm({
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-6"
         >
-          {/* Top Section - Side-by-side Columns aligned to top */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Complete Leave Balance Summary at the top (Full Width) */}
+          {!isViewOnly && <LeaveBalanceSummary />}
+
+          {/* Columns Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
             {/* Left Column - Main Form Fields */}
             <div
               className={cn(
@@ -1315,9 +1293,67 @@ export function LeaveActionForm({
                   <div className="space-y-4">{renderMainFormFields()}</div>
                 )}
               </div>
+            </div>
 
-              {/* fallback for ViewOnly state to show daily breakdown underneath */}
-              {isViewOnly && fields.length > 0 && (
+            {/* Right Column - Daily Breakdown */}
+            {!isViewOnly && fields.length > 0 && (
+              <div className="lg:col-span-5 flex flex-col h-full">
+                <div className="rounded-xl border border-slate-200 bg-card p-6 shadow-sm dark:border-slate-800 space-y-4 flex flex-col flex-1 h-full">
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                      Daily Breakdown
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Configure half/full day settings for each leave date.
+                    </p>
+                  </div>
+
+                  {/* Auto Allocation Breakdown */}
+                  {hasDatesSelected && (
+                    <div className="rounded-lg border border-slate-200 bg-white px-3 py-3 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+                      <div className="mb-2 flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-slate-400">
+                        <span>Auto Allocation Breakdown</span>
+                        <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-900 tabular-nums">
+                          {formatDays(leaveAllocation.requestedDays)} day(s) requested
+                        </span>
+                      </div>
+                      <div className={cn("grid gap-2 text-center py-1", watchIsExamLeave ? "grid-cols-1" : "grid-cols-3")}>
+                        {allocationItems.map((item) => (
+                          <div
+                            key={item.label}
+                            className="flex flex-col items-center justify-center p-1.5 rounded bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800"
+                          >
+                            <span className="text-[10px] text-muted-foreground uppercase">
+                              {item.label.split(" ")[0]}
+                            </span>
+                            <span
+                              className={cn(
+                                "text-xs font-bold mt-0.5 tabular-nums",
+                                item.className
+                              )}
+                            >
+                              {formatDays(item.value)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                      {!watchIsExamLeave && (
+                        <p className="mt-2 text-[10px] text-muted-foreground text-center font-bold">
+                          Priority: Casual leaves are allocated first, followed by Paid
+                          leaves, and then Loss of Pay.
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  <LeaveDaysTable className="flex-1" />
+                </div>
+              </div>
+            )}
+
+            {/* View Only fallback for Daily Breakdown */}
+            {isViewOnly && fields.length > 0 && (
+              <div className="lg:col-span-12 max-w-3xl mx-auto w-full">
                 <div className="rounded-xl border border-slate-200 bg-card p-6 shadow-sm dark:border-slate-800 space-y-4">
                   <div>
                     <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
@@ -1326,28 +1362,6 @@ export function LeaveActionForm({
                   </div>
                   <LeaveDaysTable />
                 </div>
-              )}
-            </div>
-
-            {/* Right Column - Leave Balance Summary & Sticky Daily Breakdown */}
-            {!isViewOnly && (
-              <div className="lg:col-span-5 flex flex-col lg:sticky lg:top-6 space-y-6">
-                <LeaveBalanceSummary />
-
-                {/* Daily Breakdown moved below Complete Leave Balance card */}
-                {fields.length > 0 && (
-                  <div className="rounded-xl border border-slate-200 bg-card p-6 shadow-sm dark:border-slate-800 space-y-4">
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                        Daily Breakdown
-                      </h3>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Configure half/full day settings for each leave date.
-                      </p>
-                    </div>
-                    <LeaveDaysTable />
-                  </div>
-                )}
               </div>
             )}
           </div>
