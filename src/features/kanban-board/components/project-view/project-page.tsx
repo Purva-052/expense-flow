@@ -604,7 +604,7 @@ const ProjectPage = ({
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-4">
       {/* {!isBdeView && ( */}
-      <div className="flex flex-wrap items-start gap-3">
+      <div className="flex flex-wrap items-start gap-3 mt-4">
         <div className="flex-1 min-w-0">
           <GlobalFilterSection filters={filters ?? []} className="" />
         </div>

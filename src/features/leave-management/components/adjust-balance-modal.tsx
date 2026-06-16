@@ -87,7 +87,6 @@ export function AdjustBalanceModal({
 
   const { data: leaveTypesRes, isPending: leaveTypesLoading } =
     useGetLeaveTypes(open);
-  console.log("leaveTypesRes: ", leaveTypesRes);
 
   const { mutateAsync: adjustBalance, isPending: isSubmitting } =
     useAdjustLeaveBalance(() => {

@@ -29,6 +29,7 @@ import {
   Cpu,
   Database,
   FileCheck,
+  FingerprintPattern,
   Flame,
   Globe,
   // CpuIcon,
@@ -146,6 +147,18 @@ export const sidebarData: SidebarData = {
           title: "Leave Management",
           url: "/leave-management",
           icon: Plane,
+          requiredRoles: [
+            roles.ADMIN,
+            roles.TEAM_LEAD,
+            roles.PROJECT_MANAGER,
+            roles.DEVELOPER,
+            roles.BDE,
+          ],
+        },
+        {
+          title: "Attendance Management",
+          url: "/attendance",
+          icon: FingerprintPattern,
           requiredRoles: [
             roles.ADMIN,
             roles.TEAM_LEAD,

@@ -46,7 +46,9 @@ export function DataTableToolbarCompact({
   }, [debouncedSearch]);
 
   return (
-    <div className={`flex flex-wrap items-center gap-2 w-full ${className}`}>
+    <div
+      className={`flex flex-wrap items-center gap-2 px-1 w-full ${className}`}
+    >
       {filters.map((filter: any) => {
         if (filter.type === "search") {
           return (
