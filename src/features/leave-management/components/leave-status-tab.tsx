@@ -5,7 +5,10 @@ import { formatDate } from "@/utils/commonFunctions";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
 import { useGetAllLeaveBalances, useGetLeaveData } from "../services";
-import { useGetUserDropdownList } from "@/features/users/services";
+import {
+  useGetUserDropdownList,
+  useGetUserDetails,
+} from "@/features/users/services";
 import { LeaveBalanceCards } from "./leave-balance-cards";
 import { getColumns } from "./columns";
 import GlobalFilterSection from "@/components/table/global-table-filter";
@@ -107,6 +110,18 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
         ? allBalanceData.data
         : [];
   }, [allBalanceData]);
+
+  const { data: activeUserDetails } = useGetUserDetails(
+    balanceUserId ? String(balanceUserId) : ""
+  ) as any;
+
+  const isExamLeaveEligible = useMemo(() => {
+    return !!(
+      (balanceUserId === currentEmployeeId &&
+        user?.user?.isExamLeaveEligible) ||
+      activeUserDetails?.data?.isExamLeaveEligible
+    );
+  }, [balanceUserId, currentEmployeeId, user, activeUserDetails]);
 
   // const handleSearch = (search: string | undefined) => {
   //   setQueryParams({ ...listParams, search: search ?? "", currentPage: 1 });
@@ -225,6 +240,7 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
       <LeaveBalanceCards
         balanceData={balanceArray}
         loading={Boolean(balanceLoading || pendingLeavesLoading)}
+        isExamLeaveEligible={isExamLeaveEligible}
       />
 
       {showStatusTabs && (

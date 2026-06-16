@@ -382,6 +382,14 @@ export function LeaveActionForm({
     return selectedEmployee?.technology?.id ?? selectedEmployee?.technologyId;
   }, [selectedEmployee]);
 
+  const isExamLeaveEligible = useMemo(() => {
+    return !!(
+      user?.isExamLeaveEligible ||
+      user?.user?.isExamLeaveEligible ||
+      selectedEmployee?.isExamLeaveEligible
+    );
+  }, [user, selectedEmployee]);
+
   // Auto-regenerate or merge leaveDays table whenever date range changes
   useEffect(() => {
     if (isViewOnly) return;
@@ -766,14 +774,18 @@ export function LeaveActionForm({
           "border-blue-100/85 bg-blue-50/40 text-blue-800 dark:border-blue-900/30 dark:bg-blue-950/10 dark:text-blue-300",
         iconColor: "text-blue-500 dark:text-blue-400",
       },
-      {
-        label: "Exam Leave",
-        value: examBalance,
-        icon: GraduationCap,
-        className:
-          "border-amber-100/85 bg-amber-50/40 text-amber-800 dark:border-amber-900/30 dark:bg-amber-950/10 dark:text-amber-300",
-        iconColor: "text-amber-500 dark:text-amber-400",
-      },
+      ...(isExamLeaveEligible
+        ? [
+            {
+              label: "Exam Leave",
+              value: examBalance,
+              icon: GraduationCap,
+              className:
+                "border-amber-100/85 bg-amber-50/40 text-amber-800 dark:border-amber-900/30 dark:bg-amber-950/10 dark:text-amber-300",
+              iconColor: "text-amber-500 dark:text-amber-400",
+            },
+          ]
+        : []),
       {
         label: "Total Balance",
         value: leaveAllocation.totalAvailableDays,
@@ -792,7 +804,9 @@ export function LeaveActionForm({
       >
         <div className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-200">
           <Wallet className="h-4 w-4 text-rose-500 shrink-0" />
-          <span className="text-xs uppercase tracking-wider font-bold opacity-80">Complete Leave Balance</span>
+          <span className="text-xs uppercase tracking-wider font-bold opacity-80">
+            Complete Leave Balance
+          </span>
           {leaveBalanceLoading && (
             <span className="text-xs font-normal text-muted-foreground italic animate-pulse">
               (Updating...)
@@ -1082,33 +1096,35 @@ export function LeaveActionForm({
         />
       </div>
 
-      {/* Exam Leave Toggle */}
-      <FormField
-        control={form.control}
-        name="isExamLeave"
-        render={({ field }) => (
-          <FormItem className="rounded-lg border border-slate-200 p-4 shadow-sm dark:border-slate-800">
-            <div className="flex flex-row items-center justify-between">
-              <div className="space-y-0.5">
-                <FormLabel className="text-sm font-semibold">
-                  Exam Leave
-                </FormLabel>
-                <div className="text-[12px] text-muted-foreground">
-                  Enable this option if the leave request is for an examination.
+      {isExamLeaveEligible && (
+        <FormField
+          control={form.control}
+          name="isExamLeave"
+          render={({ field }) => (
+            <FormItem className="rounded-lg border border-slate-200 p-4 shadow-sm dark:border-slate-800">
+              <div className="flex flex-row items-center justify-between">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-sm font-semibold">
+                    Exam Leave
+                  </FormLabel>
+                  <div className="text-[12px] text-muted-foreground">
+                    Enable this option if the leave request is for an
+                    examination.
+                  </div>
                 </div>
+                <FormControl>
+                  <Switch
+                    checked={!!field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={isViewOnly}
+                  />
+                </FormControl>
               </div>
-              <FormControl>
-                <Switch
-                  checked={!!field.value}
-                  onCheckedChange={field.onChange}
-                  disabled={isViewOnly}
-                />
-              </FormControl>
-            </div>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )}
 
       {isViewOnly ? (
         <div className="space-y-1">
@@ -1314,10 +1330,16 @@ export function LeaveActionForm({
                       <div className="mb-2 flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-slate-400">
                         <span>Auto Allocation Breakdown</span>
                         <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-900 tabular-nums">
-                          {formatDays(leaveAllocation.requestedDays)} day(s) requested
+                          {formatDays(leaveAllocation.requestedDays)} day(s)
+                          requested
                         </span>
                       </div>
-                      <div className={cn("grid gap-2 text-center py-1", watchIsExamLeave ? "grid-cols-1" : "grid-cols-3")}>
+                      <div
+                        className={cn(
+                          "grid gap-2 text-center py-1",
+                          watchIsExamLeave ? "grid-cols-1" : "grid-cols-3"
+                        )}
+                      >
                         {allocationItems.map((item) => (
                           <div
                             key={item.label}
@@ -1339,8 +1361,8 @@ export function LeaveActionForm({
                       </div>
                       {!watchIsExamLeave && (
                         <p className="mt-2 text-[10px] text-muted-foreground text-center font-bold">
-                          Priority: Casual leaves are allocated first, followed by Paid
-                          leaves, and then Loss of Pay.
+                          Priority: Casual leaves are allocated first, followed
+                          by Paid leaves, and then Loss of Pay.
                         </p>
                       )}
                     </div>
