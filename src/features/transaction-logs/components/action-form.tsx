@@ -73,7 +73,9 @@ export function TransactionLogsActionForm({
   const isRequiredFieldsEnabled = isEdit && !isPending;
 
   const form = useForm<TTransactionFormSchema>({
-    resolver: zodResolver(getTransactionLogSchema(isRequiredFieldsEnabled)) as any,
+    resolver: zodResolver(
+      getTransactionLogSchema(isRequiredFieldsEnabled)
+    ) as any,
     mode: "onSubmit", // or "onChange" / "onBlur" / "onTouched"
     reValidateMode: "onChange",
     defaultValues: isEdit
@@ -93,6 +95,7 @@ export function TransactionLogsActionForm({
             : undefined,
           referenceFileS3Key: currentRow?.referenceFileLink ?? "",
           file: null,
+          additionalNotes: currentRow?.additionalNotes ?? "",
         }
       : {
           reason: "",
@@ -106,6 +109,7 @@ export function TransactionLogsActionForm({
           subscriptionEndDate: undefined,
           referenceFileS3Key: "",
           file: null,
+          additionalNotes: "",
         },
   });
 
@@ -131,6 +135,11 @@ export function TransactionLogsActionForm({
   const technologyId = userDetails?.data?.technology?.id;
 
   const isAccountPerson = technologyId === 35 || technologyId === 37; // Assuming 35 and 36 are the IDs for the relevant technologies
+
+  const canEditApprovedOrRejectedFields =
+    roleName === roles.ADMIN ||
+    roleName === roles.PROJECT_MANAGER ||
+    isAccountPerson;
 
   const canEdit =
     !isEdit ||
@@ -166,6 +175,7 @@ export function TransactionLogsActionForm({
             : undefined,
           referenceFileS3Key: currentRow?.referenceFileLink ?? "",
           file: null,
+          additionalNotes: currentRow?.additionalNotes ?? "",
         });
       } else {
         setUploadedFileKey("");
@@ -182,6 +192,7 @@ export function TransactionLogsActionForm({
           subscriptionEndDate: undefined,
           referenceFileS3Key: "",
           file: null,
+          additionalNotes: "",
         });
       }
     }
@@ -338,7 +349,12 @@ export function TransactionLogsActionForm({
                                 <Select
                                   onValueChange={currencyField.onChange}
                                   value={currencyField.value}
-                                  disabled={!canEdit || (isEdit && !isPending)} // Disable when editing to prevent changing currency
+                                  disabled={
+                                    !canEdit ||
+                                    (isEdit &&
+                                      !isPending &&
+                                      !canEditApprovedOrRejectedFields)
+                                  } // Disable when editing to prevent changing currency
                                 >
                                   <SelectTrigger className="h-10 w-[95px] rounded-r-none border-r-0 bg-muted/50">
                                     <div className="flex items-center gap-2">
@@ -380,7 +396,12 @@ export function TransactionLogsActionForm({
                             )}
                             onKeyDown={preventNegativeInput}
                             onPaste={preventNegativePaste}
-                            disabled={!canEdit || (isEdit && !isPending)}
+                            disabled={
+                              !canEdit ||
+                              (isEdit &&
+                                !isPending &&
+                                !canEditApprovedOrRejectedFields)
+                            }
                           />
                         </div>
                       </FormControl>
@@ -517,6 +538,7 @@ export function TransactionLogsActionForm({
                       <span className="text-red-500">*</span>
                     </FormLabel>
 
+                    {/* {!isPending && ( */}
                     <FormControl>
                       <Textarea
                         {...field}
@@ -525,11 +547,34 @@ export function TransactionLogsActionForm({
                         disabled={!canEdit || (isEdit && !isPending)}
                       />
                     </FormControl>
+                    {/* )} */}
 
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              {/* Additional Notes (Only in edit transaction) */}
+              {!isPending && canEditApprovedOrRejectedFields && (
+                <FormField
+                  control={form.control}
+                  name="additionalNotes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Additional Notes</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          {...field}
+                          placeholder="Enter additional notes..."
+                          rows={3}
+                          disabled={!canEditApprovedOrRejectedFields}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
             </form>
           </Form>
         </div>

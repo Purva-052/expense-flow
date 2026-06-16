@@ -56,6 +56,7 @@ export function ActionFormModal() {
       subscriptionCycle: values.subscriptionCycle,
       subscriptionEndDate: values.subscriptionEndDate,
       referenceFileS3Key: values.referenceFileS3Key,
+      additionalNotes: values.additionalNotes,
     };
     updateMutate(payload);
   };

@@ -10,14 +10,12 @@ import { cn } from "@/lib/utils";
 import { formatRole } from "@/utils/commonFunctions";
 import { ChevronRight } from "lucide-react";
 
-const CHART_MIN_HEIGHT = 520;
-
 function OrgChartSkeleton() {
   const colCounts = [1, 5, 3, 4];
   return (
-    <div className="relative min-h-[520px] w-full overflow-hidden rounded-2xl border border-gray-150 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
-      <div className="overflow-x-auto overflow-y-hidden">
-        <div className="relative flex min-h-[520px] gap-12 p-6 pr-10">
+    <div className="relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-2xl border border-gray-150 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
+      <div className="h-full min-h-0 flex-1 overflow-x-auto overflow-y-hidden">
+        <div className="relative flex h-full min-h-0 gap-12 p-6 pr-10">
           {colCounts.map((count, ci) => (
             <div key={ci} className="relative shrink-0">
               <div className="mb-3 flex w-[260px] items-center gap-2 border-b border-gray-150 pb-2 dark:border-slate-800">
@@ -248,7 +246,7 @@ function UserCard({
       ref={cardRef}
       onClick={onClick}
       className={cn(
-        "relative flex w-[260px] cursor-pointer items-center justify-between rounded-xl border p-3 transition-all duration-200 select-none",
+        "relative flex w-[260px] cursor-pointer items-center justify-between rounded-xl border p-3 transition-colors duration-200 select-none [transform:translateZ(0)]",
         isHighlighted
           ? "border-blue-600 bg-blue-600 text-white shadow-md shadow-blue-100 dark:border-blue-500 dark:bg-blue-600 dark:shadow-none"
           : isPathSelected
@@ -262,7 +260,7 @@ function UserCard({
             <img
               src={user.profilePicUrl}
               alt={user.fullName || "User Avatar"}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover [transform:translateZ(0)]"
             />
           ) : (
             <div
@@ -543,7 +541,7 @@ function OrgChartConnectors({
 
   return (
     <svg
-      className="pointer-events-none absolute inset-0 h-full w-full"
+      className="pointer-events-none absolute inset-0 z-0 h-full w-full"
       aria-hidden
     >
       {lines.map((line, i) => (
@@ -590,6 +588,9 @@ function handleColumnWheel(e: React.WheelEvent<HTMLDivElement>) {
 function OrgChartInner({ users, activeUserId }: Readonly<Props>) {
   const containerRef = useRef<HTMLDivElement>(null);
   const horizontalScrollRef = useRef<HTMLDivElement>(null);
+  const horizontalSnapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
   const drawConnectorsRef = useRef<(() => void) | null>(null);
   const cardElementsRef = useRef<Map<string, HTMLDivElement>>(new Map());
 
@@ -715,6 +716,32 @@ function OrgChartInner({ users, activeUserId }: Readonly<Props>) {
     drawConnectorsRef.current?.();
   }, []);
 
+  const snapHorizontalScroll = useCallback(() => {
+    const scrollEl = horizontalScrollRef.current;
+    if (!scrollEl) return;
+    const snapped = Math.round(scrollEl.scrollLeft);
+    if (scrollEl.scrollLeft !== snapped) {
+      scrollEl.scrollLeft = snapped;
+      drawConnectorsRef.current?.();
+    }
+  }, []);
+
+  const handleHorizontalScroll = useCallback(() => {
+    drawConnectorsRef.current?.();
+    if (horizontalSnapTimerRef.current) {
+      clearTimeout(horizontalSnapTimerRef.current);
+    }
+    horizontalSnapTimerRef.current = setTimeout(snapHorizontalScroll, 80);
+  }, [snapHorizontalScroll]);
+
+  useEffect(() => {
+    return () => {
+      if (horizontalSnapTimerRef.current) {
+        clearTimeout(horizontalSnapTimerRef.current);
+      }
+    };
+  }, []);
+
   useEffect(() => {
     if (!highlightedId) return;
     const el = cardElementsRef.current.get(highlightedId);
@@ -733,9 +760,13 @@ function OrgChartInner({ users, activeUserId }: Readonly<Props>) {
       const elRect = el.getBoundingClientRect();
       const scrollRect = horizontalScroll.getBoundingClientRect();
       if (elRect.right > scrollRect.right - 24) {
-        horizontalScroll.scrollLeft += elRect.right - scrollRect.right + 48;
+        horizontalScroll.scrollLeft = Math.round(
+          horizontalScroll.scrollLeft + (elRect.right - scrollRect.right + 48)
+        );
       } else if (elRect.left < scrollRect.left + 24) {
-        horizontalScroll.scrollLeft -= scrollRect.left - elRect.left + 48;
+        horizontalScroll.scrollLeft = Math.round(
+          horizontalScroll.scrollLeft - (scrollRect.left - elRect.left + 48)
+        );
       }
 
       scheduleConnectorRedraw();
@@ -966,7 +997,7 @@ function OrgChartInner({ users, activeUserId }: Readonly<Props>) {
     highlightedId,
   ]);
 
-  // Scroll expanded levels into view horizontally
+  // Scroll expanded levels into view horizontally (integer pixels to avoid blur)
   useEffect(() => {
     if (!showLevel4 && !showLevel5) return;
     const scrollEl = horizontalScrollRef.current;
@@ -974,10 +1005,9 @@ function OrgChartInner({ users, activeUserId }: Readonly<Props>) {
 
     const frame = requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        scrollEl.scrollTo({
-          left: scrollEl.scrollWidth - scrollEl.clientWidth,
-          behavior: "smooth",
-        });
+        scrollEl.scrollLeft = Math.round(
+          scrollEl.scrollWidth - scrollEl.clientWidth
+        );
         scheduleConnectorRedraw();
       });
     });
@@ -986,19 +1016,15 @@ function OrgChartInner({ users, activeUserId }: Readonly<Props>) {
   }, [showLevel4, showLevel5, columns.length, scheduleConnectorRedraw]);
 
   return (
-    <div
-      className="relative w-full overflow-hidden rounded-2xl border border-gray-150 bg-slate-50 dark:border-slate-800 dark:bg-slate-950"
-      style={{ minHeight: CHART_MIN_HEIGHT }}
-    >
+    <div className="relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-2xl border border-gray-150 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
       <div
         ref={horizontalScrollRef}
-        className="overflow-x-auto overflow-y-hidden overscroll-x-contain"
-        onScroll={handleColumnScroll}
+        className="h-full min-h-0 flex-1 overflow-x-auto overflow-y-hidden overscroll-x-contain"
+        onScroll={handleHorizontalScroll}
       >
         <div
           ref={containerRef}
-          className="relative flex gap-12 p-6 pr-10"
-          style={{ minHeight: CHART_MIN_HEIGHT }}
+          className="relative isolate flex h-full min-h-0 gap-12 p-6 pr-10"
         >
           <OrgChartConnectors
             paths={connectorPaths}
@@ -1039,12 +1065,13 @@ function OrgChartInner({ users, activeUserId }: Readonly<Props>) {
             return (
               <div
                 key={column.label}
-                className="relative flex w-[260px] shrink-0 flex-col"
-                style={{ height: CHART_MIN_HEIGHT - 48 }}
+                className="relative z-10 flex h-full min-h-0 w-[260px] shrink-0 flex-col [transform:translateZ(0)]"
               >
                 <LevelHeader label={column.label} count={column.users.length} />
                 {shouldPin && (
-                  <div className="mb-2.5 shrink-0">{renderCard(pinned)}</div>
+                  <div className="relative z-20 mb-2.5 shrink-0">
+                    {renderCard(pinned)}
+                  </div>
                 )}
                 <div
                   data-column-scroll
@@ -1101,22 +1128,28 @@ export function OrgChart({ users, loading, activeUserId }: Readonly<Props>) {
   }, [users]);
 
   if (loading) {
-    return <OrgChartSkeleton />;
+    return (
+      <div className="h-full min-h-0">
+        <OrgChartSkeleton />
+      </div>
+    );
   }
 
   if (normalizedUsers.length === 0) {
     return (
-      <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
+      <div className="flex h-full min-h-[16rem] items-center justify-center text-sm text-muted-foreground">
         No users to display in the org chart.
       </div>
     );
   }
 
   return (
-    <OrgChartInner
-      users={normalizedUsers}
-      loading={loading}
-      activeUserId={activeUserId}
-    />
+    <div className="h-full min-h-0">
+      <OrgChartInner
+        users={normalizedUsers}
+        loading={loading}
+        activeUserId={activeUserId}
+      />
+    </div>
   );
 }

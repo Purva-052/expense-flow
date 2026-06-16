@@ -71,6 +71,7 @@ const transactionLogSchemaBase = z
         return file.size <= maxSize;
       }, "Receipt must be a PDF, DOC, DOCX, JPG, or JPEG file and not exceed 25MB"),
     subscriptionEndDate: z.date().optional().nullable(),
+    additionalNotes: z.string().trim().optional(),
   })
   .superRefine((data, ctx) => {
     if (data.transactionType === "subscription") {
