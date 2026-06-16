@@ -29,7 +29,7 @@ import {
   Cpu,
   Database,
   FileCheck,
-  FingerprintPattern,
+  // FingerprintPattern,
   Flame,
   Globe,
   // CpuIcon,
