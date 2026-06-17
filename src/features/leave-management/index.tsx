@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import PageLayout from "@/components/layout/layout-provider";
 import TablePageHeader from "@/components/table/table-page-header";
 import { ActionFormModal } from "./components/action";
@@ -54,6 +54,7 @@ const LeaveManagementPage = () => {
 
   const defaultSection = canViewDashboard ? "dashboard" : "leaves";
 
+  const initialSection = useRef<string | null>(null);
   const [queryParams, setQueryParams] = useQueryStates({
     section: parseAsString.withDefault(defaultSection),
     tab: parseAsString,
@@ -164,11 +165,18 @@ const LeaveManagementPage = () => {
   };
 
   const location = useLocation({
-    select: (location:any) => ({
+    select: (location: any) => ({
       pathname: location.pathname,
       search: location.search,
     }),
   });
+
+  useEffect(() => {
+    if (initialSection.current === null) {
+      initialSection.current = queryParams.section || defaultSection;
+    }
+  }, [queryParams.section, defaultSection]);
+
   const isFormActive = open === "add" || open === "edit" || open === "view";
 
   const isAnyModalOpen =
@@ -220,9 +228,17 @@ const LeaveManagementPage = () => {
 
   useEffect(() => {
     const path = location.pathname;
-    const sectionParam = new URLSearchParams(window.location.search).get("section");
+    const section = queryParams.section || defaultSection;
 
-    if (path !== "/leave-management" || sectionParam !== "leaves") {
+    // Only auto-close when navigating away from this page or a different section.
+    // Do not interfere with the initial load from sidebar navigation.
+    const isInitialLoad =
+      initialSection.current === section && path === "/leave-management";
+
+    if (
+      !isInitialLoad &&
+      (path !== "/leave-management" || section !== "leaves")
+    ) {
       if (open !== null) {
         setOpen(null);
       }
@@ -230,7 +246,15 @@ const LeaveManagementPage = () => {
         setCurrentRow(null);
       }
     }
-  }, [location, open, currentRow, setOpen, setCurrentRow]);
+  }, [
+    location,
+    open,
+    currentRow,
+    queryParams.section,
+    setOpen,
+    setCurrentRow,
+    defaultSection,
+  ]);
 
   return (
     <PageLayout>
