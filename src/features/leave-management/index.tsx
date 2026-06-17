@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo, useState } from "react";
-import { useLocation } from "@tanstack/react-router";
 import PageLayout from "@/components/layout/layout-provider";
 import TablePageHeader from "@/components/table/table-page-header";
 import { ActionFormModal } from "./components/action";
@@ -14,6 +13,7 @@ import {
 import { parseAsString, useQueryStates } from "nuqs";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { useLocation } from "@tanstack/react-router";
 import { roles } from "@/utils/constant";
 import { LayoutDashboard, FileText, History, Users } from "lucide-react";
 import { LeaveDashboardTab } from "./components/leave-dashboard-tab";
@@ -164,7 +164,7 @@ const LeaveManagementPage = () => {
   };
 
   const location = useLocation({
-    select: (location) => ({
+    select: (location:any) => ({
       pathname: location.pathname,
       search: location.search,
     }),
@@ -223,10 +223,14 @@ const LeaveManagementPage = () => {
     const sectionParam = new URLSearchParams(window.location.search).get("section");
 
     if (path !== "/leave-management" || sectionParam !== "leaves") {
-      setOpen(null);
-      setCurrentRow(null);
+      if (open !== null) {
+        setOpen(null);
+      }
+      if (currentRow !== null) {
+        setCurrentRow(null);
+      }
     }
-  }, [location, setOpen, setCurrentRow]);
+  }, [location, open, currentRow, setOpen, setCurrentRow]);
 
   return (
     <PageLayout>

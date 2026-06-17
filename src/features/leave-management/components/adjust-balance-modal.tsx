@@ -127,7 +127,9 @@ export function AdjustBalanceModal({
       }))
       .filter(
         (option: any) =>
-          String(option.value) !== "3" && String(option.value) !== "6"
+          String(option.value) !== "3" &&
+          String(option.value) !== "6" &&
+          String(option.value) !== "4"
       ); // Exclude leave types with value "3" and "4"
   }, [leaveTypesRes]);
 

@@ -41,6 +41,7 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
     currentPage: parseAsInteger.withDefault(1),
     search: parseAsString.withDefault(""),
     employeeId: parseAsInteger,
+    approver: parseAsInteger,
     startDate: parseAsString,
     endDate: parseAsString,
     tab: parseAsString.withDefault("pending"),
@@ -53,6 +54,7 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
     currentPage: queryParams.currentPage,
     search: queryParams.search,
     employeeId: queryParams.employeeId,
+    approver: queryParams.approver,
     startDate: queryParams.startDate,
     endDate: queryParams.endDate,
     tab: queryParams.tab,
@@ -70,6 +72,8 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
     search: listParams.search,
     pagination: true,
     employeeId: canViewManagerTabs ? listParams.employeeId : undefined,
+    approver: queryParams.tab === "pending" ? (listParams.approver || undefined) : undefined,
+    actionedBy: queryParams.tab !== "pending" ? (listParams.approver || undefined) : undefined,
     fromDate: listParams.startDate,
     toDate: listParams.endDate,
     status: getStatusFromTab(queryParams.tab),
@@ -90,6 +94,40 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
       ],
       status: "active",
     }) as any;
+
+  const { data: approverList, isPending: approverListLoading } =
+    useGetUserDropdownList({
+      role: [
+        roles.ADMIN,
+        roles.TEAM_LEAD,
+        roles.PROJECT_MANAGER,
+      ],
+      status: "active",
+    }) as any;
+
+  const getRoleName = (u: any) => {
+    const raw = u?.role || u?.roleName;
+    return String(
+      raw && typeof raw === "object" ? raw?.name : raw || ""
+    ).toLowerCase();
+  };
+
+  const approverOptions = useMemo(() => {
+    const list = approverList?.data || [];
+    return list
+      .filter((emp: any) => {
+        const roleLower = getRoleName(emp);
+        return (
+          roleLower === roles.ADMIN ||
+          roleLower === roles.TEAM_LEAD ||
+          roleLower === roles.PROJECT_MANAGER
+        );
+      })
+      .map((emp: any) => ({
+        value: emp.id,
+        label: emp.fullName,
+      }));
+  }, [approverList]);
 
   const balanceUserId =
     (canViewManagerTabs && listParams.employeeId) || currentEmployeeId;
@@ -145,6 +183,7 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
       pageSize: 10,
       search: "",
       employeeId: null,
+      approver: null,
       startDate: null,
       endDate: null,
       sortBy: null,
@@ -192,6 +231,26 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
           },
         ]
       : []),
+    {
+      type: "select" as const,
+      key: "approver",
+      placeholder:
+        queryParams.tab === "pending"
+          ? "Filter by approver"
+          : queryParams.tab === "approved"
+            ? "Filter by approved by"
+            : "Filter by rejected by",
+      options: approverOptions,
+      value: listParams.approver?.toString(),
+      onChange: (value: any) => {
+        setQueryParams({
+          ...listParams,
+          approver: value ? Number(value) : null,
+          currentPage: 1,
+        });
+      },
+      isLoading: approverListLoading,
+    },
   ];
 
   const tableColumns = useMemo(() => {
