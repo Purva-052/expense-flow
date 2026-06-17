@@ -39,8 +39,9 @@ jobs:
             cd /var/www/html/staging-Devstree-Project-Management
 
             echo "pulling latest changes from staging branch"
-            git pull origin staging
-
+            git checkout staging
+            git fetch origin staging
+            git reset --hard origin/staging
             echo "installing dependencies and building the project"
             npm i
 
@@ -70,7 +71,9 @@ jobs:
             cd /var/www/html/Devstree-Project-Management
 
             echo "pulling latest changes from production branch"
-            git pull origin production
+            git checkout production
+            git fetch origin production
+            git reset --hard origin/production
 
             echo "installing dependencies and building the project"
             npm i
