@@ -21,4 +21,13 @@ export default defineConfig({
       "@tabler/icons-react": "@tabler/icons-react/dist/esm/icons/index.mjs",
     },
   },
+  server: {
+    proxy: {
+      "/mewurk-api": {
+        target: "https://app.mewurk.com/api/v1",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/mewurk-api/, ""),
+      },
+    },
+  },
 });
