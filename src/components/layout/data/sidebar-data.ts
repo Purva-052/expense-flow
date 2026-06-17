@@ -29,7 +29,7 @@ import {
   Cpu,
   Database,
   FileCheck,
-  FingerprintPattern,
+  // FingerprintPattern,
   Flame,
   Globe,
   // CpuIcon,
@@ -82,7 +82,7 @@ export const sidebarData: SidebarData = {
         roles.DEVELOPER,
         roles.BDE,
       ],
-      allowUserIDs: [134],
+      allowUserIDs: [134, 86],
       allowedTech: [29],
       items: [
         {
@@ -147,6 +147,7 @@ export const sidebarData: SidebarData = {
           title: "Leave Management",
           url: "/leave-management",
           icon: Plane,
+          allowUserIDs: [86],
           requiredRoles: [
             roles.ADMIN,
             roles.TEAM_LEAD,
@@ -155,18 +156,18 @@ export const sidebarData: SidebarData = {
             roles.BDE,
           ],
         },
-        {
-          title: "Attendance Management",
-          url: "/attendance",
-          icon: FingerprintPattern,
-          requiredRoles: [
-            roles.ADMIN,
-            roles.TEAM_LEAD,
-            roles.PROJECT_MANAGER,
-            roles.DEVELOPER,
-            roles.BDE,
-          ],
-        },
+        // {
+        //   title: "Attendance Management",
+        //   url: "/attendance",
+        //   icon: FingerprintPattern,
+        //   requiredRoles: [
+        //     roles.ADMIN,
+        //     roles.TEAM_LEAD,
+        //     roles.PROJECT_MANAGER,
+        //     roles.DEVELOPER,
+        //     roles.BDE,
+        //   ],
+        // },
         {
           title: "Meetings Overview",
           url: "/meetings-overview",
