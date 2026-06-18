@@ -51,17 +51,19 @@ export interface AttendanceData {
 const MEWURK_EMAIL = "hr@devstree.in";
 const MEWURK_PASSWORD = "Devs@2026";
 
-const BASE_URL = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
-  ? "/mewurk-api"
-  : "https://app.mewurk.com/api/v1";
+const BASE_URL =
+  typeof window !== "undefined" &&
+  (window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1" ||
+    window.location.hostname.includes("devtunnels.ms") ||
+    window.location.hostname.includes("devstree.in") ||
+    window.location.hostname.startsWith("192.168.") ||
+    window.location.hostname.startsWith("10.") ||
+    window.location.hostname.startsWith("172."))
+    ? "/mewurk-api"
+    : "https://app.mewurk.com/api/v1";
 
 export const MewurkService = {
-  /**
-   * Safe login helper that handles lookup, login and caching of token/refresh token.
-   * If a token is already present and valid, it returns the cached token.
-   * If the token has expired, it tries to refresh it.
-   * If refresh fails, it logs in again.
-   */
   getAuthToken: async (forceRefresh = false): Promise<string> => {
     if (typeof window === "undefined") return "";
 
@@ -79,11 +81,14 @@ export const MewurkService = {
 
       // Try refresh
       try {
-        const response = await fetch(`${BASE_URL}/userservice/account/refreshtoken`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ refreshToken }),
-        });
+        const response = await fetch(
+          `${BASE_URL}/userservice/account/refreshtoken`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ refreshToken }),
+          }
+        );
         if (response.ok) {
           const json = await response.json();
           if (json.isSuccess && json.data?.token) {
@@ -91,22 +96,34 @@ export const MewurkService = {
             refreshToken = json.data.refreshToken;
             localStorage.setItem("mewurk_token", token || "");
             localStorage.setItem("mewurk_refresh_token", refreshToken || "");
-            localStorage.setItem("mewurk_expires_at", String(Date.now() + 2.5 * 3600 * 1000));
+            localStorage.setItem(
+              "mewurk_expires_at",
+              String(Date.now() + 2.5 * 3600 * 1000)
+            );
             return token || "";
           }
         }
       } catch (err) {
-        console.warn("Mewurk token refresh failed, falling back to login:", err);
+        console.warn(
+          "Mewurk token refresh failed, falling back to login:",
+          err
+        );
       }
     }
 
     // Full authentication flow
     try {
       // 1. Lookup tenant
-      const lookupRes = await fetch(`${BASE_URL}/userservice/account/lookup?userName=${encodeURIComponent(MEWURK_EMAIL)}`, {
-        method: "GET",
-        headers: { "accept": "application/json", "content-type": "application/json" }
-      });
+      const lookupRes = await fetch(
+        `${BASE_URL}/userservice/account/lookup?userName=${encodeURIComponent(MEWURK_EMAIL)}`,
+        {
+          method: "GET",
+          headers: {
+            accept: "application/json",
+            "content-type": "application/json",
+          },
+        }
+      );
       if (!lookupRes.ok) throw new Error(`Lookup failed: ${lookupRes.status}`);
       const lookupJson = await lookupRes.json();
       if (!lookupJson.isSuccess || !lookupJson.data?.tenantDetails?.length) {
@@ -118,8 +135,15 @@ export const MewurkService = {
       const encodedUserName = btoa(`${MEWURK_EMAIL}|${tenantId}`);
       const loginRes = await fetch(`${BASE_URL}/userservice/account/login`, {
         method: "POST",
-        headers: { "accept": "application/json", "content-type": "application/json" },
-        body: JSON.stringify({ userName: encodedUserName, password: MEWURK_PASSWORD, otp: null })
+        headers: {
+          accept: "application/json",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          userName: encodedUserName,
+          password: MEWURK_PASSWORD,
+          otp: null,
+        }),
       });
       if (!loginRes.ok) throw new Error(`Login failed: ${loginRes.status}`);
       const loginJson = await loginRes.json();
@@ -128,7 +152,10 @@ export const MewurkService = {
         refreshToken = loginJson.data.refreshToken;
         localStorage.setItem("mewurk_token", token || "");
         localStorage.setItem("mewurk_refresh_token", refreshToken || "");
-        localStorage.setItem("mewurk_expires_at", String(Date.now() + 2.5 * 3600 * 1000));
+        localStorage.setItem(
+          "mewurk_expires_at",
+          String(Date.now() + 2.5 * 3600 * 1000)
+        );
         return token || "";
       } else {
         throw new Error(loginJson.message || "Login authentication failed");
@@ -145,15 +172,22 @@ export const MewurkService = {
   fetchDirectory: async (): Promise<EmployeeSearchResult[]> => {
     try {
       const token = await MewurkService.getAuthToken();
-      const res = await fetch(`${BASE_URL}/employeeservice/employee/getdirectory`, {
-        method: "POST",
-        headers: {
-          "accept": "application/json",
-          "authorization": `Bearer ${token}`,
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({ searchText: "", pageNumber: 1, pageSize: 1000 }),
-      });
+      const res = await fetch(
+        `${BASE_URL}/employeeservice/employee/getdirectory`,
+        {
+          method: "POST",
+          headers: {
+            accept: "application/json",
+            authorization: `Bearer ${token}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            searchText: "",
+            pageNumber: 1,
+            pageSize: 1000,
+          }),
+        }
+      );
       if (!res.ok) throw new Error(`Failed to load directory: ${res.status}`);
       const json = await res.json();
       if (json.isSuccess && json.data?.employeesDataResponse) {
@@ -169,31 +203,42 @@ export const MewurkService = {
   /**
    * Fetch monthly logs for an employee for a specific year & month.
    */
-  fetchMonthlyLogs: async (employeeCode: number, year: number, month: number): Promise<AttendanceData[]> => {
+  fetchMonthlyLogs: async (
+    employeeCode: number,
+    year: number,
+    month: number
+  ): Promise<AttendanceData[]> => {
     try {
       const token = await MewurkService.getAuthToken();
-      const res = await fetch(`${BASE_URL}/attendanceservice/attendance/mymonthlylogs`, {
-        method: "POST",
-        headers: {
-          "accept": "application/json",
-          "authorization": `Bearer ${token}`,
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          employeeCode,
-          reportYear: year,
-          reportMonth: month,
-          monthlyHistoryFilter: 0
-        }),
-      });
-      if (!res.ok) throw new Error(`Failed to load monthly logs: ${res.status}`);
+      const res = await fetch(
+        `${BASE_URL}/attendanceservice/attendance/mymonthlylogs`,
+        {
+          method: "POST",
+          headers: {
+            accept: "application/json",
+            authorization: `Bearer ${token}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            employeeCode,
+            reportYear: year,
+            reportMonth: month,
+            monthlyHistoryFilter: 0,
+          }),
+        }
+      );
+      if (!res.ok)
+        throw new Error(`Failed to load monthly logs: ${res.status}`);
       const json = await res.json();
       if (json.isSuccess && Array.isArray(json.data)) {
         return json.data;
       }
       return [];
     } catch (error) {
-      console.error(`Mewurk fetchMonthlyLogs error for employee ${employeeCode}:`, error);
+      console.error(
+        `Mewurk fetchMonthlyLogs error for employee ${employeeCode}:`,
+        error
+      );
       return [];
     }
   },
@@ -222,89 +267,230 @@ export const MewurkService = {
     }
   },
 
-  fetchClockInDetails: async (employeeCode: number, dateStr: string): Promise<any> => {
+  fetchClockInDetails: async (
+    employeeCode: number,
+    dateStr: string
+  ): Promise<any> => {
     try {
       const token = await MewurkService.getAuthToken();
-      const res = await fetch(`${BASE_URL}/attendanceservice/attendancelogs/clockindetails`, {
-        method: "POST",
-        headers: {
-          "accept": "application/json",
-          "authorization": `Bearer ${token}`,
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          employeeCode,
-          clockDate: dateStr
-        }),
-      });
-      if (!res.ok) throw new Error(`Failed to load clock-in details: ${res.status}`);
+      const res = await fetch(
+        `${BASE_URL}/attendanceservice/attendancelogs/clockindetails`,
+        {
+          method: "POST",
+          headers: {
+            accept: "application/json",
+            authorization: `Bearer ${token}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            employeeCode,
+            clockDate: dateStr,
+          }),
+        }
+      );
+      if (!res.ok)
+        throw new Error(`Failed to load clock-in details: ${res.status}`);
       const json = await res.json();
       if (json.isSuccess && json.data) {
         return json.data;
       }
       return null;
     } catch (error) {
-      console.error(`Mewurk fetchClockInDetails error for ${employeeCode} on ${dateStr}:`, error);
+      console.error(
+        `Mewurk fetchClockInDetails error for ${employeeCode} on ${dateStr}:`,
+        error
+      );
       return null;
     }
   },
 
   /**
    * Fetch all employees monthly summary via POST /attendanceservice/attendance/monthlysummary
+   * Used by the main employee attendance listing grid.
    */
   fetchMonthlySummary: async (
     year: number,
     month: number,
     pageNumber = 1,
-    pageSize = 25
-  ): Promise<{
-    data: any[];
-    totalCount: number;
-  }> => {
+    pageSize = 250
+  ): Promise<{ data: any[]; totalCount: number }> => {
     try {
       const token = await MewurkService.getAuthToken();
       const lastDay = new Date(year, month, 0).getDate();
       const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
       const endDate = `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
 
-      const res = await fetch(`${BASE_URL}/attendanceservice/attendance/monthlysummary`, {
-        method: "POST",
-        headers: {
-          "accept": "application/json",
-          "authorization": `Bearer ${token}`,
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          startDate,
-          endDate,
-          officeIds: [],
-          departmentIds: [],
-          designationIds: [],
-          employeeTypeIds: [],
-          groupIds: [],
-          reporteesType: 0,
-          employeeCodes: [],
-          employeeStatus: 1,
-          pagination: {
-            currentPage: pageNumber,
-            pageSize: pageSize
-          }
-        }),
-      });
+      const res = await fetch(
+        `${BASE_URL}/attendanceservice/attendance/monthlysummary`,
+        {
+          method: "POST",
+          headers: {
+            accept: "application/json",
+            authorization: `Bearer ${token}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            startDate,
+            endDate,
+            officeIds: [],
+            departmentIds: [],
+            designationIds: [],
+            employeeTypeIds: [],
+            groupIds: [],
+            reporteesType: 0,
+            employeeCodes: [],
+            employeeStatus: 1,
+            pagination: { currentPage: pageNumber, pageSize },
+          }),
+        }
+      );
 
-      if (!res.ok) throw new Error(`Failed to load monthly summary: ${res.status}`);
+      if (!res.ok)
+        throw new Error(`Failed to load monthly summary: ${res.status}`);
       const json = await res.json();
       if (json.isSuccess && Array.isArray(json.data)) {
-        const totalCount = json.paginationResponse?.totalRecords || json.data.length;
-        return {
-          data: json.data,
-          totalCount
-        };
+        const totalCount =
+          json.paginationResponse?.totalRecords || json.data.length;
+        return { data: json.data, totalCount };
       }
       return { data: [], totalCount: 0 };
     } catch (error) {
       console.error("Mewurk fetchMonthlySummary error:", error);
       return { data: [], totalCount: 0 };
     }
-  }
+  },
+
+  /**
+   * Fetch all employees monthly attendance via GET /attendance/monthly (our backend).
+   * Fetches all users from our DB, then calls /attendance/monthly per employee in parallel.
+   * Returns data normalized to the same shape used by EmployeeAttendance calendar grid.
+   */
+  fetchAllEmployeesMonthlyAttendance: async (
+    year: number,
+    month: number
+  ): Promise<{
+    data: any[];
+    totalCount: number;
+  }> => {
+    try {
+      // 1. Fetch all active users from our backend to get their mewurkEmployeeCode + metadata
+      const usersRes = await instance.get<any>({
+        url: `/users/attendanceservice/attendance/monthlysummary`,
+        params: { pagination: false, status: "active" },
+      });
+
+      let users: any[] = [];
+      const usersData = usersRes?.data;
+      if (Array.isArray(usersData)) {
+        users = usersData;
+      } else if (Array.isArray(usersData?.data)) {
+        users = usersData.data;
+      } else if (Array.isArray(usersData?.data?.data)) {
+        users = usersData.data.data;
+      }
+
+      // Only keep employees that have a mewurkEmployeeCode
+      const eligible = users.filter(
+        (u: any) =>
+          u.mewurkEmployeeCode && String(u.mewurkEmployeeCode).trim() !== ""
+      );
+
+      if (eligible.length === 0) return { data: [], totalCount: 0 };
+
+      // Status string → short code mapping matching the response format
+      const STATUS_MAP: Record<string, "P" | "A" | "WO" | "AH" | "E" | "L"> = {
+        present: "P",
+        absent: "A",
+        "weekly off": "WO",
+        weekly_off: "WO",
+        weeklyoff: "WO",
+        "half day": "AH",
+        halfday: "AH",
+        late: "E",
+        leave: "L",
+        "on leave": "L",
+      };
+
+      const resolveStatus = (
+        finalStatus: string,
+        originalStatus: string
+      ): "P" | "A" | "WO" | "AH" | "E" | "L" | "" => {
+        const raw = (finalStatus || originalStatus || "").toLowerCase().trim();
+        return STATUS_MAP[raw] ?? "";
+      };
+
+      // 2. Fetch attendance for every employee in parallel (batched to avoid overloading)
+      const BATCH_SIZE = 10;
+      const results: any[] = [];
+
+      for (let i = 0; i < eligible.length; i += BATCH_SIZE) {
+        const batch = eligible.slice(i, i + BATCH_SIZE);
+        const batchResults = await Promise.allSettled(
+          batch.map(async (u: any) => {
+            try {
+              const res = await instance.get<any>({
+                url: `/attendance/monthly`,
+                params: {
+                  mewurkEmployeeCode: u.mewurkEmployeeCode,
+                  month,
+                  year,
+                },
+              });
+              const attData = res?.data?.data ?? res?.data ?? null;
+              return { user: u, attData };
+            } catch {
+              return { user: u, attData: null };
+            }
+          })
+        );
+
+        batchResults.forEach((r) => {
+          if (r.status === "fulfilled") results.push(r.value);
+        });
+      }
+
+      // 3. Normalize each result into the flat keyed format EmployeeAttendance expects
+      const normalized = results.map(({ user, attData }) => {
+        const name = (user.fullName || "").trim();
+        const code = String(user.mewurkEmployeeCode || "");
+
+        // Build date-keyed map: { "2026-06-01": { clientStatusCode: "P" }, ... }
+        const dateMap: Record<string, { clientStatusCode: string }> = {};
+
+        if (attData && Array.isArray(attData.attendance)) {
+          attData.attendance.forEach((entry: any) => {
+            if (!entry.date) return;
+            const dateKey = entry.date.split("T")[0]; // normalize to "YYYY-MM-DD"
+            const statusCode = resolveStatus(
+              entry.finalStatus,
+              entry.originalStatus
+            );
+            dateMap[dateKey] = { clientStatusCode: statusCode };
+          });
+        }
+
+        return {
+          // Fields used by employeesList mapper in employee-attendance.tsx
+          EmployeeCode: code,
+          EmployeeName: name,
+          EmailId: user.email || "",
+          // Spread the date map so legacy date-keyed access (emp["2026-06-01"]) works
+          ...dateMap,
+          // Also attach summary fields for any consumer that reads them
+          workingDays: attData?.workingDays ?? 0,
+          absentDays: attData?.absentDays ?? 0,
+          avgWorkingHours: attData?.avgWorkingHours ?? "",
+          totalWorkingHours: attData?.totalWorkingHours ?? "",
+          attendance: attData?.attendance ?? [],
+          // Keep original user for reference
+          _user: user,
+        };
+      });
+
+      return { data: normalized, totalCount: normalized.length };
+    } catch (error) {
+      console.error("fetchAllEmployeesMonthlyAttendance error:", error);
+      return { data: [], totalCount: 0 };
+    }
+  },
 };
