@@ -150,7 +150,7 @@ export const EmployeeAttendance: React.FC = () => {
     return weekdays[tempDate.getDay()];
   };
 
-  // Load monthly summary on mount and on month change
+  // Load monthly summary on mount and on month/year change
   useEffect(() => {
     const loadMonthlySummary = async () => {
       setIsLoadingDirectory(true);
