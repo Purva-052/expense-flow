@@ -37,6 +37,7 @@ import {
 } from "../../users/components/org-chart";
 import { useGetUsersList } from "../../users/services";
 import { Badge } from "@/components/ui/badge";
+import SimpleDropDownSearchable from "@/components/shared/custome-simple-dropdown";
 
 const tabTriggerClass =
   "flex items-center gap-2 rounded-[50px] !px-3 !py-2 transition-all h-[35px] " +
@@ -66,6 +67,11 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   onBack,
 }) => {
   const user = useAuthStore((state) => state.user);
+  const [selectedFilterEmployee, setSelectedFilterEmployee] = useState<SelectedEmployee | null>(null);
+  const [allEmployees, setAllEmployees] = useState<{ employeeName: string; employeeCode: string }[]>([]);
+  const [isLoadingEmployees, setIsLoadingEmployees] = useState(false);
+
+  const activeEmployee = employee || selectedFilterEmployee;
 
   // Fetch all users list to look up correct profile pictures
   const { data: allUsersResponse, isPending: allUsersLoading } =
@@ -78,50 +84,38 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
     [allUsersResponse]
   );
 
-  const employeeName = employee
-    ? employee.name
-    : user?.user?.fullName || "Varun Saraswat";
-  const employeeRole = employee
-    ? employee.role
-    : user?.role?.name || "Developer";
-  const employeePhone = employee ? employee.phone : "7859916283";
-  const employeeEmail = employee
-    ? employee.email
-    : user?.user?.email || "varun.s@devstree.in";
-  const employeeCode = employee ? employee.code : "300";
-
   // Find matching user in database to get their profile image
   const resolvedDbUser = useMemo(() => {
     if (!(allUsersResponse as any)?.data) return null;
     const users = (allUsersResponse as any).data || [];
     
-    if (employee) {
+    if (activeEmployee) {
       // 1. Try matching by Mewurk Employee Code
-      if (employee.code) {
+      if (activeEmployee.code) {
         const match = users.find(
           (u: any) =>
             u.mewurkEmployeeCode &&
-            String(u.mewurkEmployeeCode).trim() === String(employee.code).trim()
+            String(u.mewurkEmployeeCode).trim() === String(activeEmployee.code).trim()
         );
         if (match) return match;
       }
       
       // 2. Try matching by Email
-      if (employee.email) {
+      if (activeEmployee.email) {
         const match = users.find(
           (u: any) =>
             u.email &&
-            u.email.toLowerCase().trim() === employee.email.toLowerCase().trim()
+            u.email.toLowerCase().trim() === activeEmployee.email.toLowerCase().trim()
         );
         if (match) return match;
       }
       
       // 3. Try matching by Name
-      if (employee.name) {
+      if (activeEmployee.name) {
         const match = users.find(
           (u: any) =>
             u.fullName &&
-            u.fullName.toLowerCase().trim() === employee.name.toLowerCase().trim()
+            u.fullName.toLowerCase().trim() === activeEmployee.name.toLowerCase().trim()
         );
         if (match) return match;
       }
@@ -134,25 +128,37 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
     }
     
     return null;
-  }, [employee, allUsersResponse, user]);
+  }, [activeEmployee, allUsersResponse, user]);
+
+  const employeeName = activeEmployee
+    ? activeEmployee.name
+    : user?.user?.fullName || "Varun Saraswat";
+  const employeeRole = activeEmployee
+    ? (resolvedDbUser?.role?.name || activeEmployee.role)
+    : user?.role?.name || "Developer";
+  const employeePhone = activeEmployee ? (resolvedDbUser?.phoneNumber || activeEmployee.phone) : "7859916283";
+  const employeeEmail = activeEmployee
+    ? (resolvedDbUser?.email || activeEmployee.email)
+    : user?.user?.email || "varun.s@devstree.in";
+  const employeeCode = activeEmployee ? activeEmployee.code : "300";
 
   const resolvedProfilePic = useMemo(() => {
     if (resolvedDbUser?.profilePicUrl) {
       return resolvedDbUser.profilePicUrl;
     }
     return user?.user?.profilePicUrl || (user as any)?.profilePicUrl || "";
-  }, [employee, resolvedDbUser, user]);
+  }, [activeEmployee, resolvedDbUser, user]);
 
   const employeeAvatarFallback = useMemo(() => {
-    const name = employee
-      ? employee.name
+    const name = activeEmployee
+      ? activeEmployee.name
       : user?.user?.fullName || "Varun Saraswat";
     const nameParts = name.trim().split(/\s+/);
     if (nameParts.length === 1) {
       return nameParts[0].charAt(0).toUpperCase() || "U";
     }
     return (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase() || "U";
-  }, [employee, user]);
+  }, [activeEmployee, user]);
 
   // Sidebar navigation active state (only used in employee view mode)
   const [activeSidebarTab, _] = useState<
@@ -163,6 +169,60 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   // Mewurk API states
   const [selectedMonth, setSelectedMonth] = useState(6); // default to June (6)
   const [selectedYear, setSelectedYear] = useState(2026); // default to 2026
+
+  // Fetch employee list for filter dropdown
+  useEffect(() => {
+    const fetchEmployeesList = async () => {
+      setIsLoadingEmployees(true);
+      try {
+        const response = await MewurkService.fetchAttendanceEmployees();
+        if (response && Array.isArray(response.data)) {
+          setAllEmployees(response.data);
+        } else if (Array.isArray(response)) {
+          setAllEmployees(response);
+        }
+      } catch (err) {
+        console.error("Error fetching employees for dropdown:", err);
+      } finally {
+        setIsLoadingEmployees(false);
+      }
+    };
+    fetchEmployeesList();
+  }, []);
+
+  const handleEmployeeSelect = async (code: string) => {
+    if (!code || code === "none") {
+      setSelectedFilterEmployee(null);
+      return;
+    }
+    try {
+      const empResponse = await MewurkService.fetchAttendanceEmployees(code);
+      const list = Array.isArray(empResponse) ? empResponse : empResponse?.data || [];
+      const match = list.find((e: any) => String(e.employeeCode) === String(code));
+      
+      let empName = "";
+      if (match) {
+        empName = match.employeeName;
+      } else {
+        const localMatch = allEmployees.find(e => String(e.employeeCode) === String(code));
+        if (localMatch) {
+          empName = localMatch.employeeName;
+        }
+      }
+
+      setSelectedFilterEmployee({
+        id: code,
+        name: empName || "Unknown Employee",
+        role: "Employee",
+        avatar: "",
+        phone: "-",
+        email: "-",
+        code: code,
+      });
+    } catch (err) {
+      console.error("Error retrieving selected employee info:", err);
+    }
+  };
 
   const [mewurkLogs, setMewurkLogs] = useState<AttendanceData[]>([]);
   const [monthlyData, setMonthlyData] = useState<any | null>(null);
@@ -254,8 +314,8 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
 
   // Resolve Mewurk employee code by matching email/name
   useEffect(() => {
-    if (employee && employee.code) {
-      const codeNum = parseInt(employee.code);
+    if (activeEmployee && activeEmployee.code) {
+      const codeNum = parseInt(activeEmployee.code);
       if (!isNaN(codeNum) && codeNum > 0) {
         setMewurkEmployeeCode(codeNum);
         return;
@@ -304,7 +364,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
       }
     };
     resolveEmployee();
-  }, [employee, user]);
+  }, [activeEmployee, user]);
 
   // Fetch logs
   useEffect(() => {
@@ -313,7 +373,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
     const loadLogs = async () => {
       setIsLoadingLogs(true);
       try {
-        if (employee) {
+        if (activeEmployee) {
           const res = await MewurkService.fetchEmployeeMonthlyAttendance(
             mewurkEmployeeCode,
             selectedMonth,
@@ -371,7 +431,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
     };
 
     loadLogs();
-  }, [mewurkEmployeeCode, selectedMonth, selectedYear, employee]);
+  }, [mewurkEmployeeCode, selectedMonth, selectedYear, activeEmployee]);
 
   // Fetch today's detailed clock-in/out details
   useEffect(() => {
@@ -401,7 +461,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
 
   // Resolve or generate daily status mapping
   const dailyStatusMap = useMemo(() => {
-    if (employee?.dailyStatus) return employee.dailyStatus;
+    if (activeEmployee?.dailyStatus) return activeEmployee.dailyStatus;
     // Generate fallback mock statuses for June 2026
     const mapping: Record<number, "P" | "A" | "WO" | "AH" | "E" | "L" | ""> =
       {};
@@ -417,7 +477,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
       }
     }
     return mapping;
-  }, [employee]);
+  }, [activeEmployee]);
 
   // Compute stats based on statuses and working hours
   const {
@@ -435,7 +495,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
       totalMins = 0,
       daysWithHrs = 0;
 
-    if (employee && monthlyData) {
+    if (activeEmployee && monthlyData) {
       p = monthlyData.workingDays || 0;
       a = monthlyData.absentDays || 0;
       if (Array.isArray(monthlyData.attendance)) {
@@ -510,7 +570,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
       totalWorkHours: totalMins,
       avgWorkHours: avgMins,
     };
-  }, [mewurkLogs, dailyStatusMap, employee, monthlyData]);
+  }, [mewurkLogs, dailyStatusMap, activeEmployee, monthlyData]);
 
   // Helper formatter for dynamic working hours
   const formatMinutesToHoursMinutes = (totalMins: number) => {
@@ -761,7 +821,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
 
   // Generate dynamic rows based on employee's statuses
   const detailedLogs = useMemo(() => {
-    if (employee) {
+    if (activeEmployee) {
       if (monthlyData && Array.isArray(monthlyData.attendance)) {
         return monthlyData.attendance.map((log: any) => {
           const dateObj = new Date(log.date);
@@ -959,7 +1019,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
     dailyStatusMap,
     selectedMonth,
     selectedYear,
-    employee,
+    activeEmployee,
     monthlyData,
   ]);
 
@@ -996,23 +1056,45 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   // ----------------------------------------------------
   // RENDER SELECTED EMPLOYEE DETAILS VIEW
   // ----------------------------------------------------
-  if (employee) {
+  if (activeEmployee) {
     return (
       <div className="flex flex-col gap-6">
         {/* Back navigation & header section */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <Button
             variant="ghost"
-            onClick={onBack}
+            onClick={() => {
+              if (onBack) {
+                onBack();
+              } else {
+                setSelectedFilterEmployee(null);
+              }
+            }}
             className="text-muted-foreground hover:text-foreground flex items-center gap-2 text-xs"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Employee Attendance
           </Button>
 
-          <span className="text-xs text-muted-foreground">
-            Viewing Attendance Details
-          </span>
+          {/* Dropdown Employee Filter */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">
+              Employee:
+            </span>
+            <SimpleDropDownSearchable
+              options={allEmployees.map((emp) => ({
+                label: emp.employeeName,
+                value: emp.employeeCode,
+              }))}
+            value={activeEmployee?.code || undefined}
+              placeholder="Filter by employee"
+              className="w-[220px]"
+              isLoading={isLoadingEmployees}
+              loadingText="Loading employees..."
+              onChange={(val) => handleEmployeeSelect(val || "")}
+              allowClear={true}
+            />
+          </div>
         </div>
 
         {/* Top Header Card */}
@@ -1580,7 +1662,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
               <OrgChart
                 users={allActiveUsers}
                 loading={allUsersLoading}
-                activeUserId={employee.id}
+                activeUserId={activeEmployee.id}
               />
             </div>
           </DialogContent>
@@ -1596,7 +1678,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
                 </div>
                 <div>
                   <DialogTitle className="text-base font-extrabold text-foreground">
-                    Clock In/Out Details — {employee.name}
+                    Clock In/Out Details — {activeEmployee.name}
                   </DialogTitle>
                   <DialogDescription className="text-xs text-muted-foreground mt-0.5">
                     {selectedDayDetails?.policyName || "Devstree Shift Policy"}
@@ -1851,6 +1933,26 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
               </span>
             </div>
           </div>
+        </div>
+
+        {/* Dropdown Employee Filter */}
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">
+            Employee:
+          </span>
+          <SimpleDropDownSearchable
+            options={allEmployees.map((emp) => ({
+              label: emp.employeeName,
+              value: emp.employeeCode,
+            }))}
+            value={(selectedFilterEmployee as any)?.code || undefined}
+            placeholder="Filter by employee"
+            className="w-[220px]"
+            isLoading={isLoadingEmployees}
+            loadingText="Loading employees..."
+            onChange={(val) => handleEmployeeSelect(val || "")}
+            allowClear={true}
+          />
         </div>
       </div>
 

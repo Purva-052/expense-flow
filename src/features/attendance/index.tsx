@@ -4,7 +4,7 @@ import TablePageHeader from "@/components/table/table-page-header";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
-import { Clock, Users } from "lucide-react";
+import { Clock } from "lucide-react";
 import { MyAttendance } from "./components/my-attendance";
 import { EmployeeAttendance } from "./components/employee-attendance";
 
@@ -24,17 +24,14 @@ const AttendancePage: React.FC = () => {
 
   const isAdmin = roleName === roles.ADMIN;
   const isPM = roleName === roles.PROJECT_MANAGER;
-  
+
   // Only Admin and Project Manager can view all employees' attendance
   const canViewEmployeeAttendance = isAdmin || isPM;
 
   return (
     <PageLayout>
       <div className="flex flex-col gap-4">
-        <TablePageHeader
-          title="Attendance Management"
-          showActionButton={false}
-        >
+        <TablePageHeader title="Attendance Management" showActionButton={false}>
           Track employee work hours, shifts, breaks, and punches.
         </TablePageHeader>
 
@@ -45,17 +42,23 @@ const AttendancePage: React.FC = () => {
                 <Clock className="h-4 w-4" />
                 My Attendance
               </TabsTrigger>
-              <TabsTrigger value="employee-attendance" className={tabTriggerClass}>
+              {/* <TabsTrigger value="employee-attendance" className={tabTriggerClass}>
                 <Users className="h-4 w-4" />
                 Employee Attendance
-              </TabsTrigger>
+              </TabsTrigger> */}
             </TabsList>
 
-            <TabsContent value="my-attendance" className="mt-4 focus-visible:outline-none">
+            <TabsContent
+              value="my-attendance"
+              className="mt-4 focus-visible:outline-none"
+            >
               <MyAttendance />
             </TabsContent>
 
-            <TabsContent value="employee-attendance" className="mt-4 focus-visible:outline-none">
+            <TabsContent
+              value="employee-attendance"
+              className="mt-4 focus-visible:outline-none"
+            >
               <EmployeeAttendance />
             </TabsContent>
           </Tabs>

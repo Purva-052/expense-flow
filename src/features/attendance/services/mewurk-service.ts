@@ -244,6 +244,22 @@ export const MewurkService = {
   },
 
   /**
+   * Fetch employee name + Mewurk employee code list, for attendance lookups.
+   */
+  fetchAttendanceEmployees: async (employeeCode?: string): Promise<any> => {
+    try {
+      const response = await instance.get<any>({
+        url: `/attendance/employees`,
+        params: employeeCode ? { employeeCode } : {},
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Mewurk fetchAttendanceEmployees error:", error);
+      throw error;
+    }
+  },
+
+  /**
    * Fetch employee monthly attendance summary via GET /attendance/monthly
    */
   fetchEmployeeMonthlyAttendance: async (
