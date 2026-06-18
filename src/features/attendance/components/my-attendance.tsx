@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { AnalogClock } from "./analog-clock";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { MewurkService, AttendanceData } from "../services/mewurk-service";
 import {
@@ -11,19 +10,15 @@ import {
   CalendarDays,
   ChevronLeft,
   ChevronRight,
-  Download,
-  Award,
-  Phone,
-  Mail,
-  ArrowLeft,
   Network,
-  Trophy,
-  Building2,
-  TrendingUp,
-  // MoreVertical,
+  X,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  OrgChart,
+  extractOrgChartUsers,
+} from "../../users/components/org-chart";
+import { useGetUsersList } from "../../users/services";
 import {
   Dialog,
   DialogContent,
@@ -31,20 +26,23 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import {
-  OrgChart,
-  extractOrgChartUsers,
-} from "../../users/components/org-chart";
-import { useGetUsersList } from "../../users/services";
-import { Badge } from "@/components/ui/badge";
 import SimpleDropDownSearchable from "@/components/shared/custome-simple-dropdown";
+import { roles } from "@/utils/constant";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
-const tabTriggerClass =
-  "flex items-center gap-2 rounded-[50px] !px-3 !py-2 transition-all h-[35px] " +
-  "text-foreground/70 hover:text-foreground " +
-  "data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-sm " +
-  "dark:text-muted-foreground dark:hover:text-foreground " +
-  "dark:data-[state=active]:bg-primary dark:data-[state=active]:text-white dark:data-[state=active]:shadow-[0_2px_8px_oklch(0_0_0/0.5)]";
+import { DayDetailModal } from "./day-detail-modal";
+import { AttendanceStats } from "./attendance-stats";
+import { AttendanceTable } from "./attendance-table";
+import { EmployeeStats } from "./employee-stats";
+import { EmployeeTable } from "./employee-table";
+import { EmployeeHeader } from "./employee-header";
 
 interface SelectedEmployee {
   id: string;
@@ -67,11 +65,24 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   onBack,
 }) => {
   const user = useAuthStore((state) => state.user);
-  const [selectedFilterEmployee, setSelectedFilterEmployee] = useState<SelectedEmployee | null>(null);
-  const [allEmployees, setAllEmployees] = useState<{ employeeName: string; employeeCode: string }[]>([]);
+  const [selectedFilterEmployee, setSelectedFilterEmployee] =
+    useState<SelectedEmployee | null>(null);
+  const [allEmployees, setAllEmployees] = useState<
+    { employeeName: string; employeeCode: string }[]
+  >([]);
   const [isLoadingEmployees, setIsLoadingEmployees] = useState(false);
 
   const activeEmployee = employee || selectedFilterEmployee;
+
+  const rawRole = user?.role || user?.user?.role;
+  const roleName = String(
+    rawRole && typeof rawRole === "object" ? rawRole?.name : rawRole || ""
+  ).toLowerCase();
+
+  const isAdmin = roleName === roles.ADMIN;
+  const isPM = roleName === roles.PROJECT_MANAGER;
+
+  const canFilterEmployees = isAdmin || isPM;
 
   // Fetch all users list to look up correct profile pictures
   const { data: allUsersResponse, isPending: allUsersLoading } =
@@ -88,34 +99,37 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   const resolvedDbUser = useMemo(() => {
     if (!(allUsersResponse as any)?.data) return null;
     const users = (allUsersResponse as any).data || [];
-    
+
     if (activeEmployee) {
       // 1. Try matching by Mewurk Employee Code
       if (activeEmployee.code) {
         const match = users.find(
           (u: any) =>
             u.mewurkEmployeeCode &&
-            String(u.mewurkEmployeeCode).trim() === String(activeEmployee.code).trim()
+            String(u.mewurkEmployeeCode).trim() ===
+              String(activeEmployee.code).trim()
         );
         if (match) return match;
       }
-      
+
       // 2. Try matching by Email
       if (activeEmployee.email) {
         const match = users.find(
           (u: any) =>
             u.email &&
-            u.email.toLowerCase().trim() === activeEmployee.email.toLowerCase().trim()
+            u.email.toLowerCase().trim() ===
+              activeEmployee.email.toLowerCase().trim()
         );
         if (match) return match;
       }
-      
+
       // 3. Try matching by Name
       if (activeEmployee.name) {
         const match = users.find(
           (u: any) =>
             u.fullName &&
-            u.fullName.toLowerCase().trim() === activeEmployee.name.toLowerCase().trim()
+            u.fullName.toLowerCase().trim() ===
+              activeEmployee.name.toLowerCase().trim()
         );
         if (match) return match;
       }
@@ -126,7 +140,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
         if (match) return match;
       }
     }
-    
+
     return null;
   }, [activeEmployee, allUsersResponse, user]);
 
@@ -134,11 +148,11 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
     ? activeEmployee.name
     : user?.user?.fullName || "Varun Saraswat";
   const employeeRole = activeEmployee
-    ? (resolvedDbUser?.role?.name || activeEmployee.role)
+    ? resolvedDbUser?.role?.name || activeEmployee.role
     : user?.role?.name || "Developer";
-  const employeePhone = activeEmployee ? (resolvedDbUser?.phoneNumber || activeEmployee.phone) : "7859916283";
+
   const employeeEmail = activeEmployee
-    ? (resolvedDbUser?.email || activeEmployee.email)
+    ? resolvedDbUser?.email || activeEmployee.email
     : user?.user?.email || "varun.s@devstree.in";
   const employeeCode = activeEmployee ? activeEmployee.code : "300";
 
@@ -157,7 +171,11 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
     if (nameParts.length === 1) {
       return nameParts[0].charAt(0).toUpperCase() || "U";
     }
-    return (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase() || "U";
+    return (
+      (
+        nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)
+      ).toUpperCase() || "U"
+    );
   }, [activeEmployee, user]);
 
   // Sidebar navigation active state (only used in employee view mode)
@@ -170,8 +188,25 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   const [selectedMonth, setSelectedMonth] = useState(6); // default to June (6)
   const [selectedYear, setSelectedYear] = useState(2026); // default to 2026
 
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    new Date(2026, 5, 18)
+  );
+  const [datePopoverOpen, setDatePopoverOpen] = useState(false);
+  const [currentCalendarMonth, setCurrentCalendarMonth] = useState<Date>(
+    new Date(2026, 5)
+  );
+
+  // Sync selectedMonth and selectedYear to the viewed calendar month
+  useEffect(() => {
+    if (currentCalendarMonth) {
+      setSelectedMonth(currentCalendarMonth.getMonth() + 1);
+      setSelectedYear(currentCalendarMonth.getFullYear());
+    }
+  }, [currentCalendarMonth]);
+
   // Fetch employee list for filter dropdown
   useEffect(() => {
+    if (!canFilterEmployees) return;
     const fetchEmployeesList = async () => {
       setIsLoadingEmployees(true);
       try {
@@ -188,7 +223,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
       }
     };
     fetchEmployeesList();
-  }, []);
+  }, [canFilterEmployees]);
 
   const handleEmployeeSelect = async (code: string) => {
     if (!code || code === "none") {
@@ -197,14 +232,20 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
     }
     try {
       const empResponse = await MewurkService.fetchAttendanceEmployees(code);
-      const list = Array.isArray(empResponse) ? empResponse : empResponse?.data || [];
-      const match = list.find((e: any) => String(e.employeeCode) === String(code));
-      
+      const list = Array.isArray(empResponse)
+        ? empResponse
+        : empResponse?.data || [];
+      const match = list.find(
+        (e: any) => String(e.employeeCode) === String(code)
+      );
+
       let empName = "";
       if (match) {
         empName = match.employeeName;
       } else {
-        const localMatch = allEmployees.find(e => String(e.employeeCode) === String(code));
+        const localMatch = allEmployees.find(
+          (e) => String(e.employeeCode) === String(code)
+        );
         if (localMatch) {
           empName = localMatch.employeeName;
         }
@@ -274,13 +315,6 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
     const wholeHours = Math.floor(hours);
     const minutes = Math.round((hours - wholeHours) * 60);
     return `${String(wholeHours).padStart(2, "0")}:${String(minutes).padStart(2, "0")} HRS`;
-  };
-
-  const formatTimeString = (timeStr: string | null | undefined) => {
-    if (!timeStr) return "0h 0m";
-    const parts = timeStr.split(":");
-    if (parts.length < 2) return timeStr;
-    return `${parseInt(parts[0])}h ${parseInt(parts[1])}m`;
   };
 
   const calculateBreakTime = (
@@ -516,13 +550,25 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           }
         });
       }
+
+      const parseTimeToMins = (str: any) => {
+        if (!str || typeof str !== "string") return 0;
+        const parts = str.split(":");
+        if (parts.length === 2) {
+          const h = parseInt(parts[0], 10);
+          const m = parseInt(parts[1], 10);
+          if (!isNaN(h) && !isNaN(m)) return h * 60 + m;
+        }
+        return 0;
+      };
+
       return {
         presentCount: p,
         absentCount: a,
         leaveCount: l,
         woCount: wo,
-        totalWorkHours: 0,
-        avgWorkHours: 0,
+        totalWorkHours: parseTimeToMins(monthlyData.totalWorkingHours),
+        avgWorkHours: parseTimeToMins(monthlyData.avgWorkingHours),
       };
     }
 
@@ -585,7 +631,6 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   const absentPct =
     daysInMonth > 0 ? Math.round((absentCount / daysInMonth) * 100) : 0;
   // const leavePct = 100 - presentPct - absentPct;
-
 
   // Time & log states for standard user view
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -716,23 +761,6 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
     return `${hrs}:${mins}:${secs}`;
   };
 
-  const formatClockTime = (date: Date) => {
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false,
-    });
-  };
-
-  const formatDateString = (date: Date) => {
-    return date.toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "2-digit",
-    });
-  };
-
   const getCompletesAtTime = () => {
     if (!startTime || startTime === "-") return "--:-- --";
     const parts = startTime.split(" ");
@@ -769,55 +797,6 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
     return weekdays[index];
   };
 
-  // Helper status class for table badge
-  const getStatusBadge: any = (
-    status: "P" | "A" | "WO" | "AH" | "E" | "L" | ""
-  ) => {
-    switch (status) {
-      case "P":
-        return (
-          <Badge className="bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 hover:bg-emerald-500/20 text-[10px] font-bold rounded-md px-2 py-0.5">
-            PRESENT
-          </Badge>
-        );
-      case "A":
-        return (
-          <Badge className="bg-rose-500/15 text-rose-500 border border-rose-500/30 hover:bg-rose-500/20 text-[10px] font-bold rounded-md px-2 py-0.5">
-            ABSENT
-          </Badge>
-        );
-      case "WO":
-        return (
-          <Badge className="bg-muted text-muted-foreground border border-border hover:bg-muted text-[10px] font-bold rounded-md px-2 py-0.5">
-            WEEKLY OFF
-          </Badge>
-        );
-      case "AH":
-        return (
-          <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-500 border border-amber-500/30 hover:bg-amber-500/20 text-[10px] font-bold rounded-md px-2 py-0.5">
-            HALF DAY
-          </Badge>
-        );
-      case "E":
-        return (
-          <Badge className="bg-yellow-500/15 text-yellow-600 dark:text-yellow-500 border border-yellow-500/30 hover:bg-yellow-500/20 text-[10px] font-bold rounded-md px-2 py-0.5">
-            LATE/EXCUSED
-          </Badge>
-        );
-      case "L":
-        return (
-          <Badge className="bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 hover:bg-indigo-500/20 text-[10px] font-bold rounded-md px-2 py-0.5">
-            ON LEAVE
-          </Badge>
-        );
-      default:
-        return (
-          <Badge className="bg-muted text-muted-foreground/60 text-[10px] rounded-md px-2 py-0.5">
-            -
-          </Badge>
-        );
-    }
-  };
 
   // Generate dynamic rows based on employee's statuses
   const detailedLogs = useMemo(() => {
@@ -1059,264 +1038,31 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   if (activeEmployee) {
     return (
       <div className="flex flex-col gap-6">
-        {/* Back navigation & header section */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <Button
-            variant="ghost"
-            onClick={() => {
-              if (onBack) {
-                onBack();
-              } else {
-                setSelectedFilterEmployee(null);
-              }
-            }}
-            className="text-muted-foreground hover:text-foreground flex items-center gap-2 text-xs"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Employee Attendance
-          </Button>
-
-          {/* Dropdown Employee Filter */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">
-              Employee:
-            </span>
-            <SimpleDropDownSearchable
-              options={allEmployees.map((emp) => ({
-                label: emp.employeeName,
-                value: emp.employeeCode,
-              }))}
-            value={activeEmployee?.code || undefined}
-              placeholder="Filter by employee"
-              className="w-[220px]"
-              isLoading={isLoadingEmployees}
-              loadingText="Loading employees..."
-              onChange={(val) => handleEmployeeSelect(val || "")}
-              allowClear={true}
-            />
-          </div>
-        </div>
-
-        {/* Top Header Card */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 rounded-2xl bg-card p-6 border border-border shadow-lg relative overflow-hidden text-card-foreground">
-          <div className="absolute right-0 top-0 w-32 h-32 bg-blue-600/5 rounded-full blur-3xl pointer-events-none" />
-          <div className="flex items-center gap-4 z-10">
-            <Avatar className="h-16 w-16 text-xl border-2 border-border">
-              <AvatarImage src={resolvedProfilePic} alt={employeeName} />
-              <AvatarFallback className="bg-emerald-500/10 text-emerald-500 font-extrabold text-lg">
-                {employeeAvatarFallback}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <h2 className="text-xl font-extrabold text-foreground flex items-center gap-2">
-                {employeeName}
-                <span className="text-[10px] px-2 py-0.5 bg-muted border border-border text-muted-foreground rounded font-semibold">
-                  {employeeCode}
-                </span>
-              </h2>
-              <p className="text-sm text-muted-foreground font-medium mt-0.5">
-                {employeeRole}
-              </p>
-            </div>
-          </div>
-
-          {/* User Links / Contacts Info */}
-          <div className="flex flex-col sm:flex-row items-center gap-6 z-10">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setOrgModalOpen(true)}
-              className="border-border bg-background hover:bg-muted text-foreground text-xs gap-1.5 rounded-full"
-            >
-              <Network className="h-3.5 w-3.5 text-blue-500 dark:text-blue-400" />
-              <span>Org Chart</span>
-            </Button>
-
-            <a
-              href={`tel:${employeePhone}`}
-              className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Phone className="h-4 w-4 text-blue-500" />
-              <span>{employeePhone}</span>
-            </a>
-
-            <a
-              href={`mailto:${employeeEmail}`}
-              className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Mail className="h-4 w-4 text-purple-500 dark:text-purple-400" />
-              <span>{employeeEmail}</span>
-            </a>
-          </div>
-        </div>
+        <EmployeeHeader
+          onBackClick={() => {
+            if (onBack) {
+              onBack();
+            } else {
+              setSelectedFilterEmployee(null);
+            }
+          }}
+          allEmployees={allEmployees}
+          activeEmployeeCode={activeEmployee?.code || undefined}
+          isLoadingEmployees={isLoadingEmployees}
+          onEmployeeSelect={(val) => handleEmployeeSelect(val || "")}
+          resolvedProfilePic={resolvedProfilePic}
+          employeeName={employeeName}
+          employeeAvatarFallback={employeeAvatarFallback}
+          employeeCode={employeeCode}
+          employeeRole={employeeRole}
+          employeeEmail={employeeEmail}
+          onOrgChartClick={() => setOrgModalOpen(true)}
+        />
 
         {/* 2-Column layout with Side Nav and Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Main Content Area */}
           <div className="lg:col-span-12 flex flex-col gap-6">
-            {activeSidebarTab === "profile" && (
-              <Card className="p-6 bg-card border-border shadow-xl space-y-6 text-card-foreground">
-                <div>
-                  <h3 className="text-base font-bold text-foreground">
-                    Employee Profile Info
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    General system metadata and identity details
-                  </p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="bg-muted/45 p-4 border border-border rounded-xl space-y-1">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase">
-                      Employee Code
-                    </span>
-                    <p className="text-sm font-semibold text-foreground">
-                      {employeeCode}
-                    </p>
-                  </div>
-                  <div className="bg-muted/45 p-4 border border-border rounded-xl space-y-1">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase">
-                      Designation
-                    </span>
-                    <p className="text-sm font-semibold text-foreground">
-                      {employeeRole}
-                    </p>
-                  </div>
-                  <div className="bg-muted/45 p-4 border border-border rounded-xl space-y-1">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase">
-                      Official Email
-                    </span>
-                    <p className="text-sm font-semibold text-foreground">
-                      {employeeEmail}
-                    </p>
-                  </div>
-                  <div className="bg-muted/45 p-4 border border-border rounded-xl space-y-1">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase">
-                      Phone Contact
-                    </span>
-                    <p className="text-sm font-semibold text-foreground">
-                      {employeePhone}
-                    </p>
-                  </div>
-                  <div className="bg-muted/45 p-4 border border-border rounded-xl space-y-1">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase">
-                      Department
-                    </span>
-                    <p className="text-sm font-semibold text-foreground">
-                      Engineering & Development
-                    </p>
-                  </div>
-                  <div className="bg-muted/45 p-4 border border-border rounded-xl space-y-1">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase">
-                      Employment Status
-                    </span>
-                    <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-500 flex items-center gap-1.5">
-                      <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                      Active
-                    </p>
-                  </div>
-                </div>
-              </Card>
-            )}
-
-            {/* LEAVE TAB */}
-            {activeSidebarTab === "leave" && (
-              <Card className="p-6 bg-card border-border shadow-xl space-y-6 text-card-foreground">
-                <div>
-                  <h3 className="text-base font-bold text-foreground">
-                    Leave Balance Summary
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Leave counts, allocations, and requests
-                  </p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="bg-muted/45 p-4 border border-border rounded-xl">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase block">
-                      Total Leave Count
-                    </span>
-                    <span className="text-2xl font-black text-foreground mt-1.5 block">
-                      18.0
-                    </span>
-                  </div>
-                  <div className="bg-muted/45 p-4 border border-border rounded-xl">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase block">
-                      Used Leaves
-                    </span>
-                    <span className="text-2xl font-black text-rose-500 mt-1.5 block">
-                      {leaveCount}.0
-                    </span>
-                  </div>
-                  <div className="bg-muted/45 p-4 border border-border rounded-xl">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase block">
-                      Remaining Leaves
-                    </span>
-                    <span className="text-2xl font-black text-emerald-600 dark:text-emerald-500 mt-1.5 block">
-                      {18 - leaveCount}.0
-                    </span>
-                  </div>
-                  <div className="bg-muted/45 p-4 border border-border rounded-xl">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase block">
-                      Leave Accuracy
-                    </span>
-                    <span className="text-2xl font-black text-blue-500 mt-1.5 block">
-                      100%
-                    </span>
-                  </div>
-                </div>
-              </Card>
-            )}
-
-            {/* PAYROLL TAB */}
-            {activeSidebarTab === "payroll" && (
-              <Card className="p-6 bg-card border-border shadow-xl space-y-6 text-card-foreground">
-                <div>
-                  <h3 className="text-base font-bold text-foreground">
-                    Payroll & Payslips
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Monthly payslips and financial statements
-                  </p>
-                </div>
-                <div className="border border-border rounded-xl divide-y divide-border overflow-hidden">
-                  <div className="p-4 bg-muted/20 flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-bold text-foreground">
-                        June 2026 Salary Statement
-                      </p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
-                        Disbursed on 05 Jul 2026
-                      </p>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-border text-xs gap-1.5 h-8 bg-background hover:bg-muted text-foreground"
-                    >
-                      <Download className="h-3.5 w-3.5" /> Payslip
-                    </Button>
-                  </div>
-                  <div className="p-4 bg-muted/20 flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-bold text-foreground">
-                        May 2026 Salary Statement
-                      </p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
-                        Disbursed on 04 Jun 2026
-                      </p>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-border text-xs gap-1.5 h-8 bg-background hover:bg-muted text-foreground"
-                    >
-                      <Download className="h-3.5 w-3.5" /> Payslip
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            )}
-
-            {/* ATTENDANCE LOGS TAB */}
             {activeSidebarTab === "attendance" && (
               <Card className="p-6 bg-card border-border shadow-xl space-y-6 text-card-foreground">
                 {/* Panel Header */}
@@ -1439,206 +1185,23 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
                   </div>
                 ) : (
                   <>
-                    {/* Stats Section Cards */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      {/* Left Box: Attendance breakdown */}
-                      <div className="bg-[#f2f6fc] dark:bg-zinc-900/20 p-5 rounded-xl border border-[#e2e8f0] dark:border-border/60 flex flex-col md:flex-row items-center justify-around gap-6">
-                        {/* Donut Pie chart */}
-                        <div className="relative flex items-center justify-center shrink-0">
-                          <div
-                            className="w-28 h-28 rounded-full flex items-center justify-center shadow-md transition-transform duration-500 hover:scale-105"
-                            style={{
-                              background: `conic-gradient(
-                                #22c55e 0% ${presentPct}%, 
-                                #ef4444 ${presentPct}% ${presentPct + absentPct}%, 
-                                #3b82f6 ${presentPct + absentPct}% 100%
-                              )`,
-                            }}
-                          >
-                            <div className="w-[76px] h-[76px] rounded-full bg-card flex flex-col items-center justify-center shadow-inner">
-                              <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
-                                Present
-                              </span>
-                              <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-500 mt-0.5">
-                                {presentPct}%
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Donut Legend */}
-                        <div className="space-y-3 flex-1 min-w-[130px]">
-                          <div className="flex items-center gap-2">
-                            <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 shrink-0" />
-                            <div className="flex flex-col">
-                              <span className="text-xs font-bold text-foreground">
-                                {presentCount} Present
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="h-2.5 w-2.5 rounded-full bg-rose-500 shrink-0" />
-                            <div className="flex flex-col">
-                              <span className="text-xs font-bold text-foreground">
-                                {absentCount} Absent / Error
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="h-2.5 w-2.5 rounded-full bg-blue-500 shrink-0" />
-                            <div className="flex flex-col">
-                              <span className="text-xs font-bold text-foreground">
-                                {woCount + leaveCount} Wo / Holiday / Leave
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Regularizations Widget */}
-                        <div className="bg-card p-4 rounded-xl border border-[#e2e8f0] dark:border-border/60 w-full max-w-[160px] space-y-3 shadow-sm shrink-0">
-                          <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                            Regularizations
-                          </h4>
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2">
-                              <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
-                              <span className="text-xs font-semibold text-foreground">
-                                0 Approved
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="h-2 w-2 rounded-full bg-amber-500 shrink-0" />
-                              <span className="text-xs font-semibold text-foreground">
-                                0 Pending
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Right Box: Productivity statistics */}
-                      <div className="bg-[#fff8ea] dark:bg-zinc-900/20 border border-[#ffe0b2] dark:border-border/60 p-5 rounded-xl flex flex-col md:flex-row items-center justify-between gap-6">
-                        {/* Trophy & Total hrs */}
-                        <div className="flex flex-col items-center text-center space-y-2 shrink-0">
-                          <Avatar className="h-12 w-12 border-2 border-amber-500 shadow-sm">
-                            <AvatarImage src={resolvedProfilePic} alt={employeeName} />
-                            <AvatarFallback className="bg-amber-500/20 text-amber-600 dark:text-amber-500 font-extrabold text-sm flex items-center justify-center">
-                              {employeeAvatarFallback}
-                            </AvatarFallback>
-                          </Avatar>
-
-                          <div className="flex items-center justify-center p-1 bg-amber-500/10 rounded-full border border-amber-500/20 text-amber-500">
-                            <Award className="h-4.5 w-4.5" />
-                          </div>
-
-                          <div>
-                            <span className="text-xl font-black text-amber-600 dark:text-amber-500 tracking-tight block">
-                              {employee
-                                ? monthlyData?.totalWorkingHours
-                                  ? formatTimeString(
-                                      monthlyData.totalWorkingHours
-                                    )
-                                  : "0h 0m"
-                                : `${presentCount * 8}h 15m`}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
-                              Working Hours
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Productivity widget */}
-                        <div className="bg-card p-5 rounded-xl border border-[#e2e8f0] dark:border-border/60 flex-1 w-full flex flex-col justify-between h-full min-h-[136px]">
-                          <h4 className="text-xs font-extrabold text-foreground flex items-center gap-2 pb-2 border-b border-border/60">
-                            <TrendingUp className="h-4 w-4 text-emerald-500" />
-                            Productivity
-                          </h4>
-
-                          <div className="pt-3">
-                            <span className="text-2xl font-black text-foreground font-mono block">
-                              {employee
-                                ? monthlyData?.avgWorkingHours
-                                  ? formatTimeString(
-                                      monthlyData.avgWorkingHours
-                                    )
-                                  : "0h 0m"
-                                : "8h 49m"}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mt-0.5 block">
-                              Avg. Wrk Hrs
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Attendance Logs Table */}
-                    <div className="border border-border rounded-xl shadow-md bg-card overflow-hidden">
-                      <div className="overflow-auto max-h-[400px]">
-                        <table className="w-full border-collapse text-left">
-                          <thead>
-                            <tr className="bg-muted border-b border-border text-muted-foreground text-xs font-bold">
-                              <th className="px-4 py-3 sticky top-0 bg-muted z-10">
-                                Date
-                              </th>
-                              <th className="px-4 py-3 sticky top-0 bg-muted z-10">
-                                Status
-                              </th>
-                              <th className="px-4 py-3 sticky top-0 bg-muted z-10">
-                                Shift
-                              </th>
-                              <th className="px-4 py-3 sticky top-0 bg-muted z-10">
-                                First In
-                              </th>
-                              <th className="px-4 py-3 sticky top-0 bg-muted z-10">
-                                Last Out
-                              </th>
-                              <th className="px-4 py-3 sticky top-0 bg-muted z-10">
-                                Working Hours
-                              </th>
-                              <th className="px-4 py-3 sticky top-0 bg-muted z-10">
-                                Overtime Hours
-                              </th>
-                              <th className="px-4 py-3 w-10 sticky top-0 bg-muted z-10"></th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-border text-xs text-foreground">
-                            {detailedLogs.map((log: any) => (
-                              <tr
-                                key={log.day}
-                                className="hover:bg-muted/10 transition-colors cursor-pointer"
-                                onClick={() => handleRowClick(log.rawDateStr)}
-                              >
-                                <td className="px-4 py-2.5 font-semibold text-muted-foreground">
-                                  {log.date}
-                                </td>
-                                <td className="px-4 py-2.5">
-                                  {getStatusBadge(log.status)}
-                                </td>
-                                <td className="px-4 py-2.5 text-muted-foreground font-medium">
-                                  {log.shift}
-                                </td>
-                                <td className="px-4 py-2.5 font-semibold text-foreground">
-                                  {log.firstIn}
-                                </td>
-                                <td className="px-4 py-2.5 font-semibold text-foreground">
-                                  {log.lastOut}
-                                </td>
-                                <td className="px-4 py-2.5 font-bold text-sky-600 dark:text-sky-400">
-                                  {log.workingHrs}
-                                </td>
-                                <td className="px-4 py-2.5 text-muted-foreground font-medium">
-                                  {log.overtimeHrs}
-                                </td>
-                                {/* <td className="px-4 py-2.5 text-right" onClick={(e) => e.stopPropagation()}>
-                                  <MoreVertical className="h-4 w-4 text-muted-foreground/60 hover:text-foreground cursor-pointer transition-colors" />
-                                </td> */}
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
+                    <EmployeeStats
+                      presentPct={presentPct}
+                      absentPct={absentPct}
+                      presentCount={presentCount}
+                      absentCount={absentCount}
+                      woCount={woCount}
+                      leaveCount={leaveCount}
+                      resolvedProfilePic={resolvedProfilePic}
+                      employeeName={employeeName}
+                      employeeAvatarFallback={employeeAvatarFallback}
+                      employee={activeEmployee}
+                      monthlyData={monthlyData}
+                    />
+                    <EmployeeTable
+                      detailedLogs={detailedLogs}
+                      onRowClick={handleRowClick}
+                    />
                   </>
                 )}
               </Card>
@@ -1669,242 +1232,13 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
         </Dialog>
 
         {/* Day Detail Clock In/Out Modal */}
-        <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
-          <DialogContent className="max-w-xl bg-card border-border shadow-2xl p-6 rounded-2xl text-card-foreground">
-            <DialogHeader className="pb-4 border-b border-border">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-rose-500/10 text-rose-500 rounded-xl border border-rose-500/20">
-                  <Building2 className="h-5 w-5" />
-                </div>
-                <div>
-                  <DialogTitle className="text-base font-extrabold text-foreground">
-                    Clock In/Out Details — {activeEmployee.name}
-                  </DialogTitle>
-                  <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                    {selectedDayDetails?.policyName || "Devstree Shift Policy"}
-                  </DialogDescription>
-                </div>
-              </div>
-            </DialogHeader>
-
-            {isLoadingDayDetails ? (
-              <div className="flex flex-col items-center justify-center py-12 gap-3">
-                <RotateCcw className="h-8 w-8 text-rose-500 animate-spin" />
-                <span className="text-xs text-muted-foreground font-semibold">
-                  Loading clock details...
-                </span>
-              </div>
-            ) : !selectedDayDetails ? (
-              <div className="text-center py-12 text-xs text-muted-foreground font-medium">
-                No clock details found for this date.
-              </div>
-            ) : (
-              <div className="space-y-5 pt-4">
-                {/* Date & Shift strip */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-muted/45 p-4 border border-border rounded-xl">
-                  <div className="flex items-center gap-2">
-                    <CalendarDays className="h-4 w-4 text-rose-500 shrink-0" />
-                    <span className="text-xs font-bold text-foreground">
-                      {(() => {
-                        if (!selectedDayDetails.attendanceDate) return "-";
-                        try {
-                          return new Date(
-                            selectedDayDetails.attendanceDate
-                          ).toLocaleDateString("en-US", {
-                            weekday: "short",
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          });
-                        } catch {
-                          return selectedDayDetails.attendanceDate;
-                        }
-                      })()}
-                    </span>
-                  </div>
-                  <div className="bg-rose-500/10 border border-rose-500/25 px-3 py-1.5 rounded-lg text-right">
-                    <span className="text-[10px] font-bold text-rose-500 block uppercase">
-                      {selectedDayDetails.shiftName || "GS01"} - General Shift
-                    </span>
-                    <span className="text-[10px] text-muted-foreground font-semibold mt-0.5 block">
-                      {(() => {
-                        const fmt = (t: string | null) => {
-                          if (!t) return "-";
-                          try {
-                            const d = new Date(t);
-                            if (isNaN(d.getTime())) {
-                              const part = t.split(" ")[1];
-                              if (part) {
-                                const p = part.split(":");
-                                return `${p[0]}:${p[1]}`;
-                              }
-                              return t;
-                            }
-                            return d.toLocaleTimeString("en-US", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              hour12: false,
-                            });
-                          } catch {
-                            return t;
-                          }
-                        };
-                        return `${fmt(selectedDayDetails.shiftStartTime)} to ${fmt(selectedDayDetails.shiftEndTime)}`;
-                      })()}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Punches with inline break gaps */}
-                {(() => {
-                  const sorted = [
-                    ...(selectedDayDetails.clockInDetails || []),
-                  ].sort((a: any, b: any) => {
-                    const da = a.clockTime.endsWith("Z")
-                      ? a.clockTime
-                      : `${a.clockTime}Z`;
-                    const db = b.clockTime.endsWith("Z")
-                      ? b.clockTime
-                      : `${b.clockTime}Z`;
-                    return new Date(da).getTime() - new Date(db).getTime();
-                  });
-                  let totalBreakMs = 0;
-                  for (let i = 0; i < sorted.length - 1; i++) {
-                    if (
-                      sorted[i].inOutType === "OUT" &&
-                      sorted[i + 1]?.inOutType === "IN"
-                    ) {
-                      const oi = sorted[i].clockTime.endsWith("Z")
-                        ? sorted[i].clockTime
-                        : `${sorted[i].clockTime}Z`;
-                      const ii = sorted[i + 1].clockTime.endsWith("Z")
-                        ? sorted[i + 1].clockTime
-                        : `${sorted[i + 1].clockTime}Z`;
-                      const gap =
-                        new Date(ii).getTime() - new Date(oi).getTime();
-                      if (gap > 0) totalBreakMs += gap;
-                    }
-                  }
-                  const fmtMs = (ms: number) => {
-                    const mins = Math.floor(ms / 60000);
-                    return `${String(Math.floor(mins / 60)).padStart(2, "0")}:${String(mins % 60).padStart(2, "0")} HRS`;
-                  };
-                  const totalBreakMins = Math.floor(totalBreakMs / 60000);
-
-                  if (sorted.length === 0) {
-                    return (
-                      <div className="text-center py-8 text-xs text-muted-foreground border border-border rounded-xl">
-                        No punch records for this date.
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <>
-                      <div className="border border-border rounded-xl overflow-hidden shadow-sm bg-background">
-                        <div className="overflow-y-auto max-h-[300px]">
-                          <table className="w-full border-collapse text-left text-xs">
-                            <thead>
-                              <tr className="bg-muted border-b border-border text-muted-foreground font-bold sticky top-0 z-10">
-                                <th className="px-3 py-2.5 w-8">#</th>
-                                <th className="px-3 py-2.5">In/Out</th>
-                                <th className="px-3 py-2.5">Time (IST)</th>
-                                <th className="px-3 py-2.5">Source</th>
-                                <th className="px-3 py-2.5">Device</th>
-                              </tr>
-                            </thead>
-                            <tbody className="font-medium text-foreground">
-                              {sorted.map((punch: any, index: number) => {
-                                let breakGapMs = 0;
-                                const next = sorted[index + 1];
-                                if (
-                                  punch.inOutType === "OUT" &&
-                                  next?.inOutType === "IN"
-                                ) {
-                                  const oi = punch.clockTime.endsWith("Z")
-                                    ? punch.clockTime
-                                    : `${punch.clockTime}Z`;
-                                  const ii = next.clockTime.endsWith("Z")
-                                    ? next.clockTime
-                                    : `${next.clockTime}Z`;
-                                  const gap =
-                                    new Date(ii).getTime() -
-                                    new Date(oi).getTime();
-                                  if (gap > 0) breakGapMs = gap;
-                                }
-                                return (
-                                  <React.Fragment key={index}>
-                                    <tr className="border-b border-border hover:bg-muted/10 transition-colors">
-                                      <td className="px-3 py-2.5 text-muted-foreground font-semibold">
-                                        {index + 1}
-                                      </td>
-                                      <td className="px-3 py-2.5">
-                                        <span
-                                          className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${punch.inOutType === "IN" ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-rose-500/10 text-rose-500 border-rose-500/20"}`}
-                                        >
-                                          {punch.inOutType}
-                                        </span>
-                                      </td>
-                                      <td className="px-3 py-2.5 font-semibold text-foreground tabular-nums">
-                                        {formatMewurkTime(punch.clockTime)}
-                                      </td>
-                                      <td className="px-3 py-2.5 text-muted-foreground">
-                                        <div className="flex items-center gap-1.5">
-                                          <span className="h-4 w-4 bg-muted border border-border rounded flex items-center justify-center text-[9px] font-bold shrink-0">
-                                            {punch.sourceName
-                                              ? punch.sourceName[0]
-                                              : "K"}
-                                          </span>
-                                          {punch.sourceName || "Kiosk"}
-                                        </div>
-                                      </td>
-                                      <td className="px-3 py-2.5 text-muted-foreground truncate max-w-[110px]">
-                                        {punch.deviceName ||
-                                          punch.officeName ||
-                                          "-"}
-                                      </td>
-                                    </tr>
-                                    {breakGapMs > 0 && (
-                                      <tr className="bg-amber-500/5">
-                                        <td colSpan={5} className="px-3 py-1.5">
-                                          <div className="flex items-center gap-2">
-                                            <div className="flex-1 h-px bg-amber-500/20" />
-                                            <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 whitespace-nowrap flex items-center gap-1">
-                                              <span className="h-1.5 w-1.5 rounded-full bg-amber-500 inline-block" />
-                                              Break: {fmtMs(breakGapMs)}
-                                            </span>
-                                            <div className="flex-1 h-px bg-amber-500/20" />
-                                          </div>
-                                        </td>
-                                      </tr>
-                                    )}
-                                  </React.Fragment>
-                                );
-                              })}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between bg-muted/40 border border-border rounded-xl px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <span className="h-2.5 w-2.5 rounded-full bg-amber-500 shrink-0" />
-                          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                            Total Break Time
-                          </span>
-                        </div>
-                        <span
-                          className={`text-sm font-extrabold tabular-nums ${totalBreakMins > 0 ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}`}
-                        >
-                          {fmtMs(totalBreakMs)}
-                        </span>
-                      </div>
-                    </>
-                  );
-                })()}
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
+        <DayDetailModal
+          isOpen={isDetailModalOpen}
+          onOpenChange={setIsDetailModalOpen}
+          employeeName={activeEmployee.name}
+          selectedDayDetails={selectedDayDetails}
+          isLoadingDayDetails={isLoadingDayDetails}
+        />
       </div>
     );
   }
@@ -1914,229 +1248,282 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   // ----------------------------------------------------
   return (
     <div className="flex flex-col gap-6">
-      {/* Top Header Card */}
+      {/* Top Filter Card */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-6 rounded-2xl bg-card p-6 border border-border shadow-lg text-card-foreground">
-        <div className="flex items-center gap-4">
-          <AnalogClock />
-          <div>
-            <span className="text-[10px] tracking-widest text-muted-foreground uppercase font-bold">
-              Welcome
-            </span>
-            <h2 className="text-xl font-bold text-foreground">
-              {employeeName}
-            </h2>
-            <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-              <CalendarDays className="h-4 w-4 text-rose-500" />
-              <span>
-                {formatDateString(currentTime)} &nbsp;&bull;&nbsp;{" "}
-                {formatClockTime(currentTime)}
-              </span>
-            </div>
-          </div>
+        <div>
+          <span className="text-[10px] tracking-widest text-muted-foreground uppercase font-bold">
+            Monthly Logs View
+          </span>
+          <h2 className="text-xl font-bold text-foreground mt-0.5">
+            {employeeName}
+          </h2>
         </div>
 
-        {/* Dropdown Employee Filter */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">
-            Employee:
-          </span>
-          <SimpleDropDownSearchable
-            options={allEmployees.map((emp) => ({
-              label: emp.employeeName,
-              value: emp.employeeCode,
-            }))}
-            value={(selectedFilterEmployee as any)?.code || undefined}
-            placeholder="Filter by employee"
-            className="w-[220px]"
-            isLoading={isLoadingEmployees}
-            loadingText="Loading employees..."
-            onChange={(val) => handleEmployeeSelect(val || "")}
-            allowClear={true}
-          />
+        <div className="flex flex-wrap items-center gap-6">
+          {/* Dropdown Employee Filter */}
+          {canFilterEmployees && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">
+                Employee:
+              </span>
+              <SimpleDropDownSearchable
+                options={allEmployees.map((emp) => ({
+                  label: emp.employeeName,
+                  value: emp.employeeCode,
+                }))}
+                value={(selectedFilterEmployee as any)?.code || undefined}
+                placeholder="Filter by employee"
+                className="w-[220px]"
+                isLoading={isLoadingEmployees}
+                loadingText="Loading employees..."
+                onChange={(val) => handleEmployeeSelect(val || "")}
+                allowClear={true}
+              />
+            </div>
+          )}
+
+          {/* Date Picker Filter */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">
+              Date:
+            </span>
+            <Popover open={datePopoverOpen} onOpenChange={setDatePopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-[200px] justify-between text-left font-normal rounded-2xl hover:bg-transparent hover:text-inherit border-border",
+                    !selectedDate && "text-muted-foreground"
+                  )}
+                >
+                  <div className="flex items-center">
+                    <CalendarDays className="mr-2 h-4 w-4 text-rose-500" />
+                    {selectedDate ? (
+                      format(selectedDate, "PPP")
+                    ) : (
+                      <span>Filter by Date</span>
+                    )}
+                  </div>
+                  {selectedDate && (
+                    <button
+                      type="button"
+                      aria-label="Clear date"
+                      className="hover:bg-muted ml-2 flex h-5 w-5 items-center justify-center rounded transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        setSelectedDate(undefined);
+                        const today = new Date();
+                        setCurrentCalendarMonth(today);
+                      }}
+                    >
+                      <X className="text-muted-foreground h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-auto p-0 rounded-2xl border border-border shadow-2xl"
+                align="end"
+              >
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(date) => {
+                    setSelectedDate(date);
+                    if (date) {
+                      setCurrentCalendarMonth(date);
+                    }
+                    setDatePopoverOpen(false);
+                  }}
+                  month={currentCalendarMonth}
+                  onMonthChange={setCurrentCalendarMonth}
+                  numberOfMonths={1}
+                  captionLayout="dropdown"
+                  fromYear={2020}
+                  toYear={2030}
+                  className="rounded-2xl"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
       </div>
 
-      <Tabs defaultValue="today" className="w-full">
-        <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border border-rose-100/50 h-9 w-fit shrink-0 mb-6">
-          <TabsTrigger value="today" className={tabTriggerClass}>
-            Today's Log
-          </TabsTrigger>
-          <TabsTrigger value="monthly" className={tabTriggerClass}>
-            Monthly Logs
-          </TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="monthly" className="w-full">
+        {false && (
+          <TabsContent
+            value="today"
+            className="focus-visible:outline-none flex flex-col gap-6"
+          >
+            {/* Main Grid: Left is Circular Gauge, Right is Details & Timeline */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+              {/* Progress Gauge Card */}
+              <Card className="lg:col-span-1 flex flex-col items-center justify-center p-8 bg-card border-border shadow-lg text-card-foreground lg:h-[480px]">
+                <div className="relative flex items-center justify-center">
+                  {/* SVG Ring Gauge */}
+                  <svg className="w-44 h-44 transform -rotate-90">
+                    <defs>
+                      <linearGradient
+                        id="attendanceGradient"
+                        x1="0%"
+                        y1="0%"
+                        x2="100%"
+                        y2="100%"
+                      >
+                        <stop offset="0%" stopColor="#f43f5e" />
+                        <stop offset="100%" stopColor="#f97316" />
+                      </linearGradient>
+                    </defs>
+                    <circle
+                      className="text-muted/20 dark:text-zinc-900"
+                      strokeWidth={strokeWidth}
+                      stroke="currentColor"
+                      fill="transparent"
+                      r={radius}
+                      cx="88"
+                      cy="88"
+                    />
+                    <circle
+                      stroke="url(#attendanceGradient)"
+                      strokeWidth={strokeWidth}
+                      strokeDasharray={circumference}
+                      strokeDashoffset={strokeDashoffset}
+                      strokeLinecap="round"
+                      fill="transparent"
+                      r={radius}
+                      cx="88"
+                      cy="88"
+                      className="transition-all duration-1000 ease-out"
+                    />
+                  </svg>
+                  <div className="absolute flex flex-col items-center justify-center">
+                    <span className="text-4xl font-extrabold tracking-tight text-foreground">
+                      {progressPercent}%
+                    </span>
+                    <span className="text-[10px] tracking-wider text-muted-foreground font-bold uppercase mt-0.5">
+                      Complete
+                    </span>
+                  </div>
+                </div>
 
-        <TabsContent
-          value="today"
-          className="focus-visible:outline-none flex flex-col gap-6"
-        >
-          {/* Main Grid: Left is Circular Gauge, Right is Details & Timeline */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
-            {/* Progress Gauge Card */}
-            <Card className="lg:col-span-1 flex flex-col items-center justify-center p-8 bg-card border-border shadow-lg text-card-foreground lg:h-[480px]">
-              <div className="relative flex items-center justify-center">
-                {/* SVG Ring Gauge */}
-                <svg className="w-44 h-44 transform -rotate-90">
-                  <defs>
-                    <linearGradient
-                      id="attendanceGradient"
-                      x1="0%"
-                      y1="0%"
-                      x2="100%"
-                      y2="100%"
-                    >
-                      <stop offset="0%" stopColor="#f43f5e" />
-                      <stop offset="100%" stopColor="#f97316" />
-                    </linearGradient>
-                  </defs>
-                  <circle
-                    className="text-muted/20 dark:text-zinc-900"
-                    strokeWidth={strokeWidth}
-                    stroke="currentColor"
-                    fill="transparent"
-                    r={radius}
-                    cx="88"
-                    cy="88"
-                  />
-                  <circle
-                    stroke="url(#attendanceGradient)"
-                    strokeWidth={strokeWidth}
-                    strokeDasharray={circumference}
-                    strokeDashoffset={strokeDashoffset}
-                    strokeLinecap="round"
-                    fill="transparent"
-                    r={radius}
-                    cx="88"
-                    cy="88"
-                    className="transition-all duration-1000 ease-out"
-                  />
-                </svg>
-                <div className="absolute flex flex-col items-center justify-center">
-                  <span className="text-4xl font-extrabold tracking-tight text-foreground">
-                    {progressPercent}%
+                <div className="mt-6 text-center">
+                  <span className="text-[10px] font-bold text-muted-foreground tracking-wider uppercase block">
+                    Completes At
                   </span>
-                  <span className="text-[10px] tracking-wider text-muted-foreground font-bold uppercase mt-0.5">
-                    Complete
+                  <span className="text-xl font-bold text-foreground mt-1 block">
+                    {punchedIn ? getCompletesAtTime() : "--:-- --"}
+                  </span>
+
+                  <span className="text-[10px] font-bold text-amber-500/80 tracking-wider uppercase block mt-4">
+                    Time Remaining
+                  </span>
+                  <span className="text-2xl font-black text-rose-500 tracking-wider font-mono mt-1 block drop-shadow-[0_0_8px_rgba(239,68,68,0.2)]">
+                    {punchedIn ? formatHMS(remainingSeconds) : "00:00:00"}
                   </span>
                 </div>
-              </div>
+              </Card>
 
-              <div className="mt-6 text-center">
-                <span className="text-[10px] font-bold text-muted-foreground tracking-wider uppercase block">
-                  Completes At
-                </span>
-                <span className="text-xl font-bold text-foreground mt-1 block">
-                  {punchedIn ? getCompletesAtTime() : "--:-- --"}
-                </span>
+              {/* Info Grid & Timeline */}
+              <div className="lg:col-span-2 flex flex-col gap-6 lg:h-[480px]">
+                {/* Sub Stats Cards Grid */}
+                <div className="grid grid-cols-2 gap-4">
+                  <Card className="p-4 bg-card border-border shadow-md hover:border-muted transition-colors text-card-foreground">
+                    <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase block">
+                      Started
+                    </span>
+                    <span className="text-lg font-bold text-foreground mt-1.5 block">
+                      {startTime}
+                    </span>
+                  </Card>
 
-                <span className="text-[10px] font-bold text-amber-500/80 tracking-wider uppercase block mt-4">
-                  Time Remaining
-                </span>
-                <span className="text-2xl font-black text-rose-500 tracking-wider font-mono mt-1 block drop-shadow-[0_0_8px_rgba(239,68,68,0.2)]">
-                  {punchedIn ? formatHMS(remainingSeconds) : "00:00:00"}
-                </span>
-              </div>
-            </Card>
+                  <Card className="p-4 bg-card border-border shadow-md hover:border-muted transition-colors text-card-foreground">
+                    <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase block">
+                      Worked
+                    </span>
+                    <span className="text-lg font-bold text-sky-600 dark:text-sky-400 mt-1.5 block">
+                      {formatDuration(workedSeconds)}
+                    </span>
+                  </Card>
 
-            {/* Info Grid & Timeline */}
-            <div className="lg:col-span-2 flex flex-col gap-6 lg:h-[480px]">
-              {/* Sub Stats Cards Grid */}
-              <div className="grid grid-cols-2 gap-4">
-                <Card className="p-4 bg-card border-border shadow-md hover:border-muted transition-colors text-card-foreground">
-                  <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase block">
-                    Started
-                  </span>
-                  <span className="text-lg font-bold text-foreground mt-1.5 block">
-                    {startTime}
-                  </span>
-                </Card>
+                  <Card className="p-4 bg-card border-border shadow-md hover:border-muted transition-colors text-card-foreground">
+                    <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase block">
+                      Breaks
+                    </span>
+                    <span className="text-lg font-bold text-amber-500 mt-1.5 block">
+                      {formatDuration(breakSeconds)}
+                    </span>
+                  </Card>
 
-                <Card className="p-4 bg-card border-border shadow-md hover:border-muted transition-colors text-card-foreground">
-                  <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase block">
-                    Worked
-                  </span>
-                  <span className="text-lg font-bold text-sky-600 dark:text-sky-400 mt-1.5 block">
-                    {formatDuration(workedSeconds)}
-                  </span>
-                </Card>
+                  <Card className="p-4 bg-card border-border shadow-md hover:border-muted transition-colors text-card-foreground">
+                    <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase block">
+                      Required
+                    </span>
+                    <span className="text-lg font-bold text-muted-foreground mt-1.5 block">
+                      {formatDuration(requiredSeconds)}
+                    </span>
+                  </Card>
+                </div>
 
-                <Card className="p-4 bg-card border-border shadow-md hover:border-muted transition-colors text-card-foreground">
-                  <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase block">
-                    Breaks
-                  </span>
-                  <span className="text-lg font-bold text-amber-500 mt-1.5 block">
-                    {formatDuration(breakSeconds)}
-                  </span>
-                </Card>
+                {/* Activity Logs Timeline */}
+                <Card className="p-5 bg-card border-border flex-1 shadow-md text-card-foreground flex flex-col min-h-0">
+                  <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-rose-500" />
+                    Today's Punch Logs
+                  </h3>
 
-                <Card className="p-4 bg-card border-border shadow-md hover:border-muted transition-colors text-card-foreground">
-                  <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase block">
-                    Required
-                  </span>
-                  <span className="text-lg font-bold text-muted-foreground mt-1.5 block">
-                    {formatDuration(requiredSeconds)}
-                  </span>
-                </Card>
-              </div>
-
-              {/* Activity Logs Timeline */}
-              <Card className="p-5 bg-card border-border flex-1 shadow-md text-card-foreground flex flex-col min-h-0">
-                <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-rose-500" />
-                  Today's Punch Logs
-                </h3>
-
-                {logs.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-6 text-muted-foreground text-sm flex-1">
-                    {isLoadingTodayDetails ? (
-                      <RotateCcw className="h-8 w-8 mb-2 opacity-50 animate-spin text-rose-500" />
-                    ) : (
-                      <RotateCcw className="h-8 w-8 mb-2 opacity-50" />
-                    )}
-                    {isLoadingTodayDetails
-                      ? "Loading today's punches..."
-                      : "No punches logged for today."}
-                  </div>
-                ) : (
-                  <div className="flex-1 overflow-y-auto pr-2 pl-5 relative space-y-4 min-h-0">
-                    <div className="absolute top-2 bottom-4 left-[11px] w-0.5 bg-border pointer-events-none" />
-                    {logs.map((log, index) => (
-                      <div
-                        key={index}
-                        className="relative flex items-center justify-between gap-4"
-                      >
+                  {logs.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-6 text-muted-foreground text-sm flex-1">
+                      {isLoadingTodayDetails ? (
+                        <RotateCcw className="h-8 w-8 mb-2 opacity-50 animate-spin text-rose-500" />
+                      ) : (
+                        <RotateCcw className="h-8 w-8 mb-2 opacity-50" />
+                      )}
+                      {isLoadingTodayDetails
+                        ? "Loading today's punches..."
+                        : "No punches logged for today."}
+                    </div>
+                  ) : (
+                    <div className="flex-1 overflow-y-auto pr-2 pl-5 relative space-y-4 min-h-0">
+                      <div className="absolute top-2 bottom-4 left-[11px] w-0.5 bg-border pointer-events-none" />
+                      {logs.map((log, index) => (
                         <div
-                          className={`absolute -left-[13px] top-1 h-2.5 w-2.5 rounded-full border-2 border-background z-10 ${
-                            log.status === "success"
-                              ? "bg-emerald-500"
-                              : log.status === "warning"
-                                ? "bg-amber-500"
-                                : log.status === "error"
-                                  ? "bg-rose-500"
-                                  : "bg-sky-500"
-                          }`}
-                        />
+                          key={index}
+                          className="relative flex items-center justify-between gap-4"
+                        >
+                          <div
+                            className={`absolute -left-[13px] top-1 h-2.5 w-2.5 rounded-full border-2 border-background z-10 ${
+                              log.status === "success"
+                                ? "bg-emerald-500"
+                                : log.status === "warning"
+                                  ? "bg-amber-500"
+                                  : log.status === "error"
+                                    ? "bg-rose-500"
+                                    : "bg-sky-500"
+                            }`}
+                          />
 
-                        <div className="flex flex-col">
-                          <span className="text-xs font-semibold text-foreground">
-                            {log.type}
-                          </span>
-                          <span className="text-[10px] text-muted-foreground">
-                            System Logged
+                          <div className="flex flex-col">
+                            <span className="text-xs font-semibold text-foreground">
+                              {log.type}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground">
+                              System Logged
+                            </span>
+                          </div>
+
+                          <span className="text-xs font-bold text-muted-foreground">
+                            {log.time}
                           </span>
                         </div>
-
-                        <span className="text-xs font-bold text-muted-foreground">
-                          {log.time}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </Card>
+                      ))}
+                    </div>
+                  )}
+                </Card>
+              </div>
             </div>
-          </div>
-        </TabsContent>
+          </TabsContent>
+        )}
 
         <TabsContent value="monthly" className="focus-visible:outline-none">
           {/* Monthly Attendance Logs */}
@@ -2157,9 +1544,9 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
             </div>
 
             {/* Subheader Toolbar */}
-            <div className="flex flex-wrap items-center gap-4">
+            <div className="flex justify-center items-center w-full">
               {/* Date navigation */}
-              <div className="flex justify-center items-center gap-3 bg-background border border-border rounded-lg px-3 py-1">
+              <div className="flex items-center gap-1 bg-background border border-border rounded-lg p-0.5">
                 <button
                   onClick={() => {
                     setSelectedMonth((prev) => {
@@ -2170,11 +1557,11 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
                       return prev - 1;
                     });
                   }}
-                  className="text-muted-foreground hover:text-foreground"
+                  className="p-1.5 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  <ChevronLeft className="h-4 w-4" />
+                  <ChevronLeft className="h-3.5 w-3.5" />
                 </button>
-                <span className="text-xs font-bold text-foreground min-w-[70px] text-center">
+                <span className="text-xs font-bold text-foreground px-3 min-w-[80px] text-center">
                   {
                     [
                       "Jan",
@@ -2203,432 +1590,45 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
                       return prev + 1;
                     });
                   }}
-                  className="text-muted-foreground hover:text-foreground"
+                  className="p-1.5 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-3.5 w-3.5" />
                 </button>
               </div>
             </div>
 
-            {/* Stats Section Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Left Box: Attendance breakdown */}
-              <div className="bg-[#f2f6fc]/5 dark:bg-zinc-900/20 p-5 rounded-xl border border-border flex flex-col md:flex-row items-center justify-around gap-6">
-                {/* Donut Pie chart */}
-                <div className="relative flex items-center justify-center">
-                  <div
-                    className="w-32 h-32 rounded-full flex items-center justify-center shadow-lg transition-transform duration-500 hover:scale-105"
-                    style={{
-                      background: `conic-gradient(
-                    #22c55e 0% ${presentPct}%, 
-                    #ef4444 ${presentPct}% ${presentPct + absentPct}%, 
-                    #3b82f6 ${presentPct + absentPct}% 100%
-                  )`,
-                    }}
-                  >
-                    <div className="w-[84px] h-[84px] rounded-full bg-card flex flex-col items-center justify-center shadow-inner">
-                      <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
-                        Present
-                      </span>
-                      <span className="text-lg font-extrabold text-emerald-600 dark:text-emerald-500 mt-0.5">
-                        {presentPct}%
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Donut Legend */}
-                <div className="space-y-4 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="h-3 w-3 rounded-full bg-emerald-500 shrink-0" />
-                    <div className="flex flex-col">
-                      <span className="text-xs font-bold text-foreground">
-                        Present
-                      </span>
-                      <span className="text-[10px] text-muted-foreground">
-                        {presentCount} Days
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="h-3 w-3 rounded-full bg-rose-500 shrink-0" />
-                    <div className="flex flex-col">
-                      <span className="text-xs font-bold text-foreground">
-                        Absent / Error
-                      </span>
-                      <span className="text-[10px] text-muted-foreground">
-                        {absentCount} Days
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="h-3 w-3 rounded-full bg-blue-500 shrink-0" />
-                    <div className="flex flex-col">
-                      <span className="text-xs font-bold text-foreground">
-                        Wo / Holiday / Leave
-                      </span>
-                      <span className="text-[10px] text-muted-foreground">
-                        {woCount + leaveCount} Days
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Box: Productivity statistics */}
-              <div className="bg-gradient-to-br from-amber-500/10 to-yellow-600/5 dark:from-amber-950/20 dark:to-yellow-950/5 border border-amber-500/20 dark:border-amber-900/30 p-5 rounded-xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-md">
-                {/* Trophy & Total hrs */}
-                <div className="flex flex-col items-center text-center space-y-2">
-                  <Avatar className="h-12 w-12 border-2 border-amber-500 shadow-md">
-                    <AvatarImage src={resolvedProfilePic} alt={employeeName} />
-                    <AvatarFallback className="bg-amber-500/20 text-amber-600 dark:text-amber-500 font-extrabold text-sm flex items-center justify-center">
-                      {employeeAvatarFallback}
-                    </AvatarFallback>
-                  </Avatar>
-
-                  <div className="flex items-center justify-center p-1 bg-amber-500/10 rounded-full border border-amber-500/20 text-amber-500">
-                    <Award className="h-5 w-5" />
-                  </div>
-
-                  <div>
-                    <span className="text-2xl font-black text-amber-600 dark:text-amber-500 tracking-tight block">
-                      {formatMinutesToHoursMinutes(totalWorkHours)}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
-                      Working Hours
-                    </span>
-                  </div>
-                </div>
-
-                {/* Productivity widget */}
-                <div className="bg-card p-5 rounded-xl border border-border flex-1 w-full space-y-4">
-                  <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
-                    <Trophy className="h-4 w-4 text-yellow-500" />
-                    Productivity Ratio
-                  </h4>
-
-                  <div className="p-4 bg-muted/50 rounded-xl border border-border flex flex-col items-center justify-center">
-                    <span className="text-2xl font-black text-foreground font-mono">
-                      {formatMinutesToHoursMinutes(avgWorkHours)}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground font-medium uppercase mt-1">
-                      Avg. Wrk Hrs
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <AttendanceStats
+              presentPct={presentPct}
+              absentPct={absentPct}
+              presentCount={presentCount}
+              absentCount={absentCount}
+              woCount={woCount}
+              leaveCount={leaveCount}
+              resolvedProfilePic={resolvedProfilePic}
+              employeeName={employeeName}
+              employeeAvatarFallback={employeeAvatarFallback}
+              totalWorkHours={totalWorkHours}
+              avgWorkHours={avgWorkHours}
+              formatMinutesToHoursMinutes={formatMinutesToHoursMinutes}
+            />
 
             {/* Attendance Logs Table */}
-            <div className="border border-border rounded-xl shadow-lg bg-card overflow-hidden">
-              <div className="overflow-auto max-h-[480px]">
-                <table className="w-full border-collapse text-left">
-                  <thead>
-                    <tr className="bg-muted border-b border-border text-muted-foreground text-xs font-bold sticky top-0 z-10">
-                      <th className="px-4 py-3 bg-muted sticky top-0">Date</th>
-                      <th className="px-4 py-3 bg-muted sticky top-0">
-                        Status
-                      </th>
-                      <th className="px-4 py-3 bg-muted sticky top-0">
-                        First In
-                      </th>
-                      <th className="px-4 py-3 bg-muted sticky top-0">
-                        Last Out
-                      </th>
-                      <th className="px-4 py-3 bg-muted sticky top-0">
-                        Break Time
-                      </th>
-                      <th className="px-4 py-3 bg-muted sticky top-0">
-                        Working Hours
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border text-xs text-foreground">
-                    {detailedLogs.map((log: any) => (
-                      <tr
-                        key={log.day}
-                        className="hover:bg-muted/10 transition-colors cursor-pointer"
-                        onClick={() => handleRowClick(log.rawDateStr)}
-                      >
-                        <td className="px-4 py-3 font-semibold text-muted-foreground">
-                          {log.date}
-                        </td>
-                        <td className="px-4 py-3">
-                          {getStatusBadge(log.status)}
-                        </td>
-                        <td className="px-4 py-3 font-semibold text-foreground">
-                          {log.firstIn}
-                        </td>
-                        <td className="px-4 py-3 font-semibold text-foreground">
-                          {log.lastOut}
-                        </td>
-                        <td className="px-4 py-3 font-medium text-muted-foreground/85">
-                          {log.breakHrs}
-                        </td>
-                        <td className="px-4 py-3 font-bold text-sky-600 dark:text-sky-400">
-                          {log.workingHrs}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            <AttendanceTable
+              detailedLogs={detailedLogs}
+              onRowClick={handleRowClick}
+            />
           </Card>
         </TabsContent>
       </Tabs>
 
       {/* Day Details Modal */}
-      <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
-        <DialogContent className="max-w-xl bg-card border-border shadow-2xl p-6 rounded-2xl text-card-foreground">
-          <DialogHeader className="pb-4 border-b border-border flex flex-row items-start justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-rose-500/10 text-rose-500 rounded-xl border border-rose-500/20">
-                <Building2 className="h-5 w-5" />
-              </div>
-              <div>
-                <DialogTitle className="text-base font-extrabold text-foreground">
-                  Clock In/Out Details for {employeeName}
-                </DialogTitle>
-                <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                  {selectedDayDetails?.policyName || "Devstree Shift Policy"}
-                </DialogDescription>
-              </div>
-            </div>
-          </DialogHeader>
-
-          {isLoadingDayDetails ? (
-            <div className="flex flex-col items-center justify-center py-12 gap-3">
-              <RotateCcw className="h-8 w-8 text-rose-500 animate-spin" />
-              <span className="text-xs text-muted-foreground font-semibold">
-                Loading clock details...
-              </span>
-            </div>
-          ) : !selectedDayDetails ? (
-            <div className="text-center py-12 text-xs text-muted-foreground font-medium">
-              No clock details found for this date.
-            </div>
-          ) : (
-            <div className="space-y-6 pt-4">
-              {/* Date & Shift Panel */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-muted/45 p-4 border border-border rounded-xl">
-                <div className="flex items-center gap-2">
-                  <CalendarDays className="h-4 w-4 text-rose-500 shrink-0" />
-                  <span className="text-xs font-bold text-foreground">
-                    {(() => {
-                      if (!selectedDayDetails.attendanceDate) return "-";
-                      try {
-                        const date = new Date(
-                          selectedDayDetails.attendanceDate
-                        );
-                        return date.toLocaleDateString("en-US", {
-                          weekday: "short",
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        });
-                      } catch {
-                        return selectedDayDetails.attendanceDate;
-                      }
-                    })()}
-                  </span>
-                </div>
-
-                <div className="bg-rose-500/10 border border-rose-500/25 px-3 py-1.5 rounded-lg text-right">
-                  <span className="text-[10px] font-bold text-rose-500 block uppercase">
-                    {selectedDayDetails.shiftName || "GS01"} - General Shift
-                  </span>
-                  <span className="text-[10px] text-muted-foreground font-semibold mt-0.5 block">
-                    {(() => {
-                      const formatTimeOnly = (tStr: string | null) => {
-                        if (!tStr) return "-";
-                        try {
-                          const date = new Date(tStr);
-                          if (isNaN(date.getTime())) {
-                            const timePart = tStr.split(" ")[1];
-                            if (timePart) {
-                              const parts = timePart.split(":");
-                              return `${parts[0]}:${parts[1]}`;
-                            }
-                            return tStr;
-                          }
-                          return date.toLocaleTimeString("en-US", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: false,
-                          });
-                        } catch {
-                          return tStr;
-                        }
-                      };
-                      return `${formatTimeOnly(selectedDayDetails.shiftStartTime)} to ${formatTimeOnly(selectedDayDetails.shiftEndTime)}`;
-                    })()}
-                  </span>
-                </div>
-              </div>
-
-              {/* Punches Table with inline break gaps */}
-              {(() => {
-                const sorted = [
-                  ...(selectedDayDetails.clockInDetails || []),
-                ].sort((a: any, b: any) => {
-                  const da = a.clockTime.endsWith("Z")
-                    ? a.clockTime
-                    : `${a.clockTime}Z`;
-                  const db = b.clockTime.endsWith("Z")
-                    ? b.clockTime
-                    : `${b.clockTime}Z`;
-                  return new Date(da).getTime() - new Date(db).getTime();
-                });
-
-                // Sum all consecutive OUT→IN gaps for total break time
-                let totalBreakMs = 0;
-                for (let i = 0; i < sorted.length - 1; i++) {
-                  if (
-                    sorted[i].inOutType === "OUT" &&
-                    sorted[i + 1]?.inOutType === "IN"
-                  ) {
-                    const outIso = sorted[i].clockTime.endsWith("Z")
-                      ? sorted[i].clockTime
-                      : `${sorted[i].clockTime}Z`;
-                    const inIso = sorted[i + 1].clockTime.endsWith("Z")
-                      ? sorted[i + 1].clockTime
-                      : `${sorted[i + 1].clockTime}Z`;
-                    const gap =
-                      new Date(inIso).getTime() - new Date(outIso).getTime();
-                    if (gap > 0) totalBreakMs += gap;
-                  }
-                }
-                const fmtMs = (ms: number) => {
-                  const mins = Math.floor(ms / 60000);
-                  return `${String(Math.floor(mins / 60)).padStart(2, "0")}:${String(mins % 60).padStart(2, "0")} HRS`;
-                };
-                const totalBreakMins = Math.floor(totalBreakMs / 60000);
-
-                if (sorted.length === 0) {
-                  return (
-                    <div className="text-center py-8 text-xs text-muted-foreground border border-border rounded-xl">
-                      No punch records for this date.
-                    </div>
-                  );
-                }
-
-                return (
-                  <>
-                    <div className="border border-border rounded-xl overflow-hidden shadow-sm bg-background">
-                      <div className="overflow-y-auto max-h-[300px]">
-                        <table className="w-full border-collapse text-left text-xs">
-                          <thead>
-                            <tr className="bg-muted border-b border-border text-muted-foreground font-bold sticky top-0 z-10">
-                              <th className="px-3 py-2.5 w-8">#</th>
-                              <th className="px-3 py-2.5">In/Out</th>
-                              <th className="px-3 py-2.5">Time (IST)</th>
-                              <th className="px-3 py-2.5">Source</th>
-                              <th className="px-3 py-2.5">Device</th>
-                            </tr>
-                          </thead>
-                          <tbody className="font-medium text-foreground">
-                            {sorted.map((punch: any, index: number) => {
-                              let breakGapMs = 0;
-                              const next = sorted[index + 1];
-                              if (
-                                punch.inOutType === "OUT" &&
-                                next?.inOutType === "IN"
-                              ) {
-                                const outIso = punch.clockTime.endsWith("Z")
-                                  ? punch.clockTime
-                                  : `${punch.clockTime}Z`;
-                                const inIso = next.clockTime.endsWith("Z")
-                                  ? next.clockTime
-                                  : `${next.clockTime}Z`;
-                                const gap =
-                                  new Date(inIso).getTime() -
-                                  new Date(outIso).getTime();
-                                if (gap > 0) breakGapMs = gap;
-                              }
-                              return (
-                                <React.Fragment key={index}>
-                                  <tr className="border-b border-border hover:bg-muted/10 transition-colors">
-                                    <td className="px-3 py-2.5 text-muted-foreground font-semibold">
-                                      {index + 1}
-                                    </td>
-                                    <td className="px-3 py-2.5">
-                                      <span
-                                        className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
-                                          punch.inOutType === "IN"
-                                            ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                                            : "bg-rose-500/10 text-rose-500 border-rose-500/20"
-                                        }`}
-                                      >
-                                        {punch.inOutType}
-                                      </span>
-                                    </td>
-                                    <td className="px-3 py-2.5 font-semibold text-foreground tabular-nums">
-                                      {formatMewurkTime(punch.clockTime)}
-                                    </td>
-                                    <td className="px-3 py-2.5 text-muted-foreground">
-                                      <div className="flex items-center gap-1.5">
-                                        <span className="h-4 w-4 bg-muted border border-border rounded flex items-center justify-center text-[9px] font-bold shrink-0">
-                                          {punch.sourceName
-                                            ? punch.sourceName[0]
-                                            : "K"}
-                                        </span>
-                                        {punch.sourceName || "Kiosk"}
-                                      </div>
-                                    </td>
-                                    <td className="px-3 py-2.5 text-muted-foreground truncate max-w-[110px]">
-                                      {punch.deviceName ||
-                                        punch.officeName ||
-                                        "-"}
-                                    </td>
-                                  </tr>
-                                  {breakGapMs > 0 && (
-                                    <tr className="bg-amber-500/5">
-                                      <td colSpan={5} className="px-3 py-1.5">
-                                        <div className="flex items-center gap-2">
-                                          <div className="flex-1 h-px bg-amber-500/20" />
-                                          <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 whitespace-nowrap flex items-center gap-1">
-                                            <span className="h-1.5 w-1.5 rounded-full bg-amber-500 inline-block" />
-                                            Break: {fmtMs(breakGapMs)}
-                                          </span>
-                                          <div className="flex-1 h-px bg-amber-500/20" />
-                                        </div>
-                                      </td>
-                                    </tr>
-                                  )}
-                                </React.Fragment>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-
-                    {/* Total Break Summary */}
-                    <div className="flex items-center justify-between bg-muted/40 border border-border rounded-xl px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 rounded-full bg-amber-500 shrink-0" />
-                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                          Total Break Time
-                        </span>
-                      </div>
-                      <span
-                        className={`text-sm font-extrabold tabular-nums ${
-                          totalBreakMins > 0
-                            ? "text-amber-600 dark:text-amber-400"
-                            : "text-muted-foreground"
-                        }`}
-                      >
-                        {fmtMs(totalBreakMs)}
-                      </span>
-                    </div>
-                  </>
-                );
-              })()}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      <DayDetailModal
+        isOpen={isDetailModalOpen}
+        onOpenChange={setIsDetailModalOpen}
+        employeeName={employeeName}
+        selectedDayDetails={selectedDayDetails}
+        isLoadingDayDetails={isLoadingDayDetails}
+      />
     </div>
   );
 };

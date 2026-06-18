@@ -78,6 +78,7 @@ export const sidebarData: SidebarData = {
       ],
       allowUserIDs: [134, 86],
       allowedTech: [29],
+      isCollapsible: true,
       items: [
         {
           title: "Dashboard",
@@ -105,32 +106,7 @@ export const sidebarData: SidebarData = {
             roles.BDE,
           ],
         },
-        {
-          title: "System Inventory",
-          url: "/system-inventory",
-          icon: Database,
-          allowedTech: [29],
-          requiredRoles: [
-            roles.ADMIN,
-            roles.TEAM_LEAD,
-            roles.PROJECT_MANAGER,
-            roles.DEVELOPER,
-            roles.BDE,
-          ],
-        },
-        {
-          title: "Client Inventory",
-          url: "/client-inventory",
-          icon: Laptop,
-          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
-        },
-        {
-          title: "Client NDA",
-          url: "/client-nda",
-          icon: FileCheck,
-          allowUserIDs: [134],
-          requiredRoles: [roles.ADMIN, roles.BDE],
-        },
+
         {
           title: "Extra Work Report",
           url: "/extra-work-report",
@@ -163,10 +139,23 @@ export const sidebarData: SidebarData = {
           ],
         },
         {
-          title: "Meetings Overview",
-          url: "/meetings-overview",
-          icon: IconMessage2Question,
-          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+          title: "Transaction Logs",
+          url: "/transactions-logs",
+          icon: ScrollText,
+          requiredRoles: [
+            roles.ADMIN,
+            roles.PROJECT_MANAGER,
+            roles.TEAM_LEAD,
+            roles.BDE,
+          ],
+          allowUserIDs: [169, 170, 171, 175, 174],
+          allowedTech: [29, 15],
+        },
+        {
+          title: "Tools Management",
+          url: "/tools-management",
+          icon: IconTool,
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER, roles.TEAM_LEAD],
         },
       ],
     },
@@ -181,6 +170,7 @@ export const sidebarData: SidebarData = {
       ],
       allowUserIDs: [134],
       allowedTech: [29],
+      isCollapsible: true,
       items: [
         {
           title: "Service Inquiries",
@@ -208,6 +198,7 @@ export const sidebarData: SidebarData = {
         roles.DEVELOPER,
         roles.BDE,
       ],
+      isCollapsible: true,
       allowUserIDs: [134],
       allowedTech: [29],
       items: [
@@ -229,6 +220,7 @@ export const sidebarData: SidebarData = {
     {
       title: "Recruitment",
       requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
+      isCollapsible: true,
       items: [
         {
           title: "Interviews",
@@ -254,6 +246,7 @@ export const sidebarData: SidebarData = {
       ],
       allowUserIDs: [169, 170, 171, 175, 174],
       allowedTech: [29, 15],
+      isCollapsible: true,
       items: [
         {
           title: "Conference Room Booking",
@@ -267,29 +260,43 @@ export const sidebarData: SidebarData = {
           ],
         },
         {
-          title: "Transaction Logs",
-          url: "/transactions-logs",
-          icon: ScrollText,
+          title: "System Inventory",
+          url: "/system-inventory",
+          icon: Database,
+          allowedTech: [29],
           requiredRoles: [
             roles.ADMIN,
-            roles.PROJECT_MANAGER,
             roles.TEAM_LEAD,
+            roles.PROJECT_MANAGER,
+            roles.DEVELOPER,
             roles.BDE,
           ],
-          allowUserIDs: [169, 170, 171, 175, 174],
-          allowedTech: [29, 15],
         },
         {
-          title: "Tools Management",
-          url: "/tools-management",
-          icon: IconTool,
-          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER, roles.TEAM_LEAD],
+          title: "Client Inventory",
+          url: "/client-inventory",
+          icon: Laptop,
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+        },
+        {
+          title: "Client NDA",
+          url: "/client-nda",
+          icon: FileCheck,
+          allowUserIDs: [134],
+          requiredRoles: [roles.ADMIN, roles.BDE],
+        },
+        {
+          title: "Meetings Overview",
+          url: "/meetings-overview",
+          icon: IconMessage2Question,
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
         },
       ],
     },
     {
       title: "Infrastructure",
       requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
+      isCollapsible: true,
       items: [
         {
           title: "Servers",

@@ -75,7 +75,7 @@ interface RequestItem {
 }
 
 export const EmployeeAttendance: React.FC = () => {
-  const [activeTab] = useState<
+  const [activeTab, setActiveTab] = useState<
     "summary" | "regularization" | "overtime" | "onduty"
   >("summary");
   const [searchQuery] = useState("");
@@ -242,7 +242,30 @@ export const EmployeeAttendance: React.FC = () => {
   }, [mewurkEmployees, selectedMonth, selectedYear]);
 
   // Mock Regularizations
-  const [regularizations, setRegularizations] = useState<RequestItem[]>([]);
+  const [regularizations, setRegularizations] = useState<RequestItem[]>([
+    {
+      id: "reg-1",
+      employeeName: "Alpesh Nakrani",
+      employeeCode: "405",
+      role: "Senior Developer",
+      avatar: "AN",
+      date: "09 Jun 2026",
+      detail: "Punch In: 09:30 AM | Punch Out: 06:30 PM",
+      reason: "Forgot to punch in during client call",
+      status: "pending",
+    },
+    {
+      id: "reg-2",
+      employeeName: "Bimal Raval",
+      employeeCode: "401",
+      role: "UI/UX Designer",
+      avatar: "BR",
+      date: "03 Jun 2026",
+      detail: "Punch In: 09:45 AM | Punch Out: 07:00 PM",
+      reason: "Power outage at home office",
+      status: "pending",
+    }
+  ]);
 
   // Mock Overtime Requests
   const [overtimes, setOvertimes] = useState<RequestItem[]>([]);
@@ -407,7 +430,7 @@ export const EmployeeAttendance: React.FC = () => {
   return (
     <div className="flex flex-col gap-6">
       {/* Sub Tabs Navigation */}
-      {/* <div className="flex border-b border-border">
+      <div className="flex border-b border-border">
         <button
           onClick={() => setActiveTab("summary")}
           className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all ${
@@ -433,37 +456,7 @@ export const EmployeeAttendance: React.FC = () => {
             </Badge>
           )}
         </button>
-        <button
-          onClick={() => setActiveTab("overtime")}
-          className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all flex items-center gap-1.5 ${
-            activeTab === "overtime"
-              ? "border-rose-500 text-rose-500 bg-rose-500/5"
-              : "border-transparent text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          Overtime Approvals
-          {overtimes.filter(o => o.status === "pending").length > 0 && (
-            <Badge className="bg-rose-600 hover:bg-rose-700 text-[10px] px-1 py-0.2 ml-1">
-              {overtimes.filter(o => o.status === "pending").length}
-            </Badge>
-          )}
-        </button>
-        <button
-          onClick={() => setActiveTab("onduty")}
-          className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all flex items-center gap-1.5 ${
-            activeTab === "onduty"
-              ? "border-rose-500 text-rose-500 bg-rose-500/5"
-              : "border-transparent text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          On Duty Approvals
-          {onDuties.filter(d => d.status === "pending").length > 0 && (
-            <Badge className="bg-rose-600 hover:bg-rose-700 text-[10px] px-1 py-0.2 ml-1">
-              {onDuties.filter(d => d.status === "pending").length}
-            </Badge>
-          )}
-        </button>
-      </div> */}
+      </div>
 
       {activeTab === "summary" && (
         <>
