@@ -4,7 +4,7 @@ import TablePageHeader from "@/components/table/table-page-header";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
-import { Clock } from "lucide-react";
+import { Clock, Users } from "lucide-react";
 import { MyAttendance } from "./components/my-attendance";
 import { EmployeeAttendance } from "./components/employee-attendance";
 
@@ -23,10 +23,6 @@ const AttendancePage: React.FC = () => {
   ).toLowerCase();
 
   const isAdmin = roleName === roles.ADMIN;
-  const isPM = roleName === roles.PROJECT_MANAGER;
-
-  // Only Admin and Project Manager can view all employees' attendance
-  const canViewEmployeeAttendance = isAdmin || isPM;
 
   return (
     <PageLayout>
@@ -35,17 +31,17 @@ const AttendancePage: React.FC = () => {
           Track employee work hours, shifts, breaks, and punches.
         </TablePageHeader>
 
-        {canViewEmployeeAttendance ? (
+        {isAdmin ? (
           <Tabs defaultValue="my-attendance" className="w-full gap-4">
             <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border border-rose-100/50 h-9 w-fit shrink-0">
               <TabsTrigger value="my-attendance" className={tabTriggerClass}>
                 <Clock className="h-4 w-4" />
                 My Attendance
               </TabsTrigger>
-              {/* <TabsTrigger value="employee-attendance" className={tabTriggerClass}>
+              <TabsTrigger value="employee-attendance" className={tabTriggerClass}>
                 <Users className="h-4 w-4" />
                 Employee Attendance
-              </TabsTrigger> */}
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent
