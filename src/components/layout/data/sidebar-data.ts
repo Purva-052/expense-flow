@@ -79,6 +79,7 @@ export const sidebarData: SidebarData = {
       allowUserIDs: [134, 86],
       allowedTech: [29],
       isCollapsible: true,
+      defaultOpen: true,
       items: [
         {
           title: "Dashboard",
@@ -171,6 +172,7 @@ export const sidebarData: SidebarData = {
       allowUserIDs: [134],
       allowedTech: [29],
       isCollapsible: true,
+      defaultOpen: true,
       items: [
         {
           title: "Service Inquiries",

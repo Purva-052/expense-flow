@@ -28,10 +28,10 @@ import {
 } from "../ui/dropdown-menu";
 import { NavCollapsible, NavItem, NavLink, type NavGroup } from "./types";
 
-export function NavGroup({ title, items, isCollapsible }: NavGroup) {
+export function NavGroup({ title, items, isCollapsible, defaultOpen }: NavGroup) {
   const { state } = useSidebar();
   const href = useLocation({ select: (location) => location.href });
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(defaultOpen ?? false);
 
   // If the group is collapsible (like Masters), render with toggle functionality
   if (isCollapsible) {

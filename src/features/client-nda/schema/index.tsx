@@ -17,6 +17,13 @@ export const clientNDAFormSchema = z.object({
     .min(5, "Client phone number is required"),
   clientCountry: z.string().trim().min(1, "Client country is required"),
   clientAddress: z.string().trim().min(1, "Client address is required"),
+  clientCompany: z
+    .string()
+    .trim()
+    .max(100, "Client company must be at most 100 characters")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
 });
 
 export type TClientNDAFormSchema = z.infer<typeof clientNDAFormSchema>;

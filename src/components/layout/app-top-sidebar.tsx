@@ -6,6 +6,7 @@ import { NotificationModal } from "../notification-modal";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
 import { ModeToggle } from "./mode-toggle";
+import { PendingLeavesButton } from "./pending-leaves-button";
 
 const AppTopSidebar = () => {
   const user = useAuthStore((state) => state.user);
@@ -15,6 +16,7 @@ const AppTopSidebar = () => {
     <Header className="shadow-sm" fixed>
       <HeaderTitle />
       <div className="ml-auto flex items-center space-x-4">
+        <PendingLeavesButton />
         <ModeToggle />
         {userRole != roles.ADMIN && userRole != roles.PROJECT_MANAGER && (
           <NotificationModal />
