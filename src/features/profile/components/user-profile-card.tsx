@@ -47,6 +47,7 @@ import {
   Mail,
   LayoutGrid,
   List,
+  CodeXml,
 } from "lucide-react";
 import { useEffect, useState, useRef, useMemo } from "react";
 import { toast } from "sonner";
@@ -105,7 +106,7 @@ const ProfileSkeleton = () => {
           {/* Glowing mesh blobs */}
           <div className="absolute right-0 top-0 w-96 h-96 bg-rose-500/10 dark:bg-rose-500/15 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute left-1/4 bottom-0 w-72 h-72 bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-          
+
           <div className="max-w-6xl mx-auto px-6 flex items-center gap-6 relative z-10">
             <div className="h-24 w-24 rounded-full bg-muted animate-pulse" />
             <div className="flex-1">
@@ -118,7 +119,7 @@ const ProfileSkeleton = () => {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8 pb-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {Array.from({ length: 3 }).map((_, i) => (
+          {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="p-4 bg-card rounded shadow-sm">
               <div className="h-4 bg-muted rounded w-24 mb-3 animate-pulse" />
               <div className="h-5 bg-muted rounded w-40 animate-pulse" />
@@ -673,7 +674,9 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
                 </div>
               </FormProvider>
               <div>
-                <h1 className="text-3xl font-bold tracking-tight">{user?.fullName}</h1>
+                <h1 className="text-3xl font-bold tracking-tight">
+                  {user?.fullName}
+                </h1>
               </div>
             </div>
           </div>
@@ -695,6 +698,13 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
             label="Career Start"
             value={formatDate(user?.careerStartDate)}
           />
+          {user?.role !== "admin" && user?.role !== "project_manager" && (
+            <InfoCard
+              icon={CodeXml}
+              label="Primary Technology"
+              value={user?.technology?.name || "-"}
+            />
+          )}
           {/* <InfoCard icon={MapPin} label="Status" value={user?.status || "-"} /> */}
         </div>
 
@@ -1241,26 +1251,6 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
                   />
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        )}
-        
-        {/* ================= PRIMARY TECHNOLOGY ================= */}
-        {user?.role !== "admin" && user?.role !== "project_manager" && (
-          <Card className="shadow-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Code className="h-5 w-5 text-blue-500" />
-                Primary Technology
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Badge
-                className="text-white"
-                style={{ backgroundColor: user?.technology?.color || "#333" }}
-              >
-                {user?.technology?.name || "-"}
-              </Badge>
             </CardContent>
           </Card>
         )}

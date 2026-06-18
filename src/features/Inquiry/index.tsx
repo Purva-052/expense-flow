@@ -212,17 +212,23 @@ const InquiryPage = () => {
   const handleSalesPersonClick = (name: string) => {
     const match = salesPersonOptions.find((o) => o.label === name);
     if (match) {
-      setQueryParams({
-        ...queryParams,
-        salesPersonId: match.value,
-        currentPage: 1,
-      });
+      setQueryParams(
+        {
+          ...queryParams,
+          salesPersonId: match.value,
+          currentPage: 1,
+        },
+        { history: "push" }
+      );
     } else {
-      setQueryParams({
-        ...queryParams,
-        search: name,
-        currentPage: 1,
-      });
+      setQueryParams(
+        {
+          ...queryParams,
+          search: name,
+          currentPage: 1,
+        },
+        { history: "push" }
+      );
     }
   };
 

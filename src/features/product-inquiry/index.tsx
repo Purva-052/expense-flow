@@ -86,6 +86,20 @@ const ProductInquiryPage = () => {
 
   const isSearchActive = queryParams.drilled === "true";
 
+  useEffect(() => {
+    if (!isSearchActive) {
+      const stored = localStorage.getItem("productInquiryViewType") as
+        | "grid"
+        | "list"
+        | "table"
+        | null;
+      const targetView = stored || "grid";
+      if (view !== targetView) {
+        setView(targetView);
+      }
+    }
+  }, [isSearchActive]);
+
   const apiParams = {
     search: queryParams.search || undefined,
     industryId: queryParams.industryId || undefined,
@@ -294,7 +308,10 @@ const ProductInquiryPage = () => {
   };
 
   const handleProductClick = (productId: string) => {
-    setQueryParams({ productId, drilled: "true", search: "" });
+    setQueryParams(
+      { productId, drilled: "true", search: "" },
+      { history: "push" }
+    );
     // When drilling into a product, switch to list view (grid is hidden)
     if (view === "grid") setView("list");
   };
