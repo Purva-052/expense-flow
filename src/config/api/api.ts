@@ -110,6 +110,7 @@ const API = {
     project_list: "/projects/dropdown/list",
     milestones: "/project-milestones",
     tasks: "/tasks/dropdown",
+    empCode: "/attendance/employees",
   },
   linode_api: {
     list: "/linode/instances",
