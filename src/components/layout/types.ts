@@ -47,6 +47,7 @@ interface NavGroup {
   items: NavItem[];
   requiredRoles?: string[];
   isCollapsible?: boolean;
+  defaultOpen?: boolean;
   allowUserIDs?: number[];
   allowedTech?: number[];
 }

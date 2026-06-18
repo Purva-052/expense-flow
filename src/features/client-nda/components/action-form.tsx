@@ -39,6 +39,7 @@ import {
   Send,
   ArrowLeft,
   User,
+  Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -72,7 +73,6 @@ export function ClientNDAActionForm({
   const { mutateAsync: getPreviewBlob, isPending: isFetchingPreview } =
     useGetNDAPreviewBlob();
 
-
   const countryOptions =
     countryData?.data?.map((country: any) => ({
       value: country.name,
@@ -87,6 +87,7 @@ export function ClientNDAActionForm({
       clientPhoneNumber: "",
       clientCountry: "",
       clientAddress: "",
+      clientCompany: "",
     },
   });
 
@@ -138,6 +139,7 @@ export function ClientNDAActionForm({
           clientPhoneNumber: currentRow.clientPhoneNumber || "",
           clientCountry: currentRow.clientCountry || "",
           clientAddress: currentRow.clientAddress || "",
+          clientCompany: currentRow.clientCompany || "",
         });
       } else {
         // Create mode
@@ -149,6 +151,7 @@ export function ClientNDAActionForm({
           clientPhoneNumber: "",
           clientCountry: "",
           clientAddress: "",
+          clientCompany: "",
         });
       }
     }
@@ -340,6 +343,28 @@ export function ClientNDAActionForm({
                   isLoading={loadingCountries}
                 />
 
+                <FormField
+                  control={form.control}
+                  name="clientCompany"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-1.5">
+                        <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
+                        Client Company
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Acme Inc."
+                          // disabled={!isDraft}
+                          {...field}
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <div className="md:col-span-2">
                   <FormField
                     control={form.control}
@@ -441,6 +466,15 @@ export function ClientNDAActionForm({
                       </span>
                       <span className="font-medium text-foreground">
                         {createdNda?.clientCountry || "-"}
+                      </span>
+                    </div>
+
+                    <div>
+                      <span className="text-xs text-muted-foreground block">
+                        Client Company
+                      </span>
+                      <span className="font-medium text-foreground">
+                        {createdNda?.clientCompany || "-"}
                       </span>
                     </div>
 
