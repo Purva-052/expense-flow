@@ -1,24 +1,17 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { Card } from "@/components/ui/card";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Card } from "@/components/ui/card";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { MewurkService, AttendanceData } from "../services/mewurk-service";
-import {
-  Clock,
-  RotateCcw,
-  CalendarDays,
-  ChevronLeft,
-  ChevronRight,
-  Network,
-  X,
-} from "lucide-react";
+import { CalendarDays, Network, X } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   OrgChart,
   extractOrgChartUsers,
 } from "../../users/components/org-chart";
-import { useGetUsersList } from "../../users/services";
+import { useGetUsersList, useGetUserDetails } from "../../users/services";
+import instance from "@/config/instance/instance";
 import {
   Dialog,
   DialogContent,
@@ -58,13 +51,19 @@ interface SelectedEmployee {
 interface MyAttendanceProps {
   employee?: SelectedEmployee;
   onBack?: () => void;
+  filtersPortalId?: string;
 }
 
 export const MyAttendance: React.FC<MyAttendanceProps> = ({
   employee,
   onBack,
+  filtersPortalId,
 }) => {
   const user = useAuthStore((state) => state.user);
+  const loggedInId = user?.user?.id;
+  const { data: loggedInUserDetails }: any = useGetUserDetails(
+    loggedInId || ""
+  );
   const [selectedFilterEmployee, setSelectedFilterEmployee] =
     useState<SelectedEmployee | null>(null);
   const [allEmployees, setAllEmployees] = useState<
@@ -271,8 +270,8 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   const [mewurkEmployeeCode, setMewurkEmployeeCode] = useState<number | null>(
     null
   );
-  const [todayDetails, setTodayDetails] = useState<any | null>(null);
-  const [isLoadingTodayDetails, setIsLoadingTodayDetails] = useState(false);
+  // const [todayDetails, setTodayDetails] = useState<any | null>(null);
+  // const [isLoadingTodayDetails, setIsLoadingTodayDetails] = useState(false);
 
   // States for Day Detail Modal
   const [selectedDayDetails, setSelectedDayDetails] = useState<any | null>(
@@ -356,6 +355,14 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
       }
     }
 
+    if (loggedInUserDetails?.data?.mewurkEmployeeCode) {
+      const codeNum = parseInt(loggedInUserDetails.data.mewurkEmployeeCode);
+      if (!isNaN(codeNum) && codeNum > 0) {
+        setMewurkEmployeeCode(codeNum);
+        return;
+      }
+    }
+
     const resolveEmployee = async () => {
       try {
         const targetEmail = user?.user?.email || "varun.s@devstree.in";
@@ -398,7 +405,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
       }
     };
     resolveEmployee();
-  }, [activeEmployee, user]);
+  }, [activeEmployee, user, loggedInUserDetails]);
 
   // Fetch logs
   useEffect(() => {
@@ -468,25 +475,25 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   }, [mewurkEmployeeCode, selectedMonth, selectedYear, activeEmployee]);
 
   // Fetch today's detailed clock-in/out details
-  useEffect(() => {
-    if (!mewurkEmployeeCode) return;
-    const fetchTodayPunches = async () => {
-      setIsLoadingTodayDetails(true);
-      const todayStr = new Date().toISOString().split("T")[0];
-      try {
-        const data = await MewurkService.fetchClockInDetails(
-          mewurkEmployeeCode,
-          todayStr
-        );
-        setTodayDetails(data);
-      } catch (err) {
-        console.error("Error fetching today's punches:", err);
-      } finally {
-        setIsLoadingTodayDetails(false);
-      }
-    };
-    fetchTodayPunches();
-  }, [mewurkEmployeeCode]);
+  // useEffect(() => {
+  //   if (!mewurkEmployeeCode) return;
+  //   const fetchTodayPunches = async () => {
+  //     setIsLoadingTodayDetails(true);
+  //     const todayStr = new Date().toISOString().split("T")[0];
+  //     try {
+  //       const data = await MewurkService.fetchClockInDetails(
+  //         mewurkEmployeeCode,
+  //         todayStr
+  //       );
+  //       setTodayDetails(data);
+  //     } catch (err) {
+  //       console.error("Error fetching today's punches:", err);
+  //     } finally {
+  //       setIsLoadingTodayDetails(false);
+  //     }
+  //   };
+  //   fetchTodayPunches();
+  // }, [mewurkEmployeeCode]);
 
   // Stats computation for selected employee
   const daysInMonth = useMemo(() => {
@@ -633,162 +640,162 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   // const leavePct = 100 - presentPct - absentPct;
 
   // Time & log states for standard user view
-  const [currentTime, setCurrentTime] = useState(new Date());
+  // const [currentTime, setCurrentTime] = useState(new Date());
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+  // useEffect(() => {
+  //   const timer = setInterval(() => {
+  //     setCurrentTime(new Date());
+  //   }, 1000);
+  //   return () => clearInterval(timer);
+  // }, []);
 
-  const todayStats = useMemo(() => {
-    if (!todayDetails) {
-      return {
-        startTime: "-",
-        punchedIn: false,
-        onBreak: false,
-        workedSeconds: 0,
-        breakSeconds: 0,
-        requiredSeconds: 29700, // 8h 15m default
-        logs: [],
-      };
-    }
+  // const todayStats = useMemo(() => {
+  //   if (!todayDetails) {
+  //     return {
+  //       startTime: "-",
+  //       punchedIn: false,
+  //       onBreak: false,
+  //       workedSeconds: 0,
+  //       breakSeconds: 0,
+  //       requiredSeconds: 29700, // 8h 15m default
+  //       logs: [],
+  //     };
+  //   }
 
-    const details = [...(todayDetails.clockInDetails || [])];
+  //   const details = [...(todayDetails.clockInDetails || [])];
 
-    // Sort details chronologically using parsed UTC times
-    details.sort((a: any, b: any) => {
-      const daStr = a.clockTime.endsWith("Z") ? a.clockTime : `${a.clockTime}Z`;
-      const dbStr = b.clockTime.endsWith("Z") ? b.clockTime : `${b.clockTime}Z`;
-      return new Date(daStr).getTime() - new Date(dbStr).getTime();
-    });
+  //   // Sort details chronologically using parsed UTC times
+  //   details.sort((a: any, b: any) => {
+  //     const daStr = a.clockTime.endsWith("Z") ? a.clockTime : `${a.clockTime}Z`;
+  //     const dbStr = b.clockTime.endsWith("Z") ? b.clockTime : `${b.clockTime}Z`;
+  //     return new Date(daStr).getTime() - new Date(dbStr).getTime();
+  //   });
 
-    const logs = details.map((d: any) => {
-      const timeStr = formatMewurkTime(d.clockTime);
-      return {
-        time: timeStr,
-        type: d.inOutType === "IN" ? "Punch In" : "Punch Out",
-        status: d.inOutType === "IN" ? "success" : "warning",
-      };
-    });
+  //   const logs = details.map((d: any) => {
+  //     const timeStr = formatMewurkTime(d.clockTime);
+  //     return {
+  //       time: timeStr,
+  //       type: d.inOutType === "IN" ? "Punch In" : "Punch Out",
+  //       status: d.inOutType === "IN" ? "success" : "warning",
+  //     };
+  //   });
 
-    const firstIn = details.find((d: any) => d.inOutType === "IN");
-    const startTimeStr = firstIn ? formatMewurkTime(firstIn.clockTime) : "-";
+  //   const firstIn = details.find((d: any) => d.inOutType === "IN");
+  //   const startTimeStr = firstIn ? formatMewurkTime(firstIn.clockTime) : "-";
 
-    const lastPunch = details[details.length - 1];
-    const isCurrentlyIn = lastPunch ? lastPunch.inOutType === "IN" : false;
-    const isCurrentlyOut = lastPunch ? lastPunch.inOutType === "OUT" : false;
+  //   const lastPunch = details[details.length - 1];
+  //   const isCurrentlyIn = lastPunch ? lastPunch.inOutType === "IN" : false;
+  //   const isCurrentlyOut = lastPunch ? lastPunch.inOutType === "OUT" : false;
 
-    let reqSecs = 29700;
-    if (todayDetails.shiftStartTime && todayDetails.shiftEndTime) {
-      const sStart = new Date(todayDetails.shiftStartTime);
-      const sEnd = new Date(todayDetails.shiftEndTime);
-      if (!isNaN(sStart.getTime()) && !isNaN(sEnd.getTime())) {
-        reqSecs = Math.max(
-          Math.floor((sEnd.getTime() - sStart.getTime()) / 1000),
-          0
-        );
-      }
-    }
+  //   let reqSecs = 29700;
+  //   if (todayDetails.shiftStartTime && todayDetails.shiftEndTime) {
+  //     const sStart = new Date(todayDetails.shiftStartTime);
+  //     const sEnd = new Date(todayDetails.shiftEndTime);
+  //     if (!isNaN(sStart.getTime()) && !isNaN(sEnd.getTime())) {
+  //       reqSecs = Math.max(
+  //         Math.floor((sEnd.getTime() - sStart.getTime()) / 1000),
+  //         0
+  //       );
+  //     }
+  //   }
 
-    let staticWorkedMs = 0;
-    let staticBreakMs = 0;
+  //   let staticWorkedMs = 0;
+  //   let staticBreakMs = 0;
 
-    for (let i = 0; i < details.length; i++) {
-      const current = details[i];
-      const next = details[i + 1];
+  //   for (let i = 0; i < details.length; i++) {
+  //     const current = details[i];
+  //     const next = details[i + 1];
 
-      const currentIso = current.clockTime.endsWith("Z")
-        ? current.clockTime
-        : `${current.clockTime}Z`;
-      const currentMs = new Date(currentIso).getTime();
+  //     const currentIso = current.clockTime.endsWith("Z")
+  //       ? current.clockTime
+  //       : `${current.clockTime}Z`;
+  //     const currentMs = new Date(currentIso).getTime();
 
-      if (current.inOutType === "IN") {
-        if (next) {
-          const nextIso = next.clockTime.endsWith("Z")
-            ? next.clockTime
-            : `${next.clockTime}Z`;
-          const nextMs = new Date(nextIso).getTime();
-          staticWorkedMs += Math.max(nextMs - currentMs, 0);
-        } else {
-          const currentLocalMs = currentTime.getTime();
-          staticWorkedMs += Math.max(currentLocalMs - currentMs, 0);
-        }
-      } else if (current.inOutType === "OUT") {
-        if (next) {
-          const nextIso = next.clockTime.endsWith("Z")
-            ? next.clockTime
-            : `${next.clockTime}Z`;
-          const nextMs = new Date(nextIso).getTime();
-          staticBreakMs += Math.max(nextMs - currentMs, 0);
-        } else {
-          const currentLocalMs = currentTime.getTime();
-          staticBreakMs += Math.max(currentLocalMs - currentMs, 0);
-        }
-      }
-    }
+  //     if (current.inOutType === "IN") {
+  //       if (next) {
+  //         const nextIso = next.clockTime.endsWith("Z")
+  //           ? next.clockTime
+  //           : `${next.clockTime}Z`;
+  //         const nextMs = new Date(nextIso).getTime();
+  //         staticWorkedMs += Math.max(nextMs - currentMs, 0);
+  //       } else {
+  //         const currentLocalMs = currentTime.getTime();
+  //         staticWorkedMs += Math.max(currentLocalMs - currentMs, 0);
+  //       }
+  //     } else if (current.inOutType === "OUT") {
+  //       if (next) {
+  //         const nextIso = next.clockTime.endsWith("Z")
+  //           ? next.clockTime
+  //           : `${next.clockTime}Z`;
+  //         const nextMs = new Date(nextIso).getTime();
+  //         staticBreakMs += Math.max(nextMs - currentMs, 0);
+  //       } else {
+  //         const currentLocalMs = currentTime.getTime();
+  //         staticBreakMs += Math.max(currentLocalMs - currentMs, 0);
+  //       }
+  //     }
+  //   }
 
-    return {
-      startTime: startTimeStr,
-      punchedIn: isCurrentlyIn,
-      onBreak: isCurrentlyOut,
-      workedSeconds: Math.floor(staticWorkedMs / 1000),
-      breakSeconds: Math.floor(staticBreakMs / 1000),
-      requiredSeconds: reqSecs,
-      logs,
-    };
-  }, [todayDetails, currentTime]);
+  //   return {
+  //     startTime: startTimeStr,
+  //     punchedIn: isCurrentlyIn,
+  //     onBreak: isCurrentlyOut,
+  //     workedSeconds: Math.floor(staticWorkedMs / 1000),
+  //     breakSeconds: Math.floor(staticBreakMs / 1000),
+  //     requiredSeconds: reqSecs,
+  //     logs,
+  //   };
+  // }, [todayDetails, currentTime]);
 
-  const startTime = todayStats.startTime;
-  const punchedIn = todayStats.punchedIn;
+  // const startTime = todayStats.startTime;
+  // const punchedIn = todayStats.punchedIn;
   // const onBreak = todayStats.onBreak;
-  const workedSeconds = todayStats.workedSeconds;
-  const breakSeconds = todayStats.breakSeconds;
-  const requiredSeconds = todayStats.requiredSeconds;
-  const logs = todayStats.logs;
+  // const workedSeconds = todayStats.workedSeconds;
+  // const breakSeconds = todayStats.breakSeconds;
+  // const requiredSeconds = todayStats.requiredSeconds;
+  // const logs = todayStats.logs;
 
-  const formatDuration = (totalSecs: number) => {
-    const hrs = Math.floor(totalSecs / 3600);
-    const mins = Math.floor((totalSecs % 3600) / 60);
-    return `${hrs}h ${mins}m`;
-  };
+  // const formatDuration = (totalSecs: number) => {
+  //   const hrs = Math.floor(totalSecs / 3600);
+  //   const mins = Math.floor((totalSecs % 3600) / 60);
+  //   return `${hrs}h ${mins}m`;
+  // };
 
-  const formatHMS = (totalSecs: number) => {
-    const hrs = String(Math.floor(totalSecs / 3600)).padStart(2, "0");
-    const mins = String(Math.floor((totalSecs % 3600) / 60)).padStart(2, "0");
-    const secs = String(totalSecs % 60).padStart(2, "0");
-    return `${hrs}:${mins}:${secs}`;
-  };
+  // const formatHMS = (totalSecs: number) => {
+  //   const hrs = String(Math.floor(totalSecs / 3600)).padStart(2, "0");
+  //   const mins = String(Math.floor((totalSecs % 3600) / 60)).padStart(2, "0");
+  //   const secs = String(totalSecs % 60).padStart(2, "0");
+  //   return `${hrs}:${mins}:${secs}`;
+  // };
 
-  const getCompletesAtTime = () => {
-    if (!startTime || startTime === "-") return "--:-- --";
-    const parts = startTime.split(" ");
-    if (parts.length < 2) return "--:-- --";
-    const [timeStr, modifier] = parts;
-    const timeParts = timeStr.split(":");
-    if (timeParts.length < 2) return "--:-- --";
-    let [hrsStr, minsStr] = timeParts;
-    let startHrs = parseInt(hrsStr);
-    const startMins = parseInt(minsStr);
+  // const getCompletesAtTime = () => {
+  //   if (!startTime || startTime === "-") return "--:-- --";
+  //   const parts = startTime.split(" ");
+  //   if (parts.length < 2) return "--:-- --";
+  //   const [timeStr, modifier] = parts;
+  //   const timeParts = timeStr.split(":");
+  //   if (timeParts.length < 2) return "--:-- --";
+  //   let [hrsStr, minsStr] = timeParts;
+  //   let startHrs = parseInt(hrsStr);
+  //   const startMins = parseInt(minsStr);
 
-    if (isNaN(startHrs) || isNaN(startMins)) return "--:-- --";
+  //   if (isNaN(startHrs) || isNaN(startMins)) return "--:-- --";
 
-    if (modifier === "PM" && startHrs < 12) startHrs += 12;
-    if (modifier === "AM" && startHrs === 12) startHrs = 0;
+  //   if (modifier === "PM" && startHrs < 12) startHrs += 12;
+  //   if (modifier === "AM" && startHrs === 12) startHrs = 0;
 
-    const compDate = new Date();
-    compDate.setHours(startHrs);
-    compDate.setMinutes(startMins);
-    compDate.setSeconds(0);
-    compDate.setSeconds(compDate.getSeconds() + requiredSeconds + breakSeconds);
+  //   const compDate = new Date();
+  //   compDate.setHours(startHrs);
+  //   compDate.setMinutes(startMins);
+  //   compDate.setSeconds(0);
+  //   compDate.setSeconds(compDate.getSeconds() + requiredSeconds + breakSeconds);
 
-    return compDate.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
+  //   return compDate.toLocaleTimeString("en-US", {
+  //     hour: "2-digit",
+  //     minute: "2-digit",
+  //     hour12: true,
+  //   });
+  // };
 
   // Helper weekday converter for June 2026
   const getWeekday = (day: number) => {
@@ -796,7 +803,6 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
     const index = (day + 0) % 7; // June 1st is Mon (index 1)
     return weekdays[index];
   };
-
 
   // Generate dynamic rows based on employee's statuses
   const detailedLogs = useMemo(() => {
@@ -1003,15 +1009,50 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   ]);
 
   const handleRowClick = async (dateStr: string) => {
-    if (!dateStr || !mewurkEmployeeCode) return;
+    if (!dateStr) return;
     setIsDetailModalOpen(true);
     setIsLoadingDayDetails(true);
     setSelectedDayDetails(null);
     try {
-      const data = await MewurkService.fetchClockInDetails(
-        mewurkEmployeeCode,
-        dateStr
-      );
+      let codeToUse = mewurkEmployeeCode;
+
+      if (!activeEmployee) {
+        const loggedInId = user?.user?.id;
+        if (loggedInId) {
+          try {
+            const currentCode = loggedInUserDetails?.data?.mewurkEmployeeCode;
+            if (currentCode) {
+              const codeNum = parseInt(currentCode);
+              if (!isNaN(codeNum) && codeNum > 0) {
+                codeToUse = codeNum;
+              }
+            } else {
+              const userResponse = await instance.get<any>({
+                url: `/users/${loggedInId}`,
+              });
+              const userData = userResponse?.data?.data || userResponse?.data;
+              if (userData?.mewurkEmployeeCode) {
+                const codeNum = parseInt(userData.mewurkEmployeeCode);
+                if (!isNaN(codeNum) && codeNum > 0) {
+                  codeToUse = codeNum;
+                  setMewurkEmployeeCode(codeNum);
+                }
+              }
+            }
+          } catch (e) {
+            console.error(
+              "Error ensuring logged in user mewurkEmployeeCode by id:",
+              e
+            );
+          }
+        }
+      }
+
+      if (!codeToUse) {
+        throw new Error("No mewurkEmployeeCode available");
+      }
+
+      const data = await MewurkService.fetchClockInDetails(codeToUse, dateStr);
       setSelectedDayDetails(data);
     } catch (err) {
       console.error("Error fetching day details:", err);
@@ -1021,16 +1062,136 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   };
 
   // Stats circle gauge parameters for standard view
-  const progressPercent = Math.min(
-    Math.round((workedSeconds / requiredSeconds) * 100),
-    100
+  // const progressPercent = Math.min(
+  //   Math.round((workedSeconds / requiredSeconds) * 100),
+  //   100
+  // );
+  // const remainingSeconds = Math.max(requiredSeconds - workedSeconds, 0);
+  // const strokeWidth = 8;
+  // const radius = 70;
+  // const circumference = 2 * Math.PI * radius;
+  // const strokeDashoffset =
+  //   circumference - (progressPercent / 100) * circumference;
+
+  const filtersUI = (
+    <div className="flex flex-wrap items-center gap-2">
+      {canFilterEmployees && (
+        <SimpleDropDownSearchable
+          options={allEmployees.map((emp) => ({
+            label: emp.employeeName,
+            value: emp.employeeCode,
+          }))}
+          value={(selectedFilterEmployee as any)?.code || undefined}
+          placeholder="Filter by employee"
+          className="w-[200px] h-9"
+          isLoading={isLoadingEmployees}
+          loadingText="Loading employees..."
+          onChange={(val) => handleEmployeeSelect(val || "")}
+          allowClear={true}
+        />
+      )}
+
+      <Popover open={datePopoverOpen} onOpenChange={setDatePopoverOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            className={cn(
+              "h-9 gap-2 rounded-full border-border bg-background px-3 font-normal hover:bg-muted/50",
+              !selectedDate && "text-muted-foreground"
+            )}
+          >
+            <CalendarDays className="h-4 w-4 text-rose-500 shrink-0" />
+            <span className="truncate max-w-[140px]">
+              {selectedDate
+                ? format(selectedDate, "MMM d, yyyy")
+                : "Select date"}
+            </span>
+            {selectedDate && (
+              <button
+                type="button"
+                aria-label="Clear date"
+                className="hover:bg-muted -mr-1 flex h-5 w-5 items-center justify-center rounded-full transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  setSelectedDate(undefined);
+                  const today = new Date();
+                  setCurrentCalendarMonth(today);
+                }}
+              >
+                <X className="text-muted-foreground h-3 w-3" />
+              </button>
+            )}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent
+          className="w-auto p-0 rounded-2xl border border-border shadow-2xl"
+          align="end"
+        >
+          <Calendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={(date) => {
+              setSelectedDate(date);
+              if (date) {
+                setCurrentCalendarMonth(date);
+              }
+              setDatePopoverOpen(false);
+            }}
+            month={currentCalendarMonth}
+            onMonthChange={setCurrentCalendarMonth}
+            numberOfMonths={1}
+            captionLayout="dropdown"
+            fromYear={2020}
+            toYear={2030}
+            className="rounded-2xl"
+          />
+        </PopoverContent>
+      </Popover>
+    </div>
   );
-  const remainingSeconds = Math.max(requiredSeconds - workedSeconds, 0);
-  const strokeWidth = 8;
-  const radius = 70;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset =
-    circumference - (progressPercent / 100) * circumference;
+
+  const monthNavLabel = `${
+    [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ][selectedMonth - 1]
+  } ${selectedYear}`;
+
+  const goToPreviousMonth = () => {
+    const d = new Date(selectedYear, selectedMonth - 2, 1);
+    setCurrentCalendarMonth(d);
+    setSelectedDate(d);
+  };
+
+  const goToNextMonth = () => {
+    const d = new Date(selectedYear, selectedMonth, 1);
+    setCurrentCalendarMonth(d);
+    setSelectedDate(d);
+  };
+
+  const monthNavigatorProps = {
+    label: monthNavLabel,
+    onPrev: goToPreviousMonth,
+    onNext: goToNextMonth,
+    isLoading: isLoadingLogs,
+  };
+
+  const filtersPortal =
+    filtersPortalId && typeof document !== "undefined"
+      ? document.getElementById(filtersPortalId)
+      : null;
 
   // ----------------------------------------------------
   // RENDER SELECTED EMPLOYEE DETAILS VIEW
@@ -1064,147 +1225,70 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           {/* Main Content Area */}
           <div className="lg:col-span-12 flex flex-col gap-6">
             {activeSidebarTab === "attendance" && (
-              <Card className="p-6 bg-card border-border shadow-xl space-y-6 text-card-foreground">
-                {/* Panel Header */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-border">
-                  <div>
-                    <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-                      Attendance Logs
-                    </h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Daily time logs, punches and working hours breakdown.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Subheader Toolbar */}
-                <div className="flex justify-center items-center w-full">
-                  {/* Date navigation */}
-                  <div className="flex items-center gap-1 bg-background border border-border rounded-lg p-0.5">
-                    <button
-                      onClick={() => {
-                        setSelectedMonth((prev) => {
-                          if (prev === 1) {
-                            setSelectedYear((y) => y - 1);
-                            return 12;
-                          }
-                          return prev - 1;
-                        });
-                      }}
-                      className="p-1.5 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      <ChevronLeft className="h-3.5 w-3.5" />
-                    </button>
-                    <span className="text-xs font-bold text-foreground px-3 min-w-[80px] text-center">
-                      {
-                        [
-                          "Jan",
-                          "Feb",
-                          "Mar",
-                          "Apr",
-                          "May",
-                          "Jun",
-                          "Jul",
-                          "Aug",
-                          "Sep",
-                          "Oct",
-                          "Nov",
-                          "Dec",
-                        ][selectedMonth - 1]
-                      }{" "}
-                      {selectedYear}
-                    </span>
-                    <button
-                      onClick={() => {
-                        setSelectedMonth((prev) => {
-                          if (prev === 12) {
-                            setSelectedYear((y) => y + 1);
-                            return 1;
-                          }
-                          return prev + 1;
-                        });
-                      }}
-                      className="p-1.5 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      <ChevronRight className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                </div>
-
+              <div className="flex flex-col gap-3">
+                {/* Stats strip */}
                 {isLoadingLogs ? (
-                  <div className="space-y-6">
-                    {/* Stats Section Cards Skeleton */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      {/* Left Box Skeleton */}
-                      <div className="bg-[#f2f6fc]/5 dark:bg-zinc-900/20 p-5 rounded-xl border border-border flex flex-col md:flex-row items-center justify-around gap-6 h-[178px]">
-                        <div className="flex items-center gap-6 w-full justify-around">
-                          <Skeleton className="w-24 h-24 rounded-full shrink-0" />
-                          <div className="space-y-3 flex-1 max-w-[120px]">
-                            <Skeleton className="h-4 w-20 rounded" />
-                            <Skeleton className="h-3 w-16 rounded" />
-                            <Skeleton className="h-3 w-24 rounded" />
-                          </div>
-                          <Skeleton className="h-24 w-32 rounded-lg border border-border bg-card/50 hidden sm:block" />
-                        </div>
-                      </div>
-
-                      {/* Right Box Skeleton */}
-                      <div className="bg-gradient-to-br from-amber-500/5 to-yellow-600/5 border border-border p-5 rounded-xl flex flex-col md:flex-row items-center justify-between gap-6 h-[178px] w-full">
-                        <div className="flex items-center text-center space-y-2 flex-col max-w-[100px] w-full">
-                          <Skeleton className="h-10 w-10 rounded-full" />
-                          <Skeleton className="h-3 w-16 rounded" />
-                        </div>
-                        <div className="bg-card p-5 rounded-xl border border-border flex-1 w-full h-full flex flex-col justify-between">
-                          <Skeleton className="h-4 w-28 rounded" />
-                          <Skeleton className="h-10 w-full rounded-lg" />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Table Skeleton */}
-                    <div className="border border-border rounded-xl shadow-md bg-card overflow-hidden">
-                      <div className="p-4 border-b border-border">
-                        <Skeleton className="h-4 w-32 rounded" />
-                      </div>
-                      <div className="p-4 space-y-4">
-                        {[...Array(6)].map((_, i) => (
-                          <div
-                            key={i}
-                            className="flex items-center justify-between gap-4 py-2 border-b border-border last:border-0"
-                          >
-                            <Skeleton className="h-4 w-24 rounded" />
-                            <Skeleton className="h-5 w-16 rounded-full" />
+                  <Card className="w-full overflow-hidden border-border shadow-sm">
+                    <div className="flex divide-x divide-border">
+                      {[...Array(5)].map((_, i) => (
+                        <div
+                          key={i}
+                          className="flex-1 p-4 min-w-[150px] flex items-center gap-3"
+                        >
+                          <Skeleton className="h-9 w-9 rounded-lg shrink-0" />
+                          <div className="space-y-2 flex-1">
+                            <Skeleton className="h-2.5 w-16 rounded" />
                             <Skeleton className="h-4 w-12 rounded" />
-                            <Skeleton className="h-4 w-16 rounded" />
-                            <Skeleton className="h-4 w-16 rounded" />
-                            <Skeleton className="h-4 w-20 rounded" />
                           </div>
-                        ))}
-                      </div>
+                        </div>
+                      ))}
                     </div>
-                  </div>
+                  </Card>
                 ) : (
-                  <>
-                    <EmployeeStats
-                      presentPct={presentPct}
-                      absentPct={absentPct}
-                      presentCount={presentCount}
-                      absentCount={absentCount}
-                      woCount={woCount}
-                      leaveCount={leaveCount}
-                      resolvedProfilePic={resolvedProfilePic}
-                      employeeName={employeeName}
-                      employeeAvatarFallback={employeeAvatarFallback}
-                      employee={activeEmployee}
-                      monthlyData={monthlyData}
-                    />
+                  <EmployeeStats
+                    variant="compact"
+                    presentPct={presentPct}
+                    absentPct={absentPct}
+                    presentCount={presentCount}
+                    absentCount={absentCount}
+                    woCount={woCount}
+                    leaveCount={leaveCount}
+                    resolvedProfilePic={resolvedProfilePic}
+                    employeeName={employeeName}
+                    employeeAvatarFallback={employeeAvatarFallback}
+                    employee={activeEmployee}
+                    monthlyData={monthlyData}
+                  />
+                )}
+
+                {/* Attendance Table */}
+                <div className="rounded-xl border border-border bg-card shadow-lg overflow-hidden">
+                  {isLoadingLogs ? (
+                    <div className="p-4 space-y-3">
+                      {[...Array(6)].map((_, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center justify-between gap-4 py-2"
+                        >
+                          <Skeleton className="h-4 w-24 rounded" />
+                          <Skeleton className="h-5 w-16 rounded-full" />
+                          <Skeleton className="h-4 w-12 rounded" />
+                          <Skeleton className="h-4 w-16 rounded" />
+                          <Skeleton className="h-4 w-16 rounded" />
+                          <Skeleton className="h-4 w-20 rounded" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
                     <EmployeeTable
+                      embedded
                       detailedLogs={detailedLogs}
                       onRowClick={handleRowClick}
+                      monthNavigator={monthNavigatorProps}
                     />
-                  </>
-                )}
-              </Card>
+                  )}
+                </div>
+              </div>
             )}
           </div>
         </div>
@@ -1247,379 +1331,72 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   // RENDER ORIGINAL LOGGED-IN USER VIEW
   // ----------------------------------------------------
   return (
-    <div className="flex flex-col gap-6">
-      {/* Top Filter Card */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-6 rounded-2xl bg-card p-6 border border-border shadow-lg text-card-foreground">
-        <div>
-          <span className="text-[10px] tracking-widest text-muted-foreground uppercase font-bold">
-            Monthly Logs View
-          </span>
-          <h2 className="text-xl font-bold text-foreground mt-0.5">
-            {employeeName}
-          </h2>
-        </div>
+    <div className="flex flex-col gap-3">
+      {filtersPortal && createPortal(filtersUI, filtersPortal)}
 
-        <div className="flex flex-wrap items-center gap-6">
-          {/* Dropdown Employee Filter */}
-          {canFilterEmployees && (
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">
-                Employee:
-              </span>
-              <SimpleDropDownSearchable
-                options={allEmployees.map((emp) => ({
-                  label: emp.employeeName,
-                  value: emp.employeeCode,
-                }))}
-                value={(selectedFilterEmployee as any)?.code || undefined}
-                placeholder="Filter by employee"
-                className="w-[220px]"
-                isLoading={isLoadingEmployees}
-                loadingText="Loading employees..."
-                onChange={(val) => handleEmployeeSelect(val || "")}
-                allowClear={true}
-              />
-            </div>
-          )}
-
-          {/* Date Picker Filter */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">
-              Date:
-            </span>
-            <Popover open={datePopoverOpen} onOpenChange={setDatePopoverOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-[200px] justify-between text-left font-normal rounded-2xl hover:bg-transparent hover:text-inherit border-border",
-                    !selectedDate && "text-muted-foreground"
-                  )}
-                >
-                  <div className="flex items-center">
-                    <CalendarDays className="mr-2 h-4 w-4 text-rose-500" />
-                    {selectedDate ? (
-                      format(selectedDate, "PPP")
-                    ) : (
-                      <span>Filter by Date</span>
-                    )}
-                  </div>
-                  {selectedDate && (
-                    <button
-                      type="button"
-                      aria-label="Clear date"
-                      className="hover:bg-muted ml-2 flex h-5 w-5 items-center justify-center rounded transition-colors"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        setSelectedDate(undefined);
-                        const today = new Date();
-                        setCurrentCalendarMonth(today);
-                      }}
-                    >
-                      <X className="text-muted-foreground h-3.5 w-3.5" />
-                    </button>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent
-                className="w-auto p-0 rounded-2xl border border-border shadow-2xl"
-                align="end"
+      {/* Stats strip — server dashboard style */}
+      {isLoadingLogs ? (
+        <Card className="w-full overflow-hidden border-border shadow-sm">
+          <div className="flex divide-x divide-border">
+            {[...Array(5)].map((_, i) => (
+              <div
+                key={i}
+                className="flex-1 p-4 min-w-[150px] flex items-center gap-3"
               >
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={(date) => {
-                    setSelectedDate(date);
-                    if (date) {
-                      setCurrentCalendarMonth(date);
-                    }
-                    setDatePopoverOpen(false);
-                  }}
-                  month={currentCalendarMonth}
-                  onMonthChange={setCurrentCalendarMonth}
-                  numberOfMonths={1}
-                  captionLayout="dropdown"
-                  fromYear={2020}
-                  toYear={2030}
-                  className="rounded-2xl"
-                />
-              </PopoverContent>
-            </Popover>
+                <Skeleton className="h-9 w-9 rounded-lg shrink-0" />
+                <div className="space-y-2 flex-1">
+                  <Skeleton className="h-2.5 w-16 rounded" />
+                  <Skeleton className="h-4 w-12 rounded" />
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
-      </div>
+        </Card>
+      ) : (
+        <AttendanceStats
+          variant="compact"
+          presentPct={presentPct}
+          absentPct={absentPct}
+          presentCount={presentCount}
+          absentCount={absentCount}
+          woCount={woCount}
+          leaveCount={leaveCount}
+          resolvedProfilePic={resolvedProfilePic}
+          employeeName={employeeName}
+          employeeAvatarFallback={employeeAvatarFallback}
+          totalWorkHours={totalWorkHours}
+          avgWorkHours={avgWorkHours}
+          formatMinutesToHoursMinutes={formatMinutesToHoursMinutes}
+        />
+      )}
 
-      <Tabs defaultValue="monthly" className="w-full">
-        {false && (
-          <TabsContent
-            value="today"
-            className="focus-visible:outline-none flex flex-col gap-6"
-          >
-            {/* Main Grid: Left is Circular Gauge, Right is Details & Timeline */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
-              {/* Progress Gauge Card */}
-              <Card className="lg:col-span-1 flex flex-col items-center justify-center p-8 bg-card border-border shadow-lg text-card-foreground lg:h-[480px]">
-                <div className="relative flex items-center justify-center">
-                  {/* SVG Ring Gauge */}
-                  <svg className="w-44 h-44 transform -rotate-90">
-                    <defs>
-                      <linearGradient
-                        id="attendanceGradient"
-                        x1="0%"
-                        y1="0%"
-                        x2="100%"
-                        y2="100%"
-                      >
-                        <stop offset="0%" stopColor="#f43f5e" />
-                        <stop offset="100%" stopColor="#f97316" />
-                      </linearGradient>
-                    </defs>
-                    <circle
-                      className="text-muted/20 dark:text-zinc-900"
-                      strokeWidth={strokeWidth}
-                      stroke="currentColor"
-                      fill="transparent"
-                      r={radius}
-                      cx="88"
-                      cy="88"
-                    />
-                    <circle
-                      stroke="url(#attendanceGradient)"
-                      strokeWidth={strokeWidth}
-                      strokeDasharray={circumference}
-                      strokeDashoffset={strokeDashoffset}
-                      strokeLinecap="round"
-                      fill="transparent"
-                      r={radius}
-                      cx="88"
-                      cy="88"
-                      className="transition-all duration-1000 ease-out"
-                    />
-                  </svg>
-                  <div className="absolute flex flex-col items-center justify-center">
-                    <span className="text-4xl font-extrabold tracking-tight text-foreground">
-                      {progressPercent}%
-                    </span>
-                    <span className="text-[10px] tracking-wider text-muted-foreground font-bold uppercase mt-0.5">
-                      Complete
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mt-6 text-center">
-                  <span className="text-[10px] font-bold text-muted-foreground tracking-wider uppercase block">
-                    Completes At
-                  </span>
-                  <span className="text-xl font-bold text-foreground mt-1 block">
-                    {punchedIn ? getCompletesAtTime() : "--:-- --"}
-                  </span>
-
-                  <span className="text-[10px] font-bold text-amber-500/80 tracking-wider uppercase block mt-4">
-                    Time Remaining
-                  </span>
-                  <span className="text-2xl font-black text-rose-500 tracking-wider font-mono mt-1 block drop-shadow-[0_0_8px_rgba(239,68,68,0.2)]">
-                    {punchedIn ? formatHMS(remainingSeconds) : "00:00:00"}
-                  </span>
-                </div>
-              </Card>
-
-              {/* Info Grid & Timeline */}
-              <div className="lg:col-span-2 flex flex-col gap-6 lg:h-[480px]">
-                {/* Sub Stats Cards Grid */}
-                <div className="grid grid-cols-2 gap-4">
-                  <Card className="p-4 bg-card border-border shadow-md hover:border-muted transition-colors text-card-foreground">
-                    <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase block">
-                      Started
-                    </span>
-                    <span className="text-lg font-bold text-foreground mt-1.5 block">
-                      {startTime}
-                    </span>
-                  </Card>
-
-                  <Card className="p-4 bg-card border-border shadow-md hover:border-muted transition-colors text-card-foreground">
-                    <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase block">
-                      Worked
-                    </span>
-                    <span className="text-lg font-bold text-sky-600 dark:text-sky-400 mt-1.5 block">
-                      {formatDuration(workedSeconds)}
-                    </span>
-                  </Card>
-
-                  <Card className="p-4 bg-card border-border shadow-md hover:border-muted transition-colors text-card-foreground">
-                    <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase block">
-                      Breaks
-                    </span>
-                    <span className="text-lg font-bold text-amber-500 mt-1.5 block">
-                      {formatDuration(breakSeconds)}
-                    </span>
-                  </Card>
-
-                  <Card className="p-4 bg-card border-border shadow-md hover:border-muted transition-colors text-card-foreground">
-                    <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase block">
-                      Required
-                    </span>
-                    <span className="text-lg font-bold text-muted-foreground mt-1.5 block">
-                      {formatDuration(requiredSeconds)}
-                    </span>
-                  </Card>
-                </div>
-
-                {/* Activity Logs Timeline */}
-                <Card className="p-5 bg-card border-border flex-1 shadow-md text-card-foreground flex flex-col min-h-0">
-                  <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-rose-500" />
-                    Today's Punch Logs
-                  </h3>
-
-                  {logs.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-6 text-muted-foreground text-sm flex-1">
-                      {isLoadingTodayDetails ? (
-                        <RotateCcw className="h-8 w-8 mb-2 opacity-50 animate-spin text-rose-500" />
-                      ) : (
-                        <RotateCcw className="h-8 w-8 mb-2 opacity-50" />
-                      )}
-                      {isLoadingTodayDetails
-                        ? "Loading today's punches..."
-                        : "No punches logged for today."}
-                    </div>
-                  ) : (
-                    <div className="flex-1 overflow-y-auto pr-2 pl-5 relative space-y-4 min-h-0">
-                      <div className="absolute top-2 bottom-4 left-[11px] w-0.5 bg-border pointer-events-none" />
-                      {logs.map((log, index) => (
-                        <div
-                          key={index}
-                          className="relative flex items-center justify-between gap-4"
-                        >
-                          <div
-                            className={`absolute -left-[13px] top-1 h-2.5 w-2.5 rounded-full border-2 border-background z-10 ${
-                              log.status === "success"
-                                ? "bg-emerald-500"
-                                : log.status === "warning"
-                                  ? "bg-amber-500"
-                                  : log.status === "error"
-                                    ? "bg-rose-500"
-                                    : "bg-sky-500"
-                            }`}
-                          />
-
-                          <div className="flex flex-col">
-                            <span className="text-xs font-semibold text-foreground">
-                              {log.type}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground">
-                              System Logged
-                            </span>
-                          </div>
-
-                          <span className="text-xs font-bold text-muted-foreground">
-                            {log.time}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </Card>
+      {/* Attendance table */}
+      <div className="rounded-xl border border-border bg-card shadow-lg overflow-hidden">
+        {isLoadingLogs ? (
+          <div className="p-4 space-y-3">
+            {[...Array(6)].map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between gap-4 py-2"
+              >
+                <Skeleton className="h-4 w-24 rounded" />
+                <Skeleton className="h-5 w-16 rounded-full" />
+                <Skeleton className="h-4 w-12 rounded" />
+                <Skeleton className="h-4 w-16 rounded" />
+                <Skeleton className="h-4 w-16 rounded" />
+                <Skeleton className="h-4 w-20 rounded" />
               </div>
-            </div>
-          </TabsContent>
+            ))}
+          </div>
+        ) : (
+          <AttendanceTable
+            embedded
+            detailedLogs={detailedLogs}
+            onRowClick={handleRowClick}
+            monthNavigator={monthNavigatorProps}
+          />
         )}
-
-        <TabsContent value="monthly" className="focus-visible:outline-none">
-          {/* Monthly Attendance Logs */}
-          <Card className="p-6 bg-card border-border shadow-xl space-y-6 text-card-foreground">
-            {/* Panel Header */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-border">
-              <div>
-                <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-                  Attendance Logs
-                  {isLoadingLogs && (
-                    <RotateCcw className="h-3.5 w-3.5 text-rose-500 animate-spin" />
-                  )}
-                </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Daily time logs, punches and working hours breakdown.
-                </p>
-              </div>
-            </div>
-
-            {/* Subheader Toolbar */}
-            <div className="flex justify-center items-center w-full">
-              {/* Date navigation */}
-              <div className="flex items-center gap-1 bg-background border border-border rounded-lg p-0.5">
-                <button
-                  onClick={() => {
-                    setSelectedMonth((prev) => {
-                      if (prev === 1) {
-                        setSelectedYear((y) => y - 1);
-                        return 12;
-                      }
-                      return prev - 1;
-                    });
-                  }}
-                  className="p-1.5 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <ChevronLeft className="h-3.5 w-3.5" />
-                </button>
-                <span className="text-xs font-bold text-foreground px-3 min-w-[80px] text-center">
-                  {
-                    [
-                      "Jan",
-                      "Feb",
-                      "Mar",
-                      "Apr",
-                      "May",
-                      "Jun",
-                      "Jul",
-                      "Aug",
-                      "Sep",
-                      "Oct",
-                      "Nov",
-                      "Dec",
-                    ][selectedMonth - 1]
-                  }{" "}
-                  {selectedYear}
-                </span>
-                <button
-                  onClick={() => {
-                    setSelectedMonth((prev) => {
-                      if (prev === 12) {
-                        setSelectedYear((y) => y + 1);
-                        return 1;
-                      }
-                      return prev + 1;
-                    });
-                  }}
-                  className="p-1.5 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <ChevronRight className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            </div>
-
-            <AttendanceStats
-              presentPct={presentPct}
-              absentPct={absentPct}
-              presentCount={presentCount}
-              absentCount={absentCount}
-              woCount={woCount}
-              leaveCount={leaveCount}
-              resolvedProfilePic={resolvedProfilePic}
-              employeeName={employeeName}
-              employeeAvatarFallback={employeeAvatarFallback}
-              totalWorkHours={totalWorkHours}
-              avgWorkHours={avgWorkHours}
-              formatMinutesToHoursMinutes={formatMinutesToHoursMinutes}
-            />
-
-            {/* Attendance Logs Table */}
-            <AttendanceTable
-              detailedLogs={detailedLogs}
-              onRowClick={handleRowClick}
-            />
-          </Card>
-        </TabsContent>
-      </Tabs>
+      </div>
 
       {/* Day Details Modal */}
       <DayDetailModal

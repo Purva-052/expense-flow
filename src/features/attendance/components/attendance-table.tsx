@@ -1,12 +1,42 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
+import { MonthNavigator } from "./month-navigator";
 
 interface AttendanceTableProps {
   detailedLogs: any[];
   onRowClick: (rawDateStr: string) => void;
+  embedded?: boolean;
+  monthNavigator?: {
+    label: string;
+    onPrev: () => void;
+    onNext: () => void;
+    isLoading?: boolean;
+  };
 }
 
-const getStatusBadge = (status: "P" | "A" | "WO" | "AH" | "E" | "L" | "") => {
+const isFutureDate = (dateStr: string) => {
+  if (!dateStr) return false;
+  const parts = dateStr.split("-");
+  if (parts.length < 3) return false;
+  const year = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1;
+  const day = parseInt(parts[2], 10);
+  
+  const target = new Date(year, month, day);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  return target.getTime() > today.getTime();
+};
+
+const getStatusBadge = (status: "P" | "A" | "WO" | "AH" | "E" | "L" | "", isFuture: boolean = false) => {
+  if (isFuture && status === "A") {
+    return (
+      <Badge className="bg-muted text-muted-foreground/60 text-[10px] rounded-md px-2 py-0.5">
+        -
+      </Badge>
+    );
+  }
   switch (status) {
     case "P":
       return (
@@ -67,9 +97,27 @@ const isLessThanEightFifteen = (workingHrs: string | null | undefined): boolean 
 export const AttendanceTable: React.FC<AttendanceTableProps> = ({
   detailedLogs,
   onRowClick,
+  embedded = false,
+  monthNavigator,
 }) => {
   return (
-    <div className="border border-border rounded-xl shadow-lg bg-card overflow-hidden">
+    <div
+      className={
+        embedded
+          ? "overflow-hidden flex flex-col"
+          : "border border-border rounded-xl shadow-lg bg-card overflow-hidden flex flex-col"
+      }
+    >
+      {monthNavigator && (
+        <div className="flex justify-center py-3 px-4 border-b border-border bg-card">
+          <MonthNavigator
+            label={monthNavigator.label}
+            onPrev={monthNavigator.onPrev}
+            onNext={monthNavigator.onNext}
+            isLoading={monthNavigator.isLoading}
+          />
+        </div>
+      )}
       <div className="overflow-auto max-h-[480px]">
         <table className="w-full border-collapse text-left">
           <thead>
@@ -83,36 +131,43 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-border text-xs text-foreground">
-            {detailedLogs.map((log: any) => (
-              <tr
-                key={log.day}
-                className="hover:bg-muted/10 transition-colors cursor-pointer"
-                onClick={() => onRowClick(log.rawDateStr)}
-              >
-                <td className="px-4 py-3 font-semibold text-muted-foreground">
-                  {log.date}
-                </td>
-                <td className="px-4 py-3">{getStatusBadge(log.status)}</td>
-                <td className="px-4 py-3 font-semibold text-foreground">
-                  {log.firstIn}
-                </td>
-                <td className="px-4 py-3 font-semibold text-foreground">
-                  {log.lastOut}
-                </td>
-                <td className="px-4 py-3 font-medium text-muted-foreground/85">
-                  {log.breakHrs}
-                </td>
-                <td
-                  className={`px-4 py-3 font-bold transition-colors ${
-                    isLessThanEightFifteen(log.workingHrs)
-                      ? "bg-rose-500/15 text-rose-600 dark:text-rose-400"
-                      : "text-sky-600 dark:text-sky-400"
+            {detailedLogs.map((log: any) => {
+              const future = isFutureDate(log.rawDateStr);
+              return (
+                <tr
+                  key={log.day}
+                  className={`transition-colors ${
+                    future
+                      ? "cursor-not-allowed opacity-80"
+                      : "hover:bg-muted/10 cursor-pointer"
                   }`}
+                  onClick={() => !future && onRowClick(log.rawDateStr)}
                 >
-                  {log.workingHrs}
-                </td>
-              </tr>
-            ))}
+                  <td className="px-4 py-3 font-semibold text-muted-foreground">
+                    {log.date}
+                  </td>
+                  <td className="px-4 py-3">{getStatusBadge(log.status, future)}</td>
+                  <td className="px-4 py-3 font-semibold text-foreground">
+                    {log.firstIn}
+                  </td>
+                  <td className="px-4 py-3 font-semibold text-foreground">
+                    {log.lastOut}
+                  </td>
+                  <td className="px-4 py-3 font-medium text-muted-foreground/85">
+                    {log.breakHrs}
+                  </td>
+                  <td
+                    className={`px-4 py-3 font-bold transition-colors ${
+                      isLessThanEightFifteen(log.workingHrs)
+                        ? "bg-rose-500/15 text-rose-600 dark:text-rose-400"
+                        : "text-sky-600 dark:text-sky-400"
+                    }`}
+                  >
+                    {log.workingHrs}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
