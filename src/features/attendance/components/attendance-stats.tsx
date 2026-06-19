@@ -1,6 +1,8 @@
 import React from "react";
+import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Award, Trophy } from "lucide-react";
+import { Award, Trophy, UserCheck, UserX, CalendarOff, Clock, TrendingUp } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface AttendanceStatsProps {
   presentPct: number;
@@ -15,6 +17,7 @@ interface AttendanceStatsProps {
   totalWorkHours: number;
   avgWorkHours: number;
   formatMinutesToHoursMinutes: (mins: number) => string;
+  variant?: "default" | "compact";
 }
 
 export const AttendanceStats: React.FC<AttendanceStatsProps> = ({
@@ -30,7 +33,83 @@ export const AttendanceStats: React.FC<AttendanceStatsProps> = ({
   totalWorkHours,
   avgWorkHours,
   formatMinutesToHoursMinutes,
+  variant = "default",
 }) => {
+  if (variant === "compact") {
+    const stripItems = [
+      {
+        icon: UserCheck,
+        iconBg: "bg-emerald-500/10",
+        iconColor: "text-emerald-600 dark:text-emerald-400",
+        label: "Present",
+        value: String(presentCount),
+        valueClass: "text-emerald-600 dark:text-emerald-400",
+      },
+      {
+        icon: UserX,
+        iconBg: "bg-rose-500/10",
+        iconColor: "text-rose-600 dark:text-rose-400",
+        label: "Absent",
+        value: String(absentCount),
+        valueClass: "text-rose-600 dark:text-rose-400",
+      },
+      {
+        icon: CalendarOff,
+        iconBg: "bg-blue-500/10",
+        iconColor: "text-blue-600 dark:text-blue-400",
+        label: "Wo / Holiday",
+        value: String(woCount + leaveCount),
+        valueClass: "text-blue-600 dark:text-blue-400",
+      },
+      {
+        icon: Clock,
+        iconBg: "bg-amber-500/10",
+        iconColor: "text-amber-600 dark:text-amber-400",
+        label: "Working Hours",
+        value: formatMinutesToHoursMinutes(totalWorkHours),
+        valueClass: "text-amber-600 dark:text-amber-400",
+      },
+      {
+        icon: TrendingUp,
+        iconBg: "bg-purple-500/10",
+        iconColor: "text-purple-600 dark:text-purple-400",
+        label: "Avg. Wrk Hrs",
+        value: formatMinutesToHoursMinutes(avgWorkHours),
+        valueClass: "text-foreground",
+      },
+    ];
+
+    return (
+      <Card className="w-full overflow-hidden border-border shadow-sm">
+        <div className="w-full overflow-x-auto">
+          <div className="flex divide-x divide-border min-w-max">
+            {stripItems.map((item) => (
+              <div
+                key={item.label}
+                className="flex-1 p-4 min-w-[150px] flex items-center gap-3 hover:bg-muted/20 transition-colors"
+              >
+                <div className={cn("p-2 rounded-lg shrink-0", item.iconBg, item.iconColor)}>
+                  <item.icon className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+                    {item.label}
+                  </p>
+                  <p
+                    className={cn("text-sm font-bold truncate", item.valueClass)}
+                    title={item.value}
+                  >
+                    {item.value}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Left Box: Attendance breakdown */}
