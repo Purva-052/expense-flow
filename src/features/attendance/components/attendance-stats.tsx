@@ -1,7 +1,7 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Award, Trophy, UserCheck, UserX, CalendarOff, Clock, TrendingUp } from "lucide-react";
+import { Award, Trophy, UserCheck, UserX, Clock, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AttendanceStatsProps {
@@ -53,14 +53,14 @@ export const AttendanceStats: React.FC<AttendanceStatsProps> = ({
         value: String(absentCount),
         valueClass: "text-rose-600 dark:text-rose-400",
       },
-      {
-        icon: CalendarOff,
-        iconBg: "bg-blue-500/10",
-        iconColor: "text-blue-600 dark:text-blue-400",
-        label: "Wo / Holiday",
-        value: String(woCount + leaveCount),
-        valueClass: "text-blue-600 dark:text-blue-400",
-      },
+      // {
+      //   icon: CalendarOff,
+      //   iconBg: "bg-blue-500/10",
+      //   iconColor: "text-blue-600 dark:text-blue-400",
+      //   label: "Wo / Holiday",
+      //   value: String(woCount + leaveCount),
+      //   valueClass: "text-blue-600 dark:text-blue-400",
+      // },
       {
         icon: Clock,
         iconBg: "bg-amber-500/10",

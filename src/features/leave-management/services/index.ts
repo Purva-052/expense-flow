@@ -226,3 +226,15 @@ export const useUpdateExamLeaveEligibility = () => {
   });
 };
 
+/**
+ * Submits an attendance regularization request.
+ */
+export const useCreateRegularizationRequest = (onSuccess?: () => void) => {
+  return usePostData({
+    url: API.attendance.regularizations,
+    refetchQueries: [API.attendance.high_working_hours],
+    onSuccess,
+  });
+};
+
+
