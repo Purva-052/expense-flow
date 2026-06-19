@@ -4,7 +4,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { Building2, CalendarDays, RotateCcw } from "lucide-react";
 
@@ -62,9 +61,6 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({
               <DialogTitle className="text-base font-extrabold text-foreground">
                 Clock In/Out Details for {employeeName}
               </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                {selectedDayDetails?.policyName || "Devstree Shift Policy"}
-              </DialogDescription>
             </div>
           </div>
         </DialogHeader>
@@ -103,53 +99,21 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({
                   })()}
                 </span>
               </div>
-
-              <div className="bg-rose-500/10 border border-rose-500/25 px-3 py-1.5 rounded-lg text-right">
-                <span className="text-[10px] font-bold text-rose-500 block uppercase">
-                  {selectedDayDetails.shiftName || "GS01"} - General Shift
-                </span>
-                <span className="text-[10px] text-muted-foreground font-semibold mt-0.5 block">
-                  {(() => {
-                    const formatTimeOnly = (tStr: string | null) => {
-                      if (!tStr) return "-";
-                      try {
-                        const date = new Date(tStr);
-                        if (isNaN(date.getTime())) {
-                          const timePart = tStr.split(" ")[1];
-                          if (timePart) {
-                            const parts = timePart.split(":");
-                            return `${parts[0]}:${parts[1]}`;
-                          }
-                          return tStr;
-                        }
-                        return date.toLocaleTimeString("en-US", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: false,
-                        });
-                      } catch {
-                        return tStr;
-                      }
-                    };
-                    return `${formatTimeOnly(selectedDayDetails.shiftStartTime)} to ${formatTimeOnly(selectedDayDetails.shiftEndTime)}`;
-                  })()}
-                </span>
-              </div>
             </div>
 
             {/* Punches Table with inline break gaps */}
             {(() => {
-              const sorted = [...(selectedDayDetails.clockInDetails || [])].sort(
-                (a: any, b: any) => {
-                  const da = a.clockTime.endsWith("Z")
-                    ? a.clockTime
-                    : `${a.clockTime}Z`;
-                  const db = b.clockTime.endsWith("Z")
-                    ? b.clockTime
-                    : `${b.clockTime}Z`;
-                  return new Date(da).getTime() - new Date(db).getTime();
-                }
-              );
+              const sorted = [
+                ...(selectedDayDetails.clockInDetails || []),
+              ].sort((a: any, b: any) => {
+                const da = a.clockTime.endsWith("Z")
+                  ? a.clockTime
+                  : `${a.clockTime}Z`;
+                const db = b.clockTime.endsWith("Z")
+                  ? b.clockTime
+                  : `${b.clockTime}Z`;
+                return new Date(da).getTime() - new Date(db).getTime();
+              });
 
               let totalBreakMs = 0;
               for (let i = 0; i < sorted.length - 1; i++) {
@@ -192,9 +156,7 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({
                           <tr className="bg-muted border-b border-border text-muted-foreground font-bold sticky top-0 z-10">
                             <th className="px-3 py-2.5 w-8">#</th>
                             <th className="px-3 py-2.5">In/Out</th>
-                            <th className="px-3 py-2.5">Time (IST)</th>
-                            <th className="px-3 py-2.5">Source</th>
-                            <th className="px-3 py-2.5">Device</th>
+                            <th className="px-3 py-2.5">Time</th>
                           </tr>
                         </thead>
                         <tbody className="font-medium text-foreground">
@@ -235,21 +197,6 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({
                                   </td>
                                   <td className="px-3 py-2.5 font-semibold text-foreground tabular-nums">
                                     {formatMewurkTime(punch.clockTime)}
-                                  </td>
-                                  <td className="px-3 py-2.5 text-muted-foreground">
-                                    <div className="flex items-center gap-1.5">
-                                      <span className="h-4 w-4 bg-muted border border-border rounded flex items-center justify-center text-[9px] font-bold shrink-0">
-                                        {punch.sourceName
-                                          ? punch.sourceName[0]
-                                          : "K"}
-                                      </span>
-                                      {punch.sourceName || "Kiosk"}
-                                    </div>
-                                  </td>
-                                  <td className="px-3 py-2.5 text-muted-foreground truncate max-w-[110px]">
-                                    {punch.deviceName ||
-                                      punch.officeName ||
-                                      "-"}
                                   </td>
                                 </tr>
                                 {breakGapMs > 0 && (
