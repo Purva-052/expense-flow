@@ -288,27 +288,57 @@ export const MewurkService = {
     dateStr: string
   ): Promise<any> => {
     try {
-      const token = await MewurkService.getAuthToken();
-      const res = await fetch(
-        `${BASE_URL}/attendanceservice/attendancelogs/clockindetails`,
-        {
-          method: "POST",
-          headers: {
-            accept: "application/json",
-            authorization: `Bearer ${token}`,
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({
-            employeeCode,
-            clockDate: dateStr,
-          }),
+      const parts = dateStr.split("-");
+      if (parts.length < 3) {
+        throw new Error(`Invalid date format: ${dateStr}`);
+      }
+      const year = parseInt(parts[0]);
+      const month = parseInt(parts[1]);
+
+      const response = await instance.get<any>({
+        url: `/attendance/monthly`,
+        params: {
+          mewurkEmployeeCode: employeeCode,
+          month,
+          year,
+        },
+      });
+
+      const resData = response.data?.data ?? response.data;
+      if (resData && Array.isArray(resData.attendance)) {
+        const targetDate = dateStr; // YYYY-MM-DD
+        const entry = resData.attendance.find((item: any) => {
+          if (!item.date) return false;
+          const itemDatePart = item.date.split("T")[0];
+          return itemDatePart === targetDate;
+        });
+
+        if (entry) {
+          const mappedClockInDetails = (entry.clockInDetails || []).map(
+            (punch: any) => {
+              if (punch.clockTime) {
+                try {
+                  const d = new Date(punch.clockTime);
+                  if (!isNaN(d.getTime())) {
+                    return {
+                      ...punch,
+                      clockTime: d.toISOString(),
+                    };
+                  }
+                } catch (e) {
+                  console.error("Error parsing punch clockTime:", e);
+                }
+              }
+              return punch;
+            }
+          );
+
+          return {
+            ...entry,
+            attendanceDate: entry.date,
+            clockInDetails: mappedClockInDetails,
+          };
         }
-      );
-      if (!res.ok)
-        throw new Error(`Failed to load clock-in details: ${res.status}`);
-      const json = await res.json();
-      if (json.isSuccess && json.data) {
-        return json.data;
       }
       return null;
     } catch (error) {
