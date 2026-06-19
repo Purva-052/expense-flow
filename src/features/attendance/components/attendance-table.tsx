@@ -1,6 +1,50 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { MonthNavigator } from "./month-navigator";
+import { CalendarIcon, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { format } from "date-fns";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { useAuthStore } from "@/stores/use-auth-store";
+import {
+  useGetHighWorkingHoursDates,
+  useCreateRegularizationRequest,
+  useGetRegularizationRequests,
+  useRegularizationAction,
+} from "../services";
+import { useGetUserDetails } from "../../users/services";
+import { toast } from "sonner";
+import { Calendar } from "@/components/ui/calendar";
+
+const formatToYYYYMMDD = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const getDisplayCompensatoryDate = (dateStr: string) => {
+  if (!dateStr) return "";
+  const parts = dateStr.split("-");
+  const year = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1;
+  const day = parseInt(parts[2], 10);
+  return format(new Date(year, month, day), "PPP");
+};
 
 interface AttendanceTableProps {
   detailedLogs: any[];
@@ -12,6 +56,8 @@ interface AttendanceTableProps {
     onNext: () => void;
     isLoading?: boolean;
   };
+  employeeId?: number;
+  regularizationStatusFilter?: "" | "pending" | "approved" | "rejected";
 }
 
 const isFutureDate = (dateStr: string) => {
@@ -21,15 +67,18 @@ const isFutureDate = (dateStr: string) => {
   const year = parseInt(parts[0], 10);
   const month = parseInt(parts[1], 10) - 1;
   const day = parseInt(parts[2], 10);
-  
+
   const target = new Date(year, month, day);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   return target.getTime() > today.getTime();
 };
 
-const getStatusBadge = (status: "P" | "A" | "WO" | "AH" | "E" | "L" | "", isFuture: boolean = false) => {
+const getStatusBadge = (
+  status: "P" | "A" | "WO" | "AH" | "E" | "L" | "",
+  isFuture: boolean = false
+) => {
   if (isFuture && status === "A") {
     return (
       <Badge className="bg-muted text-muted-foreground/60 text-[10px] rounded-md px-2 py-0.5">
@@ -83,7 +132,9 @@ const getStatusBadge = (status: "P" | "A" | "WO" | "AH" | "E" | "L" | "", isFutu
   }
 };
 
-const isLessThanEightFifteen = (workingHrs: string | null | undefined): boolean => {
+const isLessThanEightFifteen = (
+  workingHrs: string | null | undefined
+): boolean => {
   if (!workingHrs || workingHrs === "-") return false;
   const cleanStr = workingHrs.replace(/HRS/gi, "").trim();
   const parts = cleanStr.split(":");
@@ -99,17 +150,101 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
   onRowClick,
   embedded = false,
   monthNavigator,
+  employeeId,
+  regularizationStatusFilter = "pending",
 }) => {
+  const user = useAuthStore((state) => state.user);
+  const resolvedEmpId = employeeId || Number(user?.user?.id);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedRegDate, _setSelectedRegDate] = useState("");
+  const [compensatoryDate, setCompensatoryDate] = useState("");
+  const [reason, setReason] = useState("");
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [currentCalendarMonth, setCurrentCalendarMonth] = useState<
+    Date | undefined
+  >(undefined);
+
+  // Get user details to retrieve the employee code (e.g. mewurkEmployeeCode)
+  const { data: userDetailsResponse }: any = useGetUserDetails(
+    resolvedEmpId ? String(resolvedEmpId) : ""
+  );
+  const employeeCode = userDetailsResponse?.data?.mewurkEmployeeCode;
+
+  // Fetch available compensatory dates (days with >8:15 working hours)
+  const { data: highWorkingHoursData, isPending: isLoadingHighWorkingHours } =
+    useGetHighWorkingHoursDates(employeeCode, isModalOpen);
+
+  const { mutate: createRegularization, isPending: isSubmitting } =
+    useCreateRegularizationRequest(() => {
+      setIsModalOpen(false);
+      setCompensatoryDate("");
+      setReason("");
+    });
+
+  const highWorkingHoursDates: string[] = (
+    (highWorkingHoursData as any)?.data || []
+  )
+    .map((item: any) => {
+      if (typeof item === "string") return item;
+      if (item && typeof item === "object") {
+        return (
+          item.attendanceDate ||
+          item.date ||
+          item.rawDateStr ||
+          item.attendance_date
+        );
+      }
+      return null;
+    })
+    .filter(Boolean);
+
+  useEffect(() => {
+    if (selectedRegDate) {
+      setCurrentCalendarMonth(new Date(selectedRegDate));
+    }
+  }, [selectedRegDate]);
+
+  // const handleOpenRegularization = (dateStr: string) => {
+  //   setSelectedRegDate(dateStr);
+  //   setCompensatoryDate("");
+  //   setIsCalendarOpen(false);
+  //   setIsModalOpen(true);
+  // };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resolvedEmpId) {
+      toast.error("Employee ID is missing.");
+      return;
+    }
+    if (!compensatoryDate) {
+      toast.error("Please select a compensatory date.");
+      return;
+    }
+    if (!reason.trim()) {
+      toast.error("Please enter a reason.");
+      return;
+    }
+
+    createRegularization({
+      employeeId: Number(resolvedEmpId),
+      regularizationDate: selectedRegDate,
+      compensatoryDate,
+      reason: reason.trim(),
+    });
+  };
+
   return (
     <div
       className={
         embedded
-          ? "overflow-hidden flex flex-col"
+          ? "flex flex-col min-h-0"
           : "border border-border rounded-xl shadow-lg bg-card overflow-hidden flex flex-col"
       }
     >
       {monthNavigator && (
-        <div className="flex justify-center py-3 px-4 border-b border-border bg-card">
+        <div className="flex justify-center py-3 px-4 border-b border-border bg-card shrink-0">
           <MonthNavigator
             label={monthNavigator.label}
             onPrev={monthNavigator.onPrev}
@@ -118,7 +253,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
           />
         </div>
       )}
-      <div className="overflow-auto max-h-[480px]">
+      <div className="overflow-auto max-h-[480px] min-h-0">
         <table className="w-full border-collapse text-left">
           <thead>
             <tr className="bg-muted border-b border-border text-muted-foreground text-xs font-bold sticky top-0 z-10">
@@ -128,6 +263,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
               <th className="px-4 py-3 bg-muted sticky top-0">Last Out</th>
               <th className="px-4 py-3 bg-muted sticky top-0">Break Time</th>
               <th className="px-4 py-3 bg-muted sticky top-0">Working Hours</th>
+              {/* <th className="px-4 py-3 bg-muted sticky top-0 w-12 text-right"></th> */}
             </tr>
           </thead>
           <tbody className="divide-y divide-border text-xs text-foreground">
@@ -146,7 +282,9 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                   <td className="px-4 py-3 font-semibold text-muted-foreground">
                     {log.date}
                   </td>
-                  <td className="px-4 py-3">{getStatusBadge(log.status, future)}</td>
+                  <td className="px-4 py-3">
+                    {getStatusBadge(log.status, future)}
+                  </td>
                   <td className="px-4 py-3 font-semibold text-foreground">
                     {log.firstIn}
                   </td>
@@ -165,12 +303,415 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                   >
                     {log.workingHrs}
                   </td>
+                  {/* <td
+                    className="px-4 py-3 text-right"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {!future && isLessThanEightFifteen(log.workingHrs) && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 p-0 hover:bg-muted"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                            <span className="sr-only">Open menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-40">
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenRegularization(log.rawDateStr);
+                            }}
+                          >
+                            Apply Regularization
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </td> */}
                 </tr>
               );
             })}
           </tbody>
         </table>
       </div>
+
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Apply Attendance Regularization</DialogTitle>
+            <DialogDescription>
+              Submit a regularization request for{" "}
+              <span className="font-semibold text-foreground">
+                {detailedLogs.find((log) => log.rawDateStr === selectedRegDate)
+                  ?.date || selectedRegDate}
+              </span>{" "}
+              (working hours below 8:15).
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4 py-2">
+            <div className="space-y-2 flex flex-col">
+              <Label className="text-sm font-semibold flex items-center gap-1 mb-1">
+                Compensatory Date
+                <span className="text-rose-500">*</span>
+              </Label>
+              {isLoadingHighWorkingHours ? (
+                <div className="flex flex-col items-center justify-center h-10 border border-dashed rounded-md bg-muted/20">
+                  <span className="text-xs text-muted-foreground animate-pulse">
+                    Loading available dates...
+                  </span>
+                </div>
+              ) : (
+                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={`w-full justify-start text-left font-normal border-border/80 ${
+                        !compensatoryDate && "text-muted-foreground"
+                      }`}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+                      {compensatoryDate ? (
+                        getDisplayCompensatoryDate(compensatoryDate)
+                      ) : (
+                        <span>Select compensatory date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={
+                        compensatoryDate
+                          ? new Date(compensatoryDate)
+                          : undefined
+                      }
+                      onSelect={(date) => {
+                        if (date) {
+                          setCompensatoryDate(formatToYYYYMMDD(date));
+                        } else {
+                          setCompensatoryDate("");
+                        }
+                        setIsCalendarOpen(false);
+                      }}
+                      disabled={(date) => {
+                        // Directly show all the dates enabled coming from the endpoint
+                        const dateStr = formatToYYYYMMDD(date);
+                        return !highWorkingHoursDates.includes(dateStr);
+                      }}
+                      month={currentCalendarMonth}
+                      onMonthChange={setCurrentCalendarMonth}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label
+                htmlFor="reason"
+                className="text-sm font-semibold flex items-center gap-1"
+              >
+                Reason
+                <span className="text-rose-500">*</span>
+              </Label>
+              <Textarea
+                id="reason"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="e.g. Forgot to clock in due to an early client meeting"
+                required
+                rows={3}
+              />
+            </div>
+            <DialogFooter className="pt-4 border-t border-border/50">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsModalOpen(false)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Submitting..." : "Submit Request"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Regularization Requests Section ── */}
+      <RegularizationRequestsPanel
+        employeeId={resolvedEmpId}
+        statusFilter={regularizationStatusFilter}
+      />
     </div>
+  );
+};
+
+// const statusConfig: Record<
+//   string,
+//   { label: string; color: string; icon: React.ReactNode }
+// > = {
+//   pending: {
+//     label: "Pending",
+//     color:
+//       "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30",
+//     icon: <Clock className="h-3 w-3" />,
+//   },
+//   approved: {
+//     label: "Approved",
+//     color:
+//       "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30",
+//     icon: <CheckCircle className="h-3 w-3" />,
+//   },
+//   rejected: {
+//     label: "Rejected",
+//     color:
+//       "bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30",
+//     icon: <XCircle className="h-3 w-3" />,
+//   },
+// };
+
+export const RegularizationRequestsPanel: React.FC<{
+  employeeId: number;
+  statusFilter: "" | "pending" | "approved" | "rejected";
+}> = ({ employeeId, statusFilter }) => {
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [selectedRejectId, setSelectedRejectId] = useState<number | null>(null);
+  const [rejectionReason, setRejectionReason] = useState("");
+
+  const params: Record<string, any> = {};
+  if (employeeId) params.empId = employeeId;
+  if (statusFilter) params.status = statusFilter;
+
+  const {
+    // data: regularizationData,
+    // isPending: isLoadingList,
+    refetch,
+  } = useGetRegularizationRequests(params, true);
+
+  // const requests: any[] = (regularizationData as any)?.data || [];
+  // const pendingCount = requests.filter((r) => r.status === "pending").length;
+
+  const { mutate: performAction, isPending: isActioning } =
+    useRegularizationAction(() => {
+      refetch();
+      setRejectDialogOpen(false);
+      setRejectionReason("");
+      setSelectedRejectId(null);
+    });
+
+  // const handleApprove = (id: number) => {
+  //   performAction({ id, status: "approved" });
+  // };
+
+  // const handleOpenReject = (id: number) => {
+  //   setSelectedRejectId(id);
+  //   setRejectionReason("");
+  //   setRejectDialogOpen(true);
+  // };
+
+  const handleConfirmReject = () => {
+    if (!selectedRejectId) return;
+    if (!rejectionReason.trim()) {
+      toast.error("Please enter a rejection reason.");
+      return;
+    }
+    performAction({
+      id: selectedRejectId,
+      status: "rejected",
+      rejectionReason: rejectionReason.trim(),
+    });
+  };
+
+  // const formatDisplayDate = (dateStr: string) => {
+  //   if (!dateStr) return "-";
+  //   try {
+  //     const parts = dateStr.split("-");
+  //     if (parts.length < 3) return dateStr;
+  //     return format(
+  //       new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])),
+  //       "dd MMM yyyy"
+  //     );
+  //   } catch {
+  //     return dateStr;
+  //   }
+  // };
+
+  return (
+    <>
+      {/* <div className="border-t border-border mt-4">
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-card">
+          <Clock className="h-4 w-4 text-amber-500" />
+          <span className="text-sm font-semibold text-foreground">
+            Regularization Requests
+          </span>
+          {pendingCount > 0 && (
+            <span className="text-[10px] font-bold bg-amber-500 text-white rounded-full px-1.5 py-0.5">
+              {pendingCount}
+            </span>
+          )}
+        </div>
+
+        {isLoadingList ? (
+          <div className="flex items-center justify-center py-10 gap-2 text-muted-foreground text-sm">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Loading requests...
+          </div>
+        ) : requests.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
+            <Clock className="h-8 w-8 mb-2 opacity-30" />
+            <p className="text-sm">No regularization requests found.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-left">
+              <thead>
+                <tr className="bg-muted border-b border-border text-muted-foreground text-xs font-bold">
+                  <th className="px-4 py-2.5 bg-muted">Reg. Date</th>
+                  <th className="px-4 py-2.5 bg-muted">Comp. Date</th>
+                  <th className="px-4 py-2.5 bg-muted">Working Time</th>
+                  <th className="px-4 py-2.5 bg-muted">Prev. Status</th>
+                  <th className="px-4 py-2.5 bg-muted">Reason</th>
+                  <th className="px-4 py-2.5 bg-muted">Status</th>
+                  <th className="px-4 py-2.5 bg-muted text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border text-xs text-foreground">
+                {requests.map((req: any) => {
+                  const cfg = statusConfig[req.status] || statusConfig["pending"];
+                  return (
+                    <tr key={req.id} className="hover:bg-muted/10 transition-colors">
+                      <td className="px-4 py-2.5 font-semibold text-muted-foreground whitespace-nowrap">
+                        {formatDisplayDate(req.regularizationDate)}
+                      </td>
+                      <td className="px-4 py-2.5 whitespace-nowrap">
+                        {formatDisplayDate(req.compensatoryDate)}
+                      </td>
+                      <td className="px-4 py-2.5 font-medium">
+                        {req.workingTime || "-"}
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <span className="text-muted-foreground">
+                          {req.previousStatus || "-"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2.5 max-w-[200px]">
+                        <p
+                          className="truncate text-muted-foreground"
+                          title={req.reason}
+                        >
+                          {req.reason || "-"}
+                        </p>
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <Badge
+                          className={`flex items-center gap-1 w-fit text-[10px] font-semibold rounded-md px-2 py-0.5 ${cfg.color}`}
+                        >
+                          {cfg.icon}
+                          {cfg.label}
+                        </Badge>
+                        {req.status === "rejected" && req.rejectionReason && (
+                          <p
+                            className="text-[10px] text-rose-500 mt-0.5 max-w-[140px] truncate"
+                            title={req.rejectionReason}
+                          >
+                            {req.rejectionReason}
+                          </p>
+                        )}
+                      </td>
+                      <td className="px-4 py-2.5 text-right">
+                        {req.status === "pending" && (
+                          <div className="flex items-center justify-end gap-1.5">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-[11px] gap-1 border-emerald-500/40 text-emerald-600 hover:bg-emerald-500/10 hover:text-emerald-700"
+                              disabled={isActioning}
+                              onClick={() => handleApprove(req.id)}
+                            >
+                              {isActioning ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              ) : (
+                                <CheckCircle className="h-3 w-3" />
+                              )}
+                              Approve
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-[11px] gap-1 border-rose-500/40 text-rose-600 hover:bg-rose-500/10 hover:text-rose-700"
+                              disabled={isActioning}
+                              onClick={() => handleOpenReject(req.id)}
+                            >
+                              <XCircle className="h-3 w-3" />
+                              Reject
+                            </Button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div> */}
+
+      {/* Reject reason dialog */}
+      <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+        <DialogContent className="sm:max-w-[420px]">
+          <DialogHeader>
+            <DialogTitle>Reject Regularization Request</DialogTitle>
+            <DialogDescription>
+              Please provide a reason for rejecting this request.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label
+              htmlFor="rejection-reason"
+              className="text-sm font-semibold flex items-center gap-1"
+            >
+              Rejection Reason <span className="text-rose-500">*</span>
+            </Label>
+            <Textarea
+              id="rejection-reason"
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              placeholder="Enter reason for rejection..."
+              rows={3}
+            />
+          </div>
+          <DialogFooter className="pt-4 border-t border-border/50">
+            <Button
+              variant="outline"
+              onClick={() => setRejectDialogOpen(false)}
+              disabled={isActioning}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={isActioning || !rejectionReason.trim()}
+              onClick={handleConfirmReject}
+            >
+              {isActioning ? (
+                <>
+                  <Loader2 className="h-3 w-3 animate-spin mr-1" /> Rejecting...
+                </>
+              ) : (
+                "Confirm Reject"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };

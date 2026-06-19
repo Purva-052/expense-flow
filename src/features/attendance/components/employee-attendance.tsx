@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Card } from "@/components/ui/card";
-// import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -18,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Check,
@@ -37,10 +36,24 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { format } from "date-fns";
+import type { DateRange } from "react-day-picker";
+import DateRangeFilter from "@/components/table/custome-dateRange";
+import SimpleDropDownSearchable from "@/components/shared/custome-simple-dropdown";
 import { toast } from "sonner";
 import { MyAttendance } from "./my-attendance";
 import { MewurkService } from "../services/mewurk-service";
+import {
+  useGetRegularizationRequests,
+  useRegularizationAction,
+  useGetAttendanceSummary,
+  useGetAttendanceEmployees,
+} from "../services";
+import { useGetUserDropdownList } from "@/features/users/services";
 import {
   DoubleArrowLeftIcon,
   DoubleArrowRightIcon,
@@ -57,9 +70,11 @@ interface EmployeeAttendanceRow {
   absent: number;
   leaves: number;
   isActive: boolean;
-  dailyStatus: Record<number, "P" | "A" | "WO" | "AH" | "E" | "L" | "">;
+  dailyStatus: Record<string, "P" | "A" | "WO" | "AH" | "E" | "L" | "">;
   phone?: string;
   email?: string;
+  profilePicUrl?: string | null;
+  employeeId?: number;
 }
 
 interface RequestItem {
@@ -74,12 +89,98 @@ interface RequestItem {
   status: "pending" | "approved" | "rejected";
 }
 
+const formatDisplayDate = (dateStr: string) => {
+  if (!dateStr) return "-";
+  try {
+    const parts = dateStr.split("-");
+    if (parts.length < 3) return dateStr;
+    return format(
+      new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])),
+      "dd MMM yyyy"
+    );
+  } catch {
+    return dateStr;
+  }
+};
+
+const getNameInitials = (name: string) => {
+  const parts = (name || "").trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "??";
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+};
+
+const getDefaultSummaryDateRange = (): DateRange => {
+  const now = new Date();
+  return {
+    from: new Date(now.getFullYear(), now.getMonth(), 1),
+    to: now,
+  };
+};
+
+const getWeekdayFromDate = (dateStr: string) => {
+  const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const parts = dateStr.split("-");
+  if (parts.length < 3) return "";
+  const date = new Date(
+    Number(parts[0]),
+    Number(parts[1]) - 1,
+    Number(parts[2])
+  );
+  return weekdays[date.getDay()];
+};
+
+const mapFinalStatusToCode = (
+  finalStatus: string
+): "P" | "A" | "WO" | "AH" | "E" | "L" | "" => {
+  const status = (finalStatus || "").toLowerCase().trim();
+  if (status === "present" || status === "p") return "P";
+  if (status === "absent" || status === "a") return "A";
+  if (
+    status === "holiday" ||
+    status === "weekend" ||
+    status === "weekly off" ||
+    status === "wo"
+  ) {
+    return "WO";
+  }
+  if (status === "leave" || status === "l" || status === "approved leave") {
+    return "L";
+  }
+  if (
+    status === "half day" ||
+    status === "ah" ||
+    status === "half day absent"
+  ) {
+    return "AH";
+  }
+  if (status === "late" || status === "excused" || status === "e") return "E";
+  return "";
+};
+
+const getStatusLabel = (status: string) => {
+  switch (status) {
+    case "P":
+      return "Present";
+    case "A":
+      return "Absent";
+    case "WO":
+      return "Weekly Off";
+    case "AH":
+      return "Half Day Absent";
+    case "E":
+      return "Late/Excused";
+    case "L":
+      return "Approved Leave";
+    default:
+      return "No Log";
+  }
+};
+
 export const EmployeeAttendance: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
     "summary" | "regularization" | "overtime" | "onduty"
   >("summary");
-  const [searchQuery] = useState("");
-  const [statusFilter] = useState("all");
   const [selectedEmployee, setSelectedEmployee] =
     useState<EmployeeAttendanceRow | null>(null);
 
@@ -87,19 +188,22 @@ export const EmployeeAttendance: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  // Selected Month/Year for the grid (defaults to June 2026)
-  const [selectedMonth] = useState(6);
-  const selectedYear = 2026;
-
-  // Mewurk API states
-  const [mewurkEmployees, setMewurkEmployees] = useState<any[]>([]);
-  const [isLoadingDirectory, setIsLoadingDirectory] = useState(false);
+  // Summary tab filters
+  const [summaryDateRange, setSummaryDateRange] = useState<
+    DateRange | undefined
+  >(getDefaultSummaryDateRange);
+  const [summaryEmployeeCode, setSummaryEmployeeCode] = useState<string | null>(
+    null
+  );
 
   // Day Detail Modal states
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
   const [dayModalLoading, setDayModalLoading] = useState(false);
   const [dayModalData, setDayModalData] = useState<any | null>(null);
-  const [dayModalEmployee, setDayModalEmployee] = useState<{ name: string; code: string } | null>(null);
+  const [dayModalEmployee, setDayModalEmployee] = useState<{
+    name: string;
+    code: string;
+  } | null>(null);
 
   // Format a UTC ISO time string to IST 12h display
   const formatMewurkTime = (timeStr: string | null): string => {
@@ -119,16 +223,17 @@ export const EmployeeAttendance: React.FC = () => {
   };
 
   // Open the per-day clock detail modal
-  const handleDayClick = async (emp: EmployeeAttendanceRow, day: number) => {
-    const empCode = parseInt(emp.code);
-    if (!empCode) return;
-    const dateStr = `${selectedYear}-${String(selectedMonth).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  const handleDayClick = async (
+    emp: EmployeeAttendanceRow,
+    dateStr: string
+  ) => {
+    if (!emp.code) return;
     setDayModalEmployee({ name: emp.name, code: emp.code });
     setIsDayModalOpen(true);
     setDayModalLoading(true);
     setDayModalData(null);
     try {
-      const data = await MewurkService.fetchClockInDetails(empCode, dateStr);
+      const data = await MewurkService.fetchClockInDetails(emp.code, dateStr);
       setDayModalData(data);
     } catch (err) {
       console.error("Error fetching day clock details:", err);
@@ -137,135 +242,179 @@ export const EmployeeAttendance: React.FC = () => {
     }
   };
 
-  // Dynamic number of days in selected month
-  const daysInMonth = useMemo(() => {
-    const daysCount = new Date(selectedYear, selectedMonth, 0).getDate();
-    return Array.from({ length: daysCount }, (_, i) => i + 1);
-  }, [selectedMonth, selectedYear]);
+  const summaryDateColumns = useMemo(() => {
+    if (!summaryDateRange?.from || !summaryDateRange?.to) return [];
+    const columns: { dateStr: string; day: number; weekday: string }[] = [];
+    const current = new Date(summaryDateRange.from);
+    const end = new Date(summaryDateRange.to);
+    current.setHours(12, 0, 0, 0);
+    end.setHours(12, 0, 0, 0);
 
-  // Map day number to weekday abbreviation dynamically
-  const getWeekday = (day: number) => {
-    const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const tempDate = new Date(selectedYear, selectedMonth - 1, day);
-    return weekdays[tempDate.getDay()];
-  };
-
-  // Load monthly summary on mount and on month/year change
-  useEffect(() => {
-    const loadMonthlySummary = async () => {
-      setIsLoadingDirectory(true);
-      try {
-        const summary = await MewurkService.fetchMonthlySummary(
-          selectedYear,
-          selectedMonth,
-          1,
-          250
-        );
-        setMewurkEmployees(summary.data || []);
-      } catch (err) {
-        console.error("Error loading Mewurk monthly summary:", err);
-      } finally {
-        setIsLoadingDirectory(false);
-      }
-    };
-    loadMonthlySummary();
-  }, [selectedMonth, selectedYear]);
-
-  // Map directory employees list
-  const employeesList = useMemo<EmployeeAttendanceRow[]>(() => {
-    if (mewurkEmployees.length === 0) {
-      return [];
+    while (current <= end) {
+      const dateStr = format(current, "yyyy-MM-dd");
+      columns.push({
+        dateStr,
+        day: current.getDate(),
+        weekday: getWeekdayFromDate(dateStr),
+      });
+      current.setDate(current.getDate() + 1);
     }
+    return columns;
+  }, [summaryDateRange]);
 
-    return mewurkEmployees.map((emp: any) => {
-      const code = String(emp.EmployeeCode || "");
+  const summaryParams = useMemo(
+    () => ({
+      page: currentPage,
+      limit: itemsPerPage,
+      pagination: true,
+      fromDate: summaryDateRange?.from
+        ? format(summaryDateRange.from, "yyyy-MM-dd")
+        : undefined,
+      toDate: summaryDateRange?.to
+        ? format(summaryDateRange.to, "yyyy-MM-dd")
+        : undefined,
+      employeeCodes: summaryEmployeeCode ? [summaryEmployeeCode] : undefined,
+    }),
+    [currentPage, itemsPerPage, summaryDateRange, summaryEmployeeCode]
+  );
+
+  const { data: summaryData, isPending: isLoadingSummary } =
+    useGetAttendanceSummary(summaryParams, activeTab === "summary");
+
+  const {
+    data: attendanceEmployeesData,
+    isPending: isLoadingAttendanceEmployees,
+  } = useGetAttendanceEmployees(activeTab === "summary");
+
+  const summaryEmployeeOptions = useMemo(() => {
+    const raw =
+      (attendanceEmployeesData as any)?.data ?? attendanceEmployeesData;
+    const list = Array.isArray(raw) ? raw : [];
+    return list.map((emp: any) => ({
+      value: String(emp.employeeCode),
+      label: emp.employeeName || emp.fullName || String(emp.employeeCode),
+    }));
+  }, [attendanceEmployeesData]);
+
+  const summaryTotalCount = (summaryData as any)?.metadata?.totalCount ?? 0;
+
+  const employeesList = useMemo<EmployeeAttendanceRow[]>(() => {
+    const rows = (summaryData as any)?.data || [];
+    return rows.map((emp: any) => {
+      const dailyStatus: Record<
+        string,
+        "P" | "A" | "WO" | "AH" | "E" | "L" | ""
+      > = {};
       let present = 0;
       let absent = 0;
       let leaves = 0;
-      const dailyStatus: Record<
-        number,
-        "P" | "A" | "WO" | "AH" | "E" | "L" | ""
-      > = {};
 
-      const daysCount = new Date(selectedYear, selectedMonth, 0).getDate();
-      for (let d = 1; d <= daysCount; d++) {
-        const dateStr = `${selectedYear}-${String(selectedMonth).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-        const dayData = emp[dateStr];
-
-        let status: "P" | "A" | "WO" | "AH" | "E" | "L" | "" = "";
-        if (dayData && dayData.clientStatusCode) {
-          const cCode = dayData.clientStatusCode;
-          if (cCode === "P") status = "P";
-          else if (cCode === "A") status = "A";
-          else if (cCode === "WO") status = "WO";
-          else if (cCode === "AH") status = "AH";
-          else if (cCode === "E" || cCode === "LATE") status = "E";
-          else if (cCode === "L") status = "L";
-        }
-
-        if (!status) {
-          const tempDate = new Date(selectedYear, selectedMonth - 1, d);
-          const isWeekend = tempDate.getDay() === 0 || tempDate.getDay() === 6;
-          status = isWeekend ? "WO" : "";
-        }
-
-        dailyStatus[d] = status;
-      }
-
-      Object.values(dailyStatus).forEach((st) => {
-        if (st === "P") present++;
-        else if (st === "A" || st === "AH" || st === "E") absent++;
-        else if (st === "L") leaves++;
+      (emp.attendance || []).forEach((day: any) => {
+        const code = mapFinalStatusToCode(day.finalStatus);
+        dailyStatus[day.date] = code;
+        if (code === "P") present++;
+        else if (code === "A" || code === "AH" || code === "E") absent++;
+        else if (code === "L") leaves++;
       });
 
-      const name = (emp.EmployeeName || "").trim();
-      const nameParts = name.split(" ");
-      const firstName = nameParts[0] || "";
-      const lastName = nameParts[nameParts.length - 1] || "";
-      const initials = (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
-
       return {
-        id: code,
-        name: name || "Unknown Employee",
-        code,
-        role: "Developer",
-        avatar: initials || "EE",
+        id: String(emp.employeeId ?? emp.employeeCode),
+        employeeId: emp.employeeId,
+        name: emp.employeeName || "Unknown Employee",
+        code: String(emp.employeeCode || ""),
+        role: emp.role || "Developer",
+        avatar: getNameInitials(emp.employeeName),
         present,
         absent,
         leaves,
         isActive: true,
         dailyStatus,
-        phone: "",
-        email: emp.EmailId || "",
+        profilePicUrl: emp.profilePicUrl,
       };
     });
-  }, [mewurkEmployees, selectedMonth, selectedYear]);
+  }, [summaryData]);
 
-  // Mock Regularizations
-  const [regularizations, setRegularizations] = useState<RequestItem[]>([
-    {
-      id: "reg-1",
-      employeeName: "Alpesh Nakrani",
-      employeeCode: "405",
-      role: "Senior Developer",
-      avatar: "AN",
-      date: "09 Jun 2026",
-      detail: "Punch In: 09:30 AM | Punch Out: 06:30 PM",
-      reason: "Forgot to punch in during client call",
-      status: "pending",
-    },
-    {
-      id: "reg-2",
-      employeeName: "Bimal Raval",
-      employeeCode: "401",
-      role: "UI/UX Designer",
-      avatar: "BR",
-      date: "03 Jun 2026",
-      detail: "Punch In: 09:45 AM | Punch Out: 07:00 PM",
-      reason: "Power outage at home office",
-      status: "pending",
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [summaryDateRange, summaryEmployeeCode]);
+
+  // Regularization approvals from API
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [selectedRejectId, setSelectedRejectId] = useState<number | null>(null);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [regStatusFilter, setRegStatusFilter] = useState<
+    "pending" | "approved" | "rejected"
+  >("pending");
+  const [regEmployeeFilter, setRegEmployeeFilter] = useState<number | null>(
+    null
+  );
+
+  const regListParams = useMemo(() => {
+    const params: { empId?: number; status?: string } = {
+      status: regStatusFilter,
+    };
+    if (regEmployeeFilter) params.empId = regEmployeeFilter;
+    return params;
+  }, [regStatusFilter, regEmployeeFilter]);
+
+  // const { data: pendingRegularizationData } = useGetRegularizationRequests({
+  //   status: "pending",
+  // });
+
+  const {
+    data: regularizationData,
+    isPending: isLoadingRegularizations,
+    refetch: refetchRegularizations,
+  } = useGetRegularizationRequests(
+    regListParams,
+    activeTab === "regularization"
+  );
+
+  const { data: employeeDropdownData, isPending: isLoadingEmployees } =
+    useGetUserDropdownList({ status: "active" });
+
+  const employeeOptions = useMemo(
+    () =>
+      ((employeeDropdownData as any)?.data || []).map((emp: any) => ({
+        value: emp.id,
+        label: emp.fullName,
+      })),
+    [employeeDropdownData]
+  );
+
+  const regularizations: any[] = (regularizationData as any)?.data || [];
+  // const pendingRegularizationCount = (
+  //   (pendingRegularizationData as any)?.data || []
+  // ).filter((r: any) => r.status === "pending").length;
+
+  const {
+    mutate: performRegularizationAction,
+    isPending: isActioningRegularization,
+  } = useRegularizationAction(() => {
+    refetchRegularizations();
+    setRejectDialogOpen(false);
+    setRejectionReason("");
+    setSelectedRejectId(null);
+  });
+
+  const handleOpenRejectRegularization = (id: number) => {
+    setSelectedRejectId(id);
+    setRejectionReason("");
+    setRejectDialogOpen(true);
+  };
+
+  const handleConfirmRejectRegularization = () => {
+    if (!selectedRejectId) return;
+    if (!rejectionReason.trim()) {
+      toast.error("Please enter a rejection reason.");
+      return;
     }
-  ]);
+    performRegularizationAction({
+      id: selectedRejectId,
+      status: "rejected",
+      rejectionReason: rejectionReason.trim(),
+    });
+  };
 
   // Mock Overtime Requests
   const [overtimes, setOvertimes] = useState<RequestItem[]>([]);
@@ -273,41 +422,15 @@ export const EmployeeAttendance: React.FC = () => {
   // Mock On Duty Requests
   const [onDuties, setOnDuties] = useState<RequestItem[]>([]);
 
-  // Filtered employees listing using employeesList
-  const filteredEmployees = useMemo(() => {
-    return employeesList.filter((emp) => {
-      const matchesSearch =
-        emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        emp.code.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesStatus =
-        statusFilter === "all" ||
-        (statusFilter === "active" && emp.isActive) ||
-        (statusFilter === "inactive" && !emp.isActive);
-      return matchesSearch && matchesStatus;
-    });
-  }, [employeesList, searchQuery, statusFilter]);
+  const summaryStartRow =
+    summaryTotalCount === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+  const summaryEndRow = Math.min(summaryTotalCount, currentPage * itemsPerPage);
+  const summaryTotalPages = Math.ceil(summaryTotalCount / itemsPerPage) || 1;
 
-  // Reset pagination on search or status filter change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, statusFilter]);
-
-  // Paginated employees listing for current page view
-  const paginatedEmployees = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return filteredEmployees.slice(start, start + itemsPerPage);
-  }, [filteredEmployees, currentPage]);
-
-  // Quick Action Handlers for approvals
-  const handleApprove = (id: string, type: "reg" | "ot" | "od") => {
+  // Quick Action Handlers for approvals (overtime & on-duty only)
+  const handleApprove = (id: string, type: "ot" | "od") => {
     toast.success("Request Approved successfully!");
-    if (type === "reg") {
-      setRegularizations((prev) =>
-        prev.map((item) =>
-          item.id === id ? { ...item, status: "approved" } : item
-        )
-      );
-    } else if (type === "ot") {
+    if (type === "ot") {
       setOvertimes((prev) =>
         prev.map((item) =>
           item.id === id ? { ...item, status: "approved" } : item
@@ -322,15 +445,9 @@ export const EmployeeAttendance: React.FC = () => {
     }
   };
 
-  const handleReject = (id: string, type: "reg" | "ot" | "od") => {
+  const handleReject = (id: string, type: "ot" | "od") => {
     toast.error("Request Rejected!");
-    if (type === "reg") {
-      setRegularizations((prev) =>
-        prev.map((item) =>
-          item.id === id ? { ...item, status: "rejected" } : item
-        )
-      );
-    } else if (type === "ot") {
+    if (type === "ot") {
       setOvertimes((prev) =>
         prev.map((item) =>
           item.id === id ? { ...item, status: "rejected" } : item
@@ -356,9 +473,9 @@ export const EmployeeAttendance: React.FC = () => {
   // };
 
   // Helper cell styler
-  const getCellClassName = (status: string, dayNum: number) => {
-    const isWeekend =
-      getWeekday(dayNum) === "Sat" || getWeekday(dayNum) === "Sun";
+  const getCellClassName = (status: string, dateStr: string) => {
+    const weekday = getWeekdayFromDate(dateStr);
+    const isWeekend = weekday === "Sat" || weekday === "Sun";
     let base =
       "h-8 w-8 text-[10px] font-bold rounded-md flex items-center justify-center transition-all ";
 
@@ -441,7 +558,7 @@ export const EmployeeAttendance: React.FC = () => {
         >
           Summary
         </button>
-        <button
+        {/* <button
           onClick={() => setActiveTab("regularization")}
           className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all flex items-center gap-1.5 ${
             activeTab === "regularization"
@@ -450,111 +567,43 @@ export const EmployeeAttendance: React.FC = () => {
           }`}
         >
           Regularization Approvals
-          {regularizations.filter(r => r.status === "pending").length > 0 && (
+          {pendingRegularizationCount > 0 && (
             <Badge className="bg-rose-600 hover:bg-rose-700 text-[10px] px-1 py-0.2 ml-1">
-              {regularizations.filter(r => r.status === "pending").length}
+              {pendingRegularizationCount}
             </Badge>
           )}
-        </button>
+        </button> */}
       </div>
 
       {activeTab === "summary" && (
         <>
-          {/* Filters Bar */}
-          {/* <div className="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4 bg-card text-card-foreground p-4 border border-border rounded-xl shadow-sm"> */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 flex-1">
-              {/* Date Filter */}
-              {/* <div className="flex items-center gap-2 bg-background border border-border rounded-lg px-3 py-1.5">
-                <Calendar className="h-4 w-4 text-rose-500 shrink-0" />
-                <Select
-                  value={String(selectedMonth)}
-                  onValueChange={(val:any) => {
-                    setSelectedMonth(parseInt(val));
-                  }}
-                >
-                  <SelectTrigger className="border-0 bg-transparent text-xs p-0 focus:ring-0 focus:ring-offset-0 h-6 text-foreground">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover border-border text-popover-foreground text-xs">
-                    {Array.from({ length: 12 }, (_, i) => {
-                      const m = i + 1;
-                      const mName = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][i];
-                      return (
-                        <SelectItem key={m} value={String(m)}>
-                          {mName} {selectedYear}
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
-              </div> */}
+          <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+            <DateRangeFilter
+              value={summaryDateRange}
+              onChange={(range) => setSummaryDateRange(range)}
+              placeholder="Select date range"
+              className="h-9 text-xs rounded-lg w-full lg:w-[280px] border-border bg-background"
+            />
 
-              {/* Search input */}
-              {/* <div className="relative">
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search Employee(s)..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 bg-background border-border text-xs focus-visible:ring-rose-500 h-9 text-foreground"
-                />
-              </div> */}
-
-              {/* Status Selector */}
-              {/* <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="bg-background border-border text-xs text-foreground h-9 focus:ring-rose-500">
-                  <SelectValue placeholder="All Status" />
-                </SelectTrigger>
-                <SelectContent className="bg-popover border-border text-popover-foreground text-xs">
-                  <SelectItem value="all">All Employees</SelectItem>
-                  <SelectItem value="active">Active Employees</SelectItem>
-                  <SelectItem value="inactive">Inactive Employees</SelectItem>
-                </SelectContent>
-              </Select> */}
-            </div>
-
-            {/* Action Buttons */}
-            {/* <div className="flex items-center gap-2 self-end xl:self-auto">
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-background border-border text-foreground text-xs hover:bg-muted h-9"
-                onClick={handleImport}
-              >
-                <Upload className="mr-1.5 h-3.5 w-3.5" />
-                Import
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-background border-border text-foreground text-xs hover:bg-muted h-9"
-                onClick={handleExport}
-              >
-                <Download className="mr-1.5 h-3.5 w-3.5" />
-                Export
-              </Button>
-              <Button
-                size="sm"
-                className="bg-rose-600 hover:bg-rose-700 text-white text-xs h-9 px-4 animate-pulse-subtle"
-                onClick={() => toast.success("Filters applied!")}
-              >
-                Apply Filters
-              </Button>
-            </div> */}
-          {/* </div> */}
+            <SimpleDropDownSearchable
+              options={summaryEmployeeOptions}
+              value={summaryEmployeeCode ?? undefined}
+              placeholder="Filter by employee"
+              className="w-full lg:w-[220px] h-9"
+              isLoading={isLoadingAttendanceEmployees}
+              loadingText="Loading employees..."
+              onChange={(val) =>
+                setSummaryEmployeeCode(val ? String(val) : null)
+              }
+              allowClear
+            />
+          </div>
 
           {/* Row count info */}
           <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
             <span className="flex items-center gap-2">
-              Showing{" "}
-              {filteredEmployees.length === 0
-                ? 0
-                : (currentPage - 1) * itemsPerPage + 1}
-              -{Math.min(filteredEmployees.length, currentPage * itemsPerPage)}{" "}
-              of {filteredEmployees.length} rows
-              {isLoadingDirectory && (
-                <Loader2 className="h-3.5 w-3.5 text-rose-500 animate-spin" />
-              )}
+              Showing {summaryStartRow}-{summaryEndRow} of {summaryTotalCount}{" "}
+              rows
             </span>
             <div className="flex items-center gap-3">
               <span className="flex items-center gap-1">
@@ -597,12 +646,11 @@ export const EmployeeAttendance: React.FC = () => {
                     </th>
 
                     {/* Day Headers */}
-                    {daysInMonth.map((day) => {
-                      const isWeekend =
-                        getWeekday(day) === "Sat" || getWeekday(day) === "Sun";
+                    {summaryDateColumns.map(({ dateStr, day, weekday }) => {
+                      const isWeekend = weekday === "Sat" || weekday === "Sun";
                       return (
                         <th
-                          key={day}
+                          key={dateStr}
                           className={`px-1.5 py-2 text-center text-[10px] font-semibold border-r border-border min-w-[42px] ${
                             isWeekend
                               ? "text-muted-foreground/60 bg-muted/20"
@@ -611,7 +659,7 @@ export const EmployeeAttendance: React.FC = () => {
                         >
                           <div className="font-bold">{day}</div>
                           <div className="text-[8px] uppercase tracking-tighter opacity-80 mt-0.5">
-                            {getWeekday(day)}
+                            {weekday}
                           </div>
                         </th>
                       );
@@ -619,144 +667,152 @@ export const EmployeeAttendance: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {isLoadingDirectory ? (
-                    Array.from({ length: itemsPerPage }).map((_, rowIndex) => (
-                      <tr key={rowIndex} className="border-b border-border">
-                        {/* Sticky Employee Identity Skeleton */}
-                        <td className="sticky left-0 z-10 bg-card px-4 py-3 border-r border-border shadow-[2px_0_5px_rgba(0,0,0,0.05)] dark:shadow-[2px_0_5px_rgba(0,0,0,0.4)]">
-                          <div className="flex items-center gap-3">
-                            <Skeleton className="h-8 w-8 rounded-full shrink-0" />
-                            <div className="flex flex-col gap-1.5 w-24">
-                              <Skeleton className="h-3 w-20 rounded" />
-                              <Skeleton className="h-2 w-16 rounded" />
-                            </div>
-                          </div>
-                        </td>
-                        {/* Stats Columns Skeletons */}
-                        <td className="px-3 py-3 border-r border-border bg-emerald-500/5 text-center">
-                          <Skeleton className="h-4 w-6 mx-auto rounded" />
-                        </td>
-                        <td className="px-3 py-3 border-r border-border bg-rose-500/5 text-center">
-                          <Skeleton className="h-4 w-6 mx-auto rounded" />
-                        </td>
-                        <td className="px-3 py-3 border-r border-border bg-indigo-500/5 text-center">
-                          <Skeleton className="h-4 w-6 mx-auto rounded" />
-                        </td>
-                        {/* Day Cells Skeletons */}
-                        {daysInMonth.map((day) => (
-                          <td key={day} className="p-1 border-r border-border text-center align-middle min-w-[42px]">
-                            <div className="flex justify-center">
-                              <Skeleton className="h-4 w-4 rounded-full" />
+                  {isLoadingSummary ? (
+                    Array.from({ length: itemsPerPage }).map((_, rowIndex) => {
+                      // Vary skeleton widths per row for a natural shimmer effect
+                      const nameWidths = [
+                        "w-24",
+                        "w-20",
+                        "w-28",
+                        "w-16",
+                        "w-22",
+                        "w-26",
+                        "w-20",
+                        "w-24",
+                        "w-18",
+                        "w-28",
+                      ];
+                      const codeWidths = [
+                        "w-14",
+                        "w-16",
+                        "w-12",
+                        "w-18",
+                        "w-14",
+                        "w-16",
+                        "w-12",
+                        "w-16",
+                        "w-14",
+                        "w-18",
+                      ];
+                      const nw = nameWidths[rowIndex % nameWidths.length];
+                      const cw = codeWidths[rowIndex % codeWidths.length];
+                      return (
+                        <tr key={rowIndex} className="border-b border-border">
+                          {/* Sticky Employee Identity Skeleton */}
+                          <td className="sticky left-0 z-10 bg-card px-4 py-3 border-r border-border shadow-[2px_0_5px_rgba(0,0,0,0.05)] dark:shadow-[2px_0_5px_rgba(0,0,0,0.4)]">
+                            <div className="flex items-center gap-3">
+                              <Skeleton className="h-8 w-8 rounded-full shrink-0" />
+                              <div className="flex flex-col gap-1.5">
+                                <Skeleton className={`h-3 ${nw} rounded`} />
+                                <Skeleton className={`h-2 ${cw} rounded`} />
+                              </div>
                             </div>
                           </td>
-                        ))}
-                      </tr>
-                    ))
-                  ) : paginatedEmployees.length === 0 ? (
+                          {/* Stats Columns Skeletons — matching actual cell size */}
+                          <td className="px-3 py-3 border-r border-border bg-emerald-500/5 text-center">
+                            <Skeleton className="h-5 w-7 mx-auto rounded" />
+                          </td>
+                          <td className="px-3 py-3 border-r border-border bg-rose-500/5 text-center">
+                            <Skeleton className="h-5 w-7 mx-auto rounded" />
+                          </td>
+                          <td className="px-3 py-3 border-r border-border bg-indigo-500/5 text-center">
+                            <Skeleton className="h-5 w-7 mx-auto rounded" />
+                          </td>
+                          {/* Day Cells Skeletons — h-8 w-8 rounded-md matching actual status badges */}
+                          {summaryDateColumns.map(({ dateStr }) => (
+                            <td
+                              key={dateStr}
+                              className="p-1 border-r border-border text-center align-middle min-w-[42px]"
+                            >
+                              <div className="flex justify-center">
+                                <Skeleton className="h-8 w-8 rounded-md" />
+                              </div>
+                            </td>
+                          ))}
+                        </tr>
+                      );
+                    })
+                  ) : employeesList.length === 0 ? (
                     <tr>
-                      <td colSpan={daysInMonth.length + 4} className="text-center py-10 text-xs text-muted-foreground">
+                      <td
+                        colSpan={summaryDateColumns.length + 4}
+                        className="text-center py-10 text-xs text-muted-foreground"
+                      >
                         No employees found
                       </td>
                     </tr>
                   ) : (
-                    paginatedEmployees.map((emp) => {
-                      const isLogsLoading = isLoadingDirectory;
-                      return (
-                        <tr
-                          key={emp.id}
-                          className="border-b border-border hover:bg-muted/10 transition-colors"
+                    employeesList.map((emp) => (
+                      <tr
+                        key={emp.id}
+                        className="border-b border-border hover:bg-muted/10 transition-colors"
+                      >
+                        {/* Sticky Employee Identity Cell */}
+                        <td
+                          className="sticky left-0 z-10 bg-card px-4 py-3 border-r border-border shadow-[2px_0_5px_rgba(0,0,0,0.05)] dark:shadow-[2px_0_5px_rgba(0,0,0,0.4)] cursor-pointer hover:bg-muted/60 transition-colors"
+                          onClick={() => setSelectedEmployee(emp)}
                         >
-                          {/* Sticky Employee Identity Cell */}
-                          <td
-                            className="sticky left-0 z-10 bg-card px-4 py-3 border-r border-border shadow-[2px_0_5px_rgba(0,0,0,0.05)] dark:shadow-[2px_0_5px_rgba(0,0,0,0.4)] cursor-pointer hover:bg-muted/60 transition-colors"
-                            onClick={() => setSelectedEmployee(emp)}
-                          >
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-8 w-8 border border-border">
-                                <AvatarFallback className="bg-rose-500/10 text-rose-500 text-xs font-bold">
-                                  {emp.avatar}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="flex flex-col min-w-0">
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-xs font-semibold text-foreground truncate hover:text-rose-500 transition-colors">
-                                    {emp.name}
-                                  </span>
-                                  <span
-                                    className={`h-1.5 w-1.5 rounded-full ${emp.isActive ? "bg-emerald-500" : "bg-zinc-400 dark:bg-zinc-600"}`}
-                                  />
-                                </div>
-                                <span className="text-[10px] text-muted-foreground truncate mt-0.5">
-                                  {emp.code} | {emp.role}
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8 border border-border">
+                              {emp.profilePicUrl ? (
+                                <AvatarImage
+                                  src={emp.profilePicUrl}
+                                  alt={emp.name}
+                                />
+                              ) : null}
+                              <AvatarFallback className="bg-rose-500/10 text-rose-500 text-xs font-bold">
+                                {emp.avatar}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex flex-col min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs font-semibold text-foreground truncate hover:text-rose-500 transition-colors">
+                                  {emp.name}
+                                </span>
+                                <span
+                                  className={`h-1.5 w-1.5 rounded-full ${emp.isActive ? "bg-emerald-500" : "bg-zinc-400 dark:bg-zinc-600"}`}
+                                />
+                              </div>
+                              <span className="text-[10px] text-muted-foreground truncate mt-0.5 capitalize">
+                                {emp.code} | {emp.role}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Stat summary cells */}
+                        <td className="px-3 py-3 text-center text-xs font-bold text-emerald-600 dark:text-emerald-500 border-r border-border bg-emerald-500/5">
+                          {emp.present}
+                        </td>
+                        <td className="px-3 py-3 text-center text-xs font-bold text-rose-600 dark:text-rose-500 border-r border-border bg-rose-500/5">
+                          {emp.absent}
+                        </td>
+                        <td className="px-3 py-3 text-center text-xs font-bold text-indigo-600 dark:text-indigo-400 border-r border-border bg-indigo-500/5">
+                          {emp.leaves}
+                        </td>
+
+                        {/* Individual Day statuses */}
+                        {summaryDateColumns.map(({ dateStr }) => {
+                          const status = emp.dailyStatus[dateStr] || "";
+                          return (
+                            <td
+                              key={dateStr}
+                              className="p-1 text-center border-r border-border align-middle min-w-[42px]"
+                              title={`${emp.name} - ${formatDisplayDate(dateStr)}: ${getStatusLabel(status)} — Click for details`}
+                            >
+                              <div className="flex justify-center">
+                                <span
+                                  className={`${getCellClassName(status, dateStr)} cursor-pointer hover:scale-110 hover:shadow-md transition-transform`}
+                                  onClick={() => handleDayClick(emp, dateStr)}
+                                >
+                                  {status}
                                 </span>
                               </div>
-                            </div>
-                          </td>
-
-                          {/* Stat summary cells */}
-                          <td className="px-3 py-3 text-center text-xs font-bold text-emerald-600 dark:text-emerald-500 border-r border-border bg-emerald-500/5">
-                            {isLogsLoading ? (
-                              <span className="animate-pulse">...</span>
-                            ) : (
-                              emp.present
-                            )}
-                          </td>
-                          <td className="px-3 py-3 text-center text-xs font-bold text-rose-600 dark:text-rose-500 border-r border-border bg-rose-500/5">
-                            {isLogsLoading ? (
-                              <span className="animate-pulse">...</span>
-                            ) : (
-                              emp.absent
-                            )}
-                          </td>
-                          <td className="px-3 py-3 text-center text-xs font-bold text-indigo-600 dark:text-indigo-400 border-r border-border bg-indigo-500/5">
-                            {isLogsLoading ? (
-                              <span className="animate-pulse">...</span>
-                            ) : (
-                              emp.leaves
-                            )}
-                          </td>
-
-                          {/* Individual Day statuses */}
-                          {daysInMonth.map((day) => {
-                            const status = emp.dailyStatus[day] || "";
-                            return (
-                              <td
-                                key={day}
-                                className="p-1 text-center border-r border-border align-middle min-w-[42px]"
-                                title={`${emp.name} - ${selectedMonth}/${day}: ${
-                                  status === "P"
-                                    ? "Present"
-                                    : status === "A"
-                                      ? "Absent"
-                                      : status === "WO"
-                                        ? "Weekly Off"
-                                        : status === "AH"
-                                          ? "Half Day Absent"
-                                          : status === "E"
-                                            ? "Late/Excused"
-                                            : status === "L"
-                                              ? "Approved Leave"
-                                              : "No Log"
-                                } — Click for details`}
-                              >
-                                <div className="flex justify-center">
-                                  {isLogsLoading ? (
-                                    <span className="h-4 w-4 bg-muted animate-pulse rounded-full" />
-                                  ) : (
-                                    <span
-                                      className={`${getCellClassName(status, day)} cursor-pointer hover:scale-110 hover:shadow-md transition-transform`}
-                                      onClick={() => handleDayClick(emp, day)}
-                                    >
-                                      {status}
-                                    </span>
-                                  )}
-                                </div>
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      );
-                    })
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))
                   )}
                 </tbody>
               </table>
@@ -764,12 +820,12 @@ export const EmployeeAttendance: React.FC = () => {
           </Card>
 
           {/* Pagination Controls */}
-          {filteredEmployees.length > 0 && (
+          {summaryTotalCount > 0 && (
             <div className="flex flex-wrap flex-col gap-y-2 sm:flex-row sm:items-center sm:justify-between w-full mt-4 px-1 text-xs text-muted-foreground">
               <div>
                 Total{" "}
                 <span className="font-medium text-foreground">
-                  {filteredEmployees.length}
+                  {summaryTotalCount}
                 </span>{" "}
                 records
               </div>
@@ -781,7 +837,7 @@ export const EmployeeAttendance: React.FC = () => {
                   </p>
                   <Select
                     value={`${itemsPerPage}`}
-                    onValueChange={(value:any) => {
+                    onValueChange={(value: any) => {
                       setItemsPerPage(Number(value));
                       setCurrentPage(1);
                     }}
@@ -812,7 +868,7 @@ export const EmployeeAttendance: React.FC = () => {
                   </span>{" "}
                   of{" "}
                   <span className="ml-1 font-medium text-foreground">
-                    {Math.ceil(filteredEmployees.length / itemsPerPage) || 1}
+                    {summaryTotalPages}
                   </span>
                 </div>
 
@@ -837,32 +893,17 @@ export const EmployeeAttendance: React.FC = () => {
                     variant="outline"
                     className="h-8 w-8 p-0 border-border hover:bg-muted bg-background text-foreground"
                     onClick={() =>
-                      setCurrentPage((p) =>
-                        Math.min(
-                          Math.ceil(filteredEmployees.length / itemsPerPage),
-                          p + 1
-                        )
-                      )
+                      setCurrentPage((p) => Math.min(summaryTotalPages, p + 1))
                     }
-                    disabled={
-                      currentPage >=
-                      Math.ceil(filteredEmployees.length / itemsPerPage)
-                    }
+                    disabled={currentPage >= summaryTotalPages}
                   >
                     <ChevronsRightIcon className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="outline"
                     className="h-8 w-8 p-0 border-border hover:bg-muted bg-background text-foreground"
-                    onClick={() =>
-                      setCurrentPage(
-                        Math.ceil(filteredEmployees.length / itemsPerPage) || 1
-                      )
-                    }
-                    disabled={
-                      currentPage >=
-                      Math.ceil(filteredEmployees.length / itemsPerPage)
-                    }
+                    onClick={() => setCurrentPage(summaryTotalPages)}
+                    disabled={currentPage >= summaryTotalPages}
                   >
                     <DoubleArrowRightIcon className="h-4 w-4" />
                   </Button>
@@ -878,16 +919,61 @@ export const EmployeeAttendance: React.FC = () => {
         activeTab === "overtime" ||
         activeTab === "onduty") && (
         <Card className="p-5 bg-card border-border shadow-lg text-card-foreground">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
             <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">
               {activeTab === "regularization" &&
-                "Pending Regularization Approvals"}
+                (regStatusFilter === "pending"
+                  ? "Pending Regularization Approvals"
+                  : regStatusFilter === "approved"
+                    ? "Approved Regularization Requests"
+                    : "Rejected Regularization Requests")}
               {activeTab === "overtime" && "Pending Overtime Approvals"}
               {activeTab === "onduty" && "Pending On Duty Approvals"}
             </h3>
-            <span className="text-xs text-muted-foreground">
-              Requires manager review
-            </span>
+
+            {activeTab === "regularization" && (
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <Select
+                  value={regStatusFilter}
+                  onValueChange={(value) =>
+                    setRegStatusFilter(
+                      value as "pending" | "approved" | "rejected"
+                    )
+                  }
+                >
+                  <SelectTrigger className="h-8 w-full sm:w-[160px] text-xs bg-background border-border">
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border-border text-popover-foreground text-xs">
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="approved">Approved</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select
+                  value={regEmployeeFilter ? String(regEmployeeFilter) : "all"}
+                  onValueChange={(value) =>
+                    setRegEmployeeFilter(value === "all" ? null : Number(value))
+                  }
+                  disabled={isLoadingEmployees}
+                >
+                  <SelectTrigger className="h-8 w-full sm:w-[200px] text-xs bg-background border-border">
+                    <SelectValue placeholder="Filter by employee" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border-border text-popover-foreground text-xs max-h-[240px]">
+                    <SelectItem value="all">All Employees</SelectItem>
+                    {employeeOptions.map(
+                      (emp: { value: number; label: string }) => (
+                        <SelectItem key={emp.value} value={String(emp.value)}>
+                          {emp.label}
+                        </SelectItem>
+                      )
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
           <div className="overflow-x-auto">
@@ -901,9 +987,6 @@ export const EmployeeAttendance: React.FC = () => {
                     Date
                   </TableHead>
                   <TableHead className="text-muted-foreground font-bold text-xs">
-                    Details
-                  </TableHead>
-                  <TableHead className="text-muted-foreground font-bold text-xs">
                     Reason
                   </TableHead>
                   <TableHead className="text-muted-foreground font-bold text-xs text-center">
@@ -915,82 +998,123 @@ export const EmployeeAttendance: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {activeTab === "regularization" && isLoadingRegularizations && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
+                    </TableCell>
+                  </TableRow>
+                )}
+
                 {activeTab === "regularization" &&
-                  regularizations.map((req) => (
-                    <TableRow
-                      key={req.id}
-                      className="border-border hover:bg-muted/20"
-                    >
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-8 w-8 border border-border">
-                            <AvatarFallback className="bg-rose-500/10 text-rose-500 text-xs font-bold">
-                              {req.avatar}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <span className="text-xs font-bold text-foreground block">
-                              {req.employeeName}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground">
-                              {req.employeeCode} | {req.role}
-                            </span>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {req.date}
-                      </TableCell>
-                      <TableCell className="text-xs text-foreground/90 font-semibold">
-                        {req.detail}
-                      </TableCell>
-                      <TableCell
-                        className="text-xs text-muted-foreground max-w-[200px] truncate"
-                        title={req.reason}
+                  !isLoadingRegularizations &&
+                  regularizations.map((req: any) => {
+                    const employeeName =
+                      req.employee?.fullName ||
+                      req.requestedByUser?.fullName ||
+                      "Unknown Employee";
+                    const initials = getNameInitials(employeeName);
+                    const detailParts = [
+                      req.workingTime
+                        ? `Working Time: ${req.workingTime}`
+                        : null,
+                      req.previousStatus
+                        ? `Prev. Status: ${req.previousStatus}`
+                        : null,
+                      req.compensatoryDate
+                        ? `Comp. Date: ${formatDisplayDate(req.compensatoryDate)}`
+                        : null,
+                    ].filter(Boolean);
+
+                    return (
+                      <TableRow
+                        key={req.id}
+                        className="border-border hover:bg-muted/20"
                       >
-                        {req.reason}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Badge
-                          variant={
-                            req.status === "pending"
-                              ? "warning"
-                              : req.status === "approved"
-                                ? "success"
-                                : "destructive"
-                          }
-                        >
-                          {req.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {req.status === "pending" ? (
-                          <div className="flex items-center justify-end gap-1.5">
-                            <Button
-                              size="icon"
-                              variant="outline"
-                              className="h-7 w-7 rounded-full bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20 hover:text-emerald-400"
-                              onClick={() => handleApprove(req.id, "reg")}
-                            >
-                              <Check className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="outline"
-                              className="h-7 w-7 rounded-full bg-rose-500/10 text-rose-500 border-rose-500/20 hover:bg-rose-500/20 hover:text-rose-400"
-                              onClick={() => handleReject(req.id, "reg")}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8 border border-border">
+                              <AvatarFallback className="bg-rose-500/10 text-rose-500 text-xs font-bold">
+                                {initials}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <span className="text-xs font-bold text-foreground block">
+                                {employeeName}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground">
+                                ID: {req.empId}
+                              </span>
+                            </div>
                           </div>
-                        ) : (
-                          <span className="text-xs text-muted-foreground italic">
-                            Actioned
-                          </span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {formatDisplayDate(req.regularizationDate)}
+                        </TableCell>
+                        <TableCell className="text-xs text-foreground/90 font-semibold">
+                          {detailParts.join(" | ") || "-"}
+                        </TableCell>
+                        <TableCell
+                          className="text-xs text-muted-foreground max-w-[200px] truncate"
+                          title={req.reason}
+                        >
+                          {req.reason || "-"}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge
+                            variant={
+                              req.status === "pending"
+                                ? "warning"
+                                : req.status === "approved"
+                                  ? "success"
+                                  : "destructive"
+                            }
+                          >
+                            {req.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {req.status === "pending" ? (
+                            <div className="flex items-center justify-end gap-1.5">
+                              <Button
+                                size="icon"
+                                variant="outline"
+                                className="h-7 w-7 rounded-full bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20 hover:text-emerald-400"
+                                disabled={isActioningRegularization}
+                                onClick={() =>
+                                  performRegularizationAction({
+                                    id: req.id,
+                                    status: "approved",
+                                  })
+                                }
+                              >
+                                {isActioningRegularization ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Check className="h-4 w-4" />
+                                )}
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="outline"
+                                className="h-7 w-7 rounded-full bg-rose-500/10 text-rose-500 border-rose-500/20 hover:bg-rose-500/20 hover:text-rose-400"
+                                disabled={isActioningRegularization}
+                                onClick={() =>
+                                  handleOpenRejectRegularization(req.id)
+                                }
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-muted-foreground italic">
+                              Actioned
+                            </span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
 
                 {activeTab === "overtime" &&
                   overtimes.map((req) => (
@@ -1147,16 +1271,21 @@ export const EmployeeAttendance: React.FC = () => {
                   ))}
 
                 {((activeTab === "regularization" &&
+                  !isLoadingRegularizations &&
                   regularizations.length === 0) ||
                   (activeTab === "overtime" && overtimes.length === 0) ||
                   (activeTab === "onduty" && onDuties.length === 0)) && (
                   <TableRow>
                     <TableCell
-                      colSpan={6}
+                      colSpan={5}
                       className="text-center py-8 text-muted-foreground text-xs"
                     >
                       <CheckCircle2 className="h-8 w-8 mx-auto text-emerald-500 mb-2 opacity-60" />
-                      All caught up! No pending requests.
+                      {activeTab === "regularization"
+                        ? regStatusFilter === "pending"
+                          ? "All caught up! No pending requests."
+                          : "No regularization requests found for the selected filters."
+                        : "All caught up! No pending requests."}
                     </TableCell>
                   </TableRow>
                 )}
@@ -1165,6 +1294,56 @@ export const EmployeeAttendance: React.FC = () => {
           </div>
         </Card>
       )}
+      {/* Reject Regularization Dialog */}
+      <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+        <DialogContent className="sm:max-w-[420px]">
+          <DialogHeader>
+            <DialogTitle>Reject Regularization Request</DialogTitle>
+            <DialogDescription>
+              Please provide a reason for rejecting this request.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label
+              htmlFor="rejection-reason"
+              className="text-sm font-semibold flex items-center gap-1"
+            >
+              Rejection Reason <span className="text-rose-500">*</span>
+            </Label>
+            <Textarea
+              id="rejection-reason"
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              placeholder="Enter reason for rejection..."
+              rows={3}
+            />
+          </div>
+          <DialogFooter className="pt-4 border-t border-border/50">
+            <Button
+              variant="outline"
+              onClick={() => setRejectDialogOpen(false)}
+              disabled={isActioningRegularization}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmRejectRegularization}
+              disabled={isActioningRegularization}
+            >
+              {isActioningRegularization ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Rejecting...
+                </>
+              ) : (
+                "Reject Request"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Day Detail Clock In/Out Modal */}
       <Dialog open={isDayModalOpen} onOpenChange={setIsDayModalOpen}>
         <DialogContent className="max-w-xl bg-card border-border shadow-2xl p-6 rounded-2xl text-card-foreground">
@@ -1205,13 +1384,17 @@ export const EmployeeAttendance: React.FC = () => {
                     {(() => {
                       if (!dayModalData.attendanceDate) return "-";
                       try {
-                        return new Date(dayModalData.attendanceDate).toLocaleDateString("en-US", {
+                        return new Date(
+                          dayModalData.attendanceDate
+                        ).toLocaleDateString("en-US", {
                           weekday: "short",
                           day: "2-digit",
                           month: "short",
                           year: "numeric",
                         });
-                      } catch { return dayModalData.attendanceDate; }
+                      } catch {
+                        return dayModalData.attendanceDate;
+                      }
                     })()}
                   </span>
                 </div>
@@ -1228,11 +1411,20 @@ export const EmployeeAttendance: React.FC = () => {
                           const d = new Date(t);
                           if (isNaN(d.getTime())) {
                             const part = t.split(" ")[1];
-                            if (part) { const p = part.split(":"); return `${p[0]}:${p[1]}`; }
+                            if (part) {
+                              const p = part.split(":");
+                              return `${p[0]}:${p[1]}`;
+                            }
                             return t;
                           }
-                          return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
-                        } catch { return t; }
+                          return d.toLocaleTimeString("en-US", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: false,
+                          });
+                        } catch {
+                          return t;
+                        }
                       };
                       return `${fmt(dayModalData.shiftStartTime)} to ${fmt(dayModalData.shiftEndTime)}`;
                     })()}
@@ -1259,15 +1451,26 @@ export const EmployeeAttendance: React.FC = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border">
-                        {([...(dayModalData.clockInDetails || [])])
+                        {[...(dayModalData.clockInDetails || [])]
                           .sort((a: any, b: any) => {
-                            const da = a.clockTime.endsWith("Z") ? a.clockTime : `${a.clockTime}Z`;
-                            const db = b.clockTime.endsWith("Z") ? b.clockTime : `${b.clockTime}Z`;
-                            return new Date(da).getTime() - new Date(db).getTime();
+                            const da = a.clockTime.endsWith("Z")
+                              ? a.clockTime
+                              : `${a.clockTime}Z`;
+                            const db = b.clockTime.endsWith("Z")
+                              ? b.clockTime
+                              : `${b.clockTime}Z`;
+                            return (
+                              new Date(da).getTime() - new Date(db).getTime()
+                            );
                           })
                           .map((punch: any, idx: number) => (
-                            <tr key={idx} className="hover:bg-muted/10 transition-colors">
-                              <td className="px-4 py-3 text-muted-foreground font-semibold">{idx + 1}</td>
+                            <tr
+                              key={idx}
+                              className="hover:bg-muted/10 transition-colors"
+                            >
+                              <td className="px-4 py-3 text-muted-foreground font-semibold">
+                                {idx + 1}
+                              </td>
                               <td className="px-4 py-3">
                                 <span
                                   className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${

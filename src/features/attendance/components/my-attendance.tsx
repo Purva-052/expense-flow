@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useAuthStore } from "@/stores/use-auth-store";
-import { MewurkService, AttendanceData } from "../services/mewurk-service";
+import { MewurkService } from "../services/mewurk-service";
 import { CalendarDays, Network, X } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -71,7 +71,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   >([]);
   const [isLoadingEmployees, setIsLoadingEmployees] = useState(false);
 
-  const activeEmployee = employee || selectedFilterEmployee;
+  const activeEmployee: any = employee || selectedFilterEmployee;
 
   const rawRole = user?.role || user?.user?.role;
   const roleName = String(
@@ -264,7 +264,6 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
     }
   };
 
-  const [mewurkLogs, setMewurkLogs] = useState<AttendanceData[]>([]);
   const [monthlyData, setMonthlyData] = useState<any | null>(null);
   const [isLoadingLogs, setIsLoadingLogs] = useState(false);
   const [mewurkEmployeeCode, setMewurkEmployeeCode] = useState<number | null>(
@@ -279,6 +278,9 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   );
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isLoadingDayDetails, setIsLoadingDayDetails] = useState(false);
+  const [regStatusFilter, _setRegStatusFilter] = useState<
+    "" | "pending" | "approved" | "rejected"
+  >("pending");
 
   // Helpers for time formatting
   const formatMewurkTime = (timeStr: string | null) => {
@@ -309,41 +311,41 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
     }
   };
 
-  const formatWorkingHours = (hours: number | null) => {
-    if (hours === null || hours === undefined) return "-";
-    const wholeHours = Math.floor(hours);
-    const minutes = Math.round((hours - wholeHours) * 60);
-    return `${String(wholeHours).padStart(2, "0")}:${String(minutes).padStart(2, "0")} HRS`;
-  };
+  // const formatWorkingHours = (hours: number | null) => {
+  //   if (hours === null || hours === undefined) return "-";
+  //   const wholeHours = Math.floor(hours);
+  //   const minutes = Math.round((hours - wholeHours) * 60);
+  //   return `${String(wholeHours).padStart(2, "0")}:${String(minutes).padStart(2, "0")} HRS`;
+  // };
 
-  const calculateBreakTime = (
-    firstInStr: string | null,
-    lastOutStr: string | null,
-    totalWorkMins: number
-  ) => {
-    if (!firstInStr || !lastOutStr || totalWorkMins <= 0) return "-";
-    try {
-      const firstInIso = firstInStr.endsWith("Z")
-        ? firstInStr
-        : `${firstInStr}Z`;
-      const lastOutIso = lastOutStr.endsWith("Z")
-        ? lastOutStr
-        : `${lastOutStr}Z`;
-      const inMs = new Date(firstInIso).getTime();
-      const outMs = new Date(lastOutIso).getTime();
-      if (isNaN(inMs) || isNaN(outMs)) return "-";
+  // const calculateBreakTime = (
+  //   firstInStr: string | null,
+  //   lastOutStr: string | null,
+  //   totalWorkMins: number
+  // ) => {
+  //   if (!firstInStr || !lastOutStr || totalWorkMins <= 0) return "-";
+  //   try {
+  //     const firstInIso = firstInStr.endsWith("Z")
+  //       ? firstInStr
+  //       : `${firstInStr}Z`;
+  //     const lastOutIso = lastOutStr.endsWith("Z")
+  //       ? lastOutStr
+  //       : `${lastOutStr}Z`;
+  //     const inMs = new Date(firstInIso).getTime();
+  //     const outMs = new Date(lastOutIso).getTime();
+  //     if (isNaN(inMs) || isNaN(outMs)) return "-";
 
-      const totalElapsedMins = Math.max(Math.floor((outMs - inMs) / 60000), 0);
-      const breakMins = Math.max(totalElapsedMins - totalWorkMins, 0);
-      if (breakMins === 0) return "00:00 HRS";
+  //     const totalElapsedMins = Math.max(Math.floor((outMs - inMs) / 60000), 0);
+  //     const breakMins = Math.max(totalElapsedMins - totalWorkMins, 0);
+  //     if (breakMins === 0) return "00:00 HRS";
 
-      const hrs = Math.floor(breakMins / 60);
-      const mins = Math.round(breakMins % 60);
-      return `${String(hrs).padStart(2, "0")}:${String(mins).padStart(2, "0")} HRS`;
-    } catch {
-      return "-";
-    }
-  };
+  //     const hrs = Math.floor(breakMins / 60);
+  //     const mins = Math.round(breakMins % 60);
+  //     return `${String(hrs).padStart(2, "0")}:${String(mins).padStart(2, "0")} HRS`;
+  //   } catch {
+  //     return "-";
+  //   }
+  // };
 
   // Resolve Mewurk employee code by matching email/name
   useEffect(() => {
@@ -368,13 +370,18 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
         const targetEmail = user?.user?.email || "varun.s@devstree.in";
         const targetName = user?.user?.fullName || "Varun Saraswat";
 
-        // Fetch directory
-        const dir = await MewurkService.fetchDirectory();
+        const response = await MewurkService.fetchAttendanceEmployees();
+        const dir = Array.isArray(response?.data)
+          ? response.data
+          : Array.isArray(response)
+            ? response
+            : [];
 
         let match = dir.find(
-          (e) =>
+          (e: any) =>
             (e.emailId &&
               e.emailId.toLowerCase() === targetEmail.toLowerCase()) ||
+            (e.email && e.email.toLowerCase() === targetEmail.toLowerCase()) ||
             (e.employeeName &&
               e.employeeName.toLowerCase().trim() ===
                 targetName.toLowerCase().trim())
@@ -382,7 +389,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
 
         if (!match) {
           match = dir.find(
-            (e) =>
+            (e: any) =>
               e.employeeName &&
               (e.employeeName
                 .toLowerCase()
@@ -391,17 +398,16 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           );
         }
 
-        if (match) {
-          setMewurkEmployeeCode(match.employeeCode);
-        } else {
-          console.warn(
-            "Could not match employee to Mewurk directory. Falling back to default admin code."
+        if (match?.employeeCode) {
+          const codeNum = Number(match.employeeCode);
+          setMewurkEmployeeCode(
+            !Number.isNaN(codeNum) && codeNum > 0 ? codeNum : null
           );
-          setMewurkEmployeeCode(100000022777);
+        } else {
+          console.warn("Could not match employee to attendance directory.");
         }
       } catch (err) {
         console.error("Resolve Mewurk employee error:", err);
-        setMewurkEmployeeCode(100000022777);
       }
     };
     resolveEmployee();
@@ -414,56 +420,12 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
     const loadLogs = async () => {
       setIsLoadingLogs(true);
       try {
-        if (activeEmployee) {
-          const res = await MewurkService.fetchEmployeeMonthlyAttendance(
-            mewurkEmployeeCode,
-            selectedMonth,
-            selectedYear
-          );
-          setMonthlyData(res);
-        } else {
-          // Fetch logged-in user own monthly logs
-          const currentLogs = await MewurkService.fetchMonthlyLogs(
-            mewurkEmployeeCode,
-            selectedYear,
-            selectedMonth
-          );
-
-          let prevMonth = selectedMonth - 1;
-          let prevYear = selectedYear;
-          if (prevMonth === 0) {
-            prevMonth = 12;
-            prevYear -= 1;
-          }
-          const prevLogs = await MewurkService.fetchMonthlyLogs(
-            mewurkEmployeeCode,
-            prevYear,
-            prevMonth
-          );
-
-          const allLogs = [...prevLogs, ...currentLogs];
-          const seenDates = new Set<string>();
-          const filtered = allLogs.filter((log) => {
-            if (!log.attendanceDate) return false;
-            const dateObj = new Date(log.attendanceDate);
-            const isSameMonth =
-              dateObj.getFullYear() === selectedYear &&
-              dateObj.getMonth() + 1 === selectedMonth;
-            if (!isSameMonth) return false;
-
-            const dateStr = dateObj.toDateString();
-            if (seenDates.has(dateStr)) return false;
-            seenDates.add(dateStr);
-            return true;
-          });
-
-          filtered.sort(
-            (a, b) =>
-              new Date(a.attendanceDate).getTime() -
-              new Date(b.attendanceDate).getTime()
-          );
-          setMewurkLogs(filtered);
-        }
+        const res = await MewurkService.fetchEmployeeMonthlyAttendance(
+          mewurkEmployeeCode,
+          selectedMonth,
+          selectedYear
+        );
+        setMonthlyData(res);
       } catch (err) {
         console.error("Error loading Mewurk monthly logs:", err);
       } finally {
@@ -501,24 +463,24 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   }, [selectedYear, selectedMonth]);
 
   // Resolve or generate daily status mapping
-  const dailyStatusMap = useMemo(() => {
-    if (activeEmployee?.dailyStatus) return activeEmployee.dailyStatus;
-    // Generate fallback mock statuses for June 2026
-    const mapping: Record<number, "P" | "A" | "WO" | "AH" | "E" | "L" | ""> =
-      {};
-    for (let d = 1; d <= 30; d++) {
-      const weekdayIndex = (d + 0) % 7; // June 1st, 2026 is Mon
-      if (weekdayIndex === 0 || weekdayIndex === 6) {
-        mapping[d] = "WO";
-      } else {
-        // Mostly present, maybe 1 leave or 1 half day
-        if (d === 9) mapping[d] = "AH";
-        else if (d === 15) mapping[d] = "L";
-        else mapping[d] = "P";
-      }
-    }
-    return mapping;
-  }, [activeEmployee]);
+  // const dailyStatusMap = useMemo(() => {
+  //   if (activeEmployee?.dailyStatus) return activeEmployee.dailyStatus;
+  //   // Generate fallback mock statuses for June 2026
+  //   const mapping: Record<number, "P" | "A" | "WO" | "AH" | "E" | "L" | ""> =
+  //     {};
+  //   for (let d = 1; d <= 30; d++) {
+  //     const weekdayIndex = (d + 0) % 7; // June 1st, 2026 is Mon
+  //     if (weekdayIndex === 0 || weekdayIndex === 6) {
+  //       mapping[d] = "WO";
+  //     } else {
+  //       // Mostly present, maybe 1 leave or 1 half day
+  //       if (d === 9) mapping[d] = "AH";
+  //       else if (d === 15) mapping[d] = "L";
+  //       else mapping[d] = "P";
+  //     }
+  //   }
+  //   return mapping;
+  // }, [activeEmployee]);
 
   // Compute stats based on statuses and working hours
   const {
@@ -532,11 +494,9 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
     let p = 0,
       a = 0,
       l = 0,
-      wo = 0,
-      totalMins = 0,
-      daysWithHrs = 0;
+      wo = 0;
 
-    if (activeEmployee && monthlyData) {
+    if (monthlyData) {
       p = monthlyData.workingDays || 0;
       a = monthlyData.absentDays || 0;
       if (Array.isArray(monthlyData.attendance)) {
@@ -579,51 +539,15 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
       };
     }
 
-    if (mewurkLogs && mewurkLogs.length > 0) {
-      mewurkLogs.forEach((log) => {
-        const statusName = (log.clientStatusName || "").toLowerCase();
-        if (statusName.includes("present") || log.firstClockIn) {
-          p++;
-          if (log.totalWorkingHour && log.totalWorkingHour > 0) {
-            totalMins += log.totalWorkingHour;
-            daysWithHrs++;
-          }
-        } else if (statusName.includes("leave")) {
-          l++;
-        } else if (
-          statusName.includes("off") ||
-          statusName.includes("holiday")
-        ) {
-          wo++;
-        } else if (statusName.includes("absent")) {
-          a++;
-        } else {
-          const dateObj = new Date(log.attendanceDate);
-          const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
-          if (isWeekend) wo++;
-          else a++;
-        }
-      });
-    } else {
-      Object.values(dailyStatusMap).forEach((st) => {
-        if (st === "P") p++;
-        else if (st === "A" || st === "AH" || st === "E") a++;
-        else if (st === "L") l++;
-        else if (st === "WO") wo++;
-      });
-    }
-
-    const avgMins = daysWithHrs > 0 ? totalMins / daysWithHrs : 0;
-
     return {
-      presentCount: p,
-      absentCount: a,
-      leaveCount: l,
-      woCount: wo,
-      totalWorkHours: totalMins,
-      avgWorkHours: avgMins,
+      presentCount: 0,
+      absentCount: 0,
+      leaveCount: 0,
+      woCount: 0,
+      totalWorkHours: 0,
+      avgWorkHours: 0,
     };
-  }, [mewurkLogs, dailyStatusMap, activeEmployee, monthlyData]);
+  }, [monthlyData]);
 
   // Helper formatter for dynamic working hours
   const formatMinutesToHoursMinutes = (totalMins: number) => {
@@ -797,95 +721,14 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   //   });
   // };
 
-  // Helper weekday converter for June 2026
-  const getWeekday = (day: number) => {
-    const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const index = (day + 0) % 7; // June 1st is Mon (index 1)
-    return weekdays[index];
-  };
-
   // Generate dynamic rows based on employee's statuses
   const detailedLogs = useMemo(() => {
-    if (activeEmployee) {
-      if (monthlyData && Array.isArray(monthlyData.attendance)) {
-        return monthlyData.attendance.map((log: any) => {
-          const dateObj = new Date(log.date);
-          const day = dateObj.getDate();
-          const weekday =
-            log.day ||
-            dateObj.toLocaleDateString("en-US", { weekday: "short" });
-          const monthStr = dateObj.toLocaleDateString("en-US", {
-            month: "short",
-          });
-          const dayStr = `${weekday}, ${day} ${monthStr}`;
-
-          const statusMap: Record<
-            string,
-            "P" | "A" | "WO" | "AH" | "E" | "L" | ""
-          > = {
-            Present: "P",
-            Absent: "A",
-            "Weekly off": "WO",
-            "Weekly Off": "WO",
-            "Half Day": "AH",
-            Late: "E",
-            Leave: "L",
-          };
-
-          let status =
-            statusMap[log.finalStatus || log.originalStatus || ""] || "";
-          if (!status) {
-            const statusName = (
-              log.finalStatus ||
-              log.originalStatus ||
-              ""
-            ).toLowerCase();
-            if (statusName.includes("present")) status = "P";
-            else if (statusName.includes("leave")) status = "L";
-            else if (
-              statusName.includes("off") ||
-              statusName.includes("holiday")
-            )
-              status = "WO";
-            else if (statusName.includes("absent")) status = "A";
-            else if (statusName.includes("half")) status = "AH";
-            else if (statusName.includes("late")) status = "E";
-          }
-
-          if (!status) {
-            const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
-            status = isWeekend ? "WO" : "A";
-          }
-
-          const firstIn = log.firstIn ? formatMewurkTime(log.firstIn) : "-";
-          const lastOut = log.lastOut ? formatMewurkTime(log.lastOut) : "-";
-          const workingHrs = log.workingTime ? `${log.workingTime} HRS` : "-";
-          const breakHrs = log.breakTime ? `${log.breakTime} HRS` : "-";
-
-          return {
-            day,
-            date: dayStr,
-            rawDateStr: log.date,
-            status,
-            shift: "GS01",
-            firstIn,
-            lastOut,
-            breakHrs,
-            workingHrs,
-            overtimeHrs: "-",
-          };
-        });
-      }
-      return [];
-    }
-
-    if (mewurkLogs && mewurkLogs.length > 0) {
-      return mewurkLogs.map((log) => {
-        const dateObj = new Date(log.attendanceDate);
+    if (monthlyData && Array.isArray(monthlyData.attendance)) {
+      return monthlyData.attendance.map((log: any) => {
+        const dateObj = new Date(log.date);
         const day = dateObj.getDate();
-        const weekday = dateObj.toLocaleDateString("en-US", {
-          weekday: "short",
-        });
+        const weekday =
+          log.day || dateObj.toLocaleDateString("en-US", { weekday: "short" });
         const monthStr = dateObj.toLocaleDateString("en-US", {
           month: "short",
         });
@@ -904,12 +747,21 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           Leave: "L",
         };
 
-        let status = statusMap[log.clientStatusName || ""] || "";
+        let status =
+          statusMap[log.finalStatus || log.originalStatus || ""] || "";
         if (!status) {
-          const statusName = (log.clientStatusName || "").toLowerCase();
+          const statusName = (
+            log.finalStatus ||
+            log.originalStatus ||
+            ""
+          ).toLowerCase();
           if (statusName.includes("present")) status = "P";
           else if (statusName.includes("leave")) status = "L";
-          else if (statusName.includes("off") || statusName.includes("holiday"))
+          else if (
+            statusName.includes("off") ||
+            statusName.includes("holiday") ||
+            statusName.includes("weekly")
+          )
             status = "WO";
           else if (statusName.includes("absent")) status = "A";
           else if (statusName.includes("half")) status = "AH";
@@ -921,92 +773,27 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           status = isWeekend ? "WO" : "A";
         }
 
-        const firstIn = log.firstClockIn
-          ? formatMewurkTime(log.firstClockIn)
-          : "-";
-        const lastOut = log.lastClockOut
-          ? formatMewurkTime(log.lastClockOut)
-          : "-";
-        const workingHrs =
-          log.totalWorkingHour > 0
-            ? formatWorkingHours(log.totalWorkingHour / 60)
-            : "-";
-        const overtimeHrs = log.overtime > 0 ? `${log.overtime} HRS` : "-";
-        const breakHrs = calculateBreakTime(
-          log.firstClockIn,
-          log.lastClockOut,
-          log.totalWorkingHour
-        );
+        const firstIn = log.firstIn ? formatMewurkTime(log.firstIn) : "-";
+        const lastOut = log.lastOut ? formatMewurkTime(log.lastOut) : "-";
+        const workingHrs = log.workingTime ? `${log.workingTime} HRS` : "-";
+        const breakHrs = log.breakTime ? `${log.breakTime} HRS` : "-";
 
         return {
           day,
           date: dayStr,
-          rawDateStr: log.attendanceDate
-            ? log.attendanceDate.split("T")[0]
-            : "",
+          rawDateStr: log.date,
           status,
-          shift: log.shiftName || "GS01",
+          shift: "GS01",
           firstIn,
           lastOut,
           breakHrs,
           workingHrs,
-          overtimeHrs,
+          overtimeHrs: "-",
         };
       });
     }
-
-    const rows = [];
-    for (let day = 1; day <= 30; day++) {
-      const status = dailyStatusMap[day] || "";
-      const weekday = getWeekday(day);
-      const dayStr = `${weekday}, ${day} Jun`;
-
-      let firstIn = "-";
-      let lastOut = "-";
-      let workingHrs = "-";
-      let overtimeHrs = "-";
-
-      if (status === "P") {
-        const baseMin = 10 + (day % 15);
-        firstIn = `10:${baseMin.toString().padStart(2, "0")} AM`;
-        const outMin = 30 + (day % 29);
-        lastOut = `07:${outMin.toString().padStart(2, "0")} PM`;
-
-        const hrs = 8 + (day % 2 === 0 ? 1 : 0);
-        const mins = 10 + (day % 45);
-        workingHrs = `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")} HRS`;
-      } else if (status === "AH") {
-        firstIn = "10:00 AM";
-        lastOut = "02:15 PM";
-        workingHrs = "04:15 HRS";
-      } else if (status === "E") {
-        firstIn = "11:35 AM";
-        lastOut = "07:50 PM";
-        workingHrs = "08:15 HRS";
-      }
-
-      rows.push({
-        day,
-        date: dayStr,
-        rawDateStr: `${selectedYear}-${String(selectedMonth).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
-        status,
-        shift: "GS01",
-        firstIn,
-        lastOut,
-        breakHrs: "00:30 HRS",
-        workingHrs,
-        overtimeHrs,
-      });
-    }
-    return rows;
-  }, [
-    mewurkLogs,
-    dailyStatusMap,
-    selectedMonth,
-    selectedYear,
-    activeEmployee,
-    monthlyData,
-  ]);
+    return [];
+  }, [monthlyData]);
 
   const handleRowClick = async (dateStr: string) => {
     if (!dateStr) return;
@@ -1075,6 +862,27 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
 
   const filtersUI = (
     <div className="flex flex-wrap items-center gap-2">
+      {/* <Select
+        value={regStatusFilter || "all"}
+        onValueChange={(value) =>
+          setRegStatusFilter(
+            value === "all"
+              ? ""
+              : (value as "pending" | "approved" | "rejected")
+          )
+        }
+      >
+        <SelectTrigger className="h-9 w-[160px] rounded-full border-border bg-background text-xs">
+          <SelectValue placeholder="Request status" />
+        </SelectTrigger>
+        <SelectContent className="bg-popover border-border text-popover-foreground text-xs">
+          <SelectItem value="all">All</SelectItem>
+          <SelectItem value="pending">Pending</SelectItem>
+          <SelectItem value="approved">Approved</SelectItem>
+          <SelectItem value="rejected">Rejected</SelectItem>
+        </SelectContent>
+      </Select> */}
+
       {canFilterEmployees && (
         <SimpleDropDownSearchable
           options={allEmployees.map((emp) => ({
@@ -1338,7 +1146,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
       {isLoadingLogs ? (
         <Card className="w-full overflow-hidden border-border shadow-sm">
           <div className="flex divide-x divide-border">
-            {[...Array(5)].map((_, i) => (
+            {[...Array(4)].map((_, i) => (
               <div
                 key={i}
                 className="flex-1 p-4 min-w-[150px] flex items-center gap-3"
@@ -1373,18 +1181,55 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
       {/* Attendance table */}
       <div className="rounded-xl border border-border bg-card shadow-lg overflow-hidden">
         {isLoadingLogs ? (
-          <div className="p-4 space-y-3">
-            {[...Array(6)].map((_, i) => (
+          <div>
+            {/* Month navigator skeleton */}
+            <div className="flex justify-center py-3 px-4 border-b border-border bg-card">
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-7 w-7 rounded-full" />
+                <Skeleton className="h-4 w-24 rounded" />
+                <Skeleton className="h-7 w-7 rounded-full" />
+              </div>
+            </div>
+            {/* Header row skeleton */}
+            <div className="flex items-center gap-4 px-4 py-3 border-b border-border bg-muted/60">
+              <Skeleton className="h-3 w-16 rounded flex-none" />
+              <Skeleton className="h-3 w-12 rounded flex-none" />
+              <Skeleton className="h-3 w-14 rounded flex-none" />
+              <Skeleton className="h-3 w-14 rounded flex-none" />
+              <Skeleton className="h-3 w-16 rounded flex-none" />
+              <Skeleton className="h-3 w-20 rounded flex-none ml-auto" />
+            </div>
+            {/* Body rows skeleton — 10 rows matching actual table rows */}
+            {[
+              ["w-28", "w-16", "w-14", "w-14", "w-16", "w-20"],
+              ["w-24", "w-20", "w-16", "w-16", "w-16", "w-20"],
+              ["w-32", "w-16", "w-12", "w-14", "w-16", "w-20"],
+              ["w-28", "w-20", "w-14", "w-16", "w-16", "w-20"],
+              ["w-24", "w-16", "w-16", "w-14", "w-16", "w-20"],
+              ["w-28", "w-20", "w-14", "w-12", "w-16", "w-20"],
+              ["w-32", "w-16", "w-16", "w-16", "w-16", "w-20"],
+              ["w-24", "w-20", "w-12", "w-14", "w-16", "w-20"],
+              ["w-28", "w-16", "w-14", "w-16", "w-16", "w-20"],
+              ["w-24", "w-20", "w-16", "w-14", "w-16", "w-20"],
+            ].map(([dw, sw, fiw, low, brw, whw], i) => (
               <div
                 key={i}
-                className="flex items-center justify-between gap-4 py-2"
+                className="flex items-center gap-4 px-4 py-3 border-b border-border last:border-b-0"
               >
-                <Skeleton className="h-4 w-24 rounded" />
-                <Skeleton className="h-5 w-16 rounded-full" />
-                <Skeleton className="h-4 w-12 rounded" />
-                <Skeleton className="h-4 w-16 rounded" />
-                <Skeleton className="h-4 w-16 rounded" />
-                <Skeleton className="h-4 w-20 rounded" />
+                {/* Date */}
+                <Skeleton className={`h-3.5 ${dw} rounded flex-none`} />
+                {/* Status badge */}
+                <Skeleton className={`h-5 ${sw} rounded-full flex-none`} />
+                {/* First In */}
+                <Skeleton className={`h-3.5 ${fiw} rounded flex-none`} />
+                {/* Last Out */}
+                <Skeleton className={`h-3.5 ${low} rounded flex-none`} />
+                {/* Break Hours */}
+                <Skeleton className={`h-3.5 ${brw} rounded flex-none`} />
+                {/* Working Hours */}
+                <Skeleton
+                  className={`h-3.5 ${whw} rounded flex-none ml-auto`}
+                />
               </div>
             ))}
           </div>
@@ -1394,6 +1239,12 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
             detailedLogs={detailedLogs}
             onRowClick={handleRowClick}
             monthNavigator={monthNavigatorProps}
+            employeeId={
+              activeEmployee
+                ? Number(activeEmployee.id)
+                : Number(user?.user?.id)
+            }
+            regularizationStatusFilter={regStatusFilter}
           />
         )}
       </div>

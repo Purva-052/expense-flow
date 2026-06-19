@@ -364,6 +364,13 @@ const API = {
     submitSignature: (token: string) => `/sign/${token}/submit`,
     rejectSignature: (token: string) => `/sign/${token}/reject`,
   },
+  attendance: {
+    high_working_hours: "/attendance/high-working-hours",
+    regularizations: "/attendance-regularizations",
+    regularization_list: "/attendance-regularizations",
+    regularization_action: (id: number) => `/attendance-regularizations/${id}/action`,
+    summary: "/attendance/summary",
+  },
 };
 
 Object.freeze(API);

@@ -64,14 +64,14 @@ const AttendancePage: React.FC = () => {
 
             <TabsContent
               value="my-attendance"
-              className="mt-2 focus-visible:outline-none"
+              className="mt-2 focus-visible:outline-none flex-none"
             >
               <MyAttendance filtersPortalId="attendance-filters-slot-admin" />
             </TabsContent>
 
             <TabsContent
               value="employee-attendance"
-              className="mt-2 focus-visible:outline-none"
+              className="mt-2 focus-visible:outline-none flex-none"
             >
               <EmployeeAttendance />
             </TabsContent>
