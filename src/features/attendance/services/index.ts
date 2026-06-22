@@ -24,7 +24,7 @@ export const useGetHighWorkingHoursDates = (
 /**
  * Submits an attendance regularization request.
  */
-export const useCreateRegularizationRequest = (onSuccess?: () => void) => {
+export const useCreateRegularizationRequest = (onSuccess?: (data?: any) => void) => {
   return usePostData({
     url: API.attendance.regularizations,
     refetchQueries: [API.attendance.high_working_hours],

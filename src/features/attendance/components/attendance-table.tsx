@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { MonthNavigator } from "./month-navigator";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { CalendarIcon, CheckCircle, Clock, Loader2, MoreVertical, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,6 +20,7 @@ import { format } from "date-fns";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useGetHighWorkingHoursDates,
   useCreateRegularizationRequest,
@@ -27,8 +28,11 @@ import {
   useRegularizationAction,
 } from "../services";
 import { useGetUserDetails } from "../../users/services";
+import { useGetLeaveAllocations } from "../../leave-management/services";
 import { toast } from "sonner";
 import { Calendar } from "@/components/ui/calendar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import API from "@/config/api/api";
 
 const formatToYYYYMMDD = (date: Date) => {
   const year = date.getFullYear();
@@ -73,6 +77,47 @@ const isFutureDate = (dateStr: string) => {
   today.setHours(0, 0, 0, 0);
 
   return target.getTime() > today.getTime();
+};
+
+const isTodayOrFutureDate = (dateStr: string) => {
+  if (!dateStr) return false;
+  const parts = dateStr.split("-");
+  if (parts.length < 3) return false;
+  const year = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1;
+  const day = parseInt(parts[2], 10);
+
+  const target = new Date(year, month, day);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return target.getTime() >= today.getTime();
+};
+
+const getWorkingDayBefore = (date: Date, count: number): Date => {
+  const result = new Date(date);
+  let workingDaysFound = 0;
+  while (workingDaysFound < count) {
+    result.setDate(result.getDate() - 1);
+    const day = result.getDay();
+    if (day !== 0 && day !== 6) { // Not Sunday (0) and not Saturday (6)
+      workingDaysFound++;
+    }
+  }
+  return result;
+};
+
+const getWorkingDayAfter = (date: Date, count: number): Date => {
+  const result = new Date(date);
+  let workingDaysFound = 0;
+  while (workingDaysFound < count) {
+    result.setDate(result.getDate() + 1);
+    const day = result.getDay();
+    if (day !== 0 && day !== 6) { // Not Sunday (0) and not Saturday (6)
+      workingDaysFound++;
+    }
+  }
+  return result;
 };
 
 const getStatusBadge = (
@@ -156,6 +201,15 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
   const user = useAuthStore((state) => state.user);
   const resolvedEmpId = employeeId || Number(user?.user?.id);
 
+  const { data: allocationsResponse } = useGetLeaveAllocations() as any;
+  const allocations = allocationsResponse?.data || {};
+  const beforeWorkingDaysAllowed = allocations.beforeWorkingDaysAllowed !== undefined && allocations.beforeWorkingDaysAllowed !== null
+    ? Number(allocations.beforeWorkingDaysAllowed)
+    : 3;
+  const afterWorkingDaysAllowed = allocations.afterWorkingDaysAllowed !== undefined && allocations.afterWorkingDaysAllowed !== null
+    ? Number(allocations.afterWorkingDaysAllowed)
+    : 3;
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRegDate, _setSelectedRegDate] = useState("");
   const [compensatoryDate, setCompensatoryDate] = useState("");
@@ -175,11 +229,22 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
   const { data: highWorkingHoursData, isPending: isLoadingHighWorkingHours } =
     useGetHighWorkingHoursDates(employeeCode, isModalOpen);
 
+  const queryClient = useQueryClient();
+  const { mutate: autoApprove } = useRegularizationAction(() => {
+    queryClient.invalidateQueries({ queryKey: [API.attendance.regularization_list] });
+    queryClient.invalidateQueries({ queryKey: [API.attendance.high_working_hours] });
+  });
+
   const { mutate: createRegularization, isPending: isSubmitting } =
-    useCreateRegularizationRequest(() => {
+    useCreateRegularizationRequest((data: any) => {
       setIsModalOpen(false);
       setCompensatoryDate("");
       setReason("");
+      
+      const regId = data?.id;
+      if (resolvedEmpId === 4 && regId) {
+        autoApprove({ id: regId, status: "approved" });
+      }
     });
 
   const highWorkingHoursDates: string[] = (
@@ -205,12 +270,12 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
     }
   }, [selectedRegDate]);
 
-  // const handleOpenRegularization = (dateStr: string) => {
-  //   setSelectedRegDate(dateStr);
-  //   setCompensatoryDate("");
-  //   setIsCalendarOpen(false);
-  //   setIsModalOpen(true);
-  // };
+  const handleOpenRegularization = (dateStr: string) => {
+    _setSelectedRegDate(dateStr);
+    setCompensatoryDate("");
+    setIsCalendarOpen(false);
+    setIsModalOpen(true);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -232,6 +297,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
       regularizationDate: selectedRegDate,
       compensatoryDate,
       reason: reason.trim(),
+      ...(Number(resolvedEmpId) === 4 ? { status: "approved" } : {}),
     });
   };
 
@@ -269,6 +335,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
           <tbody className="divide-y divide-border text-xs text-foreground">
             {detailedLogs.map((log: any) => {
               const future = isFutureDate(log.rawDateStr);
+              const todayOrFuture = isTodayOrFutureDate(log.rawDateStr);
               return (
                 <tr
                   key={log.day}
@@ -283,7 +350,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                     {log.date}
                   </td>
                   <td className="px-4 py-3">
-                    {getStatusBadge(log.status, future)}
+                    {getStatusBadge(log.status, todayOrFuture)}
                   </td>
                   <td className="px-4 py-3 font-semibold text-foreground">
                     {log.firstIn}
@@ -303,7 +370,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                   >
                     {log.workingHrs}
                   </td>
-                  {/* <td
+                  <td
                     className="px-4 py-3 text-right"
                     onClick={(e) => e.stopPropagation()}
                   >
@@ -331,7 +398,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                         </DropdownMenuContent>
                       </DropdownMenu>
                     )}
-                  </td> */}
+                  </td>
                 </tr>
               );
             })}
@@ -398,9 +465,34 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                         setIsCalendarOpen(false);
                       }}
                       disabled={(date) => {
-                        // Directly show all the dates enabled coming from the endpoint
                         const dateStr = formatToYYYYMMDD(date);
-                        return !highWorkingHoursDates.includes(dateStr);
+                        if (!highWorkingHoursDates.includes(dateStr)) return true;
+
+                        // Also check within before/after working days range
+                        if (!selectedRegDate) return true;
+                        const refParts = selectedRegDate.split("-");
+                        if (refParts.length < 3) return true;
+                        const refYear = parseInt(refParts[0], 10);
+                        const refMonth = parseInt(refParts[1], 10) - 1;
+                        const refDay = parseInt(refParts[2], 10);
+                        const refDate = new Date(refYear, refMonth, refDay);
+                        refDate.setHours(0, 0, 0, 0);
+
+                        const checkDate = new Date(date);
+                        checkDate.setHours(0, 0, 0, 0);
+
+                        // Exclude reference date itself
+                        if (checkDate.getTime() === refDate.getTime()) return true;
+
+                        const oldestAcceptable = getWorkingDayBefore(refDate, beforeWorkingDaysAllowed);
+                        oldestAcceptable.setHours(0, 0, 0, 0);
+
+                        const newestAcceptable = getWorkingDayAfter(refDate, afterWorkingDaysAllowed);
+                        newestAcceptable.setHours(0, 0, 0, 0);
+
+                        const inRange = checkDate.getTime() >= oldestAcceptable.getTime() && 
+                                        checkDate.getTime() <= newestAcceptable.getTime();
+                        return !inRange;
                       }}
                       month={currentCalendarMonth}
                       onMonthChange={setCurrentCalendarMonth}
@@ -453,34 +545,37 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
   );
 };
 
-// const statusConfig: Record<
-//   string,
-//   { label: string; color: string; icon: React.ReactNode }
-// > = {
-//   pending: {
-//     label: "Pending",
-//     color:
-//       "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30",
-//     icon: <Clock className="h-3 w-3" />,
-//   },
-//   approved: {
-//     label: "Approved",
-//     color:
-//       "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30",
-//     icon: <CheckCircle className="h-3 w-3" />,
-//   },
-//   rejected: {
-//     label: "Rejected",
-//     color:
-//       "bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30",
-//     icon: <XCircle className="h-3 w-3" />,
-//   },
-// };
+const statusConfig: Record<
+  string,
+  { label: string; color: string; icon: React.ReactNode }
+> = {
+  pending: {
+    label: "Pending",
+    color:
+      "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30",
+    icon: <Clock className="h-3 w-3" />,
+  },
+  approved: {
+    label: "Approved",
+    color:
+      "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30",
+    icon: <CheckCircle className="h-3 w-3" />,
+  },
+  rejected: {
+    label: "Rejected",
+    color:
+      "bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30",
+    icon: <XCircle className="h-3 w-3" />,
+  },
+};
 
 export const RegularizationRequestsPanel: React.FC<{
   employeeId: number;
   statusFilter: "" | "pending" | "approved" | "rejected";
 }> = ({ employeeId, statusFilter }) => {
+  const user = useAuthStore((state) => state.user);
+  const loggedInUserId = Number(user?.user?.id);
+
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [selectedRejectId, setSelectedRejectId] = useState<number | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
@@ -490,13 +585,13 @@ export const RegularizationRequestsPanel: React.FC<{
   if (statusFilter) params.status = statusFilter;
 
   const {
-    // data: regularizationData,
-    // isPending: isLoadingList,
+    data: regularizationData,
+    isPending: isLoadingList,
     refetch,
   } = useGetRegularizationRequests(params, true);
 
-  // const requests: any[] = (regularizationData as any)?.data || [];
-  // const pendingCount = requests.filter((r) => r.status === "pending").length;
+  const requests: any[] = (regularizationData as any)?.data || [];
+  const pendingCount = requests.filter((r) => r.status === "pending").length;
 
   const { mutate: performAction, isPending: isActioning } =
     useRegularizationAction(() => {
@@ -506,15 +601,15 @@ export const RegularizationRequestsPanel: React.FC<{
       setSelectedRejectId(null);
     });
 
-  // const handleApprove = (id: number) => {
-  //   performAction({ id, status: "approved" });
-  // };
+  const handleApprove = (id: number) => {
+    performAction({ id, status: "approved" });
+  };
 
-  // const handleOpenReject = (id: number) => {
-  //   setSelectedRejectId(id);
-  //   setRejectionReason("");
-  //   setRejectDialogOpen(true);
-  // };
+  const handleOpenReject = (id: number) => {
+    setSelectedRejectId(id);
+    setRejectionReason("");
+    setRejectDialogOpen(true);
+  };
 
   const handleConfirmReject = () => {
     if (!selectedRejectId) return;
@@ -529,23 +624,23 @@ export const RegularizationRequestsPanel: React.FC<{
     });
   };
 
-  // const formatDisplayDate = (dateStr: string) => {
-  //   if (!dateStr) return "-";
-  //   try {
-  //     const parts = dateStr.split("-");
-  //     if (parts.length < 3) return dateStr;
-  //     return format(
-  //       new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])),
-  //       "dd MMM yyyy"
-  //     );
-  //   } catch {
-  //     return dateStr;
-  //   }
-  // };
+  const formatDisplayDate = (dateStr: string) => {
+    if (!dateStr) return "-";
+    try {
+      const parts = dateStr.split("-");
+      if (parts.length < 3) return dateStr;
+      return format(
+        new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])),
+        "dd MMM yyyy"
+      );
+    } catch {
+      return dateStr;
+    }
+  };
 
   return (
     <>
-      {/* <div className="border-t border-border mt-4">
+      <div className="border-t border-border mt-4">
         <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-card">
           <Clock className="h-4 w-4 text-amber-500" />
           <span className="text-sm font-semibold text-foreground">
@@ -626,7 +721,7 @@ export const RegularizationRequestsPanel: React.FC<{
                         )}
                       </td>
                       <td className="px-4 py-2.5 text-right">
-                        {req.status === "pending" && (
+                        {req.status === "pending" && loggedInUserId === 4 && (
                           <div className="flex items-center justify-end gap-1.5">
                             <Button
                               size="sm"
@@ -662,7 +757,7 @@ export const RegularizationRequestsPanel: React.FC<{
             </table>
           </div>
         )}
-      </div> */}
+      </div>
 
       {/* Reject reason dialog */}
       <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>

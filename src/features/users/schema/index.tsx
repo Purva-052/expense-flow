@@ -63,7 +63,12 @@ const baseUserSchema = z.object({
   ),
   status: z.boolean(),
   joining: z.boolean(),
-  currentWorkingProjectId: z.any().optional(),
+  mewurkEmployeeCode: z
+    .string()
+    .trim()
+    .max(50, { message: "Employee code cannot exceed 50 characters." })
+    .optional()
+    .nullable(),
   profilePicS3Key: z.string().optional(),
   file: z
     .any()

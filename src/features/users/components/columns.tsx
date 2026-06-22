@@ -43,6 +43,11 @@ export const columns: ColumnDef<any>[] = [
     header: "Email",
   },
   {
+    accessorKey: "mewurkEmployeeCode",
+    header: "Employee Code",
+    cell: ({ row }) => row.original.mewurkEmployeeCode || "-",
+  },
+  {
     accessorKey: "role",
     header: "Role",
     cell: ({ row }) => (

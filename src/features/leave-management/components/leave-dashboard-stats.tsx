@@ -17,6 +17,7 @@ interface LeaveDashboardStatsProps {
   lowBalanceCount: number;
   loading?: boolean;
   onTodayCardClick?: () => void;
+  onTomorrowCardClick?: () => void;
   onPendingCardClick?: () => void;
 }
 
@@ -27,6 +28,7 @@ export function LeaveDashboardStats({
   pendingCount,
   loading,
   onTodayCardClick,
+  onTomorrowCardClick,
   onPendingCardClick,
 }: LeaveDashboardStatsProps) {
   const cards = [
@@ -45,12 +47,12 @@ export function LeaveDashboardStats({
       key: "tomorrow",
       label: "On Leave Tomorrow",
       value: String(onLeaveTomorrow),
-      helperText: "Employees scheduled for tomorrow",
+      helperText: "Click to view by technology",
       icon: (
         <CalendarDays className="h-5 w-5 text-violet-700 dark:text-violet-400" />
       ),
       iconBg: "bg-violet-100 dark:bg-violet-900/30",
-      clickable: false,
+      clickable: true,
     },
     {
       key: "week",
@@ -72,17 +74,6 @@ export function LeaveDashboardStats({
       iconBg: "bg-amber-100 dark:bg-amber-900/30",
       clickable: true,
     },
-    // {
-    //   key: "low-balance",
-    //   label: "Low Balance",
-    //   value: String(lowBalanceCount),
-    //   helperText: "Employees with ≤2 days left",
-    //   icon: (
-    //     <AlertTriangle className="h-5 w-5 text-rose-700 dark:text-rose-400" />
-    //   ),
-    //   iconBg: "bg-rose-100 dark:bg-rose-900/30",
-    //   clickable: false,
-    // },
   ];
 
   if (loading) {
@@ -109,7 +100,12 @@ export function LeaveDashboardStats({
         );
 
         if (card.clickable) {
-          const clickHandler = card.key === "today" ? onTodayCardClick : onPendingCardClick;
+          const clickHandler =
+            card.key === "today"
+              ? onTodayCardClick
+              : card.key === "tomorrow"
+                ? onTomorrowCardClick
+                : onPendingCardClick;
           if (clickHandler) {
             return (
               <button
@@ -120,7 +116,9 @@ export function LeaveDashboardStats({
                   "text-left rounded-xl transition-all w-full",
                   card.key === "today"
                     ? "hover:ring-2 hover:ring-emerald-500/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    : "hover:ring-2 hover:ring-amber-500/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    : card.key === "tomorrow"
+                      ? "hover:ring-2 hover:ring-violet-500/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      : "hover:ring-2 hover:ring-amber-500/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 )}
               >
                 {content}
