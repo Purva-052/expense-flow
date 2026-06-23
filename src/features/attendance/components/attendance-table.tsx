@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { MonthYearPicker } from "./month-year-picker";
-import { CalendarIcon, CheckCircle, Clock, Loader2, MoreVertical, XCircle } from "lucide-react";
+import { CalendarIcon, CheckCircle, CheckCircle2, Clock, Loader2, MoreVertical, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -27,12 +27,13 @@ import {
   useGetRegularizationRequests,
   useRegularizationAction,
 } from "../services";
-import { useGetUsersList } from "../../users/services";
+import { useGetUsersList, useGetUserDropdownList } from "../../users/services";
 // import { useGetLeaveAllocations } from "../../leave-management/services";
 import { toast } from "sonner";
 import { roles } from "@/utils/constant";
 import { Calendar } from "@/components/ui/calendar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import API from "@/config/api/api";
 
 const formatToYYYYMMDD = (date: Date) => {
@@ -65,7 +66,6 @@ interface AttendanceTableProps {
     isLoading?: boolean;
   };
   employeeId?: number;
-  regularizationStatusFilter?: "" | "pending" | "approved" | "rejected";
 }
 
 const isFutureDate = (dateStr: string) => {
@@ -200,7 +200,6 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
   embedded = false,
   monthNavigator,
   employeeId,
-  regularizationStatusFilter = "pending",
 }) => {
   const user = useAuthStore((state) => state.user);
   const resolvedEmpId = employeeId || Number(user?.user?.id);
@@ -349,7 +348,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
               <th className="px-4 py-3 bg-muted sticky top-0">Last Out</th>
               <th className="px-4 py-3 bg-muted sticky top-0">Break Time</th>
               <th className="px-4 py-3 bg-muted sticky top-0">Working Hours</th>
-              {/* <th className="px-4 py-3 bg-muted sticky top-0 w-12 text-right"></th> */}
+              <th className="px-4 py-3 bg-muted sticky top-0 w-12 text-right"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border text-xs text-foreground">
@@ -533,12 +532,6 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
           </form>
         </DialogContent>
       </Dialog>
-
-      {/* ── Regularization Requests Section ── */}
-      <RegularizationRequestsPanel
-        employeeId={resolvedEmpId}
-        statusFilter={regularizationStatusFilter}
-      />
     </div>
   );
 };
@@ -574,19 +567,60 @@ export const RegularizationRequestsPanel: React.FC<{
   const user = useAuthStore((state) => state.user);
   const loggedInUserId = Number(user?.user?.id);
 
+  const rawRole = user?.role || user?.user?.role;
+  const roleName = String(
+    rawRole && typeof rawRole === "object" ? rawRole?.name : rawRole || ""
+  ).toLowerCase();
+  const isAdmin = roleName === roles.ADMIN;
+  const isPM = roleName === roles.PROJECT_MANAGER;
+  const canFilterEmployees = isAdmin || isPM;
+
+  const [currentStatusFilter, setCurrentStatusFilter] = useState<
+    "" | "pending" | "approved" | "rejected"
+  >(statusFilter);
+  const [currentEmployeeFilter, setCurrentEmployeeFilter] = useState<number | null>(
+    canFilterEmployees
+      ? (employeeId && employeeId !== loggedInUserId ? employeeId : null)
+      : (employeeId || null)
+  );
+
+  useEffect(() => {
+    if (canFilterEmployees) {
+      setCurrentEmployeeFilter(employeeId && employeeId !== loggedInUserId ? employeeId : null);
+    } else {
+      setCurrentEmployeeFilter(employeeId || null);
+    }
+  }, [employeeId, canFilterEmployees, loggedInUserId]);
+
+  useEffect(() => {
+    setCurrentStatusFilter(statusFilter);
+  }, [statusFilter]);
+
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [selectedRejectId, setSelectedRejectId] = useState<number | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
 
   const params: Record<string, any> = {};
-  if (employeeId) params.empId = employeeId;
-  if (statusFilter) params.status = statusFilter;
+  if (currentEmployeeFilter) params.empId = currentEmployeeFilter;
+  if (currentStatusFilter) params.status = currentStatusFilter;
 
   const {
     data: regularizationData,
     isPending: isLoadingList,
     refetch,
   } = useGetRegularizationRequests(params, true);
+
+  const { data: employeeDropdownData, isPending: isLoadingEmployees } =
+    useGetUserDropdownList({ status: "active" });
+
+  const employeeOptions = useMemo(
+    () =>
+      ((employeeDropdownData as any)?.data || []).map((emp: any) => ({
+        value: emp.id,
+        label: emp.fullName,
+      })),
+    [employeeDropdownData]
+  );
 
   const requests: any[] = (regularizationData as any)?.data || [];
   const pendingCount = requests.filter((r) => r.status === "pending").length;
@@ -638,17 +672,64 @@ export const RegularizationRequestsPanel: React.FC<{
 
   return (
     <>
-      <div className="border-t border-border mt-4">
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-card">
-          <Clock className="h-4 w-4 text-amber-500" />
-          <span className="text-sm font-semibold text-foreground">
-            Regularization Requests
-          </span>
-          {pendingCount > 0 && (
-            <span className="text-[10px] font-bold bg-amber-500 text-white rounded-full px-1.5 py-0.5">
-              {pendingCount}
+      <div className="w-full">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-4 py-3 border-b border-border bg-card">
+          <div className="flex items-center gap-2">
+            <Clock className="h-4 w-4 text-amber-500" />
+            <span className="text-sm font-semibold text-foreground">
+              Regularization Requests
             </span>
-          )}
+            {pendingCount > 0 && (
+              <span className="text-[10px] font-bold bg-amber-500 text-white rounded-full px-1.5 py-0.5">
+                {pendingCount}
+              </span>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Status Filter */}
+            <Select
+              value={currentStatusFilter || "all"}
+              onValueChange={(value) =>
+                setCurrentStatusFilter(value === "all" ? "" : (value as any))
+              }
+            >
+              <SelectTrigger className="h-8 w-full sm:w-[140px] text-xs bg-background border-border">
+                <SelectValue placeholder="All Status" />
+              </SelectTrigger>
+              <SelectContent className="bg-popover border-border text-popover-foreground text-xs">
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Employee Filter (Admin/PM only) */}
+            {canFilterEmployees && (
+              <Select
+                value={currentEmployeeFilter ? String(currentEmployeeFilter) : "all"}
+                onValueChange={(value) =>
+                  setCurrentEmployeeFilter(value === "all" ? null : Number(value))
+                }
+                disabled={isLoadingEmployees}
+              >
+                <SelectTrigger className="h-8 w-full sm:w-[180px] text-xs bg-background border-border">
+                  <SelectValue placeholder="All Employees" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border text-popover-foreground text-xs max-h-[200px]">
+                  <SelectItem value="all">All Employees</SelectItem>
+                  {employeeOptions.map(
+                    (emp: { value: number; label: string }) => (
+                      <SelectItem key={emp.value} value={String(emp.value)}>
+                        {emp.label}
+                      </SelectItem>
+                    )
+                  )}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
         </div>
 
         {isLoadingList ? (
@@ -656,16 +737,14 @@ export const RegularizationRequestsPanel: React.FC<{
             <Loader2 className="h-4 w-4 animate-spin" />
             Loading requests...
           </div>
-        ) : requests.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
-            <Clock className="h-8 w-8 mb-2 opacity-30" />
-            <p className="text-sm">No regularization requests found.</p>
-          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-left">
               <thead>
                 <tr className="bg-muted border-b border-border text-muted-foreground text-xs font-bold">
+                  {canFilterEmployees && (
+                    <th className="px-4 py-2.5 bg-muted">Employee</th>
+                  )}
                   <th className="px-4 py-2.5 bg-muted">Reg. Date</th>
                   <th className="px-4 py-2.5 bg-muted">Comp. Date</th>
                   <th className="px-4 py-2.5 bg-muted">Working Time</th>
@@ -676,10 +755,29 @@ export const RegularizationRequestsPanel: React.FC<{
                 </tr>
               </thead>
               <tbody className="divide-y divide-border text-xs text-foreground">
-                {requests.map((req: any) => {
-                  const cfg = statusConfig[req.status] || statusConfig["pending"];
+                {requests.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={canFilterEmployees ? 8 : 7}
+                      className="text-center py-10 text-muted-foreground text-xs font-medium"
+                    >
+                      <CheckCircle2 className="h-8 w-8 mx-auto text-emerald-500 mb-2 opacity-60" />
+                      {currentStatusFilter === "pending"
+                        ? "All caught up! No pending requests."
+                        : "No regularization requests found for the selected filters."}
+                    </td>
+                  </tr>
+                ) : (
+                  requests.map((req: any) => {
+                    const cfg = statusConfig[req.status] || statusConfig["pending"];
+                    const employeeName = req.employee?.fullName || req.requestedByUser?.fullName || req.user?.name || req.user?.fullName || "-";
                   return (
                     <tr key={req.id} className="hover:bg-muted/10 transition-colors">
+                      {canFilterEmployees && (
+                        <td className="px-4 py-2.5 font-bold text-foreground">
+                          {employeeName}
+                        </td>
+                      )}
                       <td className="px-4 py-2.5 font-semibold text-muted-foreground whitespace-nowrap">
                         {formatDisplayDate(req.regularizationDate)}
                       </td>
@@ -719,7 +817,7 @@ export const RegularizationRequestsPanel: React.FC<{
                         )}
                       </td>
                       <td className="px-4 py-2.5 text-right">
-                        {req.status === "pending" && loggedInUserId === 4 && (
+                        {req.status === "pending" && loggedInUserId === 4 ? (
                           <div className="flex items-center justify-end gap-1.5">
                             <Button
                               size="sm"
@@ -729,7 +827,7 @@ export const RegularizationRequestsPanel: React.FC<{
                               onClick={() => handleApprove(req.id)}
                             >
                               {isActioning ? (
-                                <Loader2 className="h-3 w-3 animate-spin" />
+                                <Loader2 className="h-4 w-4 animate-spin" />
                               ) : (
                                 <CheckCircle className="h-3 w-3" />
                               )}
@@ -746,11 +844,13 @@ export const RegularizationRequestsPanel: React.FC<{
                               Reject
                             </Button>
                           </div>
+                        ) : (
+                          <span className="text-muted-foreground mr-4">-</span>
                         )}
                       </td>
                     </tr>
                   );
-                })}
+                }))}
               </tbody>
             </table>
           </div>

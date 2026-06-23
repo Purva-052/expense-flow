@@ -89,12 +89,14 @@ interface MyAttendanceProps {
   employee?: SelectedEmployee;
   onBack?: () => void;
   filtersPortalId?: string;
+  onEmployeeSelect?: (employeeId: number | null) => void;
 }
 
 export const MyAttendance: React.FC<MyAttendanceProps> = ({
   employee,
   onBack,
   filtersPortalId,
+  onEmployeeSelect,
 }) => {
   const user = useAuthStore((state) => state.user);
   const loggedInId = user?.user?.id;
@@ -109,6 +111,12 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   const [isLoadingEmployees, setIsLoadingEmployees] = useState(false);
 
   const activeEmployee: any = employee || selectedFilterEmployee;
+
+  useEffect(() => {
+    if (onEmployeeSelect) {
+      onEmployeeSelect(activeEmployee ? Number(activeEmployee.id) : null);
+    }
+  }, [activeEmployee, onEmployeeSelect]);
 
   const rawRole = user?.role || user?.user?.role;
   const roleName = String(
@@ -319,9 +327,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   );
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isLoadingDayDetails, setIsLoadingDayDetails] = useState(false);
-  const [regStatusFilter, _setRegStatusFilter] = useState<
-    "" | "pending" | "approved" | "rejected"
-  >("pending");
+
 
   // Helpers for time formatting
   const formatMewurkTime = (timeStr: string | null) => {
@@ -1237,7 +1243,6 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
                 ? Number(activeEmployee.id)
                 : Number(user?.user?.id)
             }
-            regularizationStatusFilter={regStatusFilter}
           />
         )}
       </div>

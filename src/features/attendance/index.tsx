@@ -1,12 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import PageLayout from "@/components/layout/layout-provider";
 import TablePageHeader from "@/components/table/table-page-header";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
-import { Clock, Users } from "lucide-react";
+import { ClipboardList, Clock, Users } from "lucide-react";
 import { MyAttendance } from "./components/my-attendance";
 import { EmployeeAttendance } from "./components/employee-attendance";
+import { RegularizationRequestsPanel } from "./components/attendance-table";
+import { Card } from "@/components/ui/card";
 
 const tabTriggerClass =
   "flex items-center gap-2 rounded-[50px] !px-3 !py-2 transition-all h-[35px] " +
@@ -23,6 +25,9 @@ const AttendancePage: React.FC = () => {
   ).toLowerCase();
 
   const isAdmin = roleName === roles.ADMIN;
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(null);
+
+  const resolvedEmployeeId = selectedEmployeeId || Number(user?.user?.id || user?.user_id);
 
   return (
     <PageLayout>
@@ -55,6 +60,10 @@ const AttendancePage: React.FC = () => {
                   <Users className="h-4 w-4" />
                   Monthly Attendance
                 </TabsTrigger>
+                <TabsTrigger value="regularization" className={tabTriggerClass}>
+                  <ClipboardList className="h-4 w-4" />
+                  Regularization
+                </TabsTrigger>
               </TabsList>
               <div
                 id="attendance-filters-slot-admin"
@@ -66,7 +75,10 @@ const AttendancePage: React.FC = () => {
               value="my-attendance"
               className="mt-2 focus-visible:outline-none flex-none"
             >
-              <MyAttendance filtersPortalId="attendance-filters-slot-admin" />
+              <MyAttendance
+                filtersPortalId="attendance-filters-slot-admin"
+                onEmployeeSelect={setSelectedEmployeeId}
+              />
             </TabsContent>
 
             <TabsContent
@@ -75,9 +87,47 @@ const AttendancePage: React.FC = () => {
             >
               <EmployeeAttendance />
             </TabsContent>
+
+            <TabsContent
+              value="regularization"
+              className="mt-2 focus-visible:outline-none flex-none"
+            >
+              <Card className="w-full overflow-hidden border border-border shadow-sm">
+                <RegularizationRequestsPanel employeeId={resolvedEmployeeId} statusFilter="" />
+              </Card>
+            </TabsContent>
           </Tabs>
         ) : (
-          <MyAttendance filtersPortalId="attendance-filters-slot" />
+          <Tabs defaultValue="my-attendance" className="w-full gap-2">
+            <div className="flex flex-wrap items-center gap-3 w-full">
+              <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border border-rose-100/50 h-9 w-fit shrink-0">
+                <TabsTrigger value="my-attendance" className={tabTriggerClass}>
+                  <Clock className="h-4 w-4" />
+                  My Attendance
+                </TabsTrigger>
+                <TabsTrigger value="regularization" className={tabTriggerClass}>
+                  <ClipboardList className="h-4 w-4" />
+                  Regularization
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
+            <TabsContent
+              value="my-attendance"
+              className="mt-2 focus-visible:outline-none flex-none"
+            >
+              <MyAttendance filtersPortalId="attendance-filters-slot" />
+            </TabsContent>
+
+            <TabsContent
+              value="regularization"
+              className="mt-2 focus-visible:outline-none flex-none"
+            >
+              <Card className="w-full overflow-hidden border border-border shadow-sm">
+                <RegularizationRequestsPanel employeeId={Number(user?.user?.id || user?.user_id)} statusFilter="" />
+              </Card>
+            </TabsContent>
+          </Tabs>
         )}
       </div>
     </PageLayout>

@@ -308,11 +308,16 @@ export const columns: ColumnDef<any>[] = [
 
       const isAccountPerson = technologyId === 35 || technologyId === 37;
 
-      const canEditDelete =
+      const canEdit =
         isAdmin ||
         roleName === roles.PROJECT_MANAGER ||
         isAccountPerson ||
         (isPMorTL && isCreator);
+
+      const canDelete =
+        isAdmin ||
+        roleName === roles.PROJECT_MANAGER ||
+        isAccountPerson;
 
       const canAcceptReject =
         [2, 126].includes(Number(user?.user?.id || user?.user_id)) &&
@@ -357,12 +362,12 @@ export const columns: ColumnDef<any>[] = [
                 Review Request
               </DropdownMenuItem>
             )}
-            {canEditDelete && (
+            {canEdit && (
               <DropdownMenuItem onClick={handleEdit}>
                 Edit Transaction
               </DropdownMenuItem>
             )}
-            {canEditDelete && (
+            {canDelete && (
               <DropdownMenuItem
                 className="text-red-600 focus:bg-red-50 focus:text-red-600"
                 onClick={handleDelete}
