@@ -295,6 +295,7 @@ export function LeaveActionForm({
       leaveTypeId: CASUAL_LEAVE_TYPE_ID,
       leaveDays: [],
       attachments: null,
+      notifyUserIds: [],
     },
   });
 
@@ -338,6 +339,14 @@ export function LeaveActionForm({
     }
     return optionsList;
   }, [employeesList, currentRow]);
+
+  const notifyUserOptions = useMemo(() => {
+    const list = employeesList?.data || [];
+    return list.map((u: any) => ({
+      value: String(u.id),
+      label: u.fullName,
+    }));
+  }, [employeesList]);
 
   const isSelfApplyMode = !canApplyForOthers || applyTab === "self";
   const editEmployeeId = (isEdit || isViewOnly)
@@ -591,6 +600,7 @@ export function LeaveActionForm({
     description: "",
     leaveDays: [] as any[],
     attachments: null,
+    notifyUserIds: [] as string[],
   };
 
   // Reset form on open/close
@@ -670,6 +680,15 @@ export function LeaveActionForm({
           currentRow.attachmentUrl ||
           currentRow.attachment ||
           null,
+        notifyUserIds: (() => {
+          if (Array.isArray(currentRow.notifyUserIds)) {
+            return currentRow.notifyUserIds.map((id: any) => String(id));
+          }
+          if (Array.isArray(currentRow.notifyUsers)) {
+            return currentRow.notifyUsers.map((u: any) => String(u.id || u));
+          }
+          return [];
+        })(),
       });
     } else if (!open) {
       form.reset(emptyDefaults);
@@ -719,6 +738,12 @@ export function LeaveActionForm({
     formData.append("totalLeaveDays", String(leaveAllocation.requestedDays));
     formData.append("lossOfPayDays", String(leaveAllocation.lossOfPayDays));
     formData.append("leaveAllocations", JSON.stringify(allocationItems));
+
+    if (values.notifyUserIds && values.notifyUserIds.length > 0) {
+      formData.append("notifyUserIds", JSON.stringify(values.notifyUserIds.map(Number)));
+    } else {
+      formData.append("notifyUserIds", JSON.stringify([]));
+    }
 
     if (isEdit) {
       onSubmitValues({ id: currentRow.id, data: formData });
@@ -1215,6 +1240,19 @@ export function LeaveActionForm({
             <FormMessage />
           </FormItem>
         )}
+      />
+
+      {/* Notify Users Dropdown with Checkbox-style Multi-Select */}
+      <CustomDropDownSearchable
+        form={form}
+        name="notifyUserIds"
+        label="Notify Users"
+        multiple
+        options={notifyUserOptions}
+        placeholder="Select users to notify"
+        searchEnabled={true}
+        isLoading={employeesListLoading}
+        disabled={isViewOnly}
       />
 
       {/* leaveDays array-level error rendered as a warning banner */}
