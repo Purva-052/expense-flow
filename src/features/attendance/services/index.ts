@@ -10,24 +10,28 @@ import { toast } from "sonner";
  * Fetches past attendance days with working time above 8:15 for the logged-in user or specified employee.
  * Used to determine valid compensatory dates for regularization.
  */
-export const useGetHighWorkingHoursDates = (
+export const useGetCompensatoryDates = (
   employeeCode?: string | number,
+  regularizationDate?: string,
   enabled = true
 ) => {
   return useFetchData({
-    url: API.attendance.high_working_hours,
-    params: employeeCode ? { employeeCode } : {},
-    enabled: enabled && !!employeeCode,
+    url: API.attendance.compensatory_date,
+    params: {
+      ...(employeeCode ? { employeeCode } : {}),
+      ...(regularizationDate ? { regularizationDate } : {}),
+    },
+    enabled: enabled && !!employeeCode && !!regularizationDate,
   });
 };
 
 /**
  * Submits an attendance regularization request.
  */
-export const useCreateRegularizationRequest = (onSuccess?: () => void) => {
+export const useCreateRegularizationRequest = (onSuccess?: (data?: any) => void) => {
   return usePostData({
     url: API.attendance.regularizations,
-    refetchQueries: [API.attendance.high_working_hours],
+    refetchQueries: [API.attendance.compensatory_date],
     onSuccess,
   });
 };
@@ -51,8 +55,8 @@ export const useGetAttendanceSummary = (
     limit?: number;
     search?: string;
     pagination?: boolean;
-    fromDate?: string;
-    toDate?: string;
+    month?: number;
+    year?: number;
     employeeCodes?: string[];
   } = {},
   enabled = true
@@ -60,7 +64,7 @@ export const useGetAttendanceSummary = (
   return useFetchData({
     url: API.attendance.summary,
     params,
-    enabled: enabled && !!params.fromDate && !!params.toDate,
+    enabled: enabled && !!params.month && !!params.year,
   });
 };
 

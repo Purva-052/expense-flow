@@ -53,7 +53,11 @@ export const EmployeeHeader: React.FC<EmployeeHeaderProps> = ({
           </span>
           <SimpleDropDownSearchable
             options={allEmployees.map((emp) => ({
-              label: emp.employeeName,
+              label:
+                emp.employeeName ||
+                (emp as any).fullName ||
+                `${(emp as any).firstName || ""} ${(emp as any).lastName || ""}`.trim() ||
+                String(emp.employeeCode),
               value: emp.employeeCode,
             }))}
             value={activeEmployeeCode}

@@ -49,11 +49,11 @@ const AttendancePage: React.FC = () => {
               <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border border-rose-100/50 h-9 w-fit shrink-0">
                 <TabsTrigger value="my-attendance" className={tabTriggerClass}>
                   <Clock className="h-4 w-4" />
-                  My Attendance
+                  Team Attendance
                 </TabsTrigger>
                 <TabsTrigger value="employee-attendance" className={tabTriggerClass}>
                   <Users className="h-4 w-4" />
-                  Employee Attendance
+                  Monthly Attendance
                 </TabsTrigger>
               </TabsList>
               <div

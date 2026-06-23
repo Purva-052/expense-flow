@@ -30,20 +30,25 @@ interface SetAllocationsModalProps {
 
 const setAllocationsSchema = z.object({
   casualLeave: z
-    .union([z.string(), z.number()], {
-      required_error: "Casual Leave is required",
-    })
-    .transform((val) => Number(val))
-    .refine((val) => !isNaN(val) && val >= 0 && val <= 100, {
+    .union([z.string(), z.number(), z.undefined()])
+    .optional()
+    .transform((val) => (val === "" || val === undefined ? undefined : Number(val)))
+    .refine((val) => val === undefined || (!isNaN(val) && val >= 0 && val <= 100), {
       message: "Casual leave must be between 0 and 100",
     }),
   paidLeave: z
-    .union([z.string(), z.number()], {
-      required_error: "Paid Leave is required",
-    })
-    .transform((val) => Number(val))
-    .refine((val) => !isNaN(val) && val >= 0 && val <= 100, {
+    .union([z.string(), z.number(), z.undefined()])
+    .optional()
+    .transform((val) => (val === "" || val === undefined ? undefined : Number(val)))
+    .refine((val) => val === undefined || (!isNaN(val) && val >= 0 && val <= 100), {
       message: "Paid leave must be between 0 and 100",
+    }),
+  workingDaysAllowed: z
+    .union([z.string(), z.number(), z.undefined()])
+    .optional()
+    .transform((val) => (val === "" || val === undefined ? undefined : Number(val)))
+    .refine((val) => val === undefined || (!isNaN(val) && val >= 0 && val <= 365), {
+      message: "Value must be between 0 and 365",
     }),
 });
 
@@ -58,6 +63,7 @@ export function SetAllocationsModal({
     defaultValues: {
       casualLeave: undefined,
       paidLeave: undefined,
+      workingDaysAllowed: undefined,
     },
   });
 
@@ -72,6 +78,7 @@ export function SetAllocationsModal({
       form.reset({
         casualLeave: undefined,
         paidLeave: undefined,
+        workingDaysAllowed: undefined,
       });
     }
   }, [open, form]);
@@ -86,10 +93,10 @@ export function SetAllocationsModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[425px] max-h-[85vh] flex flex-col gap-0 p-0 overflow-hidden">
+        {/* Fixed Header */}
+        <DialogHeader className="px-6 py-4 border-b border-border/50 shrink-0">
           <DialogTitle className="flex items-center gap-2 text-rose-500 font-bold text-lg dark:text-rose-400">
-            {/* <Coins className="h-5 w-5 text-rose-500 animate-pulse" /> */}
             Leave Settings
           </DialogTitle>
           <DialogDescription>
@@ -100,79 +107,114 @@ export function SetAllocationsModal({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4 py-2"
+            className="flex flex-col flex-1 min-h-0 overflow-hidden"
           >
-            <div className="bg-amber-50 border border-amber-200 dark:bg-amber-950/20 dark:border-amber-900/30 rounded-lg p-3 flex items-start gap-2 text-xs text-amber-800 dark:text-amber-300">
-              <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
-              <div>
-                <span className="font-semibold">Note:</span> The entered leaves
-                will be added for all the users Quaterly.
+            {/* Scrollable Form Content */}
+            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+              <div className="bg-amber-50 border border-amber-200 dark:bg-amber-950/20 dark:border-amber-900/30 rounded-lg p-3 flex items-start gap-2 text-xs text-amber-800 dark:text-amber-300">
+                <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-semibold">Note:</span> The entered leaves
+                  will be added for all the users Quaterly.
+                </div>
               </div>
+
+              <FormField
+                control={form.control}
+                name="casualLeave"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-semibold">
+                      Casual Leave Balance
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="e.g. 2.5"
+                        min={0}
+                        max={100}
+                        step={0.5}
+                        {...field}
+                        value={field.value ?? ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          field.onChange(val === "" ? "" : Number(val));
+                        }}
+                      />
+                    </FormControl>
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      Maximum allowed number is 100. Decimal values are supported.
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="paidLeave"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-semibold">
+                      Paid Leave Balance
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="e.g. 1.5"
+                        min={0}
+                        max={100}
+                        step={0.5}
+                        {...field}
+                        value={field.value ?? ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          field.onChange(val === "" ? "" : Number(val));
+                        }}
+                      />
+                    </FormControl>
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      Maximum allowed number is 100. Decimal values are supported.
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="workingDaysAllowed"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-semibold">
+                      Working Days Allowed
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="e.g. 3"
+                        min={0}
+                        max={365}
+                        step={1}
+                        {...field}
+                        value={field.value ?? ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          field.onChange(val === "" ? "" : Number(val));
+                        }}
+                      />
+                    </FormControl>
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      Allowed number of days within which regularization can be applied.
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
-            <FormField
-              control={form.control}
-              name="casualLeave"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-semibold">
-                    Casual Leave Balance <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="e.g. 2.5"
-                      min={0}
-                      max={100}
-                      step={0.5}
-                      {...field}
-                      value={field.value ?? ""}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        field.onChange(val === "" ? "" : Number(val));
-                      }}
-                    />
-                  </FormControl>
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    Maximum allowed number is 100. Decimal values are supported.
-                  </p>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="paidLeave"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-semibold">
-                    Paid Leave Balance <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="e.g. 1.5"
-                      min={0}
-                      max={100}
-                      step={0.5}
-                      {...field}
-                      value={field.value ?? ""}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        field.onChange(val === "" ? "" : Number(val));
-                      }}
-                    />
-                  </FormControl>
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    Maximum allowed number is 100. Decimal values are supported.
-                  </p>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+            {/* Fixed Footer */}
+            <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-100 dark:border-slate-800 shrink-0 bg-background">
               <CustomButton
                 type="button"
                 variant="outline"

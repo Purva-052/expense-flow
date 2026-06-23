@@ -20,6 +20,7 @@ export function LeaveDashboardTab({
   onPendingCardClick,
 }: LeaveDashboardTabProps) {
   const [todayModalOpen, setTodayModalOpen] = useState(false);
+  const [boardFilter, setBoardFilter] = useState<"today" | "tomorrow">("today");
   const [boardDate, setBoardDate] = useState(() => startOfDay(new Date()));
   const boardDateStr = format(boardDate, "yyyy-MM-dd");
 
@@ -38,7 +39,7 @@ export function LeaveDashboardTab({
     useGetLeaveDashboard({ filter: ["tomorrow", "next_week", "next_month"] });
 
   const { data: boardRes, isPending: boardLoading } = useGetLeaveDashboard(
-    { filter: "today", date: boardDateStr },
+    { filter: boardFilter, date: boardDateStr },
     todayModalOpen
   );
 
@@ -76,7 +77,15 @@ export function LeaveDashboardTab({
         lowBalanceCount={lowBalanceCount}
         loading={statsLoading}
         onTodayCardClick={() => {
+          setBoardFilter("today");
           setBoardDate(startOfDay(new Date()));
+          setTodayModalOpen(true);
+        }}
+        onTomorrowCardClick={() => {
+          setBoardFilter("tomorrow");
+          const tomorrow = new Date();
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          setBoardDate(startOfDay(tomorrow));
           setTodayModalOpen(true);
         }}
         onPendingCardClick={onPendingCardClick}

@@ -42,7 +42,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
-import DateRangeFilter from "@/components/table/custome-dateRange";
+import { MonthYearPicker } from "./month-year-picker";
 import SimpleDropDownSearchable from "@/components/shared/custome-simple-dropdown";
 import { toast } from "sonner";
 import { MyAttendance } from "./my-attendance";
@@ -54,6 +54,7 @@ import {
   useGetAttendanceEmployees,
 } from "../services";
 import { useGetUserDropdownList } from "@/features/users/services";
+import { useAuthStore } from "@/stores/use-auth-store";
 import {
   DoubleArrowLeftIcon,
   DoubleArrowRightIcon,
@@ -178,6 +179,9 @@ const getStatusLabel = (status: string) => {
 };
 
 export const EmployeeAttendance: React.FC = () => {
+  const user = useAuthStore((state) => state.user);
+  const loggedInUserId = Number(user?.user?.id);
+
   const [activeTab, setActiveTab] = useState<
     "summary" | "regularization" | "overtime" | "onduty"
   >("summary");
@@ -188,13 +192,20 @@ export const EmployeeAttendance: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  // Summary tab filters
-  const [summaryDateRange, setSummaryDateRange] = useState<
-    DateRange | undefined
-  >(getDefaultSummaryDateRange);
+  // Summary tab filters (Month & Year)
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
+  const summaryDateRange = useMemo<DateRange>(() => {
+    return {
+      from: new Date(selectedYear, selectedMonth - 1, 1),
+      to: new Date(selectedYear, selectedMonth, 0),
+    };
+  }, [selectedMonth, selectedYear]);
   const [summaryEmployeeCode, setSummaryEmployeeCode] = useState<string | null>(
     null
   );
+  const [summaryStatus, setSummaryStatus] = useState<"active" | "inactive">("active");
 
   // Day Detail Modal states
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
@@ -267,15 +278,12 @@ export const EmployeeAttendance: React.FC = () => {
       page: currentPage,
       limit: itemsPerPage,
       pagination: true,
-      fromDate: summaryDateRange?.from
-        ? format(summaryDateRange.from, "yyyy-MM-dd")
-        : undefined,
-      toDate: summaryDateRange?.to
-        ? format(summaryDateRange.to, "yyyy-MM-dd")
-        : undefined,
+      month: selectedMonth,
+      year: selectedYear,
       employeeCodes: summaryEmployeeCode ? [summaryEmployeeCode] : undefined,
+      status: summaryStatus,
     }),
-    [currentPage, itemsPerPage, summaryDateRange, summaryEmployeeCode]
+    [currentPage, itemsPerPage, selectedMonth, selectedYear, summaryEmployeeCode, summaryStatus]
   );
 
   const { data: summaryData, isPending: isLoadingSummary } =
@@ -300,6 +308,8 @@ export const EmployeeAttendance: React.FC = () => {
 
   const employeesList = useMemo<EmployeeAttendanceRow[]>(() => {
     const rows = (summaryData as any)?.data || [];
+    const todayStr = format(new Date(), "yyyy-MM-dd");
+
     return rows.map((emp: any) => {
       const dailyStatus: Record<
         string,
@@ -310,8 +320,50 @@ export const EmployeeAttendance: React.FC = () => {
       let leaves = 0;
 
       (emp.attendance || []).forEach((day: any) => {
-        const code = mapFinalStatusToCode(day.finalStatus);
+        let code = mapFinalStatusToCode(day.finalStatus);
+
+        // Hide temporary absent/present statuses for today and the future
+        if (day.date >= todayStr) {
+          if (code === "A" || code === "P" || code === "AH" || code === "E") {
+            code = "";
+          }
+        }
+
         dailyStatus[day.date] = code;
+      });
+
+      // Apply sandwich leave logic on intermediate weekly off (WO) days
+      const sortedDates = Object.keys(dailyStatus).sort();
+      const n = sortedDates.length;
+      let idx = 0;
+      while (idx < n) {
+        if (dailyStatus[sortedDates[idx]] === "WO") {
+          let j = idx;
+          while (j < n && dailyStatus[sortedDates[j]] === "WO") {
+            j++;
+          }
+          const beforeIdx = idx - 1;
+          const afterIdx = j;
+
+          if (beforeIdx >= 0 && afterIdx < n) {
+            if (
+              dailyStatus[sortedDates[beforeIdx]] === "L" &&
+              dailyStatus[sortedDates[afterIdx]] === "L"
+            ) {
+              for (let k = idx; k < j; k++) {
+                dailyStatus[sortedDates[k]] = "L";
+              }
+            }
+          }
+          idx = j;
+        } else {
+          idx++;
+        }
+      }
+
+      // Calculate stats based on final dailyStatus values (after sandwich conversion!)
+      Object.keys(dailyStatus).forEach((date) => {
+        const code = dailyStatus[date];
         if (code === "P") present++;
         else if (code === "A" || code === "AH" || code === "E") absent++;
         else if (code === "L") leaves++;
@@ -336,7 +388,7 @@ export const EmployeeAttendance: React.FC = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [summaryDateRange, summaryEmployeeCode]);
+  }, [summaryDateRange, summaryEmployeeCode, summaryStatus]);
 
   // Regularization approvals from API
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
@@ -357,9 +409,9 @@ export const EmployeeAttendance: React.FC = () => {
     return params;
   }, [regStatusFilter, regEmployeeFilter]);
 
-  // const { data: pendingRegularizationData } = useGetRegularizationRequests({
-  //   status: "pending",
-  // });
+  const { data: pendingRegularizationData } = useGetRegularizationRequests({
+    status: "pending",
+  });
 
   const {
     data: regularizationData,
@@ -383,9 +435,9 @@ export const EmployeeAttendance: React.FC = () => {
   );
 
   const regularizations: any[] = (regularizationData as any)?.data || [];
-  // const pendingRegularizationCount = (
-  //   (pendingRegularizationData as any)?.data || []
-  // ).filter((r: any) => r.status === "pending").length;
+  const pendingRegularizationCount = (
+    (pendingRegularizationData as any)?.data || []
+  ).filter((r: any) => r.status === "pending").length;
 
   const {
     mutate: performRegularizationAction,
@@ -558,7 +610,7 @@ export const EmployeeAttendance: React.FC = () => {
         >
           Summary
         </button>
-        {/* <button
+        <button
           onClick={() => setActiveTab("regularization")}
           className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all flex items-center gap-1.5 ${
             activeTab === "regularization"
@@ -572,24 +624,27 @@ export const EmployeeAttendance: React.FC = () => {
               {pendingRegularizationCount}
             </Badge>
           )}
-        </button> */}
+        </button>
       </div>
 
       {activeTab === "summary" && (
         <>
           <div className="flex flex-col lg:flex-row lg:items-center gap-3">
-            <DateRangeFilter
-              value={summaryDateRange}
-              onChange={(range) => setSummaryDateRange(range)}
-              placeholder="Select date range"
-              className="h-9 text-xs rounded-lg w-full lg:w-[280px] border-border bg-background"
+            <MonthYearPicker
+              month={selectedMonth}
+              year={selectedYear}
+              onChange={(m, y) => {
+                setSelectedMonth(m);
+                setSelectedYear(y);
+              }}
+              isLoading={isLoadingSummary}
             />
 
             <SimpleDropDownSearchable
               options={summaryEmployeeOptions}
               value={summaryEmployeeCode ?? undefined}
               placeholder="Filter by employee"
-              className="w-full lg:w-[220px] h-9"
+              className="w-full lg:w-[220px] h-11"
               isLoading={isLoadingAttendanceEmployees}
               loadingText="Loading employees..."
               onChange={(val) =>
@@ -597,6 +652,19 @@ export const EmployeeAttendance: React.FC = () => {
               }
               allowClear
             />
+
+            <Select
+              value={summaryStatus}
+              onValueChange={(val: "active" | "inactive") => setSummaryStatus(val)}
+            >
+              <SelectTrigger className="w-full lg:w-[120px] h-9 bg-background border-border text-xs rounded-lg text-foreground">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent className="bg-popover border-border text-popover-foreground text-xs">
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Row count info */}
@@ -1074,7 +1142,7 @@ export const EmployeeAttendance: React.FC = () => {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          {req.status === "pending" ? (
+                          {req.status === "pending" && loggedInUserId === 4 ? (
                             <div className="flex items-center justify-end gap-1.5">
                               <Button
                                 size="icon"

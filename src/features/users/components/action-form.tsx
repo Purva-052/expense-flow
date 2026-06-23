@@ -115,6 +115,7 @@ export function UserActionForm({
           joiningDate: currentRow?.joiningDate
             ? currentRow.joiningDate.slice(0, 10)
             : null,
+          mewurkEmployeeCode: currentRow?.mewurkEmployeeCode ?? "",
           // currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
           profilePicS3Key: currentRow?.profilePicUrl ?? "",
           file: null,
@@ -131,6 +132,7 @@ export function UserActionForm({
           status: true,
           joining: false,
           joiningDate: null,
+          mewurkEmployeeCode: "",
           password: "",
           profilePicS3Key: "",
           file: null,
@@ -417,6 +419,20 @@ export function UserActionForm({
                       </FormLabel>
                       <FormControl>
                         <Input placeholder="Enter email" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="mewurkEmployeeCode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Employee Code</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter employee code" {...field} value={field.value ?? ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

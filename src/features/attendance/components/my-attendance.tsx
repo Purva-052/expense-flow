@@ -36,6 +36,54 @@ import { AttendanceTable } from "./attendance-table";
 import { EmployeeStats } from "./employee-stats";
 import { EmployeeTable } from "./employee-table";
 import { EmployeeHeader } from "./employee-header";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
+import { SelectValue } from "@radix-ui/react-select";
+
+const applySandwichLeaveToAttendanceArray = (attendance: any[]): any[] => {
+  if (!Array.isArray(attendance)) return [];
+  const sorted = [...attendance].sort((a, b) => a.date.localeCompare(b.date));
+  const n = sorted.length;
+
+  const isWO = (statusStr: string) => {
+    const s = (statusStr || "").toLowerCase().trim();
+    return s === "holiday" || s === "weekend" || s === "weekly off" || s === "wo";
+  };
+
+  const isLeave = (statusStr: string) => {
+    const s = (statusStr || "").toLowerCase().trim();
+    return s === "leave" || s === "l" || s === "approved leave";
+  };
+
+  let i = 0;
+  while (i < n) {
+    const currentStatus = sorted[i].finalStatus || sorted[i].originalStatus || "";
+    if (isWO(currentStatus)) {
+      let j = i;
+      while (j < n) {
+        const jsStatus = sorted[j].finalStatus || sorted[j].originalStatus || "";
+        if (!isWO(jsStatus)) break;
+        j++;
+      }
+      const beforeIdx = i - 1;
+      const afterIdx = j;
+
+      if (beforeIdx >= 0 && afterIdx < n) {
+        const beforeStatus = sorted[beforeIdx].finalStatus || sorted[beforeIdx].originalStatus || "";
+        const afterStatus = sorted[afterIdx].finalStatus || sorted[afterIdx].originalStatus || "";
+        if (isLeave(beforeStatus) && isLeave(afterStatus)) {
+          for (let k = i; k < j; k++) {
+            sorted[k].finalStatus = "Leave";
+            sorted[k].originalStatus = "Leave";
+          }
+        }
+      }
+      i = j;
+    } else {
+      i++;
+    }
+  }
+  return sorted;
+};
 
 interface SelectedEmployee {
   id: string;
@@ -187,10 +235,6 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   const [selectedMonth, setSelectedMonth] = useState(6); // default to June (6)
   const [selectedYear, setSelectedYear] = useState(2026); // default to 2026
 
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    new Date(2026, 5, 18)
-  );
-  const [datePopoverOpen, setDatePopoverOpen] = useState(false);
   const [currentCalendarMonth, setCurrentCalendarMonth] = useState<Date>(
     new Date(2026, 5)
   );
@@ -240,13 +284,21 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
 
       let empName = "";
       if (match) {
-        empName = match.employeeName;
+        empName =
+          match.employeeName ||
+          match.fullName ||
+          `${match.firstName || ""} ${match.lastName || ""}`.trim() ||
+          String(match.employeeCode);
       } else {
         const localMatch = allEmployees.find(
           (e) => String(e.employeeCode) === String(code)
         );
         if (localMatch) {
-          empName = localMatch.employeeName;
+          empName =
+            localMatch.employeeName ||
+            (localMatch as any).fullName ||
+            `${(localMatch as any).firstName || ""} ${(localMatch as any).lastName || ""}`.trim() ||
+            String(localMatch.employeeCode);
         }
       }
 
@@ -425,6 +477,9 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           selectedMonth,
           selectedYear
         );
+        if (res && Array.isArray(res.attendance)) {
+          res.attendance = applySandwichLeaveToAttendanceArray(res.attendance);
+        }
         setMonthlyData(res);
       } catch (err) {
         console.error("Error loading Mewurk monthly logs:", err);
@@ -865,7 +920,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
       {/* <Select
         value={regStatusFilter || "all"}
         onValueChange={(value) =>
-          setRegStatusFilter(
+          _setRegStatusFilter(
             value === "all"
               ? ""
               : (value as "pending" | "approved" | "rejected")
@@ -886,7 +941,11 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
       {canFilterEmployees && (
         <SimpleDropDownSearchable
           options={allEmployees.map((emp) => ({
-            label: emp.employeeName,
+            label:
+              emp.employeeName ||
+              (emp as any).fullName ||
+              `${(emp as any).firstName || ""} ${(emp as any).lastName || ""}`.trim() ||
+              String(emp.employeeCode),
             value: emp.employeeCode,
           }))}
           value={(selectedFilterEmployee as any)?.code || undefined}
@@ -898,65 +957,6 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           allowClear={true}
         />
       )}
-
-      <Popover open={datePopoverOpen} onOpenChange={setDatePopoverOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className={cn(
-              "h-9 gap-2 rounded-full border-border bg-background px-3 font-normal hover:bg-muted/50",
-              !selectedDate && "text-muted-foreground"
-            )}
-          >
-            <CalendarDays className="h-4 w-4 text-rose-500 shrink-0" />
-            <span className="truncate max-w-[140px]">
-              {selectedDate
-                ? format(selectedDate, "MMM d, yyyy")
-                : "Select date"}
-            </span>
-            {selectedDate && (
-              <button
-                type="button"
-                aria-label="Clear date"
-                className="hover:bg-muted -mr-1 flex h-5 w-5 items-center justify-center rounded-full transition-colors"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  setSelectedDate(undefined);
-                  const today = new Date();
-                  setCurrentCalendarMonth(today);
-                }}
-              >
-                <X className="text-muted-foreground h-3 w-3" />
-              </button>
-            )}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent
-          className="w-auto p-0 rounded-2xl border border-border shadow-2xl"
-          align="end"
-        >
-          <Calendar
-            mode="single"
-            selected={selectedDate}
-            onSelect={(date) => {
-              setSelectedDate(date);
-              if (date) {
-                setCurrentCalendarMonth(date);
-              }
-              setDatePopoverOpen(false);
-            }}
-            month={currentCalendarMonth}
-            onMonthChange={setCurrentCalendarMonth}
-            numberOfMonths={1}
-            captionLayout="dropdown"
-            fromYear={2020}
-            toYear={2030}
-            className="rounded-2xl"
-          />
-        </PopoverContent>
-      </Popover>
     </div>
   );
 
@@ -980,17 +980,20 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   const goToPreviousMonth = () => {
     const d = new Date(selectedYear, selectedMonth - 2, 1);
     setCurrentCalendarMonth(d);
-    setSelectedDate(d);
   };
 
   const goToNextMonth = () => {
     const d = new Date(selectedYear, selectedMonth, 1);
     setCurrentCalendarMonth(d);
-    setSelectedDate(d);
   };
 
   const monthNavigatorProps = {
     label: monthNavLabel,
+    month: selectedMonth,
+    year: selectedYear,
+    onChange: (m: number, y: number) => {
+      setCurrentCalendarMonth(new Date(y, m - 1, 1));
+    },
     onPrev: goToPreviousMonth,
     onNext: goToNextMonth,
     isLoading: isLoadingLogs,
@@ -1093,6 +1096,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
                       detailedLogs={detailedLogs}
                       onRowClick={handleRowClick}
                       monthNavigator={monthNavigatorProps}
+                      employeeId={activeEmployee ? Number(activeEmployee.id) : undefined}
                     />
                   )}
                 </div>

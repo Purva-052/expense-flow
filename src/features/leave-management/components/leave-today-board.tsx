@@ -204,6 +204,23 @@ export function LeaveTodayBoardModal({
   const isToday =
     normalizeDateStr(selectedDate) === normalizeDateStr(new Date());
 
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const isTomorrow =
+    normalizeDateStr(selectedDate) === normalizeDateStr(tomorrow);
+
+  const titleText = isToday
+    ? "On Leave Today"
+    : isTomorrow
+      ? "On Leave Tomorrow"
+      : "On Leave";
+
+  const titleColorClass = isToday
+    ? "text-emerald-600 dark:text-emerald-400"
+    : isTomorrow
+      ? "text-violet-600 dark:text-violet-400"
+      : "text-blue-600 dark:text-blue-400";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {/* Wide, tall modal — expands to fit multiple tech columns */}
@@ -216,8 +233,8 @@ export function LeaveTodayBoardModal({
         }}
       >
         <DialogHeader className="shrink-0 border-b border-border/40 px-6 py-4 text-left">
-          <DialogTitle className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
-            {isToday ? "On Leave Today" : "On Leave"} ({totalOnLeave})
+          <DialogTitle className={`text-lg font-bold ${titleColorClass}`}>
+            {titleText} ({totalOnLeave})
           </DialogTitle>
         </DialogHeader>
 
