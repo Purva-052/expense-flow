@@ -111,13 +111,13 @@ const getNameInitials = (name: string) => {
   return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
 };
 
-const getDefaultSummaryDateRange = (): DateRange => {
-  const now = new Date();
-  return {
-    from: new Date(now.getFullYear(), now.getMonth(), 1),
-    to: now,
-  };
-};
+// const getDefaultSummaryDateRange = (): DateRange => {
+//   const now = new Date();
+//   return {
+//     from: new Date(now.getFullYear(), now.getMonth(), 1),
+//     to: now,
+//   };
+// };
 
 const getWeekdayFromDate = (dateStr: string) => {
   const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];

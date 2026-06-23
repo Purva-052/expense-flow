@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { MonthYearPicker } from "./month-year-picker";
-import { CalendarIcon, Clock, Loader2, MoreVertical } from "lucide-react";
+import { CalendarIcon, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -26,7 +26,7 @@ import {
   useRegularizationAction,
 } from "../services";
 import { useGetUsersList } from "../../users/services";
-import { useGetLeaveAllocations } from "../../leave-management/services";
+// import { useGetLeaveAllocations } from "../../leave-management/services";
 import { toast } from "sonner";
 import { Calendar } from "@/components/ui/calendar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -96,31 +96,31 @@ const isTodayOrFutureDate = (dateStr: string) => {
   return target.getTime() >= today.getTime();
 };
 
-const getWorkingDayBefore = (date: Date, count: number): Date => {
-  const result = new Date(date);
-  let workingDaysFound = 0;
-  while (workingDaysFound < count) {
-    result.setDate(result.getDate() - 1);
-    const day = result.getDay();
-    if (day !== 0 && day !== 6) { // Not Sunday (0) and not Saturday (6)
-      workingDaysFound++;
-    }
-  }
-  return result;
-};
+// const getWorkingDayBefore = (date: Date, count: number): Date => {
+//   const result = new Date(date);
+//   let workingDaysFound = 0;
+//   while (workingDaysFound < count) {
+//     result.setDate(result.getDate() - 1);
+//     const day = result.getDay();
+//     if (day !== 0 && day !== 6) { // Not Sunday (0) and not Saturday (6)
+//       workingDaysFound++;
+//     }
+//   }
+//   return result;
+// };
 
-const getWorkingDayAfter = (date: Date, count: number): Date => {
-  const result = new Date(date);
-  let workingDaysFound = 0;
-  while (workingDaysFound < count) {
-    result.setDate(result.getDate() + 1);
-    const day = result.getDay();
-    if (day !== 0 && day !== 6) { // Not Sunday (0) and not Saturday (6)
-      workingDaysFound++;
-    }
-  }
-  return result;
-};
+// const getWorkingDayAfter = (date: Date, count: number): Date => {
+//   const result = new Date(date);
+//   let workingDaysFound = 0;
+//   while (workingDaysFound < count) {
+//     result.setDate(result.getDate() + 1);
+//     const day = result.getDay();
+//     if (day !== 0 && day !== 6) { // Not Sunday (0) and not Saturday (6)
+//       workingDaysFound++;
+//     }
+//   }
+//   return result;
+// };
 
 const getStatusBadge = (status: "P" | "A" | "WO" | "AH" | "E" | "L" | "", isFuture: boolean = false) => {
   if (isFuture && status === "A") {
@@ -249,11 +249,11 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
       }
     });
 
-  const { data: allocationsResponse } = useGetLeaveAllocations(isAdmin) as any;
-  const allocations = allocationsResponse?.data || {};
-  const workingDaysAllowed = allocations.workingDaysAllowed !== undefined && allocations.workingDaysAllowed !== null
-    ? Number(allocations.workingDaysAllowed)
-    : 3;
+  // const { data: allocationsResponse } = useGetLeaveAllocations(isAdmin) as any;
+  // const allocations = allocationsResponse?.data || {};
+  // const workingDaysAllowed = allocations.workingDaysAllowed !== undefined && allocations.workingDaysAllowed !== null
+  //   ? Number(allocations.workingDaysAllowed)
+  //   : 3;
 
   const highWorkingHoursDates: string[] = (
     (highWorkingHoursData as any)?.data || []

@@ -28,7 +28,7 @@ import {
   useRegularizationAction,
 } from "../services";
 import { useGetUsersList } from "../../users/services";
-import { useGetLeaveAllocations } from "../../leave-management/services";
+// import { useGetLeaveAllocations } from "../../leave-management/services";
 import { toast } from "sonner";
 import { roles } from "@/utils/constant";
 import { Calendar } from "@/components/ui/calendar";
@@ -98,31 +98,31 @@ const isTodayOrFutureDate = (dateStr: string) => {
   return target.getTime() >= today.getTime();
 };
 
-const getWorkingDayBefore = (date: Date, count: number): Date => {
-  const result = new Date(date);
-  let workingDaysFound = 0;
-  while (workingDaysFound < count) {
-    result.setDate(result.getDate() - 1);
-    const day = result.getDay();
-    if (day !== 0 && day !== 6) { // Not Sunday (0) and not Saturday (6)
-      workingDaysFound++;
-    }
-  }
-  return result;
-};
+// const getWorkingDayBefore = (date: Date, count: number): Date => {
+//   const result = new Date(date);
+//   let workingDaysFound = 0;
+//   while (workingDaysFound < count) {
+//     result.setDate(result.getDate() - 1);
+//     const day = result.getDay();
+//     if (day !== 0 && day !== 6) { // Not Sunday (0) and not Saturday (6)
+//       workingDaysFound++;
+//     }
+//   }
+//   return result;
+// };
 
-const getWorkingDayAfter = (date: Date, count: number): Date => {
-  const result = new Date(date);
-  let workingDaysFound = 0;
-  while (workingDaysFound < count) {
-    result.setDate(result.getDate() + 1);
-    const day = result.getDay();
-    if (day !== 0 && day !== 6) { // Not Sunday (0) and not Saturday (6)
-      workingDaysFound++;
-    }
-  }
-  return result;
-};
+// const getWorkingDayAfter = (date: Date, count: number): Date => {
+//   const result = new Date(date);
+//   let workingDaysFound = 0;
+//   while (workingDaysFound < count) {
+//     result.setDate(result.getDate() + 1);
+//     const day = result.getDay();
+//     if (day !== 0 && day !== 6) { // Not Sunday (0) and not Saturday (6)
+//       workingDaysFound++;
+//     }
+//   }
+//   return result;
+// };
 
 const getStatusBadge = (
   status: "P" | "A" | "WO" | "AH" | "E" | "L" | "",
@@ -205,17 +205,17 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
   const user = useAuthStore((state) => state.user);
   const resolvedEmpId = employeeId || Number(user?.user?.id);
 
-  const rawRole = user?.role || user?.user?.role;
-  const roleName = String(
-    rawRole && typeof rawRole === "object" ? rawRole?.name : rawRole || ""
-  ).toLowerCase();
-  const isAdmin = roleName === roles.ADMIN;
+  // const rawRole = user?.role || user?.user?.role;
+  // const roleName = String(
+  //   rawRole && typeof rawRole === "object" ? rawRole?.name : rawRole || ""
+  // ).toLowerCase();
+  // const isAdmin = roleName === roles.ADMIN;
 
-  const { data: allocationsResponse } = useGetLeaveAllocations(isAdmin) as any;
-  const allocations = allocationsResponse?.data || {};
-  const workingDaysAllowed = allocations.workingDaysAllowed !== undefined && allocations.workingDaysAllowed !== null
-    ? Number(allocations.workingDaysAllowed)
-    : 3;
+  // const { data: allocationsResponse } = useGetLeaveAllocations(isAdmin) as any;
+  // const allocations = allocationsResponse?.data || {};
+  // const workingDaysAllowed = allocations.workingDaysAllowed !== undefined && allocations.workingDaysAllowed !== null
+  //   ? Number(allocations.workingDaysAllowed)
+  //   : 3;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRegDate, _setSelectedRegDate] = useState("");
