@@ -343,7 +343,8 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
           <thead>
             <tr className="bg-muted border-b border-border text-muted-foreground text-xs font-bold sticky top-0 z-10">
               <th className="px-4 py-3 bg-muted sticky top-0">Date</th>
-              <th className="px-4 py-3 bg-muted sticky top-0">Status</th>
+              <th className="px-4 py-3 bg-muted sticky top-0">Original Status</th>
+              <th className="px-4 py-3 bg-muted sticky top-0">Final Status</th>
               <th className="px-4 py-3 bg-muted sticky top-0">First In</th>
               <th className="px-4 py-3 bg-muted sticky top-0">Last Out</th>
               <th className="px-4 py-3 bg-muted sticky top-0">Break Time</th>
@@ -369,7 +370,10 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                     {log.date}
                   </td>
                   <td className="px-4 py-3">
-                    {getStatusBadge(log.status, todayOrFuture)}
+                    {getStatusBadge(log.originalStatus, todayOrFuture)}
+                  </td>
+                  <td className="px-4 py-3">
+                    {getStatusBadge(log.finalStatus, todayOrFuture)}
                   </td>
                   <td className="px-4 py-3 font-semibold text-foreground">
                     {log.firstIn}
