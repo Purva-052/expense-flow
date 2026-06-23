@@ -797,6 +797,29 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           Leave: "L",
         };
 
+        const resolveStatusAbbr = (rawStatus: string | null | undefined): "P" | "A" | "WO" | "AH" | "E" | "L" | "" => {
+          if (!rawStatus) return "";
+          let statusVal = statusMap[rawStatus] || "";
+          if (!statusVal) {
+            const statusName = rawStatus.toLowerCase();
+            if (statusName.includes("present")) statusVal = "P";
+            else if (statusName.includes("leave")) statusVal = "L";
+            else if (
+              statusName.includes("off") ||
+              statusName.includes("holiday") ||
+              statusName.includes("weekly")
+            )
+              statusVal = "WO";
+            else if (statusName.includes("absent")) statusVal = "A";
+            else if (statusName.includes("half")) statusVal = "AH";
+            else if (statusName.includes("late")) statusVal = "E";
+          }
+          return statusVal;
+        };
+
+        const originalStatus = resolveStatusAbbr(log.originalStatus);
+        const finalStatus = resolveStatusAbbr(log.finalStatus);
+
         let status =
           statusMap[log.finalStatus || log.originalStatus || ""] || "";
         if (!status) {
@@ -833,6 +856,8 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           date: dayStr,
           rawDateStr: log.date,
           status,
+          originalStatus,
+          finalStatus,
           shift: "GS01",
           firstIn,
           lastOut,

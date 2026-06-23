@@ -336,7 +336,8 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
           <thead>
             <tr className="bg-muted border-b border-border text-muted-foreground text-xs font-bold sticky top-0 z-10">
               <th className="px-4 py-3 bg-muted sticky top-0">Date</th>
-              <th className="px-4 py-3 bg-muted sticky top-0">Status</th>
+              <th className="px-4 py-3 bg-muted sticky top-0">Original Status</th>
+              <th className="px-4 py-3 bg-muted sticky top-0">Final Status</th>
               <th className="px-4 py-3 bg-muted sticky top-0">Shift</th>
               <th className="px-4 py-3 bg-muted sticky top-0">First In</th>
               <th className="px-4 py-3 bg-muted sticky top-0">Last Out</th>
@@ -362,7 +363,8 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
                   <td className="px-4 py-2.5 font-semibold text-muted-foreground">
                     {log.date}
                   </td>
-                  <td className="px-4 py-2.5">{getStatusBadge(log.status, todayOrFuture)}</td>
+                  <td className="px-4 py-2.5">{getStatusBadge(log.originalStatus, todayOrFuture)}</td>
+                  <td className="px-4 py-2.5">{getStatusBadge(log.finalStatus, todayOrFuture)}</td>
                   <td className="px-4 py-2.5 text-muted-foreground font-medium">
                     {log.shift}
                   </td>
