@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { MewurkService } from "../services/mewurk-service";
-import { CalendarDays, Network, X } from "lucide-react";
+import { Network } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   OrgChart,
@@ -21,23 +21,12 @@ import {
 } from "@/components/ui/dialog";
 import SimpleDropDownSearchable from "@/components/shared/custome-simple-dropdown";
 import { roles } from "@/utils/constant";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-
 import { DayDetailModal } from "./day-detail-modal";
 import { AttendanceStats } from "./attendance-stats";
 import { AttendanceTable } from "./attendance-table";
 import { EmployeeStats } from "./employee-stats";
 import { EmployeeTable } from "./employee-table";
 import { EmployeeHeader } from "./employee-header";
-import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
-import { SelectValue } from "@radix-ui/react-select";
 
 const applySandwichLeaveToAttendanceArray = (attendance: any[]): any[] => {
   if (!Array.isArray(attendance)) return [];
