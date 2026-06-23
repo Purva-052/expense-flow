@@ -799,7 +799,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
 
         const resolveStatusAbbr = (rawStatus: string | null | undefined): "P" | "A" | "WO" | "AH" | "E" | "L" | "" => {
           if (!rawStatus) return "";
-          let statusVal = statusMap[rawStatus] || "";
+          let statusVal: "P" | "A" | "WO" | "AH" | "E" | "L" | "" = statusMap[rawStatus] || "";
           if (!statusVal) {
             const statusName = rawStatus.toLowerCase();
             if (statusName.includes("present")) statusVal = "P";
