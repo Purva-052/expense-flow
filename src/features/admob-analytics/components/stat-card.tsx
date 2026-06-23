@@ -27,7 +27,7 @@ export const StatCard = ({
 
   return (
     <Card className="border-slate-200 dark:border-slate-800 transition-all hover:shadow-md">
-      <CardContent className="p-5">
+      <CardContent className="">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">

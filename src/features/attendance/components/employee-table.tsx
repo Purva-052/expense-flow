@@ -203,6 +203,8 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
   ).toLowerCase();
   const isAdmin = roleName === roles.ADMIN;
 
+  const isRegularizingForAnotherEmployee = isAdmin && (Number(resolvedEmpId) !== Number(user?.user?.id));
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRegDate, _setSelectedRegDate] = useState("");
   const [compensatoryDate, setCompensatoryDate] = useState("");
@@ -291,7 +293,7 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
       toast.error("Employee ID is missing.");
       return;
     }
-    if (!compensatoryDate) {
+    if (!isRegularizingForAnotherEmployee && !compensatoryDate) {
       toast.error("Please select a compensatory date.");
       return;
     }
@@ -301,9 +303,9 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
     }
 
     createRegularization({
-      employeeId: Number(resolvedEmpId),
+      employeeCode: Number(resolvedEmpId),
       regularizationDate: selectedRegDate,
-      compensatoryDate,
+      ...(isRegularizingForAnotherEmployee ? {} : { compensatoryDate }),
       reason: reason.trim(),
       ...(Number(resolvedEmpId) === 4 ? { status: "approved" } : {}),
     });
@@ -431,64 +433,66 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4 py-2">
-            <div className="space-y-2 flex flex-col">
-              <Label className="text-sm font-semibold flex items-center gap-1 mb-1">
-                Compensatory Date
-                <span className="text-rose-500">*</span>
-              </Label>
-              {isLoadingHighWorkingHours ? (
-                <div className="flex flex-col items-center justify-center h-10 border border-dashed rounded-md bg-muted/20">
-                  <span className="text-xs text-muted-foreground animate-pulse">
-                    Loading available dates...
-                  </span>
-                </div>
-              ) : (
-                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={`w-full justify-start text-left font-normal border-border/80 ${
-                        !compensatoryDate && "text-muted-foreground"
-                      }`}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
-                      {compensatoryDate ? (
-                        getDisplayCompensatoryDate(compensatoryDate)
-                      ) : (
-                        <span>Select compensatory date</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={
-                        compensatoryDate
-                          ? new Date(compensatoryDate)
-                          : undefined
-                      }
-                      onSelect={(date) => {
-                        if (date) {
-                          setCompensatoryDate(formatToYYYYMMDD(date));
-                        } else {
-                          setCompensatoryDate("");
+            {!isRegularizingForAnotherEmployee && (
+              <div className="space-y-2 flex flex-col">
+                <Label className="text-sm font-semibold flex items-center gap-1 mb-1">
+                  Compensatory Date
+                  <span className="text-rose-500">*</span>
+                </Label>
+                {isLoadingHighWorkingHours ? (
+                  <div className="flex flex-col items-center justify-center h-10 border border-dashed rounded-md bg-muted/20">
+                    <span className="text-xs text-muted-foreground animate-pulse">
+                      Loading available dates...
+                    </span>
+                  </div>
+                ) : (
+                  <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={`w-full justify-start text-left font-normal border-border/80 ${
+                          !compensatoryDate && "text-muted-foreground"
+                        }`}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+                        {compensatoryDate ? (
+                          getDisplayCompensatoryDate(compensatoryDate)
+                        ) : (
+                          <span>Select compensatory date</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={
+                          compensatoryDate
+                            ? new Date(compensatoryDate)
+                            : undefined
                         }
-                        setIsCalendarOpen(false);
-                      }}
-                      disabled={(date) => {
-                        const dateStr = formatToYYYYMMDD(date);
-                        const isDisabled = !highWorkingHoursDates.includes(dateStr);
-                        console.log("EmployeeTable Calendar Date:", dateStr, "isDisabled:", isDisabled, "highWorkingHoursDates:", highWorkingHoursDates);
-                        return isDisabled;
-                      }}
-                      month={currentCalendarMonth}
-                      onMonthChange={setCurrentCalendarMonth}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              )}
-            </div>
+                        onSelect={(date) => {
+                          if (date) {
+                            setCompensatoryDate(formatToYYYYMMDD(date));
+                          } else {
+                            setCompensatoryDate("");
+                          }
+                          setIsCalendarOpen(false);
+                        }}
+                        disabled={(date) => {
+                          const dateStr = formatToYYYYMMDD(date);
+                          const isDisabled = !highWorkingHoursDates.includes(dateStr);
+                          console.log("EmployeeTable Calendar Date:", dateStr, "isDisabled:", isDisabled, "highWorkingHoursDates:", highWorkingHoursDates);
+                          return isDisabled;
+                        }}
+                        month={currentCalendarMonth}
+                        onMonthChange={setCurrentCalendarMonth}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                )}
+              </div>
+            )}
             <div className="space-y-2">
               <Label
                 htmlFor="reason"

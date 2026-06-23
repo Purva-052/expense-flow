@@ -81,7 +81,7 @@ export function LeaveBalanceCards({
             key={card.key}
             className="border border-slate-200 dark:border-slate-800 transition-all"
           >
-            <CardContent className="p-6">
+            <CardContent className="p-2">
               <div className="flex justify-between items-start mb-4">
                 <span
                   className={`text-xs font-semibold uppercase tracking-wide ${card.labelClass}`}

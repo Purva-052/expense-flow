@@ -62,12 +62,6 @@ const SimpleDropDownSearchable = ({
     return () => window.removeEventListener("resize", updateWidth);
   }, [open]);
 
-  const filteredOptions = options?.filter(
-    (option) =>
-      typeof option?.label === "string" &&
-      option.label.toLowerCase().includes(searchValue.toLowerCase() || "")
-  );
-
   const exactMatchExists = options?.some(
     (o) => o?.label?.toLowerCase() === searchValue.toLowerCase()
   );
@@ -133,7 +127,7 @@ const SimpleDropDownSearchable = ({
             className="p-0"
             align="start"
           >
-            <Command shouldFilter={false} className="overflow-hidden">
+            <Command className="overflow-hidden">
               <CommandInput
                 placeholder="Search..."
                 value={searchValue}
@@ -151,11 +145,9 @@ const SimpleDropDownSearchable = ({
                     <CommandEmpty>{loadingText}</CommandEmpty>
                   ) : (
                     <>
-                      {filteredOptions?.length === 0 && (
-                        <CommandEmpty>No option found.</CommandEmpty>
-                      )}
+                      <CommandEmpty>No option found.</CommandEmpty>
                       <CommandGroup>
-                        {filteredOptions?.map((item) => {
+                        {options?.map((item) => {
                           const isSelected = Array.isArray(value)
                             ? value.some(
                                 (v) => String(v) === String(item.value)
@@ -164,7 +156,7 @@ const SimpleDropDownSearchable = ({
 
                           return (
                             <CommandItem
-                              value={item.label}
+                              value={`${item.label} ${item.value}`}
                               key={item.value}
                               onSelect={() => {
                                 if (multiple) {
@@ -198,7 +190,7 @@ const SimpleDropDownSearchable = ({
                         })}
                         {allowCreate && !!searchValue && !exactMatchExists && (
                           <CommandItem
-                            value={`__create__:${searchValue}`}
+                            value={searchValue}
                             onSelect={handleCreate}
                             disabled={isCreating}
                             className="text-primary"

@@ -340,10 +340,10 @@ export function LeaveActionForm({
   }, [employeesList, currentRow]);
 
   const isSelfApplyMode = !canApplyForOthers || applyTab === "self";
-  const editEmployeeId = isEdit
+  const editEmployeeId = (isEdit || isViewOnly)
     ? (currentRow?.employeeId ?? currentRow?.employee?.id)
     : undefined;
-  const balanceUserId = isEdit
+  const balanceUserId = (isEdit || isViewOnly)
     ? editEmployeeId
     : isSelfApplyMode
       ? currentUserId
@@ -743,8 +743,7 @@ export function LeaveActionForm({
 
   // ── Leave Balance Summary ──────────────────────────────────────────────────
   const LeaveBalanceSummary = () => {
-    if (isViewOnly) return null;
-    const targetUserId = isEdit
+    const targetUserId = (isEdit || isViewOnly)
       ? editEmployeeId
       : isSelfApplyMode
         ? currentUserId
@@ -1267,8 +1266,10 @@ export function LeaveActionForm({
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-6"
         >
-          {/* Complete Leave Balance Summary at the top (Full Width) */}
-          {!isViewOnly && <LeaveBalanceSummary />}
+          {/* Complete Leave Balance Summary at the top */}
+          <div className={cn(isViewOnly && "max-w-3xl mx-auto w-full")}>
+            <LeaveBalanceSummary />
+          </div>
 
           {/* Columns Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
