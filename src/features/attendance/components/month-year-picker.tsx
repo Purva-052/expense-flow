@@ -39,6 +39,9 @@ const MONTHS = [
   { label: "Dec", value: 12 },
 ];
 
+const MIN_YEAR = 2026;
+const MIN_MONTH = 4; // April
+
 export const MonthYearPicker: React.FC<MonthYearPickerProps> = ({
   month,
   year,
@@ -56,15 +59,18 @@ export const MonthYearPicker: React.FC<MonthYearPickerProps> = ({
     setViewYear(year);
   }, [year]);
 
-  // Year list for dropdown (e.g., from 2020 to 2035)
-  const years = Array.from({ length: 16 }, (_, i) => 2020 + i);
+  // Year list for dropdown (e.g., from 2026 to 2035)
+  const years = Array.from({ length: 10 }, (_, i) => 2026 + i);
 
   const handleMonthSelect = (mVal: number) => {
+    // If selected month is before April 2026, do not select it
+    if (viewYear === MIN_YEAR && mVal < MIN_MONTH) return;
     onChange(mVal, viewYear);
     setOpen(false);
   };
 
   const handlePrevYear = () => {
+    if (viewYear <= MIN_YEAR) return;
     setViewYear((prev) => prev - 1);
   };
 
@@ -73,6 +79,10 @@ export const MonthYearPicker: React.FC<MonthYearPickerProps> = ({
   };
 
   const handlePrevMonth = () => {
+    // Check if going back is disabled (April 2026 or before)
+    if (year < MIN_YEAR || (year === MIN_YEAR && month <= MIN_MONTH)) {
+      return;
+    }
     if (onPrev) {
       onPrev();
     } else {
@@ -92,6 +102,9 @@ export const MonthYearPicker: React.FC<MonthYearPickerProps> = ({
 
   const monthLabel = MONTHS[month - 1]?.label || "Jun";
 
+  const isPrevMonthDisabled = year < MIN_YEAR || (year === MIN_YEAR && month <= MIN_MONTH);
+  const isPrevYearDisabled = viewYear <= MIN_YEAR;
+
   return (
     <div
       className={cn(
@@ -103,9 +116,9 @@ export const MonthYearPicker: React.FC<MonthYearPickerProps> = ({
       <button
         type="button"
         onClick={handlePrevMonth}
-        disabled={isLoading}
+        disabled={isLoading || isPrevMonthDisabled}
         aria-label="Previous month"
-        className="flex items-center justify-center px-3.5 text-sky-600 dark:text-sky-400 hover:bg-muted/50 transition-colors disabled:opacity-50 border-r border-border font-bold text-base select-none"
+        className="flex items-center justify-center px-3.5 text-sky-600 dark:text-sky-400 hover:bg-muted/50 transition-colors disabled:opacity-30 disabled:hover:bg-transparent border-r border-border font-bold text-base select-none disabled:cursor-not-allowed"
       >
         «
       </button>
@@ -135,7 +148,8 @@ export const MonthYearPicker: React.FC<MonthYearPickerProps> = ({
             <div className="flex items-center justify-between border-b border-border/50 pb-2 dark:border-white/10">
               <button
                 type="button"
-                className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground dark:hover:bg-slate-800 text-lg font-bold transition-colors select-none"
+                disabled={isPrevYearDisabled}
+                className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground dark:hover:bg-slate-800 text-lg font-bold transition-colors select-none disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed"
                 onClick={handlePrevYear}
               >
                 «
@@ -175,16 +189,19 @@ export const MonthYearPicker: React.FC<MonthYearPickerProps> = ({
             <div className="grid grid-cols-4 gap-2">
               {MONTHS.map((m) => {
                 const isSelected = month === m.value && year === viewYear;
+                const isMonthDisabled = viewYear === MIN_YEAR && m.value < MIN_MONTH;
                 return (
                   <button
                     key={m.value}
                     type="button"
+                    disabled={isMonthDisabled}
                     onClick={() => handleMonthSelect(m.value)}
                     className={cn(
-                      "flex items-center justify-center h-10 text-xs font-semibold rounded-lg transition-all border border-transparent",
+                      "flex items-center justify-center h-10 text-xs font-semibold rounded-lg transition-all border border-transparent select-none",
                       isSelected
                         ? "bg-rose-500 text-white shadow-sm dark:bg-rose-600"
-                        : "text-foreground/80 hover:bg-muted hover:text-foreground dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                        : "text-foreground/80 hover:bg-muted hover:text-foreground dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white",
+                      isMonthDisabled && "opacity-25 hover:bg-transparent dark:hover:bg-transparent text-foreground/40 dark:text-slate-600 cursor-not-allowed pointer-events-none"
                     )}
                   >
                     {m.label}
