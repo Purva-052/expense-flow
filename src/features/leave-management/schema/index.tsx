@@ -75,6 +75,7 @@ export const leaveSchema = z
         },
         { message: "Only PDF and JPEG formats are allowed" }
       ),
+    notifyUserIds: z.array(z.string()).optional(),
   })
   .superRefine((data, ctx) => {
     if (data.fromDate && data.toDate && data.fromDate > data.toDate) {
