@@ -42,11 +42,11 @@ export const columns: ColumnDef<any>[] = [
     accessorKey: "email",
     header: "Email",
   },
-  {
-    accessorKey: "mewurkEmployeeCode",
-    header: "Employee Code",
-    cell: ({ row }) => row.original.mewurkEmployeeCode || "-",
-  },
+  // {
+  //   accessorKey: "mewurkEmployeeCode",
+  //   header: "Employee Code",
+  //   cell: ({ row }) => row.original.mewurkEmployeeCode || "-",
+  // },
   {
     accessorKey: "role",
     header: "Role",

@@ -50,7 +50,9 @@ const LeaveManagementPage = () => {
   ).toLowerCase();
 
   const isAdmin = roleName === roles.ADMIN;
-  const canViewDashboard = isAdmin;
+  const isProjectManager = roleName === roles.PROJECT_MANAGER;
+  const isTeamLead = roleName === roles.TEAM_LEAD;
+  const canViewDashboard = isAdmin || isProjectManager || isTeamLead;
 
   const defaultSection = canViewDashboard ? "dashboard" : "leaves";
 
@@ -87,7 +89,7 @@ const LeaveManagementPage = () => {
   // Dashboard-only pending count
   const { data: allPendingLeavesData } = useGetLeaveData(
     { status: ["pending"], pagination: false },
-    isAdmin
+    canViewDashboard
   );
 
   const pendingApprovalCount = useMemo(
