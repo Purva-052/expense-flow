@@ -131,6 +131,7 @@ export const sidebarData: SidebarData = {
           title: "Attendance Management",
           url: "/attendance",
           icon: FingerprintPattern,
+          allowUserIDs: [86],
           requiredRoles: [
             roles.ADMIN,
             roles.TEAM_LEAD,
