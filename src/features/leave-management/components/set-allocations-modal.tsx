@@ -43,14 +43,7 @@ const setAllocationsSchema = z.object({
     .refine((val) => val === undefined || (!isNaN(val) && val >= 0 && val <= 100), {
       message: "Paid leave must be between 0 and 100",
     }),
-  beforeWorkingDaysAllowed: z
-    .union([z.string(), z.number(), z.undefined()])
-    .optional()
-    .transform((val) => (val === "" || val === undefined ? undefined : Number(val)))
-    .refine((val) => val === undefined || (!isNaN(val) && val >= 0 && val <= 365), {
-      message: "Value must be between 0 and 365",
-    }),
-  afterWorkingDaysAllowed: z
+  workingDaysAllowed: z
     .union([z.string(), z.number(), z.undefined()])
     .optional()
     .transform((val) => (val === "" || val === undefined ? undefined : Number(val)))
@@ -70,8 +63,7 @@ export function SetAllocationsModal({
     defaultValues: {
       casualLeave: undefined,
       paidLeave: undefined,
-      beforeWorkingDaysAllowed: undefined,
-      afterWorkingDaysAllowed: undefined,
+      workingDaysAllowed: undefined,
     },
   });
 
@@ -86,8 +78,7 @@ export function SetAllocationsModal({
       form.reset({
         casualLeave: undefined,
         paidLeave: undefined,
-        beforeWorkingDaysAllowed: undefined,
-        afterWorkingDaysAllowed: undefined,
+        workingDaysAllowed: undefined,
       });
     }
   }, [open, form]);
@@ -192,11 +183,11 @@ export function SetAllocationsModal({
 
               <FormField
                 control={form.control}
-                name="beforeWorkingDaysAllowed"
+                name="workingDaysAllowed"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-sm font-semibold">
-                      Before Working Days Allowed
+                      Working Days Allowed
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -214,38 +205,7 @@ export function SetAllocationsModal({
                       />
                     </FormControl>
                     <p className="text-[11px] text-muted-foreground mt-1">
-                      Allowed days before current date to apply regularization.
-                    </p>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="afterWorkingDaysAllowed"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-semibold">
-                      After Working Days Allowed
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="e.g. 3"
-                        min={0}
-                        max={365}
-                        step={1}
-                        {...field}
-                        value={field.value ?? ""}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          field.onChange(val === "" ? "" : Number(val));
-                        }}
-                      />
-                    </FormControl>
-                    <p className="text-[11px] text-muted-foreground mt-1">
-                      Allowed days after current date to apply regularization.
+                      Allowed number of days within which regularization can be applied.
                     </p>
                     <FormMessage />
                   </FormItem>

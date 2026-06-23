@@ -235,10 +235,6 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   const [selectedMonth, setSelectedMonth] = useState(6); // default to June (6)
   const [selectedYear, setSelectedYear] = useState(2026); // default to 2026
 
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    new Date(2026, 5, 18)
-  );
-  const [datePopoverOpen, setDatePopoverOpen] = useState(false);
   const [currentCalendarMonth, setCurrentCalendarMonth] = useState<Date>(
     new Date(2026, 5)
   );
@@ -961,65 +957,6 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           allowClear={true}
         />
       )}
-
-      <Popover open={datePopoverOpen} onOpenChange={setDatePopoverOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className={cn(
-              "h-9 gap-2 rounded-full border-border bg-background px-3 font-normal hover:bg-muted/50",
-              !selectedDate && "text-muted-foreground"
-            )}
-          >
-            <CalendarDays className="h-4 w-4 text-rose-500 shrink-0" />
-            <span className="truncate max-w-[140px]">
-              {selectedDate
-                ? format(selectedDate, "MMM d, yyyy")
-                : "Select date"}
-            </span>
-            {selectedDate && (
-              <button
-                type="button"
-                aria-label="Clear date"
-                className="hover:bg-muted -mr-1 flex h-5 w-5 items-center justify-center rounded-full transition-colors"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  setSelectedDate(undefined);
-                  const today = new Date();
-                  setCurrentCalendarMonth(today);
-                }}
-              >
-                <X className="text-muted-foreground h-3 w-3" />
-              </button>
-            )}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent
-          className="w-auto p-0 rounded-2xl border border-border shadow-2xl"
-          align="end"
-        >
-          <Calendar
-            mode="single"
-            selected={selectedDate}
-            onSelect={(date) => {
-              setSelectedDate(date);
-              if (date) {
-                setCurrentCalendarMonth(date);
-              }
-              setDatePopoverOpen(false);
-            }}
-            month={currentCalendarMonth}
-            onMonthChange={setCurrentCalendarMonth}
-            numberOfMonths={1}
-            captionLayout="dropdown"
-            fromYear={2020}
-            toYear={2030}
-            className="rounded-2xl"
-          />
-        </PopoverContent>
-      </Popover>
     </div>
   );
 
@@ -1043,17 +980,20 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   const goToPreviousMonth = () => {
     const d = new Date(selectedYear, selectedMonth - 2, 1);
     setCurrentCalendarMonth(d);
-    setSelectedDate(d);
   };
 
   const goToNextMonth = () => {
     const d = new Date(selectedYear, selectedMonth, 1);
     setCurrentCalendarMonth(d);
-    setSelectedDate(d);
   };
 
   const monthNavigatorProps = {
     label: monthNavLabel,
+    month: selectedMonth,
+    year: selectedYear,
+    onChange: (m: number, y: number) => {
+      setCurrentCalendarMonth(new Date(y, m - 1, 1));
+    },
     onPrev: goToPreviousMonth,
     onNext: goToNextMonth,
     isLoading: isLoadingLogs,

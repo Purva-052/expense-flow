@@ -23,10 +23,19 @@ export function ActionFormModal() {
     useUpdateTransactionData(currentRow?.id || "");
   const { mutateAsync: deleteMutate, isPending: isDeleteLoading } =
     useDeleteTransactionData(currentRow?.id || "");
+  const getCurrencySymbol = (currency?: string) => {
+    if (!currency) return "$";
+    const cur = currency.toLowerCase();
+    if (cur === "inr") return "₹";
+    if (cur === "eur") return "€";
+    return "$";
+  };
+
+  const currencySymbol = getCurrencySymbol(currentRow?.currency);
 
   const deleteInfoText = currentRow?.project?.name
-    ? `${currentRow.project.name} Transaction with amount $${currentRow?.amount}.`
-    : `the Transaction with amount $${currentRow?.amount}.`;
+    ? `${currentRow.project.name} Transaction with amount ${currencySymbol}${currentRow?.amount}.`
+    : `the Transaction with amount ${currencySymbol}${currentRow?.amount}.`;
 
   const handleCreate = (values: TTransactionFormSchema) => {
     const payload = {

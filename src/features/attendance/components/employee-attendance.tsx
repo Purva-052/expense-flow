@@ -42,7 +42,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
-import DateRangeFilter from "@/components/table/custome-dateRange";
+import { MonthYearPicker } from "./month-year-picker";
 import SimpleDropDownSearchable from "@/components/shared/custome-simple-dropdown";
 import { toast } from "sonner";
 import { MyAttendance } from "./my-attendance";
@@ -192,10 +192,16 @@ export const EmployeeAttendance: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  // Summary tab filters
-  const [summaryDateRange, setSummaryDateRange] = useState<
-    DateRange | undefined
-  >(getDefaultSummaryDateRange);
+  // Summary tab filters (Month & Year)
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
+  const summaryDateRange = useMemo<DateRange>(() => {
+    return {
+      from: new Date(selectedYear, selectedMonth - 1, 1),
+      to: new Date(selectedYear, selectedMonth, 0),
+    };
+  }, [selectedMonth, selectedYear]);
   const [summaryEmployeeCode, setSummaryEmployeeCode] = useState<string | null>(
     null
   );
@@ -272,16 +278,12 @@ export const EmployeeAttendance: React.FC = () => {
       page: currentPage,
       limit: itemsPerPage,
       pagination: true,
-      fromDate: summaryDateRange?.from
-        ? format(summaryDateRange.from, "yyyy-MM-dd")
-        : undefined,
-      toDate: summaryDateRange?.to
-        ? format(summaryDateRange.to, "yyyy-MM-dd")
-        : undefined,
+      month: selectedMonth,
+      year: selectedYear,
       employeeCodes: summaryEmployeeCode ? [summaryEmployeeCode] : undefined,
       status: summaryStatus,
     }),
-    [currentPage, itemsPerPage, summaryDateRange, summaryEmployeeCode, summaryStatus]
+    [currentPage, itemsPerPage, selectedMonth, selectedYear, summaryEmployeeCode, summaryStatus]
   );
 
   const { data: summaryData, isPending: isLoadingSummary } =
@@ -628,11 +630,14 @@ export const EmployeeAttendance: React.FC = () => {
       {activeTab === "summary" && (
         <>
           <div className="flex flex-col lg:flex-row lg:items-center gap-3">
-            <DateRangeFilter
-              value={summaryDateRange}
-              onChange={(range) => setSummaryDateRange(range)}
-              placeholder="Select date range"
-              className="h-9 text-xs rounded-lg w-full lg:w-[280px] border-border bg-background"
+            <MonthYearPicker
+              month={selectedMonth}
+              year={selectedYear}
+              onChange={(m, y) => {
+                setSelectedMonth(m);
+                setSelectedYear(y);
+              }}
+              isLoading={isLoadingSummary}
             />
 
             <SimpleDropDownSearchable

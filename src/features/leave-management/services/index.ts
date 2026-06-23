@@ -180,7 +180,7 @@ export const useSetLeaveAllocations = (onSuccess?: () => void) => {
 /**
  * Fetch leave allocations settings.
  */
-export const useGetLeaveAllocations = () => {
+export const useGetLeaveAllocations = (enabled = true) => {
   return useQuery<any, Error>({
     queryKey: [API.leave_balance.add, "fetch"],
     queryFn: async (): Promise<any> => {
@@ -192,6 +192,7 @@ export const useGetLeaveAllocations = () => {
     },
     refetchOnWindowFocus: false,
     retry: 1,
+    enabled,
   });
 };
 
@@ -250,7 +251,7 @@ export const useUpdateExamLeaveEligibility = () => {
 export const useCreateRegularizationRequest = (onSuccess?: (data?: any) => void) => {
   return usePostData({
     url: API.attendance.regularizations,
-    refetchQueries: [API.attendance.high_working_hours],
+    refetchQueries: [API.attendance.compensatory_date],
     onSuccess,
   });
 };

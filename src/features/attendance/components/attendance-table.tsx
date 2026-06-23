@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
-import { MonthNavigator } from "./month-navigator";
+import { MonthYearPicker } from "./month-year-picker";
 import { CalendarIcon, CheckCircle, Clock, Loader2, MoreVertical, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,14 +22,15 @@ import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  useGetHighWorkingHoursDates,
+  useGetCompensatoryDates,
   useCreateRegularizationRequest,
   useGetRegularizationRequests,
   useRegularizationAction,
 } from "../services";
-import { useGetUserDetails } from "../../users/services";
+import { useGetUsersList } from "../../users/services";
 import { useGetLeaveAllocations } from "../../leave-management/services";
 import { toast } from "sonner";
+import { roles } from "@/utils/constant";
 import { Calendar } from "@/components/ui/calendar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import API from "@/config/api/api";
@@ -56,6 +57,9 @@ interface AttendanceTableProps {
   embedded?: boolean;
   monthNavigator?: {
     label: string;
+    month: number;
+    year: number;
+    onChange: (month: number, year: number) => void;
     onPrev: () => void;
     onNext: () => void;
     isLoading?: boolean;
@@ -201,13 +205,16 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
   const user = useAuthStore((state) => state.user);
   const resolvedEmpId = employeeId || Number(user?.user?.id);
 
-  const { data: allocationsResponse } = useGetLeaveAllocations() as any;
+  const rawRole = user?.role || user?.user?.role;
+  const roleName = String(
+    rawRole && typeof rawRole === "object" ? rawRole?.name : rawRole || ""
+  ).toLowerCase();
+  const isAdmin = roleName === roles.ADMIN;
+
+  const { data: allocationsResponse } = useGetLeaveAllocations(isAdmin) as any;
   const allocations = allocationsResponse?.data || {};
-  const beforeWorkingDaysAllowed = allocations.beforeWorkingDaysAllowed !== undefined && allocations.beforeWorkingDaysAllowed !== null
-    ? Number(allocations.beforeWorkingDaysAllowed)
-    : 3;
-  const afterWorkingDaysAllowed = allocations.afterWorkingDaysAllowed !== undefined && allocations.afterWorkingDaysAllowed !== null
-    ? Number(allocations.afterWorkingDaysAllowed)
+  const workingDaysAllowed = allocations.workingDaysAllowed !== undefined && allocations.workingDaysAllowed !== null
+    ? Number(allocations.workingDaysAllowed)
     : 3;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -219,20 +226,29 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
     Date | undefined
   >(undefined);
 
-  // Get user details to retrieve the employee code (e.g. mewurkEmployeeCode)
-  const { data: userDetailsResponse }: any = useGetUserDetails(
-    resolvedEmpId ? String(resolvedEmpId) : ""
-  );
-  const employeeCode = userDetailsResponse?.data?.mewurkEmployeeCode;
+  // Fetch active users list to find the matching employee's code
+  const { data: usersResponse } = useGetUsersList({
+    pagination: false,
+    status: "active",
+  });
 
-  // Fetch available compensatory dates (days with >8:15 working hours)
+  const matchedUser = (usersResponse as any)?.data?.find((u: any) => {
+    return (
+      u.id === resolvedEmpId ||
+      (u.mewurkEmployeeCode && String(u.mewurkEmployeeCode).trim() === String(resolvedEmpId).trim())
+    );
+  });
+
+  const employeeCode = matchedUser?.mewurkEmployeeCode || (resolvedEmpId ? String(resolvedEmpId) : "");
+
+  // Fetch available compensatory dates
   const { data: highWorkingHoursData, isPending: isLoadingHighWorkingHours } =
-    useGetHighWorkingHoursDates(employeeCode, isModalOpen);
+    useGetCompensatoryDates(employeeCode, selectedRegDate, isModalOpen);
 
   const queryClient = useQueryClient();
   const { mutate: autoApprove } = useRegularizationAction(() => {
     queryClient.invalidateQueries({ queryKey: [API.attendance.regularization_list] });
-    queryClient.invalidateQueries({ queryKey: [API.attendance.high_working_hours] });
+    queryClient.invalidateQueries({ queryKey: [API.attendance.compensatory_date] });
   });
 
   const { mutate: createRegularization, isPending: isSubmitting } =
@@ -311,8 +327,10 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
     >
       {monthNavigator && (
         <div className="flex justify-center py-3 px-4 border-b border-border bg-card shrink-0">
-          <MonthNavigator
-            label={monthNavigator.label}
+          <MonthYearPicker
+            month={monthNavigator.month}
+            year={monthNavigator.year}
+            onChange={monthNavigator.onChange}
             onPrev={monthNavigator.onPrev}
             onNext={monthNavigator.onNext}
             isLoading={monthNavigator.isLoading}
@@ -466,33 +484,9 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                       }}
                       disabled={(date) => {
                         const dateStr = formatToYYYYMMDD(date);
-                        if (!highWorkingHoursDates.includes(dateStr)) return true;
-
-                        // Also check within before/after working days range
-                        if (!selectedRegDate) return true;
-                        const refParts = selectedRegDate.split("-");
-                        if (refParts.length < 3) return true;
-                        const refYear = parseInt(refParts[0], 10);
-                        const refMonth = parseInt(refParts[1], 10) - 1;
-                        const refDay = parseInt(refParts[2], 10);
-                        const refDate = new Date(refYear, refMonth, refDay);
-                        refDate.setHours(0, 0, 0, 0);
-
-                        const checkDate = new Date(date);
-                        checkDate.setHours(0, 0, 0, 0);
-
-                        // Exclude reference date itself
-                        if (checkDate.getTime() === refDate.getTime()) return true;
-
-                        const oldestAcceptable = getWorkingDayBefore(refDate, beforeWorkingDaysAllowed);
-                        oldestAcceptable.setHours(0, 0, 0, 0);
-
-                        const newestAcceptable = getWorkingDayAfter(refDate, afterWorkingDaysAllowed);
-                        newestAcceptable.setHours(0, 0, 0, 0);
-
-                        const inRange = checkDate.getTime() >= oldestAcceptable.getTime() && 
-                                        checkDate.getTime() <= newestAcceptable.getTime();
-                        return !inRange;
+                        const isDisabled = !highWorkingHoursDates.includes(dateStr);
+                        console.log("AttendanceTable Calendar Date:", dateStr, "isDisabled:", isDisabled, "highWorkingHoursDates:", highWorkingHoursDates);
+                        return isDisabled;
                       }}
                       month={currentCalendarMonth}
                       onMonthChange={setCurrentCalendarMonth}
