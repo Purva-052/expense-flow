@@ -63,6 +63,7 @@ const baseUserSchema = z.object({
   ),
   status: z.boolean(),
   joining: z.boolean(),
+  isSingleCheckInAllowed: z.boolean().optional(),
   mewurkEmployeeCode: z
     .string()
     .trim()

@@ -221,8 +221,10 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
   });
 
   const matchedUser = (usersResponse as any)?.data?.find((u: any) => {
+    const empId = u.employeeId ?? u.employee?.id;
     return (
-      u.id === resolvedEmpId ||
+      (empId && Number(empId) === Number(resolvedEmpId)) ||
+      Number(u.id) === Number(resolvedEmpId) ||
       (u.mewurkEmployeeCode && String(u.mewurkEmployeeCode).trim() === String(resolvedEmpId).trim())
     );
   });
@@ -376,7 +378,8 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
                   </td>
                   <td
                     className={`px-4 py-2.5 font-bold transition-colors ${
-                      isLessThanEightFifteen(log.workingHrs)
+                      isLessThanEightFifteen(log.workingHrs) &&
+                      !matchedUser?.isSingleCheckInAllowed
                         ? "bg-rose-500/15 text-rose-600 dark:text-rose-400"
                         : "text-sky-600 dark:text-sky-400"
                     }`}
@@ -388,7 +391,9 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
                   </td> */}
                   {isAdmin && (
                     <td className="px-4 py-2.5 text-right" onClick={(e) => e.stopPropagation()}>
-                      {!future && isLessThanEightFifteen(log.workingHrs) && (
+                      {!future &&
+                        isLessThanEightFifteen(log.workingHrs) &&
+                        !matchedUser?.isSingleCheckInAllowed && (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button

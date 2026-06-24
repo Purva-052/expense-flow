@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
+import { GlobalTable } from "@/components/table/global-table";
 import { MonthYearPicker } from "./month-year-picker";
 import { CalendarIcon, CheckCircle, CheckCircle2, Clock, Loader2, MoreVertical, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { useQueryClient } from "@tanstack/react-query";
+import { ColumnDef } from "@tanstack/react-table";
 import {
   useGetCompensatoryDates,
   useCreateRegularizationRequest,
@@ -33,8 +35,9 @@ import { toast } from "sonner";
 import { roles } from "@/utils/constant";
 import { Calendar } from "@/components/ui/calendar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import API from "@/config/api/api";
+import SimpleDropDownSearchable from "@/components/shared/custome-simple-dropdown";
 
 const formatToYYYYMMDD = (date: Date) => {
   const year = date.getFullYear();
@@ -194,6 +197,18 @@ const isLessThanEightFifteen = (
   return hours * 60 + minutes < 495; // 8 * 60 + 15 = 495
 };
 
+interface AttendanceLogRow {
+  day: string;
+  date: string;
+  rawDateStr: string;
+  originalStatus: "P" | "A" | "WO" | "AH" | "E" | "L" | "";
+  finalStatus: "P" | "A" | "WO" | "AH" | "E" | "L" | "";
+  firstIn: string;
+  lastOut: string;
+  breakHrs: string;
+  workingHrs: string;
+}
+
 export const AttendanceTable: React.FC<AttendanceTableProps> = ({
   detailedLogs,
   onRowClick,
@@ -234,8 +249,10 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
   });
 
   const matchedUser = (usersResponse as any)?.data?.find((u: any) => {
+    const empId = u.employeeId ?? u.employee?.id;
     return (
-      u.id === resolvedEmpId ||
+      (empId && Number(empId) === Number(resolvedEmpId)) ||
+      Number(u.id) === Number(resolvedEmpId) ||
       (u.mewurkEmployeeCode && String(u.mewurkEmployeeCode).trim() === String(resolvedEmpId).trim())
     );
   });
@@ -318,6 +335,124 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
     });
   };
 
+  const columns = useMemo<ColumnDef<AttendanceLogRow>[]>(
+    () => [
+      {
+        accessorKey: "date",
+        header: "Date",
+        cell: ({ row }) => (
+          <span className="font-semibold text-muted-foreground">
+            {row.original.date}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "originalStatus",
+        header: "Original Status",
+        cell: ({ row }) =>
+          getStatusBadge(
+            row.original.originalStatus,
+            isTodayOrFutureDate(row.original.rawDateStr)
+          ),
+      },
+      {
+        accessorKey: "finalStatus",
+        header: "Final Status",
+        cell: ({ row }) =>
+          getStatusBadge(
+            row.original.finalStatus,
+            isTodayOrFutureDate(row.original.rawDateStr)
+          ),
+      },
+      {
+        accessorKey: "firstIn",
+        header: "First In",
+        cell: ({ row }) => (
+          <span className="font-semibold text-foreground">
+            {row.original.firstIn}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "lastOut",
+        header: "Last Out",
+        cell: ({ row }) => (
+          <span className="font-semibold text-foreground">
+            {row.original.lastOut}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "breakHrs",
+        header: "Break Time",
+        cell: ({ row }) => (
+          <span className="font-medium text-muted-foreground/85">
+            {row.original.breakHrs}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "workingHrs",
+        header: "Working Hours",
+        cell: ({ row }) => (
+          <span
+            className={`font-bold transition-colors ${
+              isLessThanEightFifteen(row.original.workingHrs) &&
+              !matchedUser?.isSingleCheckInAllowed
+                ? "text-rose-600 dark:text-rose-400"
+                : "text-sky-600 dark:text-sky-400"
+            }`}
+          >
+            {row.original.workingHrs}
+          </span>
+        ),
+      },
+      {
+        id: "actions",
+        header: () => <div className="text-right" />,
+        cell: ({ row }) => {
+          const future = isFutureDate(row.original.rawDateStr);
+          const canApplyRegularization =
+            !future &&
+            isLessThanEightFifteen(row.original.workingHrs) &&
+            !matchedUser?.isSingleCheckInAllowed;
+
+          if (!canApplyRegularization) {
+            return <div className="w-full text-right" />;
+          }
+
+          return (
+            <div className="w-full text-right" onClick={(e) => e.stopPropagation()}>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 p-0 hover:bg-muted"
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                    <span className="sr-only">Open menu</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-40">
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenRegularization(row.original.rawDateStr);
+                    }}
+                  >
+                    Apply Regularization
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          );
+        },
+      },
+    ],
+    [matchedUser?.isSingleCheckInAllowed]
+  );
+
   return (
     <div
       className={
@@ -338,95 +473,27 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
           />
         </div>
       )}
-      <div className="overflow-auto max-h-[480px] min-h-0">
-        <table className="w-full border-collapse text-left">
-          <thead>
-            <tr className="bg-muted border-b border-border text-muted-foreground text-xs font-bold sticky top-0 z-10">
-              <th className="px-4 py-3 bg-muted sticky top-0">Date</th>
-              <th className="px-4 py-3 bg-muted sticky top-0">Original Status</th>
-              <th className="px-4 py-3 bg-muted sticky top-0">Final Status</th>
-              <th className="px-4 py-3 bg-muted sticky top-0">First In</th>
-              <th className="px-4 py-3 bg-muted sticky top-0">Last Out</th>
-              <th className="px-4 py-3 bg-muted sticky top-0">Break Time</th>
-              <th className="px-4 py-3 bg-muted sticky top-0">Working Hours</th>
-              <th className="px-4 py-3 bg-muted sticky top-0 w-12 text-right"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border text-xs text-foreground">
-            {detailedLogs.map((log: any) => {
-              const future = isFutureDate(log.rawDateStr);
-              const todayOrFuture = isTodayOrFutureDate(log.rawDateStr);
-              return (
-                <tr
-                  key={log.day}
-                  className={`transition-colors ${
-                    future
-                      ? "cursor-not-allowed opacity-80"
-                      : "hover:bg-muted/10 cursor-pointer"
-                  }`}
-                  onClick={() => !future && onRowClick(log.rawDateStr)}
-                >
-                  <td className="px-4 py-3 font-semibold text-muted-foreground">
-                    {log.date}
-                  </td>
-                  <td className="px-4 py-3">
-                    {getStatusBadge(log.originalStatus, todayOrFuture)}
-                  </td>
-                  <td className="px-4 py-3">
-                    {getStatusBadge(log.finalStatus, todayOrFuture)}
-                  </td>
-                  <td className="px-4 py-3 font-semibold text-foreground">
-                    {log.firstIn}
-                  </td>
-                  <td className="px-4 py-3 font-semibold text-foreground">
-                    {log.lastOut}
-                  </td>
-                  <td className="px-4 py-3 font-medium text-muted-foreground/85">
-                    {log.breakHrs}
-                  </td>
-                  <td
-                    className={`px-4 py-3 font-bold transition-colors ${
-                      isLessThanEightFifteen(log.workingHrs)
-                        ? "bg-rose-500/15 text-rose-600 dark:text-rose-400"
-                        : "text-sky-600 dark:text-sky-400"
-                    }`}
-                  >
-                    {log.workingHrs}
-                  </td>
-                  <td
-                    className="px-4 py-3 text-right"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {!future && isLessThanEightFifteen(log.workingHrs) && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 p-0 hover:bg-muted"
-                          >
-                            <MoreVertical className="h-4 w-4" />
-                            <span className="sr-only">Open menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-40">
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleOpenRegularization(log.rawDateStr);
-                            }}
-                          >
-                            Apply Regularization
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      <div className="min-h-0">
+        <GlobalTable<AttendanceLogRow>
+          data={detailedLogs}
+          columns={columns}
+          totalCount={detailedLogs.length}
+          currentPage={1}
+          pageSize={detailedLogs.length || 10}
+          onPaginationChange={() => {}}
+          isPaginationEnabled={false}
+          scrollY="480px"
+          onRowClick={(row) => {
+            if (!isFutureDate(row.rawDateStr)) {
+              onRowClick(row.rawDateStr);
+            }
+          }}
+          getRowClassName={(row) =>
+            isFutureDate(row.rawDateStr)
+              ? "cursor-not-allowed opacity-80 hover:bg-transparent"
+              : "cursor-pointer hover:bg-muted/10"
+          }
+        />
       </div>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -569,7 +636,7 @@ export const RegularizationRequestsPanel: React.FC<{
   statusFilter: "" | "pending" | "approved" | "rejected";
 }> = ({ employeeId, statusFilter }) => {
   const user = useAuthStore((state) => state.user);
-  const loggedInUserId = Number(user?.user?.id);
+  const loggedInUserId = Number(user?.user?.id || user?.user_id);
 
   const rawRole = user?.role || user?.user?.role;
   const roleName = String(
@@ -605,7 +672,7 @@ export const RegularizationRequestsPanel: React.FC<{
   const [rejectionReason, setRejectionReason] = useState("");
 
   const params: Record<string, any> = {};
-  if (currentEmployeeFilter) params.empId = currentEmployeeFilter;
+  if (currentEmployeeFilter) params.employeeId = currentEmployeeFilter;
   if (currentStatusFilter) params.status = currentStatusFilter;
 
   const {
@@ -620,7 +687,7 @@ export const RegularizationRequestsPanel: React.FC<{
   const employeeOptions = useMemo(
     () =>
       ((employeeDropdownData as any)?.data || []).map((emp: any) => ({
-        value: emp.id,
+        value: String(emp.employee?.id || emp.employeeId || emp.id),
         label: emp.fullName,
       })),
     [employeeDropdownData]
@@ -692,46 +759,34 @@ export const RegularizationRequestsPanel: React.FC<{
 
           <div className="flex flex-wrap items-center gap-2">
             {/* Status Filter */}
-            <Select
-              value={currentStatusFilter || "all"}
-              onValueChange={(value) =>
-                setCurrentStatusFilter(value === "all" ? "" : (value as any))
+            <SimpleDropDownSearchable
+              options={[
+                { value: "pending", label: "Pending" },
+                { value: "approved", label: "Approved" },
+                { value: "rejected", label: "Rejected" },
+              ]}
+              value={currentStatusFilter || undefined}
+              placeholder="Filter by status"
+              className="w-full sm:w-[160px]"
+              onChange={(value) =>
+                setCurrentStatusFilter((value as any) || "")
               }
-            >
-              <SelectTrigger className="h-8 w-full sm:w-[140px] text-xs bg-background border-border">
-                <SelectValue placeholder="All Status" />
-              </SelectTrigger>
-              <SelectContent className="bg-popover border-border text-popover-foreground text-xs">
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
-              </SelectContent>
-            </Select>
+              allowClear
+            />
 
             {/* Employee Filter (Admin/PM only) */}
             {canFilterEmployees && (
-              <Select
-                value={currentEmployeeFilter ? String(currentEmployeeFilter) : "all"}
-                onValueChange={(value) =>
-                  setCurrentEmployeeFilter(value === "all" ? null : Number(value))
+              <SimpleDropDownSearchable
+                options={employeeOptions}
+                value={currentEmployeeFilter ? String(currentEmployeeFilter) : undefined}
+                placeholder="Filter by employee"
+                className="w-full sm:w-[220px]"
+                isLoading={isLoadingEmployees}
+                onChange={(value) =>
+                  setCurrentEmployeeFilter(value ? Number(value) : null)
                 }
-                disabled={isLoadingEmployees}
-              >
-                <SelectTrigger className="h-8 w-full sm:w-[180px] text-xs bg-background border-border">
-                  <SelectValue placeholder="All Employees" />
-                </SelectTrigger>
-                <SelectContent className="bg-popover border-border text-popover-foreground text-xs max-h-[200px]">
-                  <SelectItem value="all">All Employees</SelectItem>
-                  {employeeOptions.map(
-                    (emp: { value: number; label: string }) => (
-                      <SelectItem key={emp.value} value={String(emp.value)}>
-                        {emp.label}
-                      </SelectItem>
-                    )
-                  )}
-                </SelectContent>
-              </Select>
+                allowClear
+              />
             )}
           </div>
         </div>

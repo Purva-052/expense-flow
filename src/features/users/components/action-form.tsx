@@ -34,7 +34,7 @@ import { toast } from "sonner";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-// import { Switch } from "@/components/ui/switch";
+import { Switch } from "@/components/ui/switch";
 
 interface Props {
   currentRow?: any;
@@ -115,6 +115,7 @@ export function UserActionForm({
           joiningDate: currentRow?.joiningDate
             ? currentRow.joiningDate.slice(0, 10)
             : null,
+          isSingleCheckInAllowed: currentRow?.isSingleCheckInAllowed ?? false,
           mewurkEmployeeCode: currentRow?.mewurkEmployeeCode ?? "",
           // currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
           profilePicS3Key: currentRow?.profilePicUrl ?? "",
@@ -132,6 +133,7 @@ export function UserActionForm({
           status: true,
           joining: false,
           joiningDate: null,
+          isSingleCheckInAllowed: false,
           mewurkEmployeeCode: "",
           password: "",
           profilePicS3Key: "",
@@ -187,6 +189,7 @@ export function UserActionForm({
         joiningDate: currentRow?.joiningDate
           ? currentRow.joiningDate.slice(0, 10)
           : null,
+        isSingleCheckInAllowed: currentRow?.isSingleCheckInAllowed ?? false,
         // currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
         profilePicS3Key: currentRow?.profilePicUrl ?? "",
         file: null,
@@ -596,7 +599,7 @@ export function UserActionForm({
                 />
 
                 {/* ✅ Status Checkbox */}
-                <div className="flex gap-6">
+                <div className="flex flex-col gap-4">
                   <Controller
                     control={form.control}
                     name="status"
@@ -607,6 +610,21 @@ export function UserActionForm({
                           onCheckedChange={field.onChange}
                         />
                         <label className="text-sm font-medium">Active</label>
+                      </div>
+                    )}
+                  />
+
+                  <Controller
+                    control={form.control}
+                    name="isSingleCheckInAllowed"
+                    render={({ field }) => (
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          checked={!!field.value}
+                          onCheckedChange={field.onChange}
+                          disabled={user?.user?.role !== roles.ADMIN}
+                        />
+                        <label className="text-sm font-medium">Single Check-In Allowed</label>
                       </div>
                     )}
                   />

@@ -196,6 +196,7 @@ const API = {
     get: "/leave-balances",
     add: "/leave-balances/admin/set-allocations",
     import: "/leave-balances/admin/import-excel",
+    delete: "/leave-balances/allocations",
   },
   tools_management: {
     create: "/tools",

@@ -15,6 +15,8 @@ import { useUsersStore } from "../stores/useUsersStore";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { formatRole } from "@/utils/commonFunctions";
 import { roles } from "@/utils/constant";
+import { Switch } from "@/components/ui/switch";
+import { useUpdateSingleCheckInAllowed } from "../services";
 
 // 🎯 Columns
 export const columns: ColumnDef<any>[] = [
@@ -122,6 +124,39 @@ export const columns: ColumnDef<any>[] = [
   //     return exp !== undefined && exp !== null ? exp : "-";
   //   },
   // },
+  {
+    accessorKey: "isSingleCheckInAllowed",
+    header: "Single Check-In Allowed",
+    cell: function Cell({ row }: any) {
+      const isSingleCheckInAllowed = row.original.isSingleCheckInAllowed;
+      const userId = row.original.id;
+      const { mutate: updateSingleCheckIn, isPending } = useUpdateSingleCheckInAllowed();
+
+      const user = useAuthStore((state) => state.user);
+      const rawRole = user?.role || user?.user?.role;
+      const roleName = String(
+        rawRole && typeof rawRole === "object" ? rawRole?.name : rawRole || ""
+      ).toLowerCase();
+      const isAdmin = roleName === roles.ADMIN;
+
+      return (
+        <div className="flex justify-center">
+          <Switch
+            checked={!!isSingleCheckInAllowed}
+            disabled={!isAdmin || isPending}
+            onCheckedChange={(checked) => {
+              if (userId != null) {
+                updateSingleCheckIn({
+                  id: userId,
+                  isSingleCheckInAllowed: checked,
+                });
+              }
+            }}
+          />
+        </div>
+      );
+    },
+  },
   {
     accessorKey: "status",
     header: "Status",

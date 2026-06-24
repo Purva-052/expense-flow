@@ -74,7 +74,7 @@ export const useGetAttendanceSummary = (
  */
 export const useGetRegularizationRequests = (
   params: {
-    empId?: number;
+    employeeId?: number;
     status?: string;
     page?: number;
     limit?: number;
