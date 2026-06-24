@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { GlobalTable } from "@/components/table/global-table";
 import { MonthYearPicker } from "./month-year-picker";
-import { CalendarIcon, CheckCircle, CheckCircle2, Clock, Loader2, MoreVertical, XCircle } from "lucide-react";
+import { CalendarIcon, CheckCircle, CheckCircle2, Clock, Info, Loader2, MoreVertical, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -860,20 +860,43 @@ export const RegularizationRequestsPanel: React.FC<{
                         </p>
                       </td>
                       <td className="px-4 py-2.5">
-                        <Badge
-                          className={`flex items-center gap-1 w-fit text-[10px] font-semibold rounded-md px-2 py-0.5 ${cfg.color}`}
-                        >
-                          {cfg.icon}
-                          {cfg.label}
-                        </Badge>
-                        {req.status === "rejected" && req.rejectionReason && (
-                          <p
-                            className="text-[10px] text-rose-500 mt-0.5 max-w-[140px] truncate"
-                            title={req.rejectionReason}
+                        <div className="flex items-center gap-1.5">
+                          <Badge
+                            className={`flex items-center gap-1 w-fit text-[10px] font-semibold rounded-md px-2 py-0.5 ${cfg.color}`}
                           >
-                            {req.rejectionReason}
-                          </p>
-                        )}
+                            {cfg.icon}
+                            {cfg.label}
+                          </Badge>
+                          {req.status === "rejected" && req.rejectionReason && (
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <button
+                                  type="button"
+                                  className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-rose-500/30 bg-rose-500/10 text-rose-500 transition-colors hover:bg-rose-500/15"
+                                  aria-label="View rejection reason"
+                                >
+                                  <Info className="h-3.5 w-3.5" />
+                                </button>
+                              </PopoverTrigger>
+                              <PopoverContent
+                                side="top"
+                                align="start"
+                                className="w-[360px] max-w-[calc(100vw-2rem)] border border-rose-200/60 bg-popover p-0 text-left shadow-xl"
+                              >
+                                <div className="border-b border-border/60 px-4 py-3">
+                                  <p className="text-xs font-semibold text-foreground">
+                                    Rejection Reason
+                                  </p>
+                                </div>
+                                <div className="max-h-64 overflow-y-auto px-4 py-3">
+                                  <p className="whitespace-pre-wrap break-words text-xs leading-5 text-muted-foreground">
+                                    {req.rejectionReason}
+                                  </p>
+                                </div>
+                              </PopoverContent>
+                            </Popover>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-2.5 text-right">
                         {req.status === "pending" && loggedInUserId === 4 ? (
