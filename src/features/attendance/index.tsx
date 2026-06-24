@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import PageLayout from "@/components/layout/layout-provider";
 import TablePageHeader from "@/components/table/table-page-header";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -25,10 +25,6 @@ const AttendancePage: React.FC = () => {
   ).toLowerCase();
 
   const isAdmin = roleName === roles.ADMIN;
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(null);
-
-  const resolvedEmployeeId = selectedEmployeeId || Number(user?.user?.id || user?.user_id);
-
   return (
     <PageLayout>
       <div className="flex flex-col gap-4">
@@ -75,10 +71,7 @@ const AttendancePage: React.FC = () => {
               value="my-attendance"
               className="mt-2 focus-visible:outline-none flex-none"
             >
-              <MyAttendance
-                filtersPortalId="attendance-filters-slot-admin"
-                onEmployeeSelect={setSelectedEmployeeId}
-              />
+              <MyAttendance filtersPortalId="attendance-filters-slot-admin" />
             </TabsContent>
 
             <TabsContent
@@ -93,7 +86,10 @@ const AttendancePage: React.FC = () => {
               className="mt-2 focus-visible:outline-none flex-none"
             >
               <Card className="w-full overflow-hidden border border-border shadow-sm">
-                <RegularizationRequestsPanel employeeId={resolvedEmployeeId} statusFilter="" />
+                <RegularizationRequestsPanel
+                  employeeId={Number(user?.user?.id || user?.user_id)}
+                  statusFilter=""
+                />
               </Card>
             </TabsContent>
           </Tabs>
