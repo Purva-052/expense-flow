@@ -256,4 +256,13 @@ export const useCreateRegularizationRequest = (onSuccess?: (data?: any) => void)
   });
 };
 
+export const useDeleteLeaveCreditHistory = (id: string | number, onSuccess?: () => void) => {
+  return useDeleteData({
+    url: `${API.leave_balance.delete}/${id}`,
+    refetchQueries: leaveRefetchQueries,
+    onSuccess,
+  });
+};
+
+
 

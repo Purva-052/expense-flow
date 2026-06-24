@@ -46,6 +46,7 @@ interface GlobalTableProps<TData> {
   sorting?: SortingState;
   onSortingChange?: (sorting: SortingState) => void;
   manualSorting?: boolean;
+  onRowClick?: (row: TData) => void;
 }
 
 export function GlobalTable<TData>({
@@ -63,6 +64,7 @@ export function GlobalTable<TData>({
   sorting,
   onSortingChange,
   manualSorting = false,
+  onRowClick,
 }: Readonly<GlobalTableProps<TData>>) {
   const [localSorting, setLocalSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -214,6 +216,7 @@ export function GlobalTable<TData>({
                       "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
                       getRowClassName?.(row.original)
                     )}
+                    onClick={() => onRowClick?.(row.original)}
                   >
                     {row.getVisibleCells().map((cell: any) => (
                       <td
