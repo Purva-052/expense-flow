@@ -365,6 +365,15 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
           ),
       },
       {
+        accessorKey: "shift",
+        header: "Shift",
+        cell: ({ row }) => (
+          <span className="font-medium text-muted-foreground/85">
+            {row.original.shift || "-"}
+          </span>
+        ),
+      },
+      {
         accessorKey: "firstIn",
         header: "First In",
         cell: ({ row }) => (

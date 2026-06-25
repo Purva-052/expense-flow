@@ -150,7 +150,7 @@ export const sidebarData: SidebarData = {
             roles.TEAM_LEAD,
             roles.BDE,
           ],
-          allowUserIDs: [169, 170, 171, 175, 174],
+          allowUserIDs: [169, 170, 171, 175, 174, 183, 184],
           allowedTech: [29, 15],
         },
         {
