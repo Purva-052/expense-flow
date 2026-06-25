@@ -203,6 +203,7 @@ interface AttendanceLogRow {
   rawDateStr: string;
   originalStatus: "P" | "A" | "WO" | "AH" | "E" | "L" | "";
   finalStatus: "P" | "A" | "WO" | "AH" | "E" | "L" | "";
+  shift?: string;
   firstIn: string;
   lastOut: string;
   breakHrs: string;
