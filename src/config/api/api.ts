@@ -191,6 +191,7 @@ const API = {
     leave_adjust: "/leave-management/adjust/balance",
     leave_balance: "/leave-management/credit-history",
     exam_leave: "/leave-management/exam-eligibility",
+    leave_details: " /leave-management/{id}/details"
   },
   leave_balance: {
     get: "/leave-balances",

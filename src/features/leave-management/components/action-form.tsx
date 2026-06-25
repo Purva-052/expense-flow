@@ -35,7 +35,7 @@ import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { useGetAllLeaveBalances } from "../services";
+import { useGetAllLeaveBalances, useGetLeaveDetails } from "../services";
 import {
   Wallet,
   ArrowLeft,
@@ -48,6 +48,13 @@ import {
 import { cn } from "@/lib/utils";
 import { FileUpload } from "@/components/shared/custome-file-upload";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Props {
   currentRow?: any;
@@ -199,13 +206,15 @@ const buildLeaveAllocation = ({
   casualBalance,
   paidBalance,
   isExamLeave,
+  selectedLeaveTypeId,
 }: {
   requestedDays: number;
   casualBalance: number;
   paidBalance: number;
   isExamLeave?: boolean;
+  selectedLeaveTypeId?: string;
 }) => {
-  if (isExamLeave) {
+  if (isExamLeave || selectedLeaveTypeId === "4") {
     return {
       casualDays: 0,
       paidDays: 0,
@@ -218,6 +227,77 @@ const buildLeaveAllocation = ({
           leaveTypeId: "4",
           leaveTypeName: "Exam Leave",
           days: requestedDays,
+        },
+      ],
+    };
+  }
+
+  if (selectedLeaveTypeId === LOSS_OF_PAY_LEAVE_TYPE_ID) {
+    return {
+      casualDays: 0,
+      paidDays: 0,
+      lossOfPayDays: requestedDays,
+      examDays: 0,
+      totalAvailableDays: 0,
+      requestedDays,
+      items: [
+        {
+          leaveTypeId: LOSS_OF_PAY_LEAVE_TYPE_ID,
+          leaveTypeName: "Loss of Pay",
+          days: requestedDays,
+          isLossOfPay: true,
+        },
+      ],
+    };
+  }
+
+  if (selectedLeaveTypeId === CASUAL_LEAVE_TYPE_ID) {
+    const casualDays = Math.min(requestedDays, casualBalance);
+    const lossOfPayDays = Math.max(requestedDays - casualDays, 0);
+    return {
+      casualDays,
+      paidDays: 0,
+      lossOfPayDays,
+      examDays: 0,
+      totalAvailableDays: casualBalance,
+      requestedDays,
+      items: [
+        {
+          leaveTypeId: CASUAL_LEAVE_TYPE_ID,
+          leaveTypeName: getLeaveTypeLabel(CASUAL_LEAVE_TYPE_ID),
+          days: casualDays,
+        },
+        {
+          leaveTypeId: LOSS_OF_PAY_LEAVE_TYPE_ID,
+          leaveTypeName: "Loss of Pay",
+          days: lossOfPayDays,
+          isLossOfPay: true,
+        },
+      ],
+    };
+  }
+
+  if (selectedLeaveTypeId === PAID_LEAVE_TYPE_ID) {
+    const paidDays = Math.min(requestedDays, paidBalance);
+    const lossOfPayDays = Math.max(requestedDays - paidDays, 0);
+    return {
+      casualDays: 0,
+      paidDays,
+      lossOfPayDays,
+      examDays: 0,
+      totalAvailableDays: paidBalance,
+      requestedDays,
+      items: [
+        {
+          leaveTypeId: PAID_LEAVE_TYPE_ID,
+          leaveTypeName: getLeaveTypeLabel(PAID_LEAVE_TYPE_ID),
+          days: paidDays,
+        },
+        {
+          leaveTypeId: LOSS_OF_PAY_LEAVE_TYPE_ID,
+          leaveTypeName: "Loss of Pay",
+          days: lossOfPayDays,
+          isLossOfPay: true,
         },
       ],
     };
@@ -308,6 +388,7 @@ export function LeaveActionForm({
   const watchToDate = form.watch("toDate");
   const watchEmployeeId = form.watch("employeeId");
   const watchIsExamLeave = form.watch("isExamLeave");
+  const watchLeaveTypeId = form.watch("leaveTypeId");
   const watchLeaveDays = useWatch({
     control: form.control,
     name: "leaveDays",
@@ -318,6 +399,23 @@ export function LeaveActionForm({
       form.clearErrors("isExamLeave");
     }
   }, [watchIsExamLeave, form]);
+
+  // Sync isExamLeave switch with leaveTypeId field
+  useEffect(() => {
+    if (watchIsExamLeave && watchLeaveTypeId !== "4") {
+      form.setValue("leaveTypeId", "4");
+    } else if (!watchIsExamLeave && watchLeaveTypeId === "4") {
+      form.setValue("leaveTypeId", CASUAL_LEAVE_TYPE_ID);
+    }
+  }, [watchIsExamLeave, watchLeaveTypeId, form]);
+
+  useEffect(() => {
+    if (watchLeaveTypeId === "4" && !watchIsExamLeave) {
+      form.setValue("isExamLeave", true);
+    } else if (watchLeaveTypeId !== "4" && watchIsExamLeave) {
+      form.setValue("isExamLeave", false);
+    }
+  }, [watchLeaveTypeId, watchIsExamLeave, form]);
 
   const employeeOptions = useMemo(() => {
     const list = employeesList?.data || [];
@@ -349,14 +447,16 @@ export function LeaveActionForm({
   }, [employeesList]);
 
   const isSelfApplyMode = !canApplyForOthers || applyTab === "self";
-  const editEmployeeId = (isEdit || isViewOnly)
-    ? (currentRow?.employeeId ?? currentRow?.employee?.id)
-    : undefined;
-  const balanceUserId = (isEdit || isViewOnly)
-    ? editEmployeeId
-    : isSelfApplyMode
-      ? currentUserId
-      : watchEmployeeId;
+  const editEmployeeId =
+    isEdit || isViewOnly
+      ? (currentRow?.employeeId ?? currentRow?.employee?.id)
+      : undefined;
+  const balanceUserId =
+    isEdit || isViewOnly
+      ? editEmployeeId
+      : isSelfApplyMode
+        ? currentUserId
+        : watchEmployeeId;
 
   const { data: activeUserDetails } = useGetUserDetails(
     balanceUserId ? String(balanceUserId) : ""
@@ -470,9 +570,35 @@ export function LeaveActionForm({
     }
   }, [watchFromDate, watchToDate, form]);
 
+  const isDetailsMode = isEdit || isViewOnly;
+
   // Fetch complete leave balance
   const { data: leaveBalanceData, isPending: leaveBalanceLoading } =
-    useGetAllLeaveBalances(balanceUserId, open) as any;
+    useGetAllLeaveBalances(balanceUserId, open && !isDetailsMode) as any;
+
+  // Fetch leave details
+  const { data: leaveDetailsData, isPending: leaveDetailsLoading } =
+    useGetLeaveDetails(currentRow?.id, open && isDetailsMode) as any;
+
+  const balanceLoading = isDetailsMode
+    ? leaveDetailsLoading
+    : leaveBalanceLoading;
+
+  const displayRow = useMemo(() => {
+    if (isDetailsMode) {
+      const details = leaveDetailsData?.data?.id
+        ? leaveDetailsData.data
+        : leaveDetailsData?.id
+          ? leaveDetailsData
+          : leaveDetailsData?.data?.data?.id
+            ? leaveDetailsData.data.data
+            : null;
+      if (details) {
+        return { ...currentRow, ...details };
+      }
+    }
+    return currentRow;
+  }, [isDetailsMode, leaveDetailsData, currentRow]);
 
   // Fetch public holidays
   const { data: holidayData } = useGetReportDetails({
@@ -541,26 +667,107 @@ export function LeaveActionForm({
     [leaveBalanceData]
   );
 
+  const detailData = useMemo(() => {
+    if (!isDetailsMode) return null;
+    return leaveDetailsData?.data?.allocationBreakdown ||
+      leaveDetailsData?.data?.leaveBalance
+      ? leaveDetailsData.data
+      : leaveDetailsData?.allocationBreakdown || leaveDetailsData?.leaveBalance
+        ? leaveDetailsData
+        : leaveDetailsData?.data?.data?.allocationBreakdown ||
+            leaveDetailsData?.data?.data?.leaveBalance
+          ? leaveDetailsData.data.data
+          : null;
+  }, [isDetailsMode, leaveDetailsData]);
+
+  const casualBalance = useMemo(() => {
+    if (isDetailsMode) {
+      const details = detailData?.leaveBalance;
+      return toNumber(details?.casualLeaveBalance);
+    }
+    return getLeaveTypeBalance(balanceArray, CASUAL_LEAVE_TYPE_ID);
+  }, [isDetailsMode, detailData, balanceArray]);
+
+  const paidBalance = useMemo(() => {
+    if (isDetailsMode) {
+      const details = detailData?.leaveBalance;
+      return toNumber(details?.paidLeaveBalance);
+    }
+    return getLeaveTypeBalance(balanceArray, PAID_LEAVE_TYPE_ID);
+  }, [isDetailsMode, detailData, balanceArray]);
+
+  const examBalance = useMemo(() => {
+    if (isDetailsMode) {
+      const details = detailData?.leaveBalance;
+      return toNumber(details?.examLeaveBalance ?? 0);
+    }
+    return getLeaveTypeAllocatedDays(balanceArray, "4");
+  }, [isDetailsMode, detailData, balanceArray]);
+
   const leaveAllocation = useMemo(() => {
     const requestedDays = calculateRequestedDays(
       watchLeaveDays,
       holidayDatesSet
     );
-    const casualBalance = getLeaveTypeBalance(
-      balanceArray,
-      CASUAL_LEAVE_TYPE_ID
-    );
-    const paidBalance = getLeaveTypeBalance(balanceArray, PAID_LEAVE_TYPE_ID);
-
     return buildLeaveAllocation({
       requestedDays,
       casualBalance,
       paidBalance,
       isExamLeave: watchIsExamLeave,
+      selectedLeaveTypeId: isAdmin ? watchLeaveTypeId : undefined,
     });
-  }, [balanceArray, watchLeaveDays, holidayDatesSet, watchIsExamLeave]);
+  }, [
+    watchLeaveDays,
+    holidayDatesSet,
+    casualBalance,
+    paidBalance,
+    watchIsExamLeave,
+    isAdmin,
+    watchLeaveTypeId,
+  ]);
+
+  const totalBalance = useMemo(() => {
+    if (isDetailsMode) {
+      const details = detailData?.leaveBalance;
+      return toNumber(details?.totalBalance);
+    }
+    return leaveAllocation.totalAvailableDays;
+  }, [isDetailsMode, detailData, leaveAllocation.totalAvailableDays]);
 
   const allocationItems = useMemo(() => {
+    if (isDetailsMode && detailData?.allocationBreakdown) {
+      const isExam = !!detailData.isExamLeave;
+      return isExam
+        ? [
+            {
+              label: "Exam Leave",
+              value:
+                detailData.allocationBreakdown.examLeaveDays ??
+                detailData.allocationBreakdown.examDays ??
+                detailData.summary?.totalRequestedDays ??
+                0,
+              className: "text-amber-700 dark:text-amber-400 font-semibold",
+            },
+          ]
+        : [
+            {
+              label: "Casual Leave",
+              value: detailData.allocationBreakdown.casualLeaveDays ?? 0,
+              className: "text-emerald-700 dark:text-emerald-400 font-semibold",
+            },
+            {
+              label: "Paid Leave",
+              value: detailData.allocationBreakdown.paidLeaveDays ?? 0,
+              className: "text-blue-700 dark:text-blue-400 font-semibold",
+            },
+            {
+              label: "Loss of Pay",
+              value: detailData.allocationBreakdown.lossOfPayDays ?? 0,
+              className: "text-rose-700 dark:text-rose-400 font-semibold",
+            },
+          ];
+    }
+
     return watchIsExamLeave
       ? [
           {
@@ -586,7 +793,7 @@ export function LeaveActionForm({
             className: "text-rose-700 dark:text-rose-400 font-semibold",
           },
         ];
-  }, [watchIsExamLeave, leaveAllocation]);
+  }, [watchIsExamLeave, leaveAllocation, isDetailsMode, detailData]);
 
   const hasDatesSelected = !!(watchFromDate && watchToDate);
 
@@ -605,9 +812,9 @@ export function LeaveActionForm({
 
   // Reset form on open/close
   useEffect(() => {
-    if (currentRow && open) {
-      const fromD = currentRow.fromDate ? new Date(currentRow.fromDate) : null;
-      const toD = currentRow.toDate ? new Date(currentRow.toDate) : null;
+    if (displayRow && open) {
+      const fromD = displayRow.fromDate ? new Date(displayRow.fromDate) : null;
+      const toD = displayRow.toDate ? new Date(displayRow.toDate) : null;
       let dayList: Date[] = [];
       if (fromD && toD && !isNaN(fromD.getTime()) && !isNaN(toD.getTime())) {
         try {
@@ -621,7 +828,7 @@ export function LeaveActionForm({
       }
 
       const days =
-        currentRow.leaveDays?.map((d: any, idx: number) => {
+        displayRow.leaveDays?.map((d: any, idx: number) => {
           const actualDate = dayList[idx] || (d.date ? new Date(d.date) : null);
           const dateStr =
             actualDate && !isNaN(actualDate.getTime())
@@ -659,44 +866,60 @@ export function LeaveActionForm({
         }) ?? [];
 
       form.reset({
-        employeeId: currentRow.employeeId ?? currentRow.employee?.id,
-        isExamLeave: !!currentRow.isExamLeave,
-        leaveTypeId: Array.isArray(currentRow.leaveTypeId)
-          ? currentRow.leaveTypeId.length > 0
-            ? String(currentRow.leaveTypeId[0])
-            : CASUAL_LEAVE_TYPE_ID
-          : currentRow.leaveTypeId
-            ? String(currentRow.leaveTypeId)
-            : CASUAL_LEAVE_TYPE_ID,
-        fromDate: currentRow.fromDate
-          ? new Date(currentRow.fromDate)
+        employeeId: displayRow.employeeId ?? displayRow.employee?.id,
+        isExamLeave: !!displayRow.isExamLeave,
+        leaveTypeId: (() => {
+          const typeIds = Array.isArray(displayRow.leaveTypeId)
+            ? displayRow.leaveTypeId.map(String)
+            : displayRow.leaveTypeId
+              ? [String(displayRow.leaveTypeId)]
+              : [];
+          if (typeIds.length > 0 && typeIds[0]) return typeIds[0];
+
+          // Fallback from allocationBreakdown
+          const breakdown = displayRow.allocationBreakdown;
+          if (breakdown) {
+            if (toNumber(breakdown.casualLeaveDays) > 0)
+              return CASUAL_LEAVE_TYPE_ID;
+            if (toNumber(breakdown.paidLeaveDays) > 0)
+              return PAID_LEAVE_TYPE_ID;
+            if (toNumber(breakdown.lossOfPayDays) > 0)
+              return LOSS_OF_PAY_LEAVE_TYPE_ID;
+            if (toNumber(breakdown.examLeaveDays ?? breakdown.examDays) > 0)
+              return "4";
+          }
+          return CASUAL_LEAVE_TYPE_ID;
+        })(),
+        fromDate: displayRow.fromDate
+          ? new Date(displayRow.fromDate)
           : undefined,
-        toDate: currentRow.toDate ? new Date(currentRow.toDate) : undefined,
-        reason: currentRow.reason,
-        description: currentRow.description || "",
+        toDate: displayRow.toDate ? new Date(displayRow.toDate) : undefined,
+        reason: displayRow.reason,
+        description: displayRow.description || "",
         leaveDays: days,
         attachments:
-          currentRow.attachments ||
-          currentRow.attachmentUrl ||
-          currentRow.attachment ||
+          displayRow.attachments ||
+          displayRow.attachmentUrl ||
+          displayRow.attachment ||
           null,
         notifyUserIds: (() => {
-          if (Array.isArray(currentRow.notifyUserIds)) {
-            return currentRow.notifyUserIds.map((id: any) => String(id));
+          if (Array.isArray(displayRow.notifyUserIds)) {
+            return displayRow.notifyUserIds.map((id: any) => String(id));
           }
-          if (Array.isArray(currentRow.notifyUsers)) {
-            return currentRow.notifyUsers.map((u: any) => String(u.id || u));
+          if (Array.isArray(displayRow.notifyUsers)) {
+            return displayRow.notifyUsers.map((u: any) => String(u.id || u));
           }
           return [];
         })(),
       });
+      replace(days);
     } else if (!open) {
       form.reset(emptyDefaults);
       replace([]);
       setApplyTab("self");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentRow, open, targetTechnologyId]);
+  }, [displayRow, open, targetTechnologyId]);
 
   const onSubmit: SubmitHandler<TLeaveFormSchema> = async (values) => {
     const isExamLeave = !!values.isExamLeave;
@@ -707,7 +930,15 @@ export function LeaveActionForm({
     );
     const leaveTypeIds = allocationItems.map((item) => item.leaveTypeId);
 
-    formData.append("leaveTypeId", JSON.stringify(leaveTypeIds));
+    if (isAdmin) {
+      if (isExamLeave) {
+        formData.append("leaveTypeId", "4");
+      } else {
+        formData.append("leaveTypeId", values.leaveTypeId);
+      }
+    } else {
+      formData.append("leaveTypeId", JSON.stringify(leaveTypeIds));
+    }
     formData.append("fromDate", format(values.fromDate, "yyyy-MM-dd"));
     formData.append("toDate", format(values.toDate, "yyyy-MM-dd"));
     formData.append("reason", values.reason);
@@ -740,7 +971,10 @@ export function LeaveActionForm({
     formData.append("leaveAllocations", JSON.stringify(allocationItems));
 
     if (values.notifyUserIds && values.notifyUserIds.length > 0) {
-      formData.append("notifyUserIds", JSON.stringify(values.notifyUserIds.map(Number)));
+      formData.append(
+        "notifyUserIds",
+        JSON.stringify(values.notifyUserIds.map(Number))
+      );
     } else {
       formData.append("notifyUserIds", JSON.stringify([]));
     }
@@ -768,19 +1002,14 @@ export function LeaveActionForm({
 
   // ── Leave Balance Summary ──────────────────────────────────────────────────
   const LeaveBalanceSummary = () => {
-    const targetUserId = (isEdit || isViewOnly)
-      ? editEmployeeId
-      : isSelfApplyMode
-        ? currentUserId
-        : watchEmployeeId;
+    const targetUserId =
+      isEdit || isViewOnly
+        ? editEmployeeId
+        : isSelfApplyMode
+          ? currentUserId
+          : watchEmployeeId;
     if (!targetUserId) return null;
 
-    const casualBalance = getLeaveTypeBalance(
-      balanceArray,
-      CASUAL_LEAVE_TYPE_ID
-    );
-    const paidBalance = getLeaveTypeBalance(balanceArray, PAID_LEAVE_TYPE_ID);
-    const examBalance = getLeaveTypeAllocatedDays(balanceArray, "4");
     const summaryItems = [
       {
         label: "Casual Leave",
@@ -812,7 +1041,7 @@ export function LeaveActionForm({
         : []),
       {
         label: "Total Balance",
-        value: leaveAllocation.totalAvailableDays,
+        value: totalBalance,
         icon: Layers,
         className:
           "border-violet-100/85 bg-violet-50/40 text-violet-800 dark:border-violet-900/30 dark:bg-violet-950/10 dark:text-violet-300",
@@ -831,7 +1060,7 @@ export function LeaveActionForm({
           <span className="text-xs uppercase tracking-wider font-bold opacity-80">
             Complete Leave Balance
           </span>
-          {leaveBalanceLoading && (
+          {balanceLoading && (
             <span className="text-xs font-normal text-muted-foreground italic animate-pulse">
               (Updating...)
             </span>
@@ -859,7 +1088,7 @@ export function LeaveActionForm({
                       : "text-xl sm:text-2xl tabular-nums"
                   )}
                 >
-                  {leaveBalanceLoading ? (
+                  {balanceLoading ? (
                     <span className="inline-block h-4 w-8 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
                   ) : item.label === "Exam Leave" && item.value === 0 ? (
                     "Unlimited"
@@ -922,7 +1151,7 @@ export function LeaveActionForm({
               >
                 {/* Date */}
                 <span className="font-semibold text-slate-800 dark:text-slate-200 tabular-nums text-xs">
-                  {formatDate(field.date, "dd MMM yyyy")}
+                  {formatDate(new Date(field.date), "dd MMM yyyy")}
                 </span>
 
                 {/* Day name */}
@@ -1081,18 +1310,59 @@ export function LeaveActionForm({
 
   const renderMainFormFields = () => (
     <>
-      {/* Employee dropdown */}
-      {showEmployeeDropdown && (
-        <CustomDropDownSearchable
-          form={form}
-          name="employeeId"
-          label="Employee"
-          options={employeeOptions}
-          placeholder="Select employee"
-          isLoading={employeesListLoading}
-          disabled={isEdit || isViewOnly}
-          showClearButton={!isEdit && !isViewOnly}
-        />
+      {/* Employee & Leave Type */}
+      {(showEmployeeDropdown || isAdmin) && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {showEmployeeDropdown && (
+            <CustomDropDownSearchable
+              form={form}
+              name="employeeId"
+              label="Employee"
+              options={employeeOptions}
+              placeholder="Select employee"
+              isLoading={employeesListLoading}
+              disabled={isEdit || isViewOnly}
+              showClearButton={!isEdit && !isViewOnly}
+            />
+          )}
+
+          {isAdmin && (
+            <FormField
+              control={form.control}
+              name="leaveTypeId"
+              render={({ field }) => (
+                <FormItem className="full">
+                  <FormLabel>
+                    Leave Type <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={isViewOnly}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="h-9 w-full">
+                        <SelectValue placeholder="Select leave type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value={CASUAL_LEAVE_TYPE_ID}>
+                        Casual Leave
+                      </SelectItem>
+                      <SelectItem value={PAID_LEAVE_TYPE_ID}>
+                        Paid Leave
+                      </SelectItem>
+                      <SelectItem value={LOSS_OF_PAY_LEAVE_TYPE_ID}>
+                        Loss of Pay
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+        </div>
       )}
 
       {/* Date Range */}
@@ -1305,20 +1575,14 @@ export function LeaveActionForm({
           className="space-y-6"
         >
           {/* Complete Leave Balance Summary at the top */}
-          <div className={cn(isViewOnly && "max-w-3xl mx-auto w-full")}>
+          <div>
             <LeaveBalanceSummary />
           </div>
 
           {/* Columns Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
             {/* Left Column - Main Form Fields */}
-            <div
-              className={cn(
-                isViewOnly
-                  ? "lg:col-span-12 max-w-3xl mx-auto w-full space-y-6"
-                  : "lg:col-span-7 space-y-6 flex flex-col"
-              )}
-            >
+            <div className="lg:col-span-7 space-y-6 flex flex-col">
               <div className="rounded-xl border border-slate-200 bg-card p-6 shadow-sm dark:border-slate-800">
                 {canApplyForOthers && !isEdit && !isViewOnly ? (
                   <Tabs
@@ -1351,16 +1615,18 @@ export function LeaveActionForm({
             </div>
 
             {/* Right Column - Daily Breakdown */}
-            {!isViewOnly && fields.length > 0 && (
+            {fields.length > 0 && (
               <div className="lg:col-span-5 flex flex-col h-full">
                 <div className="rounded-xl border border-slate-200 bg-card p-6 shadow-sm dark:border-slate-800 space-y-4 flex flex-col flex-1 h-full">
                   <div>
                     <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                       Daily Breakdown
                     </h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Configure half/full day settings for each leave date.
-                    </p>
+                    {!isViewOnly && (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Configure half/full day settings for each leave date.
+                      </p>
+                    )}
                   </div>
 
                   {/* Auto Allocation Breakdown */}
@@ -1369,14 +1635,34 @@ export function LeaveActionForm({
                       <div className="mb-2 flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-slate-400">
                         <span>Auto Allocation Breakdown</span>
                         <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-900 tabular-nums">
-                          {formatDays(leaveAllocation.requestedDays)} day(s)
-                          requested
+                          {formatDays(
+                            isViewOnly
+                              ? (leaveDetailsData?.data?.summary
+                                  ?.totalRequestedDays ??
+                                  leaveDetailsData?.summary
+                                    ?.totalRequestedDays ??
+                                  leaveDetailsData?.data?.data?.summary
+                                    ?.totalRequestedDays ??
+                                  leaveAllocation.requestedDays)
+                              : leaveAllocation.requestedDays
+                          )}{" "}
+                          day(s) requested
                         </span>
                       </div>
                       <div
                         className={cn(
                           "grid gap-2 text-center py-1",
-                          watchIsExamLeave ? "grid-cols-1" : "grid-cols-3"
+                          (
+                            isViewOnly
+                              ? !!(
+                                  leaveDetailsData?.data?.isExamLeave ??
+                                  leaveDetailsData?.isExamLeave ??
+                                  leaveDetailsData?.data?.data?.isExamLeave
+                                )
+                              : watchIsExamLeave
+                          )
+                            ? "grid-cols-1"
+                            : "grid-cols-3"
                         )}
                       >
                         {allocationItems.map((item) => (
@@ -1398,7 +1684,13 @@ export function LeaveActionForm({
                           </div>
                         ))}
                       </div>
-                      {!watchIsExamLeave && (
+                      {!(isViewOnly
+                        ? !!(
+                            leaveDetailsData?.data?.isExamLeave ??
+                            leaveDetailsData?.isExamLeave ??
+                            leaveDetailsData?.data?.data?.isExamLeave
+                          )
+                        : watchIsExamLeave) && (
                         <p className="mt-2 text-[10px] text-muted-foreground text-center font-bold">
                           Priority: Casual leaves are allocated first, followed
                           by Paid leaves, and then Loss of Pay.
@@ -1411,29 +1703,10 @@ export function LeaveActionForm({
                 </div>
               </div>
             )}
-
-            {/* View Only fallback for Daily Breakdown */}
-            {isViewOnly && fields.length > 0 && (
-              <div className="lg:col-span-12 max-w-3xl mx-auto w-full">
-                <div className="rounded-xl border border-slate-200 bg-card p-6 shadow-sm dark:border-slate-800 space-y-4">
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                      Daily Breakdown
-                    </h3>
-                  </div>
-                  <LeaveDaysTable />
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Footer / Action buttons */}
-          <div
-            className={cn(
-              "flex items-center justify-end gap-3 border-t border-slate-200 dark:border-slate-800 pt-4 mt-6",
-              isViewOnly && "max-w-3xl mx-auto w-full"
-            )}
-          >
+          <div className="flex items-center justify-end gap-3 border-t border-slate-200 dark:border-slate-800 pt-4 mt-6">
             <CustomButton
               type="button"
               variant="outline"
