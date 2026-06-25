@@ -203,7 +203,6 @@ interface AttendanceLogRow {
   rawDateStr: string;
   originalStatus: "P" | "A" | "WO" | "AH" | "E" | "L" | "";
   finalStatus: "P" | "A" | "WO" | "AH" | "E" | "L" | "";
-  shift: string;
   firstIn: string;
   lastOut: string;
   breakHrs: string;
@@ -364,15 +363,6 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
             row.original.finalStatus,
             isTodayOrFutureDate(row.original.rawDateStr)
           ),
-      },
-      {
-        accessorKey: "shift",
-        header: "Shift",
-        cell: ({ row }) => (
-          <span className="font-medium text-muted-foreground/85">
-            {row.original.shift || "-"}
-          </span>
-        ),
       },
       {
         accessorKey: "firstIn",
