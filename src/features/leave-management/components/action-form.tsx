@@ -447,14 +447,16 @@ export function LeaveActionForm({
   }, [employeesList]);
 
   const isSelfApplyMode = !canApplyForOthers || applyTab === "self";
-  const editEmployeeId = (isEdit || isViewOnly)
-    ? (currentRow?.employeeId ?? currentRow?.employee?.id)
-    : undefined;
-  const balanceUserId = (isEdit || isViewOnly)
-    ? editEmployeeId
-    : isSelfApplyMode
-      ? currentUserId
-      : watchEmployeeId;
+  const editEmployeeId =
+    isEdit || isViewOnly
+      ? (currentRow?.employeeId ?? currentRow?.employee?.id)
+      : undefined;
+  const balanceUserId =
+    isEdit || isViewOnly
+      ? editEmployeeId
+      : isSelfApplyMode
+        ? currentUserId
+        : watchEmployeeId;
 
   const { data: activeUserDetails } = useGetUserDetails(
     balanceUserId ? String(balanceUserId) : ""
@@ -578,13 +580,22 @@ export function LeaveActionForm({
   const { data: leaveDetailsData, isPending: leaveDetailsLoading } =
     useGetLeaveDetails(currentRow?.id, open && isDetailsMode) as any;
 
-  const balanceLoading = isDetailsMode ? leaveDetailsLoading : leaveBalanceLoading;
+  const balanceLoading = isDetailsMode
+    ? leaveDetailsLoading
+    : leaveBalanceLoading;
 
   const displayRow = useMemo(() => {
     if (isDetailsMode) {
-      if (leaveDetailsData?.data?.id) return leaveDetailsData.data;
-      if (leaveDetailsData?.id) return leaveDetailsData;
-      if (leaveDetailsData?.data?.data?.id) return leaveDetailsData.data.data;
+      const details = leaveDetailsData?.data?.id
+        ? leaveDetailsData.data
+        : leaveDetailsData?.id
+          ? leaveDetailsData
+          : leaveDetailsData?.data?.data?.id
+            ? leaveDetailsData.data.data
+            : null;
+      if (details) {
+        return { ...currentRow, ...details };
+      }
     }
     return currentRow;
   }, [isDetailsMode, leaveDetailsData, currentRow]);
@@ -658,11 +669,13 @@ export function LeaveActionForm({
 
   const detailData = useMemo(() => {
     if (!isDetailsMode) return null;
-    return leaveDetailsData?.data?.allocationBreakdown
+    return leaveDetailsData?.data?.allocationBreakdown ||
+      leaveDetailsData?.data?.leaveBalance
       ? leaveDetailsData.data
-      : leaveDetailsData?.allocationBreakdown
+      : leaveDetailsData?.allocationBreakdown || leaveDetailsData?.leaveBalance
         ? leaveDetailsData
-        : leaveDetailsData?.data?.data?.allocationBreakdown
+        : leaveDetailsData?.data?.data?.allocationBreakdown ||
+            leaveDetailsData?.data?.data?.leaveBalance
           ? leaveDetailsData.data.data
           : null;
   }, [isDetailsMode, leaveDetailsData]);
@@ -670,41 +683,26 @@ export function LeaveActionForm({
   const casualBalance = useMemo(() => {
     if (isDetailsMode) {
       const details = detailData?.leaveBalance;
-      let balance = toNumber(details?.casualLeaveBalance);
-      const isRejected = String(displayRow?.status || "").toLowerCase() === "rejected";
-      if (isEdit && !isViewOnly && !isRejected && detailData?.allocationBreakdown) {
-        balance += toNumber(detailData.allocationBreakdown.casualLeaveDays);
-      }
-      return balance;
+      return toNumber(details?.casualLeaveBalance);
     }
     return getLeaveTypeBalance(balanceArray, CASUAL_LEAVE_TYPE_ID);
-  }, [isDetailsMode, detailData, isEdit, isViewOnly, displayRow?.status, balanceArray]);
+  }, [isDetailsMode, detailData, balanceArray]);
 
   const paidBalance = useMemo(() => {
     if (isDetailsMode) {
       const details = detailData?.leaveBalance;
-      let balance = toNumber(details?.paidLeaveBalance);
-      const isRejected = String(displayRow?.status || "").toLowerCase() === "rejected";
-      if (isEdit && !isViewOnly && !isRejected && detailData?.allocationBreakdown) {
-        balance += toNumber(detailData.allocationBreakdown.paidLeaveDays);
-      }
-      return balance;
+      return toNumber(details?.paidLeaveBalance);
     }
     return getLeaveTypeBalance(balanceArray, PAID_LEAVE_TYPE_ID);
-  }, [isDetailsMode, detailData, isEdit, isViewOnly, displayRow?.status, balanceArray]);
+  }, [isDetailsMode, detailData, balanceArray]);
 
   const examBalance = useMemo(() => {
     if (isDetailsMode) {
       const details = detailData?.leaveBalance;
-      let balance = toNumber(details?.examLeaveBalance ?? 0);
-      const isRejected = String(displayRow?.status || "").toLowerCase() === "rejected";
-      if (isEdit && !isViewOnly && !isRejected && detailData?.allocationBreakdown) {
-        balance += toNumber(detailData.allocationBreakdown.examDays ?? detailData.allocationBreakdown.examLeaveDays ?? 0);
-      }
-      return balance;
+      return toNumber(details?.examLeaveBalance ?? 0);
     }
     return getLeaveTypeAllocatedDays(balanceArray, "4");
-  }, [isDetailsMode, detailData, isEdit, isViewOnly, displayRow?.status, balanceArray]);
+  }, [isDetailsMode, detailData, balanceArray]);
 
   const leaveAllocation = useMemo(() => {
     const requestedDays = calculateRequestedDays(
@@ -731,27 +729,23 @@ export function LeaveActionForm({
   const totalBalance = useMemo(() => {
     if (isDetailsMode) {
       const details = detailData?.leaveBalance;
-      let balance = toNumber(details?.totalBalance);
-      const isRejected = String(displayRow?.status || "").toLowerCase() === "rejected";
-      if (isEdit && !isViewOnly && !isRejected && detailData?.allocationBreakdown) {
-        const allocatedCasual = toNumber(detailData.allocationBreakdown.casualLeaveDays);
-        const allocatedPaid = toNumber(detailData.allocationBreakdown.paidLeaveDays);
-        const allocatedExam = toNumber(detailData.allocationBreakdown.examDays ?? detailData.allocationBreakdown.examLeaveDays ?? 0);
-        balance += allocatedCasual + allocatedPaid + allocatedExam;
-      }
-      return balance;
+      return toNumber(details?.totalBalance);
     }
     return leaveAllocation.totalAvailableDays;
-  }, [isDetailsMode, detailData, isEdit, isViewOnly, displayRow?.status, leaveAllocation.totalAvailableDays]);
+  }, [isDetailsMode, detailData, leaveAllocation.totalAvailableDays]);
 
   const allocationItems = useMemo(() => {
-    if (isViewOnly && detailData?.allocationBreakdown) {
+    if (isDetailsMode && detailData?.allocationBreakdown) {
       const isExam = !!detailData.isExamLeave;
       return isExam
         ? [
             {
               label: "Exam Leave",
-              value: detailData.allocationBreakdown.examDays ?? detailData.summary?.totalRequestedDays ?? 0,
+              value:
+                detailData.allocationBreakdown.examLeaveDays ??
+                detailData.allocationBreakdown.examDays ??
+                detailData.summary?.totalRequestedDays ??
+                0,
               className: "text-amber-700 dark:text-amber-400 font-semibold",
             },
           ]
@@ -799,7 +793,7 @@ export function LeaveActionForm({
             className: "text-rose-700 dark:text-rose-400 font-semibold",
           },
         ];
-  }, [watchIsExamLeave, leaveAllocation, isViewOnly, detailData]);
+  }, [watchIsExamLeave, leaveAllocation, isDetailsMode, detailData]);
 
   const hasDatesSelected = !!(watchFromDate && watchToDate);
 
@@ -874,13 +868,28 @@ export function LeaveActionForm({
       form.reset({
         employeeId: displayRow.employeeId ?? displayRow.employee?.id,
         isExamLeave: !!displayRow.isExamLeave,
-        leaveTypeId: Array.isArray(displayRow.leaveTypeId)
-          ? displayRow.leaveTypeId.length > 0
-            ? String(displayRow.leaveTypeId[0])
-            : CASUAL_LEAVE_TYPE_ID
-          : displayRow.leaveTypeId
-            ? String(displayRow.leaveTypeId)
-            : CASUAL_LEAVE_TYPE_ID,
+        leaveTypeId: (() => {
+          const typeIds = Array.isArray(displayRow.leaveTypeId)
+            ? displayRow.leaveTypeId.map(String)
+            : displayRow.leaveTypeId
+              ? [String(displayRow.leaveTypeId)]
+              : [];
+          if (typeIds.length > 0 && typeIds[0]) return typeIds[0];
+
+          // Fallback from allocationBreakdown
+          const breakdown = displayRow.allocationBreakdown;
+          if (breakdown) {
+            if (toNumber(breakdown.casualLeaveDays) > 0)
+              return CASUAL_LEAVE_TYPE_ID;
+            if (toNumber(breakdown.paidLeaveDays) > 0)
+              return PAID_LEAVE_TYPE_ID;
+            if (toNumber(breakdown.lossOfPayDays) > 0)
+              return LOSS_OF_PAY_LEAVE_TYPE_ID;
+            if (toNumber(breakdown.examLeaveDays ?? breakdown.examDays) > 0)
+              return "4";
+          }
+          return CASUAL_LEAVE_TYPE_ID;
+        })(),
         fromDate: displayRow.fromDate
           ? new Date(displayRow.fromDate)
           : undefined,
@@ -962,7 +971,10 @@ export function LeaveActionForm({
     formData.append("leaveAllocations", JSON.stringify(allocationItems));
 
     if (values.notifyUserIds && values.notifyUserIds.length > 0) {
-      formData.append("notifyUserIds", JSON.stringify(values.notifyUserIds.map(Number)));
+      formData.append(
+        "notifyUserIds",
+        JSON.stringify(values.notifyUserIds.map(Number))
+      );
     } else {
       formData.append("notifyUserIds", JSON.stringify([]));
     }
@@ -990,11 +1002,12 @@ export function LeaveActionForm({
 
   // ── Leave Balance Summary ──────────────────────────────────────────────────
   const LeaveBalanceSummary = () => {
-    const targetUserId = (isEdit || isViewOnly)
-      ? editEmployeeId
-      : isSelfApplyMode
-        ? currentUserId
-        : watchEmployeeId;
+    const targetUserId =
+      isEdit || isViewOnly
+        ? editEmployeeId
+        : isSelfApplyMode
+          ? currentUserId
+          : watchEmployeeId;
     if (!targetUserId) return null;
 
     const summaryItems = [
@@ -1333,10 +1346,15 @@ export function LeaveActionForm({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value={CASUAL_LEAVE_TYPE_ID}>Casual Leave</SelectItem>
-                      <SelectItem value={PAID_LEAVE_TYPE_ID}>Paid Leave</SelectItem>
-                      <SelectItem value={LOSS_OF_PAY_LEAVE_TYPE_ID}>Loss of Pay</SelectItem>
-                      <SelectItem value="4">Exam Leave</SelectItem>
+                      <SelectItem value={CASUAL_LEAVE_TYPE_ID}>
+                        Casual Leave
+                      </SelectItem>
+                      <SelectItem value={PAID_LEAVE_TYPE_ID}>
+                        Paid Leave
+                      </SelectItem>
+                      <SelectItem value={LOSS_OF_PAY_LEAVE_TYPE_ID}>
+                        Loss of Pay
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -1619,20 +1637,30 @@ export function LeaveActionForm({
                         <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-900 tabular-nums">
                           {formatDays(
                             isViewOnly
-                              ? (leaveDetailsData?.data?.summary?.totalRequestedDays ??
-                                 leaveDetailsData?.summary?.totalRequestedDays ??
-                                 leaveDetailsData?.data?.data?.summary?.totalRequestedDays ??
-                                 leaveAllocation.requestedDays)
+                              ? (leaveDetailsData?.data?.summary
+                                  ?.totalRequestedDays ??
+                                  leaveDetailsData?.summary
+                                    ?.totalRequestedDays ??
+                                  leaveDetailsData?.data?.data?.summary
+                                    ?.totalRequestedDays ??
+                                  leaveAllocation.requestedDays)
                               : leaveAllocation.requestedDays
-                          )} day(s) requested
+                          )}{" "}
+                          day(s) requested
                         </span>
                       </div>
                       <div
                         className={cn(
                           "grid gap-2 text-center py-1",
-                          (isViewOnly
-                            ? !!(leaveDetailsData?.data?.isExamLeave ?? leaveDetailsData?.isExamLeave ?? leaveDetailsData?.data?.data?.isExamLeave)
-                            : watchIsExamLeave)
+                          (
+                            isViewOnly
+                              ? !!(
+                                  leaveDetailsData?.data?.isExamLeave ??
+                                  leaveDetailsData?.isExamLeave ??
+                                  leaveDetailsData?.data?.data?.isExamLeave
+                                )
+                              : watchIsExamLeave
+                          )
                             ? "grid-cols-1"
                             : "grid-cols-3"
                         )}
@@ -1657,7 +1685,11 @@ export function LeaveActionForm({
                         ))}
                       </div>
                       {!(isViewOnly
-                        ? !!(leaveDetailsData?.data?.isExamLeave ?? leaveDetailsData?.isExamLeave ?? leaveDetailsData?.data?.data?.isExamLeave)
+                        ? !!(
+                            leaveDetailsData?.data?.isExamLeave ??
+                            leaveDetailsData?.isExamLeave ??
+                            leaveDetailsData?.data?.data?.isExamLeave
+                          )
                         : watchIsExamLeave) && (
                         <p className="mt-2 text-[10px] text-muted-foreground text-center font-bold">
                           Priority: Casual leaves are allocated first, followed
