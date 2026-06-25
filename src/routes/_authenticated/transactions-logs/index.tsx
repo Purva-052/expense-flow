@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/transactions-logs/")({
         roles.DEVELOPER,
       ],
       {
-        allowUserIDs: [169, 170, 171, 175, 174],
+        allowUserIDs: [169, 170, 171, 175, 174, 183, 184],
         allowedTech: [29, 15],
       }
     ),

@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { MonthYearPicker } from "./month-year-picker";
 import { CalendarIcon, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { GlobalTable } from "@/components/table/global-table";
+import { ColumnDef } from "@tanstack/react-table";
 import {
   Dialog,
   DialogContent,
@@ -313,6 +315,138 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
     });
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const columns = useMemo<ColumnDef<any>[]>(
+    () => [
+      {
+        accessorKey: "date",
+        header: "Date",
+        cell: ({ row }) => (
+          <span className="font-semibold text-muted-foreground">
+            {row.original.date}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "originalStatus",
+        header: "Original Status",
+        cell: ({ row }) =>
+          getStatusBadge(
+            row.original.originalStatus,
+            isTodayOrFutureDate(row.original.rawDateStr)
+          ),
+      },
+      {
+        accessorKey: "finalStatus",
+        header: "Final Status",
+        cell: ({ row }) =>
+          getStatusBadge(
+            row.original.finalStatus,
+            isTodayOrFutureDate(row.original.rawDateStr)
+          ),
+      },
+      {
+        accessorKey: "shift",
+        header: "Shift",
+        cell: ({ row }) => (
+          <span className="font-medium text-muted-foreground/85">
+            {row.original.shift || "-"}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "firstIn",
+        header: "First In",
+        cell: ({ row }) => (
+          <span className="font-semibold text-foreground">
+            {row.original.firstIn}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "lastOut",
+        header: "Last Out",
+        cell: ({ row }) => (
+          <span className="font-semibold text-foreground">
+            {row.original.lastOut}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "breakHrs",
+        header: "Break Time",
+        cell: ({ row }) => (
+          <span className="font-medium text-muted-foreground/85">
+            {row.original.breakHrs}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "workingHrs",
+        header: "Working Hours",
+        cell: ({ row }) => (
+          <span
+            className={`font-bold transition-colors ${
+              isLessThanEightFifteen(row.original.workingHrs) &&
+              !matchedUser?.isSingleCheckInAllowed
+                ? "text-rose-600 dark:text-rose-400"
+                : "text-sky-600 dark:text-sky-400"
+            }`}
+          >
+            {row.original.workingHrs}
+          </span>
+        ),
+      },
+      ...(isAdmin
+        ? [
+            {
+              id: "actions",
+              header: () => <div className="text-right" />,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              cell: ({ row }: any) => {
+                const future = isFutureDate(row.original.rawDateStr);
+                const canApply =
+                  !future &&
+                  isLessThanEightFifteen(row.original.workingHrs) &&
+                  !matchedUser?.isSingleCheckInAllowed;
+                if (!canApply) return <div className="w-full text-right" />;
+                return (
+                  <div
+                    className="w-full text-right"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 p-0 hover:bg-muted"
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                          <span className="sr-only">Open menu</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-40">
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenRegularization(row.original.rawDateStr);
+                          }}
+                        >
+                          Apply Regularization
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                );
+              },
+            },
+          ]
+        : []),
+    ],
+    [isAdmin, matchedUser]
+  );
+
   return (
     <div
       className={
@@ -333,97 +467,27 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
           />
         </div>
       )}
-      <div className="overflow-auto max-h-[400px]">
-        <table className="w-full border-collapse text-left">
-          <thead>
-            <tr className="bg-muted border-b border-border text-muted-foreground text-xs font-bold sticky top-0 z-10">
-              <th className="px-4 py-3 bg-muted sticky top-0">Date</th>
-              <th className="px-4 py-3 bg-muted sticky top-0">Original Status</th>
-              <th className="px-4 py-3 bg-muted sticky top-0">Final Status</th>
-              <th className="px-4 py-3 bg-muted sticky top-0">Shift</th>
-              <th className="px-4 py-3 bg-muted sticky top-0">First In</th>
-              <th className="px-4 py-3 bg-muted sticky top-0">Last Out</th>
-              <th className="px-4 py-3 bg-muted sticky top-0">Working Hours</th>
-              {/* <th className="px-4 py-3 bg-muted sticky top-0">Overtime Hours</th> */}
-              {isAdmin && <th className="px-4 py-3 bg-muted sticky top-0 text-right w-12"></th>}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border text-xs text-foreground">
-            {detailedLogs.map((log: any) => {
-              const future = isFutureDate(log.rawDateStr);
-              const todayOrFuture = isTodayOrFutureDate(log.rawDateStr);
-              return (
-                <tr
-                  key={log.day}
-                  className={`transition-colors ${
-                    future
-                      ? "cursor-not-allowed opacity-80"
-                      : "hover:bg-muted/10 cursor-pointer"
-                  }`}
-                  onClick={() => !future && onRowClick(log.rawDateStr)}
-                >
-                  <td className="px-4 py-2.5 font-semibold text-muted-foreground">
-                    {log.date}
-                  </td>
-                  <td className="px-4 py-2.5">{getStatusBadge(log.originalStatus, todayOrFuture)}</td>
-                  <td className="px-4 py-2.5">{getStatusBadge(log.finalStatus, todayOrFuture)}</td>
-                  <td className="px-4 py-2.5 text-muted-foreground font-medium">
-                    {log.shift}
-                  </td>
-                  <td className="px-4 py-2.5 font-semibold text-foreground">
-                    {log.firstIn}
-                  </td>
-                  <td className="px-4 py-2.5 font-semibold text-foreground">
-                    {log.lastOut}
-                  </td>
-                  <td
-                    className={`px-4 py-2.5 font-bold transition-colors ${
-                      isLessThanEightFifteen(log.workingHrs) &&
-                      !matchedUser?.isSingleCheckInAllowed
-                        ? "bg-rose-500/15 text-rose-600 dark:text-rose-400"
-                        : "text-sky-600 dark:text-sky-400"
-                    }`}
-                  >
-                    {log.workingHrs}
-                  </td>
-                  {/* <td className="px-4 py-2.5 text-muted-foreground font-medium">
-                    {log.overtimeHrs}
-                  </td> */}
-                  {isAdmin && (
-                    <td className="px-4 py-2.5 text-right" onClick={(e) => e.stopPropagation()}>
-                      {!future &&
-                        isLessThanEightFifteen(log.workingHrs) &&
-                        !matchedUser?.isSingleCheckInAllowed && (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 p-0 hover:bg-muted"
-                            >
-                              <MoreVertical className="h-4 w-4" />
-                              <span className="sr-only">Open menu</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-40">
-                            <DropdownMenuItem
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenRegularization(log.rawDateStr);
-                              }}
-                            >
-                              Apply Regularization
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      )}
-                    </td>
-                  )}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      <div className="min-h-0">
+        <GlobalTable
+          data={detailedLogs}
+          columns={columns}
+          totalCount={detailedLogs.length}
+          currentPage={1}
+          pageSize={detailedLogs.length || 10}
+          onPaginationChange={() => {}}
+          isPaginationEnabled={false}
+          scrollY="480px"
+          onRowClick={(row) => {
+            if (!isFutureDate(row.rawDateStr)) {
+              onRowClick(row.rawDateStr);
+            }
+          }}
+          getRowClassName={(row) =>
+            isFutureDate(row.rawDateStr)
+              ? "cursor-not-allowed opacity-80 hover:bg-transparent"
+              : "cursor-pointer hover:bg-muted/10"
+          }
+        />
       </div>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
