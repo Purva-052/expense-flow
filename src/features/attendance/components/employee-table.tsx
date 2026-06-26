@@ -50,6 +50,7 @@ interface EmployeeTableProps {
     isLoading?: boolean;
   };
   employeeId?: number;
+  lateInDays?: number;
 }
 
 const formatToYYYYMMDD = (date: Date) => {
@@ -222,14 +223,9 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
     status: "active",
   });
 
-  const matchedUser = (usersResponse as any)?.data?.find((u: any) => {
-    const empId = u.employeeId ?? u.employee?.id;
-    return (
-      (empId && Number(empId) === Number(resolvedEmpId)) ||
-      Number(u.id) === Number(resolvedEmpId) ||
-      (u.mewurkEmployeeCode && String(u.mewurkEmployeeCode).trim() === String(resolvedEmpId).trim())
-    );
-  });
+  const matchedUser = (usersResponse as any)?.data?.find((u: any) =>
+    Number(u.id) === Number(resolvedEmpId)
+  );
 
   const employeeCode = matchedUser?.mewurkEmployeeCode || (resolvedEmpId ? String(resolvedEmpId) : "");
 
@@ -351,6 +347,21 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
         cell: ({ row }) => (
           <span className="font-semibold text-foreground">
             {row.original.firstIn}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "lateInTime",
+        header: "Late In",
+        cell: ({ row }) => (
+          <span
+            className={`font-semibold ${
+              row.original.lateInTime && row.original.lateInTime !== "00:00"
+                ? "text-rose-600 dark:text-rose-400"
+                : "text-muted-foreground/85"
+            }`}
+          >
+            {row.original.lateInTime || "-"}
           </span>
         ),
       },

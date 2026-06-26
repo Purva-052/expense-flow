@@ -52,6 +52,8 @@ export const EmployeeStats: React.FC<EmployeeStatsProps> = ({
         : "0h 0m"
       : "8h 49m";
 
+    const lateInDays = monthlyData?.lateInDays ?? 0;
+
     const stripItems = [
       {
         icon: UserCheck,
@@ -76,6 +78,14 @@ export const EmployeeStats: React.FC<EmployeeStatsProps> = ({
         label: "Wo / Holiday",
         value: String(woCount + leaveCount),
         valueClass: "text-blue-600 dark:text-blue-400",
+      },
+      {
+        icon: Clock,
+        iconBg: "bg-orange-500/10",
+        iconColor: "text-orange-600 dark:text-orange-400",
+        label: "Late In Days",
+        value: String(lateInDays),
+        valueClass: "text-orange-600 dark:text-orange-400",
       },
       {
         icon: Clock,

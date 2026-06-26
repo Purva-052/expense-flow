@@ -69,6 +69,7 @@ interface AttendanceTableProps {
     isLoading?: boolean;
   };
   employeeId?: number;
+  lateInDays?: number;
 }
 
 const isFutureDate = (dateStr: string) => {
@@ -204,6 +205,7 @@ interface AttendanceLogRow {
   originalStatus: "P" | "A" | "WO" | "AH" | "E" | "L" | "";
   finalStatus: "P" | "A" | "WO" | "AH" | "E" | "L" | "";
   firstIn: string;
+  lateInTime: string;
   lastOut: string;
   breakHrs: string;
   workingHrs: string;
@@ -370,6 +372,21 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
         cell: ({ row }) => (
           <span className="font-semibold text-foreground">
             {row.original.firstIn}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "lateInTime",
+        header: "Late In",
+        cell: ({ row }) => (
+          <span
+            className={`font-semibold ${
+              row.original.lateInTime && row.original.lateInTime !== "00:00"
+                ? "text-rose-600 dark:text-rose-400"
+                : "text-muted-foreground/85"
+            }`}
+          >
+            {row.original.lateInTime || "-"}
           </span>
         ),
       },

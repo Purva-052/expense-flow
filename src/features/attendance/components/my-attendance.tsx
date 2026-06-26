@@ -847,6 +847,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
         }
 
         const firstIn = log.firstIn ? formatMewurkTime(log.firstIn) : "-";
+        const lateInTime = log.lateInTime || "00:00";
         const lastOut = log.lastOut ? formatMewurkTime(log.lastOut) : "-";
         const workingHrs = log.workingTime ? `${log.workingTime} HRS` : "-";
         const breakHrs = log.breakTime ? `${log.breakTime} HRS` : "-";
@@ -860,6 +861,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           finalStatus,
           shift: "GS01",
           firstIn,
+          lateInTime,
           lastOut,
           breakHrs,
           workingHrs,
@@ -1117,6 +1119,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
                       onRowClick={handleRowClick}
                       monthNavigator={monthNavigatorProps}
                       employeeId={activeEmployee ? Number(activeEmployee.id) : undefined}
+                      lateInDays={monthlyData ? (monthlyData.lateInDays ?? 0) : undefined}
                     />
                   )}
                 </div>
@@ -1268,6 +1271,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
                 ? Number(activeEmployee.id)
                 : Number(user?.user?.id)
             }
+            lateInDays={monthlyData ? (monthlyData.lateInDays ?? 0) : undefined}
           />
         )}
       </div>
