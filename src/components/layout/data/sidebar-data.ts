@@ -279,7 +279,7 @@ export const sidebarData: SidebarData = {
           title: "Client Inventory",
           url: "/client-inventory",
           icon: Laptop,
-          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER],
+          requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER, roles.TEAM_LEAD],
         },
         {
           title: "Client NDA",
