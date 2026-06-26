@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { GlobalTable } from "@/components/table/global-table";
 import { MonthYearPicker } from "./month-year-picker";
-import { CalendarIcon, CheckCircle, CheckCircle2, Clock, Info, Loader2, MoreVertical, XCircle } from "lucide-react";
+import { CalendarIcon, CheckCircle, CheckCircle2, Clock, Info, Loader2, MoreVertical, XCircle, Siren } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,6 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { useQueryClient } from "@tanstack/react-query";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ColumnDef } from "@tanstack/react-table";
 import {
   useGetCompensatoryDates,
@@ -369,29 +370,29 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
           if (isFutureDate(row.original.rawDateStr)) return <span className="font-semibold text-foreground"></span>;
           let val = row.original.firstIn === "-" ? "" : row.original.firstIn;
           if (isTodayOrFutureDate(row.original.rawDateStr) && val === "00:00") val = "";
+          
+          let lateVal = row.original.lateInTime;
+          if (lateVal === "00:00") lateVal = "";
+          const isLate = lateVal && lateVal !== "-";
+          const titleText = isLate ? `Late In: ${lateVal}` : undefined;
+
           return (
-            <span className="font-semibold text-foreground">
-              {val || (isTodayOrFutureDate(row.original.rawDateStr) ? "" : "-")}
-            </span>
-          );
-        },
-      },
-      {
-        accessorKey: "lateInTime",
-        header: "Late In",
-        cell: ({ row }) => {
-          if (isFutureDate(row.original.rawDateStr)) return <span className="font-semibold text-foreground"></span>;
-          let val = row.original.lateInTime;
-          if (isTodayOrFutureDate(row.original.rawDateStr) && val === "00:00") val = "";
-          const isLate = val && val !== "00:00" && val !== "-";
-          return (
-            <span
-              className={`font-semibold ${
-                isLate ? "text-rose-600 dark:text-rose-400" : "text-foreground"
-              }`}
-            >
-              {val || (isTodayOrFutureDate(row.original.rawDateStr) ? "" : "-")}
-            </span>
+            <div className="relative group flex items-center justify-center gap-1.5">
+              <span 
+                className={`font-semibold ${isLate ? "text-rose-600 dark:text-rose-400 cursor-help" : "text-foreground"}`}
+              >
+                {val || (isTodayOrFutureDate(row.original.rawDateStr) ? "" : "-")}
+              </span>
+              {isLate && (
+                <Siren className="h-3.5 w-3.5 text-rose-500 animate-pulse" />
+              )}
+              {titleText && (
+                <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 hidden group-hover:block w-max bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black font-medium text-[11px] px-2 py-1 rounded shadow-lg z-[9999] pointer-events-none">
+                  {titleText}
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-zinc-900 dark:border-t-zinc-100" />
+                </div>
+              )}
+            </div>
           );
         },
       },
