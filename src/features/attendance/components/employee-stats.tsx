@@ -54,7 +54,6 @@ export const EmployeeStats: React.FC<EmployeeStatsProps> = ({
         : "0h 0m"
       : "8h 49m";
 
-    const lateInDays = monthlyData?.lateInDays ?? 0;
 
     const stripItems = [
       {
