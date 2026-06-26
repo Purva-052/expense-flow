@@ -426,14 +426,25 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
       {
         accessorKey: "workingHrs",
         header: "Working Hours",
+        meta: {
+          getCellClassName: (row: any) => {
+            const isHalfDay = row.finalStatus === "AH" || String(row.finalStatus).toLowerCase().includes("half day");
+            const isRed = !isHalfDay && isLessThanEightFifteen(row.workingHrs) && !matchedUser?.isSingleCheckInAllowed;
+            return isRed ? "bg-rose-500/10 dark:bg-rose-900/20" : "";
+          }
+        },
         cell: ({ row }) => {
           if (isFutureDate(row.original.rawDateStr)) return <span className="font-bold text-muted-foreground"></span>;
           let workingHrsVal = row.original.workingHrs === "-" ? "" : row.original.workingHrs;
           if (isTodayOrFutureDate(row.original.rawDateStr) && workingHrsVal === "00:00") workingHrsVal = "";
+          
+          const isHalfDay = row.original.finalStatus === "AH" || String(row.original.finalStatus).toLowerCase().includes("half day");
+          const isRed = !isHalfDay && isLessThanEightFifteen(row.original.workingHrs) && !matchedUser?.isSingleCheckInAllowed;
+          
           return (
             <span
-              className={`font-bold transition-colors ${isLessThanEightFifteen(row.original.workingHrs) &&
-                !matchedUser?.isSingleCheckInAllowed
+              className={`font-bold transition-colors ${
+                isRed
                 ? "text-rose-600 dark:text-rose-400"
                 : "text-sky-600 dark:text-sky-400"
                 }`}
