@@ -350,7 +350,7 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
           const titleText = isLate ? `Late In: ${lateVal}` : undefined;
 
           return (
-            <div className="relative group flex items-center justify-center gap-1.5">
+            <div className="relative flex items-center justify-start gap-1.5" title={titleText}>
               <span 
                 className={`font-semibold ${isLate ? "text-rose-600 dark:text-rose-400 cursor-help" : "text-foreground"}`}
               >
@@ -429,7 +429,7 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
         ? [
           {
             id: "actions",
-            header: () => <div className="text-right" />,
+            header: () => <div className="text-center font-semibold">Actions</div>,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             cell: ({ row }: any) => {
               const future = isFutureDate(row.original.rawDateStr);
@@ -437,10 +437,10 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
                 !future &&
                 isLessThanEightFifteen(row.original.workingHrs) &&
                 !matchedUser?.isSingleCheckInAllowed;
-              if (!canApply) return <div className="w-full text-right" />;
+              if (!canApply) return <div className="w-full text-center" />;
               return (
                 <div
-                  className="w-full text-right"
+                  className="w-full flex items-center justify-center"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <DropdownMenu>

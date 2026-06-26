@@ -377,7 +377,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
           const titleText = isLate ? `Late In: ${lateVal}` : undefined;
 
           return (
-            <div className="relative group flex items-center justify-center gap-1.5">
+            <div className="relative flex items-center justify-start gap-1.5" title={titleText}>
               <span 
                 className={`font-semibold ${isLate ? "text-rose-600 dark:text-rose-400 cursor-help" : "text-foreground"}`}
               >
@@ -457,8 +457,8 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
       },
       {
         id: "actions",
-        header: () => <div className="text-right" />,
-        cell: ({ row }) => {
+        header: () => <div className="text-center font-semibold">Actions</div>,
+        cell: ({ row }: any) => {
           const future = isFutureDate(row.original.rawDateStr);
           const canApplyRegularization =
             !future &&
@@ -466,11 +466,11 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
             !matchedUser?.isSingleCheckInAllowed;
 
           if (!canApplyRegularization) {
-            return <div className="w-full text-right" />;
+            return <div className="w-full text-center" />;
           }
 
           return (
-            <div className="w-full text-right" onClick={(e) => e.stopPropagation()}>
+            <div className="w-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
