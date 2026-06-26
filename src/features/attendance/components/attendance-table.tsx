@@ -130,58 +130,51 @@ const isTodayOrFutureDate = (dateStr: string) => {
 
 const getStatusBadge = (
   status: "P" | "A" | "WO" | "AH" | "E" | "L" | "",
-  isFuture: boolean = false
+  isFuture: boolean = false,
+  isCorrected: boolean = false
 ) => {
-  if (isFuture && status === "A") {
-    return (
-      <Badge className="bg-muted text-muted-foreground/60 text-[10px] rounded-md px-2 py-0.5">
-        -
-      </Badge>
-    );
+  if (status === "" || (isFuture && status === "A")) {
+    return null;
   }
   switch (status) {
     case "P":
       return (
         <Badge className="bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 hover:bg-emerald-500/20 text-[10px] font-bold rounded-md px-2 py-0.5">
-          PRESENT
+          PRESENT{isCorrected ? " *" : ""}
         </Badge>
       );
     case "A":
       return (
         <Badge className="bg-rose-500/15 text-rose-500 border border-rose-500/30 hover:bg-rose-500/20 text-[10px] font-bold rounded-md px-2 py-0.5">
-          ABSENT
+          ABSENT{isCorrected ? " *" : ""}
         </Badge>
       );
     case "WO":
       return (
         <Badge className="bg-muted text-muted-foreground border border-border hover:bg-muted text-[10px] font-bold rounded-md px-2 py-0.5">
-          WEEKLY OFF
+          WEEKLY OFF{isCorrected ? " *" : ""}
         </Badge>
       );
     case "AH":
       return (
         <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-500 border border-amber-500/30 hover:bg-amber-500/20 text-[10px] font-bold rounded-md px-2 py-0.5">
-          HALF DAY
+          HALF DAY{isCorrected ? " *" : ""}
         </Badge>
       );
     case "E":
       return (
         <Badge className="bg-yellow-500/15 text-yellow-600 dark:text-yellow-500 border border-yellow-500/30 hover:bg-yellow-500/20 text-[10px] font-bold rounded-md px-2 py-0.5">
-          LATE/EXCUSED
+          LATE/EXCUSED{isCorrected ? " *" : ""}
         </Badge>
       );
     case "L":
       return (
         <Badge className="bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 hover:bg-indigo-500/20 text-[10px] font-bold rounded-md px-2 py-0.5">
-          ON LEAVE
+          ON LEAVE{isCorrected ? " *" : ""}
         </Badge>
       );
     default:
-      return (
-        <Badge className="bg-muted text-muted-foreground/60 text-[10px] rounded-md px-2 py-0.5">
-          -
-        </Badge>
-      );
+      return null;
   }
 };
 
@@ -209,6 +202,8 @@ interface AttendanceLogRow {
   lastOut: string;
   breakHrs: string;
   workingHrs: string;
+  isRegularization?: boolean;
+  isCorrected?: boolean;
 }
 
 export const AttendanceTable: React.FC<AttendanceTableProps> = ({
@@ -276,7 +271,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
       setIsModalOpen(false);
       setCompensatoryDate("");
       setReason("");
-      
+
       const regId = data?.id;
       if (resolvedEmpId === 4 && regId) {
         autoApprove({ id: regId, status: "approved" });
@@ -363,66 +358,90 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
         cell: ({ row }) =>
           getStatusBadge(
             row.original.finalStatus,
-            isTodayOrFutureDate(row.original.rawDateStr)
+            isTodayOrFutureDate(row.original.rawDateStr),
+            row.original.isCorrected
           ),
       },
       {
         accessorKey: "firstIn",
         header: "First In",
-        cell: ({ row }) => (
-          <span className="font-semibold text-foreground">
-            {row.original.firstIn}
-          </span>
-        ),
+        cell: ({ row }) => {
+          if (isFutureDate(row.original.rawDateStr)) return <span className="font-semibold text-foreground"></span>;
+          let val = row.original.firstIn === "-" ? "" : row.original.firstIn;
+          if (isTodayOrFutureDate(row.original.rawDateStr) && val === "00:00") val = "";
+          return (
+            <span className="font-semibold text-foreground">
+              {val || (isTodayOrFutureDate(row.original.rawDateStr) ? "" : "-")}
+            </span>
+          );
+        },
       },
       {
         accessorKey: "lateInTime",
         header: "Late In",
-        cell: ({ row }) => (
-          <span
-            className={`font-semibold ${
-              row.original.lateInTime && row.original.lateInTime !== "00:00"
-                ? "text-rose-600 dark:text-rose-400"
-                : "text-muted-foreground/85"
-            }`}
-          >
-            {row.original.lateInTime || "-"}
-          </span>
-        ),
+        cell: ({ row }) => {
+          if (isFutureDate(row.original.rawDateStr)) return <span className="font-semibold text-foreground"></span>;
+          let val = row.original.lateInTime;
+          if (isTodayOrFutureDate(row.original.rawDateStr) && val === "00:00") val = "";
+          const isLate = val && val !== "00:00" && val !== "-";
+          return (
+            <span
+              className={`font-semibold ${
+                isLate ? "text-rose-600 dark:text-rose-400" : "text-foreground"
+              }`}
+            >
+              {val || (isTodayOrFutureDate(row.original.rawDateStr) ? "" : "-")}
+            </span>
+          );
+        },
       },
       {
         accessorKey: "lastOut",
         header: "Last Out",
-        cell: ({ row }) => (
-          <span className="font-semibold text-foreground">
-            {row.original.lastOut}
-          </span>
-        ),
+        cell: ({ row }) => {
+          if (isFutureDate(row.original.rawDateStr)) return <span className="font-semibold text-foreground"></span>;
+          let val = row.original.lastOut === "-" ? "" : row.original.lastOut;
+          if (isTodayOrFutureDate(row.original.rawDateStr) && val === "00:00") val = "";
+          return (
+            <span className="font-semibold text-foreground">
+              {val || (isTodayOrFutureDate(row.original.rawDateStr) ? "" : "-")}
+            </span>
+          );
+        },
       },
       {
         accessorKey: "breakHrs",
         header: "Break Time",
-        cell: ({ row }) => (
-          <span className="font-medium text-muted-foreground/85">
-            {row.original.breakHrs}
-          </span>
-        ),
+        cell: ({ row }) => {
+          if (isFutureDate(row.original.rawDateStr)) return <span className="font-medium text-muted-foreground/85"></span>;
+          let val = row.original.breakHrs === "-" ? "" : row.original.breakHrs;
+          if (isTodayOrFutureDate(row.original.rawDateStr) && val === "00:00") val = "";
+          return (
+            <span className="font-medium text-muted-foreground/85">
+              {val || (isTodayOrFutureDate(row.original.rawDateStr) ? "" : "-")}
+            </span>
+          );
+        },
       },
       {
         accessorKey: "workingHrs",
         header: "Working Hours",
-        cell: ({ row }) => (
-          <span
-            className={`font-bold transition-colors ${
-              isLessThanEightFifteen(row.original.workingHrs) &&
-              !matchedUser?.isSingleCheckInAllowed
+        cell: ({ row }) => {
+          if (isFutureDate(row.original.rawDateStr)) return <span className="font-bold text-muted-foreground"></span>;
+          let workingHrsVal = row.original.workingHrs === "-" ? "" : row.original.workingHrs;
+          if (isTodayOrFutureDate(row.original.rawDateStr) && workingHrsVal === "00:00") workingHrsVal = "";
+          return (
+            <span
+              className={`font-bold transition-colors ${isLessThanEightFifteen(row.original.workingHrs) &&
+                !matchedUser?.isSingleCheckInAllowed
                 ? "text-rose-600 dark:text-rose-400"
                 : "text-sky-600 dark:text-sky-400"
-            }`}
-          >
-            {row.original.workingHrs}
-          </span>
-        ),
+                }`}
+            >
+              {workingHrsVal ? `${workingHrsVal}${row.original.isCorrected ? " *" : ""}` : (isTodayOrFutureDate(row.original.rawDateStr) ? "" : "-")}
+            </span>
+          );
+        },
       },
       {
         id: "actions",
@@ -497,7 +516,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
           totalCount={detailedLogs.length}
           currentPage={1}
           pageSize={detailedLogs.length || 10}
-          onPaginationChange={() => {}}
+          onPaginationChange={() => { }}
           isPaginationEnabled={false}
           scrollY="480px"
           onRowClick={(row) => {
@@ -544,9 +563,8 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
-                        className={`w-full justify-start text-left font-normal border-border/80 ${
-                          !compensatoryDate && "text-muted-foreground"
-                        }`}
+                        className={`w-full justify-start text-left font-normal border-border/80 ${!compensatoryDate && "text-muted-foreground"
+                          }`}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
                         {compensatoryDate ? (
@@ -847,109 +865,109 @@ export const RegularizationRequestsPanel: React.FC<{
                   requests.map((req: any) => {
                     const cfg = statusConfig[req.status] || statusConfig["pending"];
                     const employeeName = req.employee?.fullName || req.requestedByUser?.fullName || req.user?.name || req.user?.fullName || "-";
-                  return (
-                    <tr key={req.id} className="hover:bg-muted/10 transition-colors">
-                      {canFilterEmployees && (
-                        <td className="px-4 py-2.5 font-bold text-foreground">
-                          {employeeName}
-                        </td>
-                      )}
-                      <td className="px-4 py-2.5 font-semibold text-muted-foreground whitespace-nowrap">
-                        {formatDisplayDate(req.regularizationDate)}
-                      </td>
-                      <td className="px-4 py-2.5 whitespace-nowrap">
-                        {formatDisplayDate(req.compensatoryDate)}
-                      </td>
-                      <td className="px-4 py-2.5 font-medium">
-                        {req.workingTime || "-"}
-                      </td>
-                      <td className="px-4 py-2.5">
-                        <span className="text-muted-foreground">
-                          {req.previousStatus || "-"}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2.5 max-w-[200px]">
-                        <p
-                          className="truncate text-muted-foreground"
-                          title={req.reason}
-                        >
-                          {req.reason || "-"}
-                        </p>
-                      </td>
-                      <td className="px-4 py-2.5">
-                        <div className="flex items-center gap-1.5">
-                          <Badge
-                            className={`flex items-center gap-1 w-fit text-[10px] font-semibold rounded-md px-2 py-0.5 ${cfg.color}`}
-                          >
-                            {cfg.icon}
-                            {cfg.label}
-                          </Badge>
-                          {req.status === "rejected" && req.rejectionReason && (
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <button
-                                  type="button"
-                                  className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-rose-500/30 bg-rose-500/10 text-rose-500 transition-colors hover:bg-rose-500/15"
-                                  aria-label="View rejection reason"
-                                >
-                                  <Info className="h-3.5 w-3.5" />
-                                </button>
-                              </PopoverTrigger>
-                              <PopoverContent
-                                side="top"
-                                align="start"
-                                className="w-[360px] max-w-[calc(100vw-2rem)] border border-rose-200/60 bg-popover p-0 text-left shadow-xl"
-                              >
-                                <div className="border-b border-border/60 px-4 py-3">
-                                  <p className="text-xs font-semibold text-foreground">
-                                    Rejection Reason
-                                  </p>
-                                </div>
-                                <div className="max-h-64 overflow-y-auto px-4 py-3">
-                                  <p className="whitespace-pre-wrap break-words text-xs leading-5 text-muted-foreground">
-                                    {req.rejectionReason}
-                                  </p>
-                                </div>
-                              </PopoverContent>
-                            </Popover>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-2.5 text-right">
-                        {req.status === "pending" && loggedInUserId === 4 ? (
-                          <div className="flex items-center justify-end gap-1.5">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-7 text-[11px] gap-1 border-emerald-500/40 text-emerald-600 hover:bg-emerald-500/10 hover:text-emerald-700"
-                              disabled={isActioning}
-                              onClick={() => handleApprove(req.id)}
-                            >
-                              {isActioning ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <CheckCircle className="h-3 w-3" />
-                              )}
-                              Approve
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-7 text-[11px] gap-1 border-rose-500/40 text-rose-600 hover:bg-rose-500/10 hover:text-rose-700"
-                              disabled={isActioning}
-                              onClick={() => handleOpenReject(req.id)}
-                            >
-                              <XCircle className="h-3 w-3" />
-                              Reject
-                            </Button>
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground mr-4">-</span>
+                    return (
+                      <tr key={req.id} className="hover:bg-muted/10 transition-colors">
+                        {canFilterEmployees && (
+                          <td className="px-4 py-2.5 font-bold text-foreground">
+                            {employeeName}
+                          </td>
                         )}
-                      </td>
-                    </tr>
-                  );
-                }))}
+                        <td className="px-4 py-2.5 font-semibold text-muted-foreground whitespace-nowrap">
+                          {formatDisplayDate(req.regularizationDate)}
+                        </td>
+                        <td className="px-4 py-2.5 whitespace-nowrap">
+                          {formatDisplayDate(req.compensatoryDate)}
+                        </td>
+                        <td className="px-4 py-2.5 font-medium">
+                          {req.workingTime || "-"}
+                        </td>
+                        <td className="px-4 py-2.5">
+                          <span className="text-muted-foreground">
+                            {req.previousStatus || "-"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2.5 max-w-[200px]">
+                          <p
+                            className="truncate text-muted-foreground"
+                            title={req.reason}
+                          >
+                            {req.reason || "-"}
+                          </p>
+                        </td>
+                        <td className="px-4 py-2.5">
+                          <div className="flex items-center gap-1.5">
+                            <Badge
+                              className={`flex items-center gap-1 w-fit text-[10px] font-semibold rounded-md px-2 py-0.5 ${cfg.color}`}
+                            >
+                              {cfg.icon}
+                              {cfg.label}
+                            </Badge>
+                            {req.status === "rejected" && req.rejectionReason && (
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <button
+                                    type="button"
+                                    className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-rose-500/30 bg-rose-500/10 text-rose-500 transition-colors hover:bg-rose-500/15"
+                                    aria-label="View rejection reason"
+                                  >
+                                    <Info className="h-3.5 w-3.5" />
+                                  </button>
+                                </PopoverTrigger>
+                                <PopoverContent
+                                  side="top"
+                                  align="start"
+                                  className="w-[360px] max-w-[calc(100vw-2rem)] border border-rose-200/60 bg-popover p-0 text-left shadow-xl"
+                                >
+                                  <div className="border-b border-border/60 px-4 py-3">
+                                    <p className="text-xs font-semibold text-foreground">
+                                      Rejection Reason
+                                    </p>
+                                  </div>
+                                  <div className="max-h-64 overflow-y-auto px-4 py-3">
+                                    <p className="whitespace-pre-wrap break-words text-xs leading-5 text-muted-foreground">
+                                      {req.rejectionReason}
+                                    </p>
+                                  </div>
+                                </PopoverContent>
+                              </Popover>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-2.5 text-right">
+                          {req.status === "pending" && loggedInUserId === 4 ? (
+                            <div className="flex items-center justify-end gap-1.5">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-[11px] gap-1 border-emerald-500/40 text-emerald-600 hover:bg-emerald-500/10 hover:text-emerald-700"
+                                disabled={isActioning}
+                                onClick={() => handleApprove(req.id)}
+                              >
+                                {isActioning ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <CheckCircle className="h-3 w-3" />
+                                )}
+                                Approve
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-[11px] gap-1 border-rose-500/40 text-rose-600 hover:bg-rose-500/10 hover:text-rose-700"
+                                disabled={isActioning}
+                                onClick={() => handleOpenReject(req.id)}
+                              >
+                                <XCircle className="h-3 w-3" />
+                                Reject
+                              </Button>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground mr-4">-</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  }))}
               </tbody>
             </table>
           </div>

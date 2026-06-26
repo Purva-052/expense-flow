@@ -58,6 +58,12 @@ export const useUpdateLeaveData = () => {
       leaveRefetchQueries.forEach((query) =>
         queryClient.invalidateQueries({ queryKey: [query] })
       );
+      queryClient.invalidateQueries({
+        predicate: (query) =>
+          typeof query.queryKey[0] === "string" &&
+          query.queryKey[0].includes("/leave-management/") &&
+          query.queryKey[0].includes("/details"),
+      });
       setOpen(null);
     },
     onError: (error: any) => {
@@ -73,6 +79,14 @@ export const useUpdateLeaveData = () => {
 
 export const useGetLeaveData = (params?: any, enabled = true) => {
   return useFetchData({ url: GET_API_URL, params, enabled });
+};
+
+export const useGetLeaveDetails = (id?: string | number, enabled = true) => {
+  const cleanUrl = API.leave_management.leave_details.trim();
+  return useFetchData({
+    url: id ? cleanUrl.replace("{id}", String(id)) : "",
+    enabled: enabled && !!id,
+  });
 };
 
 export const useGetLeaveCreditHistory = (params?: any, enabled = true) => {
@@ -101,10 +115,17 @@ export const useGetLeaveDashboard = (
 
 export const useDeleteLeaveData = (id: string) => {
   const { setOpen } = useLeaveStore();
+  const queryClient = useQueryClient();
   return useDeleteData({
     url: `${API.leave_management.delete}/${id}`,
     refetchQueries: leaveRefetchQueries,
     onSuccess: () => {
+      queryClient.invalidateQueries({
+        predicate: (query) =>
+          typeof query.queryKey[0] === "string" &&
+          query.queryKey[0].includes("/leave-management/") &&
+          query.queryKey[0].includes("/details"),
+      });
       setOpen(null);
     },
   });
@@ -112,10 +133,17 @@ export const useDeleteLeaveData = (id: string) => {
 
 export const useApproveRejectLeave = (id: string) => {
   const { setOpen } = useLeaveStore();
+  const queryClient = useQueryClient();
   return usePatchData({
     url: API.leave_management.action.replace("{id}", id),
     refetchQueries: leaveRefetchQueries,
     onSuccess: () => {
+      queryClient.invalidateQueries({
+        predicate: (query) =>
+          typeof query.queryKey[0] === "string" &&
+          query.queryKey[0].includes("/leave-management/") &&
+          query.queryKey[0].includes("/details"),
+      });
       setOpen(null);
     },
   });

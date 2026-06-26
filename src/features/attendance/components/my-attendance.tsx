@@ -537,6 +537,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
     presentCount,
     absentCount,
     leaveCount,
+    lateCount,
     woCount,
     totalWorkHours,
     avgWorkHours,
@@ -544,7 +545,8 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
     let p = 0,
       a = 0,
       l = 0,
-      wo = 0;
+      wo = 0,
+      late = 0;
 
     if (monthlyData) {
       p = monthlyData.workingDays || 0;
@@ -565,6 +567,9 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           ) {
             wo++;
           }
+          if (status.includes("late") || (item.lateInMinutes && Number(item.lateInMinutes) > 0)) {
+            late++;
+          }
         });
       }
 
@@ -583,6 +588,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
         presentCount: p,
         absentCount: a,
         leaveCount: l,
+        lateCount: late,
         woCount: wo,
         totalWorkHours: parseTimeToMins(monthlyData.totalWorkingHours),
         avgWorkHours: parseTimeToMins(monthlyData.avgWorkingHours),
@@ -593,6 +599,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
       presentCount: 0,
       absentCount: 0,
       leaveCount: 0,
+      lateCount: 0,
       woCount: 0,
       totalWorkHours: 0,
       avgWorkHours: 0,
@@ -866,6 +873,8 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           breakHrs,
           workingHrs,
           overtimeHrs: "-",
+          isRegularization: log.isRegularization,
+          isCorrected: !!log.isCorrected,
         };
       });
     }
@@ -1084,6 +1093,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
                     absentPct={absentPct}
                     presentCount={presentCount}
                     absentCount={absentCount}
+                    lateCount={lateCount}
                     woCount={woCount}
                     leaveCount={leaveCount}
                     resolvedProfilePic={resolvedProfilePic}
@@ -1173,7 +1183,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
       {isLoadingLogs ? (
         <Card className="w-full overflow-hidden border-border shadow-sm">
           <div className="flex divide-x divide-border">
-            {[...Array(4)].map((_, i) => (
+            {[...Array(5)].map((_, i) => (
               <div
                 key={i}
                 className="flex-1 p-4 min-w-[150px] flex items-center gap-3"
@@ -1194,6 +1204,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           absentPct={absentPct}
           presentCount={presentCount}
           absentCount={absentCount}
+          lateCount={lateCount}
           woCount={woCount}
           leaveCount={leaveCount}
           resolvedProfilePic={resolvedProfilePic}

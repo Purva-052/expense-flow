@@ -64,6 +64,7 @@ interface EmployeeAttendanceRow {
   leaves: number;
   isActive: boolean;
   dailyStatus: Record<string, "P" | "A" | "WO" | "AH" | "E" | "L" | "">;
+  dailyIsCorrected?: Record<string, boolean>;
   phone?: string;
   email?: string;
   profilePicUrl?: string | null;
@@ -306,6 +307,7 @@ export const EmployeeAttendance: React.FC = () => {
       let present = 0;
       let absent = 0;
       let leaves = 0;
+      const dailyIsCorrected: Record<string, boolean> = {};
 
       (emp.attendance || []).forEach((day: any) => {
         let code = mapFinalStatusToCode(day.finalStatus);
@@ -318,6 +320,7 @@ export const EmployeeAttendance: React.FC = () => {
         }
 
         dailyStatus[day.date] = code;
+        dailyIsCorrected[day.date] = !!day.isCorrected;
       });
 
       // Apply sandwich leave logic on intermediate weekly off (WO) days
@@ -369,6 +372,7 @@ export const EmployeeAttendance: React.FC = () => {
         leaves,
         isActive: true,
         dailyStatus,
+        dailyIsCorrected,
         profilePicUrl: emp.profilePicUrl,
       };
     });
@@ -745,6 +749,7 @@ export const EmployeeAttendance: React.FC = () => {
                         {/* Individual Day statuses */}
                         {summaryDateColumns.map(({ dateStr }) => {
                           const status = emp.dailyStatus[dateStr] || "";
+                          const isCorrected = emp.dailyIsCorrected?.[dateStr] ?? false;
                           return (
                             <td
                               key={dateStr}
@@ -756,7 +761,7 @@ export const EmployeeAttendance: React.FC = () => {
                                   className={`${getCellClassName(status, dateStr)} cursor-pointer hover:scale-110 hover:shadow-md transition-transform`}
                                   onClick={() => handleDayClick(emp, dateStr)}
                                 >
-                                  {status}
+                                  {status ? `${status}${isCorrected ? "*" : ""}` : ""}
                                 </span>
                               </div>
                             </td>
