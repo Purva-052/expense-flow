@@ -683,6 +683,23 @@ export function LeaveActionForm({
     return getLeaveTypeAllocatedDays(balanceArray, "4");
   }, [isDetailsMode, detailData, balanceArray]);
 
+  // In edit mode the fetched balances are AFTER this leave was deducted.
+  // Add back this leave's own allocation so live recompute (on leave-type
+  // change) uses the balance as it was before this request.
+  const allocCasualBalance = useMemo(() => {
+    if (isEdit && detailData?.allocationBreakdown) {
+      return casualBalance + toNumber(detailData.allocationBreakdown.casualLeaveDays);
+    }
+    return casualBalance;
+  }, [isEdit, detailData, casualBalance]);
+
+  const allocPaidBalance = useMemo(() => {
+    if (isEdit && detailData?.allocationBreakdown) {
+      return paidBalance + toNumber(detailData.allocationBreakdown.paidLeaveDays);
+    }
+    return paidBalance;
+  }, [isEdit, detailData, paidBalance]);
+
   const leaveAllocation = useMemo(() => {
     const requestedDays = calculateRequestedDays(
       watchLeaveDays,
@@ -690,16 +707,16 @@ export function LeaveActionForm({
     );
     return buildLeaveAllocation({
       requestedDays,
-      casualBalance,
-      paidBalance,
+      casualBalance: allocCasualBalance,
+      paidBalance: allocPaidBalance,
       isExamLeave: watchIsExamLeave,
       selectedLeaveTypeId: watchLeaveTypeId,
     });
   }, [
     watchLeaveDays,
     holidayDatesSet,
-    casualBalance,
-    paidBalance,
+    allocCasualBalance,
+    allocPaidBalance,
     watchIsExamLeave,
     watchLeaveTypeId,
   ]);
