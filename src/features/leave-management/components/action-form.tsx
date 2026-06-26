@@ -400,22 +400,7 @@ export function LeaveActionForm({
     }
   }, [watchIsExamLeave, form]);
 
-  // Sync isExamLeave switch with leaveTypeId field
-  useEffect(() => {
-    if (watchIsExamLeave && watchLeaveTypeId !== "4") {
-      form.setValue("leaveTypeId", "4");
-    } else if (!watchIsExamLeave && watchLeaveTypeId === "4") {
-      form.setValue("leaveTypeId", CASUAL_LEAVE_TYPE_ID);
-    }
-  }, [watchIsExamLeave, watchLeaveTypeId, form]);
 
-  useEffect(() => {
-    if (watchLeaveTypeId === "4" && !watchIsExamLeave) {
-      form.setValue("isExamLeave", true);
-    } else if (watchLeaveTypeId !== "4" && watchIsExamLeave) {
-      form.setValue("isExamLeave", false);
-    }
-  }, [watchLeaveTypeId, watchIsExamLeave, form]);
 
   const employeeOptions = useMemo(() => {
     const list = employeesList?.data || [];
@@ -466,18 +451,13 @@ export function LeaveActionForm({
     const fromList = employeesList?.data?.find(
       (u: any) => u.id === balanceUserId
     );
-    if (fromList?.technology || fromList?.technologyId) {
-      return fromList;
-    }
-    if (isEdit || isViewOnly) {
-      if (
-        currentRow?.employee?.technology ||
-        currentRow?.employee?.technologyId
-      ) {
-        return currentRow.employee;
-      }
-    }
-    return activeUserDetails?.data;
+    const detailedUser = activeUserDetails?.data;
+    const fallbackUser = fromList || (isEdit || isViewOnly ? currentRow?.employee : null);
+
+    return {
+      ...fallbackUser,
+      ...detailedUser,
+    };
   }, [
     balanceUserId,
     employeesList,
@@ -498,6 +478,8 @@ export function LeaveActionForm({
       selectedEmployee?.isExamLeaveEligible
     );
   }, [user, selectedEmployee]);
+
+
 
   // Auto-regenerate or merge leaveDays table whenever date range changes
   useEffect(() => {
@@ -930,12 +912,10 @@ export function LeaveActionForm({
     );
     const leaveTypeIds = allocationItems.map((item) => item.leaveTypeId);
 
-    if (isAdmin) {
-      if (isExamLeave) {
-        formData.append("leaveTypeId", "4");
-      } else {
-        formData.append("leaveTypeId", values.leaveTypeId);
-      }
+    if (isExamLeave) {
+      formData.append("leaveTypeId", JSON.stringify(["4"]));
+    } else if (isAdmin) {
+      formData.append("leaveTypeId", values.leaveTypeId || "");
     } else {
       formData.append("leaveTypeId", JSON.stringify(leaveTypeIds));
     }
@@ -1326,7 +1306,7 @@ export function LeaveActionForm({
             />
           )}
 
-          {isAdmin && (
+          {isAdmin && !watchIsExamLeave && (
             <FormField
               control={form.control}
               name="leaveTypeId"
@@ -1336,7 +1316,10 @@ export function LeaveActionForm({
                     Leave Type <span className="text-red-500">*</span>
                   </FormLabel>
                   <Select
-                    onValueChange={field.onChange}
+                    onValueChange={(val) => {
+                      field.onChange(val);
+                      form.setValue("leaveTypeId", val, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+                    }}
                     value={field.value}
                     disabled={isViewOnly}
                   >
@@ -1390,7 +1373,7 @@ export function LeaveActionForm({
         />
       </div>
 
-      {isExamLeaveEligible && (
+      {!isEdit && !isViewOnly && isExamLeaveEligible && (
         <FormField
           control={form.control}
           name="isExamLeave"
@@ -1409,7 +1392,18 @@ export function LeaveActionForm({
                 <FormControl>
                   <Switch
                     checked={!!field.value}
-                    onCheckedChange={field.onChange}
+                    onCheckedChange={(val) => {
+                      field.onChange(val);
+                      form.setValue("isExamLeave", val, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+                      if (!isAdmin) {
+                        // For non-admin users, sync leaveTypeId with exam leave state
+                        if (val) {
+                          form.setValue("leaveTypeId", "4", { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+                        } else {
+                          form.setValue("leaveTypeId", CASUAL_LEAVE_TYPE_ID, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+                        }
+                      }
+                    }}
                     disabled={isViewOnly}
                   />
                 </FormControl>
