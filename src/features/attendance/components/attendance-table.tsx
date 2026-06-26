@@ -129,58 +129,51 @@ const isTodayOrFutureDate = (dateStr: string) => {
 
 const getStatusBadge = (
   status: "P" | "A" | "WO" | "AH" | "E" | "L" | "",
-  isFuture: boolean = false
+  isFuture: boolean = false,
+  isCorrected: boolean = false
 ) => {
-  if (isFuture && status === "A") {
-    return (
-      <Badge className="bg-muted text-muted-foreground/60 text-[10px] rounded-md px-2 py-0.5">
-        -
-      </Badge>
-    );
+  if (status === "" || (isFuture && status === "A")) {
+    return null;
   }
   switch (status) {
     case "P":
       return (
         <Badge className="bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 hover:bg-emerald-500/20 text-[10px] font-bold rounded-md px-2 py-0.5">
-          PRESENT
+          PRESENT{isCorrected ? " *" : ""}
         </Badge>
       );
     case "A":
       return (
         <Badge className="bg-rose-500/15 text-rose-500 border border-rose-500/30 hover:bg-rose-500/20 text-[10px] font-bold rounded-md px-2 py-0.5">
-          ABSENT
+          ABSENT{isCorrected ? " *" : ""}
         </Badge>
       );
     case "WO":
       return (
         <Badge className="bg-muted text-muted-foreground border border-border hover:bg-muted text-[10px] font-bold rounded-md px-2 py-0.5">
-          WEEKLY OFF
+          WEEKLY OFF{isCorrected ? " *" : ""}
         </Badge>
       );
     case "AH":
       return (
         <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-500 border border-amber-500/30 hover:bg-amber-500/20 text-[10px] font-bold rounded-md px-2 py-0.5">
-          HALF DAY
+          HALF DAY{isCorrected ? " *" : ""}
         </Badge>
       );
     case "E":
       return (
         <Badge className="bg-yellow-500/15 text-yellow-600 dark:text-yellow-500 border border-yellow-500/30 hover:bg-yellow-500/20 text-[10px] font-bold rounded-md px-2 py-0.5">
-          LATE/EXCUSED
+          LATE/EXCUSED{isCorrected ? " *" : ""}
         </Badge>
       );
     case "L":
       return (
         <Badge className="bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 hover:bg-indigo-500/20 text-[10px] font-bold rounded-md px-2 py-0.5">
-          ON LEAVE
+          ON LEAVE{isCorrected ? " *" : ""}
         </Badge>
       );
     default:
-      return (
-        <Badge className="bg-muted text-muted-foreground/60 text-[10px] rounded-md px-2 py-0.5">
-          -
-        </Badge>
-      );
+      return null;
   }
 };
 
@@ -208,6 +201,8 @@ interface AttendanceLogRow {
   lastOut: string;
   breakHrs: string;
   workingHrs: string;
+  isRegularization?: boolean;
+  isCorrected?: boolean;
 }
 
 export const AttendanceTable: React.FC<AttendanceTableProps> = ({
@@ -362,60 +357,76 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
         cell: ({ row }) =>
           getStatusBadge(
             row.original.finalStatus,
-            isTodayOrFutureDate(row.original.rawDateStr)
+            isTodayOrFutureDate(row.original.rawDateStr),
+            row.original.isCorrected
           ),
       },
       {
         accessorKey: "shift",
         header: "Shift",
-        cell: ({ row }) => (
-          <span className="font-medium text-muted-foreground/85">
-            {row.original.shift || "-"}
-          </span>
-        ),
+        cell: ({ row }) => {
+          const val = row.original.shift === "-" ? "" : row.original.shift;
+          return (
+            <span className="font-medium text-muted-foreground/85">
+              {val || ""}
+            </span>
+          );
+        },
       },
       {
         accessorKey: "firstIn",
         header: "First In",
-        cell: ({ row }) => (
-          <span className="font-semibold text-foreground">
-            {row.original.firstIn}
-          </span>
-        ),
+        cell: ({ row }) => {
+          const val = row.original.firstIn === "-" ? "" : row.original.firstIn;
+          return (
+            <span className="font-semibold text-foreground">
+              {val || ""}
+            </span>
+          );
+        },
       },
       {
         accessorKey: "lastOut",
         header: "Last Out",
-        cell: ({ row }) => (
-          <span className="font-semibold text-foreground">
-            {row.original.lastOut}
-          </span>
-        ),
+        cell: ({ row }) => {
+          const val = row.original.lastOut === "-" ? "" : row.original.lastOut;
+          return (
+            <span className="font-semibold text-foreground">
+              {val || ""}
+            </span>
+          );
+        },
       },
       {
         accessorKey: "breakHrs",
         header: "Break Time",
-        cell: ({ row }) => (
-          <span className="font-medium text-muted-foreground/85">
-            {row.original.breakHrs}
-          </span>
-        ),
+        cell: ({ row }) => {
+          const val = row.original.breakHrs === "-" ? "" : row.original.breakHrs;
+          return (
+            <span className="font-medium text-muted-foreground/85">
+              {val || ""}
+            </span>
+          );
+        },
       },
       {
         accessorKey: "workingHrs",
         header: "Working Hours",
-        cell: ({ row }) => (
-          <span
-            className={`font-bold transition-colors ${
-              isLessThanEightFifteen(row.original.workingHrs) &&
-              !matchedUser?.isSingleCheckInAllowed
-                ? "text-rose-600 dark:text-rose-400"
-                : "text-sky-600 dark:text-sky-400"
-            }`}
-          >
-            {row.original.workingHrs}
-          </span>
-        ),
+        cell: ({ row }) => {
+          const workingHrsVal = row.original.workingHrs === "-" ? "" : row.original.workingHrs;
+          return (
+            <span
+              className={`font-bold transition-colors ${
+                isLessThanEightFifteen(row.original.workingHrs) &&
+                !matchedUser?.isSingleCheckInAllowed
+                  ? "text-rose-600 dark:text-rose-400"
+                  : "text-sky-600 dark:text-sky-400"
+              }`}
+            >
+              {workingHrsVal ? `${workingHrsVal}${row.original.isCorrected ? " *" : ""}` : ""}
+            </span>
+          );
+        },
       },
       {
         id: "actions",
