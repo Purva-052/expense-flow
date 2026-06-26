@@ -89,14 +89,7 @@ export const EmployeeStats: React.FC<EmployeeStatsProps> = ({
         value: String(woCount + leaveCount),
         valueClass: "text-blue-600 dark:text-blue-400",
       },
-      {
-        icon: Clock,
-        iconBg: "bg-orange-500/10",
-        iconColor: "text-orange-600 dark:text-orange-400",
-        label: "Late In Days",
-        value: String(lateInDays),
-        valueClass: "text-orange-600 dark:text-orange-400",
-      },
+
       {
         icon: Clock,
         iconBg: "bg-amber-500/10",
