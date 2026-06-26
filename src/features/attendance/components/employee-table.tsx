@@ -32,7 +32,12 @@ import { useGetUsersList } from "../../users/services";
 // import { useGetLeaveAllocations } from "../../leave-management/services";
 import { toast } from "sonner";
 import { Calendar } from "@/components/ui/calendar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { roles } from "@/utils/constant";
 import { useQueryClient } from "@tanstack/react-query";
 import API from "@/config/api/api";
@@ -126,7 +131,11 @@ const isTodayOrFutureDate = (dateStr: string) => {
 //   return result;
 // };
 
-const getStatusBadge = (status: "P" | "A" | "WO" | "AH" | "E" | "L" | "", isFuture: boolean = false, isCorrected: boolean = false) => {
+const getStatusBadge = (
+  status: "P" | "A" | "WO" | "AH" | "E" | "L" | "",
+  isFuture: boolean = false,
+  isCorrected: boolean = false
+) => {
   if (status === "" || (isFuture && status === "A")) {
     return null;
   }
@@ -172,7 +181,9 @@ const getStatusBadge = (status: "P" | "A" | "WO" | "AH" | "E" | "L" | "", isFutu
   }
 };
 
-const isLessThanEightFifteen = (workingHrs: string | null | undefined): boolean => {
+const isLessThanEightFifteen = (
+  workingHrs: string | null | undefined
+): boolean => {
   if (!workingHrs || workingHrs === "-") return false;
   const cleanStr = workingHrs.replace(/HRS/gi, "").trim();
   const parts = cleanStr.split(":");
@@ -199,7 +210,8 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
   ).toLowerCase();
   const isAdmin = roleName === roles.ADMIN;
 
-  const isRegularizingForAnotherEmployee = isAdmin && (Number(resolvedEmpId) !== Number(user?.user?.id));
+  const isRegularizingForAnotherEmployee =
+    isAdmin && Number(resolvedEmpId) !== Number(user?.user?.id);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRegDate, _setSelectedRegDate] = useState("");
@@ -220,7 +232,9 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
     Number(u.id) === Number(resolvedEmpId)
   );
 
-  const employeeCode = matchedUser?.mewurkEmployeeCode || (resolvedEmpId ? String(resolvedEmpId) : "");
+  const employeeCode =
+    matchedUser?.mewurkEmployeeCode ||
+    (resolvedEmpId ? String(resolvedEmpId) : "");
 
   // Fetch available compensatory dates
   const { data: highWorkingHoursData, isPending: isLoadingHighWorkingHours } =
@@ -228,8 +242,12 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
 
   const queryClient = useQueryClient();
   const { mutate: autoApprove } = useRegularizationAction(() => {
-    queryClient.invalidateQueries({ queryKey: [API.attendance.regularization_list] });
-    queryClient.invalidateQueries({ queryKey: [API.attendance.compensatory_date] });
+    queryClient.invalidateQueries({
+      queryKey: [API.attendance.regularization_list],
+    });
+    queryClient.invalidateQueries({
+      queryKey: [API.attendance.compensatory_date],
+    });
   });
 
   const { mutate: createRegularization, isPending: isSubmitting } =
@@ -343,7 +361,7 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
           if (isFutureDate(row.original.rawDateStr)) return <span className="font-semibold text-foreground"></span>;
           let val = row.original.firstIn === "-" ? "" : row.original.firstIn;
           if (isTodayOrFutureDate(row.original.rawDateStr) && val === "00:00") val = "";
-          
+
           let lateVal = row.original.lateInTime;
           if (lateVal === "00:00") lateVal = "";
           const isLate = lateVal && lateVal !== "-";
@@ -351,7 +369,7 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
 
           return (
             <div className="relative flex items-center justify-start gap-1.5" title={titleText}>
-              <span 
+              <span
                 className={`font-semibold ${isLate ? "text-rose-600 dark:text-rose-400 cursor-help" : "text-foreground"}`}
               >
                 {val || (isTodayOrFutureDate(row.original.rawDateStr) ? "" : "-")}
@@ -545,7 +563,10 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
                     </span>
                   </div>
                 ) : (
-                  <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                  <Popover
+                    open={isCalendarOpen}
+                    onOpenChange={setIsCalendarOpen}
+                  >
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
@@ -578,8 +599,16 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
                         }}
                         disabled={(date) => {
                           const dateStr = formatToYYYYMMDD(date);
-                          const isDisabled = !highWorkingHoursDates.includes(dateStr);
-                          console.log("EmployeeTable Calendar Date:", dateStr, "isDisabled:", isDisabled, "highWorkingHoursDates:", highWorkingHoursDates);
+                          const isDisabled =
+                            !highWorkingHoursDates.includes(dateStr);
+                          console.log(
+                            "EmployeeTable Calendar Date:",
+                            dateStr,
+                            "isDisabled:",
+                            isDisabled,
+                            "highWorkingHoursDates:",
+                            highWorkingHoursDates
+                          );
                           return isDisabled;
                         }}
                         month={currentCalendarMonth}
