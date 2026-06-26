@@ -372,7 +372,7 @@ export function LeaveActionForm({
       reason: "",
       description: "",
       isExamLeave: false,
-      leaveTypeId: CASUAL_LEAVE_TYPE_ID,
+      leaveTypeId: undefined,
       leaveDays: [],
       attachments: null,
       notifyUserIds: [],
@@ -399,8 +399,6 @@ export function LeaveActionForm({
       form.clearErrors("isExamLeave");
     }
   }, [watchIsExamLeave, form]);
-
-
 
   const employeeOptions = useMemo(() => {
     const list = employeesList?.data || [];
@@ -452,7 +450,8 @@ export function LeaveActionForm({
       (u: any) => u.id === balanceUserId
     );
     const detailedUser = activeUserDetails?.data;
-    const fallbackUser = fromList || (isEdit || isViewOnly ? currentRow?.employee : null);
+    const fallbackUser =
+      fromList || (isEdit || isViewOnly ? currentRow?.employee : null);
 
     return {
       ...fallbackUser,
@@ -478,8 +477,6 @@ export function LeaveActionForm({
       selectedEmployee?.isExamLeaveEligible
     );
   }, [user, selectedEmployee]);
-
-
 
   // Auto-regenerate or merge leaveDays table whenever date range changes
   useEffect(() => {
@@ -696,7 +693,7 @@ export function LeaveActionForm({
       casualBalance,
       paidBalance,
       isExamLeave: watchIsExamLeave,
-      selectedLeaveTypeId: isAdmin ? watchLeaveTypeId : undefined,
+      selectedLeaveTypeId: watchLeaveTypeId,
     });
   }, [
     watchLeaveDays,
@@ -704,7 +701,6 @@ export function LeaveActionForm({
     casualBalance,
     paidBalance,
     watchIsExamLeave,
-    isAdmin,
     watchLeaveTypeId,
   ]);
 
@@ -717,7 +713,7 @@ export function LeaveActionForm({
   }, [isDetailsMode, detailData, leaveAllocation.totalAvailableDays]);
 
   const allocationItems = useMemo(() => {
-    if (isDetailsMode && detailData?.allocationBreakdown) {
+    if (isViewOnly && detailData?.allocationBreakdown) {
       const isExam = !!detailData.isExamLeave;
       return isExam
         ? [
@@ -775,14 +771,14 @@ export function LeaveActionForm({
             className: "text-rose-700 dark:text-rose-400 font-semibold",
           },
         ];
-  }, [watchIsExamLeave, leaveAllocation, isDetailsMode, detailData]);
+  }, [watchIsExamLeave, leaveAllocation, isViewOnly, detailData]);
 
   const hasDatesSelected = !!(watchFromDate && watchToDate);
 
   const emptyDefaults = {
     employeeId: undefined as number | undefined,
     isExamLeave: false,
-    leaveTypeId: CASUAL_LEAVE_TYPE_ID,
+    leaveTypeId: undefined as string | undefined,
     fromDate: undefined as Date | undefined,
     toDate: undefined as Date | undefined,
     reason: "",
@@ -910,14 +906,11 @@ export function LeaveActionForm({
     const allocationItems = leaveAllocation.items.filter(
       (item) => item.days > 0
     );
-    const leaveTypeIds = allocationItems.map((item) => item.leaveTypeId);
 
     if (isExamLeave) {
       formData.append("leaveTypeId", JSON.stringify(["4"]));
-    } else if (isAdmin) {
-      formData.append("leaveTypeId", values.leaveTypeId || "");
     } else {
-      formData.append("leaveTypeId", JSON.stringify(leaveTypeIds));
+      formData.append("leaveTypeId", values.leaveTypeId || "");
     }
     formData.append("fromDate", format(values.fromDate, "yyyy-MM-dd"));
     formData.append("toDate", format(values.toDate, "yyyy-MM-dd"));
@@ -1291,7 +1284,7 @@ export function LeaveActionForm({
   const renderMainFormFields = () => (
     <>
       {/* Employee & Leave Type */}
-      {(showEmployeeDropdown || isAdmin) && (
+      {(showEmployeeDropdown || !watchIsExamLeave) && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {showEmployeeDropdown && (
             <CustomDropDownSearchable
@@ -1306,7 +1299,7 @@ export function LeaveActionForm({
             />
           )}
 
-          {isAdmin && !watchIsExamLeave && (
+          {!watchIsExamLeave && (
             <FormField
               control={form.control}
               name="leaveTypeId"
@@ -1318,7 +1311,11 @@ export function LeaveActionForm({
                   <Select
                     onValueChange={(val) => {
                       field.onChange(val);
-                      form.setValue("leaveTypeId", val, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+                      form.setValue("leaveTypeId", val, {
+                        shouldValidate: true,
+                        shouldDirty: true,
+                        shouldTouch: true,
+                      });
                     }}
                     value={field.value}
                     disabled={isViewOnly}
@@ -1394,13 +1391,25 @@ export function LeaveActionForm({
                     checked={!!field.value}
                     onCheckedChange={(val) => {
                       field.onChange(val);
-                      form.setValue("isExamLeave", val, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+                      form.setValue("isExamLeave", val, {
+                        shouldValidate: true,
+                        shouldDirty: true,
+                        shouldTouch: true,
+                      });
                       if (!isAdmin) {
                         // For non-admin users, sync leaveTypeId with exam leave state
                         if (val) {
-                          form.setValue("leaveTypeId", "4", { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+                          form.setValue("leaveTypeId", "4", {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                            shouldTouch: true,
+                          });
                         } else {
-                          form.setValue("leaveTypeId", CASUAL_LEAVE_TYPE_ID, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+                          form.setValue("leaveTypeId", undefined, {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                            shouldTouch: true,
+                          });
                         }
                       }
                     }}

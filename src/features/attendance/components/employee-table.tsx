@@ -31,7 +31,12 @@ import { useGetUsersList } from "../../users/services";
 // import { useGetLeaveAllocations } from "../../leave-management/services";
 import { toast } from "sonner";
 import { Calendar } from "@/components/ui/calendar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { roles } from "@/utils/constant";
 import { useQueryClient } from "@tanstack/react-query";
 import API from "@/config/api/api";
@@ -75,11 +80,11 @@ const isFutureDate = (dateStr: string) => {
   const year = parseInt(parts[0], 10);
   const month = parseInt(parts[1], 10) - 1;
   const day = parseInt(parts[2], 10);
-  
+
   const target = new Date(year, month, day);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   return target.getTime() > today.getTime();
 };
 
@@ -90,11 +95,11 @@ const isTodayOrFutureDate = (dateStr: string) => {
   const year = parseInt(parts[0], 10);
   const month = parseInt(parts[1], 10) - 1;
   const day = parseInt(parts[2], 10);
-  
+
   const target = new Date(year, month, day);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   return target.getTime() >= today.getTime();
 };
 
@@ -124,7 +129,11 @@ const isTodayOrFutureDate = (dateStr: string) => {
 //   return result;
 // };
 
-const getStatusBadge = (status: "P" | "A" | "WO" | "AH" | "E" | "L" | "", isFuture: boolean = false, isCorrected: boolean = false) => {
+const getStatusBadge = (
+  status: "P" | "A" | "WO" | "AH" | "E" | "L" | "",
+  isFuture: boolean = false,
+  isCorrected: boolean = false
+) => {
   if (status === "" || (isFuture && status === "A")) {
     return null;
   }
@@ -170,7 +179,9 @@ const getStatusBadge = (status: "P" | "A" | "WO" | "AH" | "E" | "L" | "", isFutu
   }
 };
 
-const isLessThanEightFifteen = (workingHrs: string | null | undefined): boolean => {
+const isLessThanEightFifteen = (
+  workingHrs: string | null | undefined
+): boolean => {
   if (!workingHrs || workingHrs === "-") return false;
   const cleanStr = workingHrs.replace(/HRS/gi, "").trim();
   const parts = cleanStr.split(":");
@@ -197,7 +208,8 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
   ).toLowerCase();
   const isAdmin = roleName === roles.ADMIN;
 
-  const isRegularizingForAnotherEmployee = isAdmin && (Number(resolvedEmpId) !== Number(user?.user?.id));
+  const isRegularizingForAnotherEmployee =
+    isAdmin && Number(resolvedEmpId) !== Number(user?.user?.id);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRegDate, _setSelectedRegDate] = useState("");
@@ -219,11 +231,14 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
     return (
       (empId && Number(empId) === Number(resolvedEmpId)) ||
       Number(u.id) === Number(resolvedEmpId) ||
-      (u.mewurkEmployeeCode && String(u.mewurkEmployeeCode).trim() === String(resolvedEmpId).trim())
+      (u.mewurkEmployeeCode &&
+        String(u.mewurkEmployeeCode).trim() === String(resolvedEmpId).trim())
     );
   });
 
-  const employeeCode = matchedUser?.mewurkEmployeeCode || (resolvedEmpId ? String(resolvedEmpId) : "");
+  const employeeCode =
+    matchedUser?.mewurkEmployeeCode ||
+    (resolvedEmpId ? String(resolvedEmpId) : "");
 
   // Fetch available compensatory dates
   const { data: highWorkingHoursData, isPending: isLoadingHighWorkingHours } =
@@ -231,8 +246,12 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
 
   const queryClient = useQueryClient();
   const { mutate: autoApprove } = useRegularizationAction(() => {
-    queryClient.invalidateQueries({ queryKey: [API.attendance.regularization_list] });
-    queryClient.invalidateQueries({ queryKey: [API.attendance.compensatory_date] });
+    queryClient.invalidateQueries({
+      queryKey: [API.attendance.regularization_list],
+    });
+    queryClient.invalidateQueries({
+      queryKey: [API.attendance.compensatory_date],
+    });
   });
 
   const { mutate: createRegularization, isPending: isSubmitting } =
@@ -240,7 +259,7 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
       setIsModalOpen(false);
       setCompensatoryDate("");
       setReason("");
-      
+
       const regId = data?.id;
       if (resolvedEmpId === 4 && regId) {
         autoApprove({ id: regId, status: "approved" });
@@ -356,9 +375,7 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
         cell: ({ row }) => {
           const val = row.original.firstIn === "-" ? "" : row.original.firstIn;
           return (
-            <span className="font-semibold text-foreground">
-              {val || ""}
-            </span>
+            <span className="font-semibold text-foreground">{val || ""}</span>
           );
         },
       },
@@ -368,9 +385,7 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
         cell: ({ row }) => {
           const val = row.original.lastOut === "-" ? "" : row.original.lastOut;
           return (
-            <span className="font-semibold text-foreground">
-              {val || ""}
-            </span>
+            <span className="font-semibold text-foreground">{val || ""}</span>
           );
         },
       },
@@ -378,7 +393,8 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
         accessorKey: "breakHrs",
         header: "Break Time",
         cell: ({ row }) => {
-          const val = row.original.breakHrs === "-" ? "" : row.original.breakHrs;
+          const val =
+            row.original.breakHrs === "-" ? "" : row.original.breakHrs;
           return (
             <span className="font-medium text-muted-foreground/85">
               {val || ""}
@@ -390,7 +406,8 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
         accessorKey: "workingHrs",
         header: "Working Hours",
         cell: ({ row }) => {
-          const workingHrsVal = row.original.workingHrs === "-" ? "" : row.original.workingHrs;
+          const workingHrsVal =
+            row.original.workingHrs === "-" ? "" : row.original.workingHrs;
           return (
             <span
               className={`font-bold transition-colors ${
@@ -400,7 +417,9 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
                   : "text-sky-600 dark:text-sky-400"
               }`}
             >
-              {workingHrsVal ? `${workingHrsVal}${row.original.isCorrected ? " *" : ""}` : ""}
+              {workingHrsVal
+                ? `${workingHrsVal}${row.original.isCorrected ? " *" : ""}`
+                : ""}
             </span>
           );
         },
@@ -525,7 +544,10 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
                     </span>
                   </div>
                 ) : (
-                  <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                  <Popover
+                    open={isCalendarOpen}
+                    onOpenChange={setIsCalendarOpen}
+                  >
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
@@ -559,8 +581,16 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
                         }}
                         disabled={(date) => {
                           const dateStr = formatToYYYYMMDD(date);
-                          const isDisabled = !highWorkingHoursDates.includes(dateStr);
-                          console.log("EmployeeTable Calendar Date:", dateStr, "isDisabled:", isDisabled, "highWorkingHoursDates:", highWorkingHoursDates);
+                          const isDisabled =
+                            !highWorkingHoursDates.includes(dateStr);
+                          console.log(
+                            "EmployeeTable Calendar Date:",
+                            dateStr,
+                            "isDisabled:",
+                            isDisabled,
+                            "highWorkingHoursDates:",
+                            highWorkingHoursDates
+                          );
                           return isDisabled;
                         }}
                         month={currentCalendarMonth}

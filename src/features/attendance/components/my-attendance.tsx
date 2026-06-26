@@ -35,7 +35,9 @@ const applySandwichLeaveToAttendanceArray = (attendance: any[]): any[] => {
 
   const isWO = (statusStr: string) => {
     const s = (statusStr || "").toLowerCase().trim();
-    return s === "holiday" || s === "weekend" || s === "weekly off" || s === "wo";
+    return (
+      s === "holiday" || s === "weekend" || s === "weekly off" || s === "wo"
+    );
   };
 
   const isLeave = (statusStr: string) => {
@@ -45,11 +47,13 @@ const applySandwichLeaveToAttendanceArray = (attendance: any[]): any[] => {
 
   let i = 0;
   while (i < n) {
-    const currentStatus = sorted[i].finalStatus || sorted[i].originalStatus || "";
+    const currentStatus =
+      sorted[i].finalStatus || sorted[i].originalStatus || "";
     if (isWO(currentStatus)) {
       let j = i;
       while (j < n) {
-        const jsStatus = sorted[j].finalStatus || sorted[j].originalStatus || "";
+        const jsStatus =
+          sorted[j].finalStatus || sorted[j].originalStatus || "";
         if (!isWO(jsStatus)) break;
         j++;
       }
@@ -57,8 +61,12 @@ const applySandwichLeaveToAttendanceArray = (attendance: any[]): any[] => {
       const afterIdx = j;
 
       if (beforeIdx >= 0 && afterIdx < n) {
-        const beforeStatus = sorted[beforeIdx].finalStatus || sorted[beforeIdx].originalStatus || "";
-        const afterStatus = sorted[afterIdx].finalStatus || sorted[afterIdx].originalStatus || "";
+        const beforeStatus =
+          sorted[beforeIdx].finalStatus ||
+          sorted[beforeIdx].originalStatus ||
+          "";
+        const afterStatus =
+          sorted[afterIdx].finalStatus || sorted[afterIdx].originalStatus || "";
         if (isLeave(beforeStatus) && isLeave(afterStatus)) {
           for (let k = i; k < j; k++) {
             sorted[k].finalStatus = "Leave";
@@ -328,7 +336,6 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isLoadingDayDetails, setIsLoadingDayDetails] = useState(false);
 
-
   // Helpers for time formatting
   const formatMewurkTime = (timeStr: string | null) => {
     if (!timeStr) return "-";
@@ -567,7 +574,10 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           ) {
             wo++;
           }
-          if (status.includes("late") || (item.lateInMinutes && Number(item.lateInMinutes) > 0)) {
+          if (
+            status.includes("late") ||
+            (item.lateInMinutes && Number(item.lateInMinutes) > 0)
+          ) {
             late++;
           }
         });
@@ -804,9 +814,12 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           Leave: "L",
         };
 
-        const resolveStatusAbbr = (rawStatus: string | null | undefined): "P" | "A" | "WO" | "AH" | "E" | "L" | "" => {
+        const resolveStatusAbbr = (
+          rawStatus: string | null | undefined
+        ): "P" | "A" | "WO" | "AH" | "E" | "L" | "" => {
           if (!rawStatus) return "";
-          let statusVal: "P" | "A" | "WO" | "AH" | "E" | "L" | "" = statusMap[rawStatus] || "";
+          let statusVal: "P" | "A" | "WO" | "AH" | "E" | "L" | "" =
+            statusMap[rawStatus] || "";
           if (!statusVal) {
             const statusName = rawStatus.toLowerCase();
             if (statusName.includes("present")) statusVal = "P";
@@ -1126,7 +1139,9 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
                       detailedLogs={detailedLogs}
                       onRowClick={handleRowClick}
                       monthNavigator={monthNavigatorProps}
-                      employeeId={activeEmployee ? Number(activeEmployee.id) : undefined}
+                      employeeId={
+                        activeEmployee ? Number(activeEmployee.id) : undefined
+                      }
                     />
                   )}
                 </div>
