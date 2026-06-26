@@ -801,14 +801,17 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
         });
         const dayStr = `${weekday}, ${day} ${monthStr}`;
 
-        const statusMap: any = {
-          Present: "Present",
-          Absent: "Absent",
-          "Weekly off": "Weekly off",
-          "Weekly Off": "Weekly Off",
-          "Half Day Leave": "Half Day Leave",
-          Late: "Late",
-          Leave: "Leave",
+        const statusMap: Record<
+          string,
+          "P" | "A" | "WO" | "AH" | "E" | "L" | ""
+        > = {
+          Present: "P",
+          Absent: "A",
+          "Weekly off": "WO",
+          "Weekly Off": "WO",
+          "Half Day": "AH",
+          Late: "E",
+          Leave: "L",
         };
 
         const resolveStatusAbbr = (

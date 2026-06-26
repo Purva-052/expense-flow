@@ -350,11 +350,12 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
       {
         accessorKey: "finalStatus",
         header: "Final Status",
-        cell: ({ row }) => {
-          const finalStatus = row.original.finalStatus;
-          console.log("finalStatus", finalStatus);
-          return finalStatus;
-        },
+        cell: ({ row }) =>
+          getStatusBadge(
+            row.original.finalStatus,
+            isTodayOrFutureDate(row.original.rawDateStr),
+            row.original.isCorrected
+          ),
       },
       {
         accessorKey: "shift",
