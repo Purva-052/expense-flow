@@ -13,7 +13,7 @@ type RequireRoleOptions = {
 export async function requireRole(roles: any, options?: RequireRoleOptions) {
   const { user } = useAuthStore.getState();
   if (!user) {
-    throw redirect({ to: "/unauthorized" });
+    throw redirect({ to: "/sign-in" });
   }
 
   const userRole = user?.user?.role || "";

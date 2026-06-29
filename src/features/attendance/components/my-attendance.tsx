@@ -90,7 +90,7 @@ interface SelectedEmployee {
   phone: string;
   email: string;
   code: string;
-  dailyStatus?: Record<number, "P" | "A" | "WO" | "AH" | "E" | "L" | "">;
+  dailyStatus?: Record<number, "P" | "A" | "WO" | "AH" | "E" | "L" | "HL" | "">;
 }
 
 interface MyAttendanceProps {
@@ -803,26 +803,27 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
 
         const statusMap: Record<
           string,
-          "P" | "A" | "WO" | "AH" | "E" | "L" | ""
+          "P" | "A" | "WO" | "AH" | "E" | "L" | "HL" | ""
         > = {
           Present: "P",
           Absent: "A",
           "Weekly off": "WO",
           "Weekly Off": "WO",
-          "Half Day Leave": "AH",
+          "Half Day Leave": "HL",
           Late: "E",
           Leave: "L",
         };
 
         const resolveStatusAbbr = (
           rawStatus: string | null | undefined
-        ): "P" | "A" | "WO" | "AH" | "E" | "L" | "" => {
+        ): "P" | "A" | "WO" | "AH" | "E" | "L" | "HL" | "" => {
           if (!rawStatus) return "";
-          let statusVal: "P" | "A" | "WO" | "AH" | "E" | "L" | "" =
+          let statusVal: "P" | "A" | "WO" | "AH" | "E" | "L" | "HL" | "" =
             statusMap[rawStatus] || "";
           if (!statusVal) {
             const statusName = rawStatus.toLowerCase();
-            if (statusName.includes("present")) statusVal = "P";
+            if (statusName.includes("half day leave") || statusName.includes("half leave")) statusVal = "HL";
+            else if (statusName.includes("present")) statusVal = "P";
             else if (statusName.includes("half")) statusVal = "AH";
             else if (statusName.includes("leave")) statusVal = "L";
             else if (
@@ -848,7 +849,8 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
             log.originalStatus ||
             ""
           ).toLowerCase();
-          if (statusName.includes("present")) status = "P";
+          if (statusName.includes("half day leave") || statusName.includes("half leave")) status = "HL";
+          else if (statusName.includes("present")) status = "P";
           else if (statusName.includes("half")) status = "AH";
           else if (statusName.includes("leave")) status = "L";
           else if (
