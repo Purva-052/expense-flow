@@ -248,7 +248,7 @@ export const sidebarData: SidebarData = {
         roles.BDE,
       ],
       allowUserIDs: [169, 170, 171, 175, 174],
-      allowedTech: [29, 15],
+      allowedTech: [29, 15, 37],
       isCollapsible: true,
       items: [
         {
@@ -266,7 +266,7 @@ export const sidebarData: SidebarData = {
           title: "System Inventory",
           url: "/system-inventory",
           icon: Database,
-          allowedTech: [29],
+          allowedTech: [29, 37],
           requiredRoles: [
             roles.ADMIN,
             roles.TEAM_LEAD,
@@ -279,6 +279,7 @@ export const sidebarData: SidebarData = {
           title: "Client Inventory",
           url: "/client-inventory",
           icon: Laptop,
+          allowedTech: [29, 37],
           requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER, roles.TEAM_LEAD],
         },
         {

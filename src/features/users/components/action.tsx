@@ -47,6 +47,7 @@ export function ActionFormModal({
       status: values.status ? "active" : "inactive",
       profilePicS3Key: values.profilePicS3Key || "",
       reportingToId: values.reportingToId || null,
+      mewurkEmployeeCode: values.mewurkEmployeeCode || null,
     };
 
     createMutate(payload);
@@ -67,6 +68,7 @@ export function ActionFormModal({
       // currentWorkingProjectId: values.currentWorkingProjectId,
       profilePicS3Key: values.profilePicS3Key || "",
       reportingToId: values.reportingToId || null,
+      mewurkEmployeeCode: values.mewurkEmployeeCode || null,
     };
     updateMutate(payload);
   };

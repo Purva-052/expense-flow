@@ -190,6 +190,7 @@ export function UserActionForm({
           ? currentRow.joiningDate.slice(0, 10)
           : null,
         isSingleCheckInAllowed: currentRow?.isSingleCheckInAllowed ?? false,
+        mewurkEmployeeCode: currentRow?.mewurkEmployeeCode ?? "",
         // currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
         profilePicS3Key: currentRow?.profilePicUrl ?? "",
         file: null,
@@ -433,9 +434,9 @@ export function UserActionForm({
                   name="mewurkEmployeeCode"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Employee Code</FormLabel>
+                      <FormLabel>Mewurk Employee Code</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter employee code" {...field} value={field.value ?? ""} />
+                        <Input placeholder="Enter Mewurk employee code" {...field} value={field.value ?? ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

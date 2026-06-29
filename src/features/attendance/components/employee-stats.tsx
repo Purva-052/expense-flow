@@ -54,6 +54,7 @@ export const EmployeeStats: React.FC<EmployeeStatsProps> = ({
         : "0h 0m"
       : "8h 49m";
 
+
     const stripItems = [
       {
         icon: UserCheck,
@@ -87,6 +88,7 @@ export const EmployeeStats: React.FC<EmployeeStatsProps> = ({
         value: String(woCount + leaveCount),
         valueClass: "text-blue-600 dark:text-blue-400",
       },
+
       {
         icon: Clock,
         iconBg: "bg-amber-500/10",

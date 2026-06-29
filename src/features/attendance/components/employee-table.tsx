@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { MonthYearPicker } from "./month-year-picker";
-import { CalendarIcon, MoreVertical } from "lucide-react";
+import { CalendarIcon, MoreVertical, Siren } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlobalTable } from "@/components/table/global-table";
 import { ColumnDef } from "@tanstack/react-table";
@@ -21,6 +21,7 @@ import {
 import { format } from "date-fns";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+
 import { useAuthStore } from "@/stores/use-auth-store";
 import {
   useGetCompensatoryDates,
@@ -55,6 +56,7 @@ interface EmployeeTableProps {
     isLoading?: boolean;
   };
   employeeId?: number;
+  lateInDays?: number;
 }
 
 const formatToYYYYMMDD = (date: Date) => {
@@ -226,15 +228,9 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
     status: "active",
   });
 
-  const matchedUser = (usersResponse as any)?.data?.find((u: any) => {
-    const empId = u.employeeId ?? u.employee?.id;
-    return (
-      (empId && Number(empId) === Number(resolvedEmpId)) ||
-      Number(u.id) === Number(resolvedEmpId) ||
-      (u.mewurkEmployeeCode &&
-        String(u.mewurkEmployeeCode).trim() === String(resolvedEmpId).trim())
-    );
-  });
+  const matchedUser = (usersResponse as any)?.data?.find((u: any) =>
+    Number(u.id) === Number(resolvedEmpId)
+  );
 
   const employeeCode =
     matchedUser?.mewurkEmployeeCode ||
@@ -357,25 +353,37 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
             row.original.isCorrected
           ),
       },
-      {
-        accessorKey: "shift",
-        header: "Shift",
-        cell: ({ row }) => {
-          const val = row.original.shift === "-" ? "" : row.original.shift;
-          return (
-            <span className="font-medium text-muted-foreground/85">
-              {val || ""}
-            </span>
-          );
-        },
-      },
+
       {
         accessorKey: "firstIn",
         header: "First In",
         cell: ({ row }) => {
-          const val = row.original.firstIn === "-" ? "" : row.original.firstIn;
+          if (isFutureDate(row.original.rawDateStr)) return <span className="font-semibold text-foreground"></span>;
+          let val = row.original.firstIn === "-" ? "" : row.original.firstIn;
+          if (isTodayOrFutureDate(row.original.rawDateStr) && val === "00:00") val = "";
+
+          let lateVal = row.original.lateInTime;
+          if (lateVal === "00:00") lateVal = "";
+          const isLate = lateVal && lateVal !== "-";
+          const titleText = isLate ? `Late In: ${lateVal}` : undefined;
+
           return (
-            <span className="font-semibold text-foreground">{val || ""}</span>
+            <div className="relative flex items-center justify-start gap-1.5" title={titleText}>
+              <span
+                className={`font-semibold ${isLate ? "text-rose-600 dark:text-rose-400 cursor-help" : "text-foreground"}`}
+              >
+                {val || (isTodayOrFutureDate(row.original.rawDateStr) ? "" : "-")}
+              </span>
+              {isLate && (
+                <Siren className="h-3.5 w-3.5 text-rose-500 animate-pulse" />
+              )}
+              {titleText && (
+                <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 hidden group-hover:block w-max bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black font-medium text-[11px] px-2 py-1 rounded shadow-lg z-[9999] pointer-events-none">
+                  {titleText}
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-zinc-900 dark:border-t-zinc-100" />
+                </div>
+              )}
+            </div>
           );
         },
       },
@@ -383,9 +391,13 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
         accessorKey: "lastOut",
         header: "Last Out",
         cell: ({ row }) => {
-          const val = row.original.lastOut === "-" ? "" : row.original.lastOut;
+          if (isFutureDate(row.original.rawDateStr)) return <span className="font-semibold text-foreground"></span>;
+          let val = row.original.lastOut === "-" ? "" : row.original.lastOut;
+          if (isTodayOrFutureDate(row.original.rawDateStr) && val === "00:00") val = "";
           return (
-            <span className="font-semibold text-foreground">{val || ""}</span>
+            <span className="font-semibold text-foreground">
+              {val || (isTodayOrFutureDate(row.original.rawDateStr) ? "" : "-")}
+            </span>
           );
         },
       },
@@ -393,11 +405,12 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
         accessorKey: "breakHrs",
         header: "Break Time",
         cell: ({ row }) => {
-          const val =
-            row.original.breakHrs === "-" ? "" : row.original.breakHrs;
+          if (isFutureDate(row.original.rawDateStr)) return <span className="font-medium text-muted-foreground/85"></span>;
+          let val = row.original.breakHrs === "-" ? "" : row.original.breakHrs;
+          if (isTodayOrFutureDate(row.original.rawDateStr) && val === "00:00") val = "";
           return (
             <span className="font-medium text-muted-foreground/85">
-              {val || ""}
+              {val || (isTodayOrFutureDate(row.original.rawDateStr) ? "" : "-")}
             </span>
           );
         },
@@ -405,70 +418,76 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
       {
         accessorKey: "workingHrs",
         header: "Working Hours",
+        meta: {
+          getCellClassName: (row: any) => {
+            const isHalfDay = row.finalStatus === "AH" || String(row.finalStatus).toLowerCase().includes("half day");
+            const isRed = !isHalfDay && isLessThanEightFifteen(row.workingHrs) && !matchedUser?.isSingleCheckInAllowed;
+            return isRed ? "bg-rose-500/10 dark:bg-rose-900/20" : "";
+          }
+        },
         cell: ({ row }) => {
-          const workingHrsVal =
-            row.original.workingHrs === "-" ? "" : row.original.workingHrs;
+          if (isFutureDate(row.original.rawDateStr)) return <span className="font-bold text-muted-foreground"></span>;
+          let workingHrsVal = row.original.workingHrs === "-" ? "" : row.original.workingHrs;
+          if (isTodayOrFutureDate(row.original.rawDateStr) && workingHrsVal === "00:00") workingHrsVal = "";
+          const isHalfDay = row.original.finalStatus === "AH" || String(row.original.finalStatus).toLowerCase().includes("half day");
+          const isRed = !isHalfDay && isLessThanEightFifteen(row.original.workingHrs) && !matchedUser?.isSingleCheckInAllowed;
           return (
             <span
-              className={`font-bold transition-colors ${
-                isLessThanEightFifteen(row.original.workingHrs) &&
-                !matchedUser?.isSingleCheckInAllowed
-                  ? "text-rose-600 dark:text-rose-400"
-                  : "text-sky-600 dark:text-sky-400"
-              }`}
+              className={`font-bold transition-colors ${isRed
+                ? "text-rose-600 dark:text-rose-400"
+                : "text-sky-600 dark:text-sky-400"
+                }`}
             >
-              {workingHrsVal
-                ? `${workingHrsVal}${row.original.isCorrected ? " *" : ""}`
-                : ""}
+              {workingHrsVal ? `${workingHrsVal}${row.original.isCorrected ? " *" : ""}` : (isTodayOrFutureDate(row.original.rawDateStr) ? "" : "-")}
             </span>
           );
         },
       },
       ...(isAdmin
         ? [
-            {
-              id: "actions",
-              header: () => <div className="text-right" />,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              cell: ({ row }: any) => {
-                const future = isFutureDate(row.original.rawDateStr);
-                const canApply =
-                  !future &&
-                  isLessThanEightFifteen(row.original.workingHrs) &&
-                  !matchedUser?.isSingleCheckInAllowed;
-                if (!canApply) return <div className="w-full text-right" />;
-                return (
-                  <div
-                    className="w-full text-right"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 p-0 hover:bg-muted"
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                          <span className="sr-only">Open menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-40">
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenRegularization(row.original.rawDateStr);
-                          }}
-                        >
-                          Apply Regularization
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                );
-              },
+          {
+            id: "actions",
+            header: () => <div className="text-center font-semibold">Actions</div>,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            cell: ({ row }: any) => {
+              const future = isFutureDate(row.original.rawDateStr);
+              const canApply =
+                !future &&
+                isLessThanEightFifteen(row.original.workingHrs) &&
+                !matchedUser?.isSingleCheckInAllowed;
+              if (!canApply) return <div className="w-full text-center" />;
+              return (
+                <div
+                  className="w-full flex items-center justify-center"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 p-0 hover:bg-muted"
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                        <span className="sr-only">Open menu</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-40">
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenRegularization(row.original.rawDateStr);
+                        }}
+                      >
+                        Apply Regularization
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              );
             },
-          ]
+          },
+        ]
         : []),
     ],
     [isAdmin, matchedUser]
@@ -501,7 +520,7 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
           totalCount={detailedLogs.length}
           currentPage={1}
           pageSize={detailedLogs.length || 10}
-          onPaginationChange={() => {}}
+          onPaginationChange={() => { }}
           isPaginationEnabled={false}
           scrollY="480px"
           onRowClick={(row) => {
@@ -551,9 +570,8 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
-                        className={`w-full justify-start text-left font-normal border-border/80 ${
-                          !compensatoryDate && "text-muted-foreground"
-                        }`}
+                        className={`w-full justify-start text-left font-normal border-border/80 ${!compensatoryDate && "text-muted-foreground"
+                          }`}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
                         {compensatoryDate ? (
