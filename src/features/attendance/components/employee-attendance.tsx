@@ -63,7 +63,7 @@ interface EmployeeAttendanceRow {
   absent: number;
   leaves: number;
   isActive: boolean;
-  dailyStatus: Record<string, "P" | "A" | "WO" | "AH" | "E" | "L" | "">;
+  dailyStatus: Record<string, "P" | "A" | "WO" | "AH" | "E" | "L" | "HL" | "">;
   dailyIsCorrected?: Record<string, boolean>;
   phone?: string;
   email?: string;
@@ -126,7 +126,7 @@ const getWeekdayFromDate = (dateStr: string) => {
 
 const mapFinalStatusToCode = (
   finalStatus: string
-): "P" | "A" | "WO" | "AH" | "E" | "L" | "" => {
+): "P" | "A" | "WO" | "AH" | "E" | "L" | "HL" | "" => {
   const status = (finalStatus || "").toLowerCase().trim();
   if (status === "present" || status === "p") return "P";
   if (status === "absent" || status === "a") return "A";
@@ -140,6 +140,9 @@ const mapFinalStatusToCode = (
   }
   if (status === "leave" || status === "l" || status === "approved leave") {
     return "L";
+  }
+  if (status === "half day leave" || status === "half leave") {
+    return "HL";
   }
   if (
     status === "half day" ||
@@ -162,6 +165,8 @@ const getStatusLabel = (status: string) => {
       return "Weekly Off";
     case "AH":
       return "Half Day Absent";
+    case "HL":
+      return "Half Day Leave";
     case "E":
       return "Late/Excused";
     case "L":
@@ -302,7 +307,7 @@ export const EmployeeAttendance: React.FC = () => {
     return rows.map((emp: any) => {
       const dailyStatus: Record<
         string,
-        "P" | "A" | "WO" | "AH" | "E" | "L" | ""
+        "P" | "A" | "WO" | "AH" | "E" | "L" | "HL" | ""
       > = {};
       let present = 0;
       let absent = 0;

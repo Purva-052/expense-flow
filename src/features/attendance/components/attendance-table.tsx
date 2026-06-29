@@ -130,7 +130,7 @@ const isTodayOrFutureDate = (dateStr: string) => {
 // };
 
 const getStatusBadge = (
-  status: "P" | "A" | "WO" | "AH" | "E" | "L" | "",
+  status: "P" | "A" | "WO" | "AH" | "E" | "L" | "HL" | "",
   isFuture: boolean = false,
   isCorrected: boolean = false
 ) => {
@@ -160,6 +160,12 @@ const getStatusBadge = (
       return (
         <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-500 border border-amber-500/30 hover:bg-amber-500/20 text-[10px] font-bold rounded-md px-2 py-0.5">
           HALF DAY{isCorrected ? " *" : ""}
+        </Badge>
+      );
+    case "HL":
+      return (
+        <Badge className="bg-orange-500/15 text-orange-600 dark:text-orange-500 border border-orange-500/30 hover:bg-orange-500/20 text-[10px] font-bold rounded-md px-2 py-0.5">
+          HALF LEAVE{isCorrected ? " *" : ""}
         </Badge>
       );
     case "E":
@@ -192,12 +198,38 @@ const isLessThanEightFifteen = (
   return hours * 60 + minutes < 495; // 8 * 60 + 15 = 495
 };
 
+const isLessThanFourFifteen = (
+  workingHrs: string | null | undefined
+): boolean => {
+  if (!workingHrs || workingHrs === "-") return false;
+  const cleanStr = workingHrs.replace(/HRS/gi, "").trim();
+  const parts = cleanStr.split(":");
+  if (parts.length < 2) return false;
+  const hours = parseInt(parts[0], 10);
+  const minutes = parseInt(parts[1], 10);
+  if (isNaN(hours) || isNaN(minutes)) return false;
+  return hours * 60 + minutes < 255; // 4 * 60 + 15 = 255
+};
+
+const isWeekend = (dateStr: string): boolean => {
+  if (!dateStr) return false;
+  const parts = dateStr.split("-");
+  if (parts.length < 3) return false;
+  const date = new Date(
+    Number(parts[0]),
+    Number(parts[1]) - 1,
+    Number(parts[2])
+  );
+  const day = date.getDay();
+  return day === 0 || day === 6; // 0 is Sunday, 6 is Saturday
+};
+
 interface AttendanceLogRow {
   day: string;
   date: string;
   rawDateStr: string;
-  originalStatus: "P" | "A" | "WO" | "AH" | "E" | "L" | "";
-  finalStatus: "P" | "A" | "WO" | "AH" | "E" | "L" | "";
+  originalStatus: "P" | "A" | "WO" | "AH" | "E" | "L" | "HL" | "";
+  finalStatus: "P" | "A" | "WO" | "AH" | "E" | "L" | "HL" | "";
   firstIn: string;
   lateInTime: string;
   lastOut: string;
@@ -259,7 +291,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
 
   // Fetch available compensatory dates
   const { data: highWorkingHoursData, isPending: isLoadingHighWorkingHours } =
-    useGetCompensatoryDates(employeeCode, selectedRegDate, isModalOpen);
+    useGetCompensatoryDates(employeeCode, selectedRegDate, isModalOpen && !isAdmin);
 
   const queryClient = useQueryClient();
   const { mutate: autoApprove } = useRegularizationAction(() => {
@@ -272,11 +304,6 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
       setIsModalOpen(false);
       setCompensatoryDate("");
       setReason("");
-
-      const regId = data?.id;
-      if (resolvedEmpId === 4 && regId) {
-        autoApprove({ id: regId, status: "approved" });
-      }
     });
 
   const highWorkingHoursDates: string[] = (
@@ -315,7 +342,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
       toast.error("Employee ID is missing.");
       return;
     }
-    if (!isRegularizingForAnotherEmployee && !compensatoryDate) {
+    if (!isAdmin && !compensatoryDate) {
       toast.error("Please select a compensatory date.");
       return;
     }
@@ -327,9 +354,8 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
     createRegularization({
       employeeId: Number(resolvedEmpId),
       regularizationDate: selectedRegDate,
-      ...(isRegularizingForAnotherEmployee ? {} : { compensatoryDate }),
+      ...(isAdmin ? {} : { compensatoryDate }),
       reason: reason.trim(),
-      ...(Number(resolvedEmpId) === 4 ? { status: "approved" } : {}),
     });
   };
 
@@ -373,7 +399,8 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
           
           let lateVal = row.original.lateInTime;
           if (lateVal === "00:00") lateVal = "";
-          const isLate = lateVal && lateVal !== "-";
+          const isHLOrWO = row.original.finalStatus === "HL" || row.original.finalStatus === "WO" || isWeekend(row.original.rawDateStr);
+          const isLate = lateVal && lateVal !== "-" && !isHLOrWO;
           const titleText = isLate ? `Late In: ${lateVal}` : undefined;
 
           return (
@@ -429,8 +456,17 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
         header: "Working Hours",
         meta: {
           getCellClassName: (row: any) => {
-            const isHalfDay = row.finalStatus === "AH" || String(row.finalStatus).toLowerCase().includes("half day");
-            const isRed = !isHalfDay && isLessThanEightFifteen(row.workingHrs) && !matchedUser?.isSingleCheckInAllowed;
+            const isHalfLeave = row.finalStatus === "HL" || String(row.finalStatus).toLowerCase().includes("half leave") || String(row.finalStatus).toLowerCase() === "half day leave";
+            const isWeeklyOff = row.finalStatus === "WO" || String(row.finalStatus).toLowerCase().includes("weekly off") || isWeekend(row.rawDateStr);
+            
+            let isRed = false;
+            if (isWeeklyOff) {
+              isRed = false;
+            } else if (isHalfLeave) {
+              isRed = isLessThanFourFifteen(row.workingHrs);
+            } else {
+              isRed = isLessThanEightFifteen(row.workingHrs) && !matchedUser?.isSingleCheckInAllowed;
+            }
             return isRed ? "bg-rose-500/10 dark:bg-rose-900/20" : "";
           }
         },
@@ -439,8 +475,17 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
           let workingHrsVal = row.original.workingHrs === "-" ? "" : row.original.workingHrs;
           if (isTodayOrFutureDate(row.original.rawDateStr) && workingHrsVal === "00:00") workingHrsVal = "";
           
-          const isHalfDay = row.original.finalStatus === "AH" || String(row.original.finalStatus).toLowerCase().includes("half day");
-          const isRed = !isHalfDay && isLessThanEightFifteen(row.original.workingHrs) && !matchedUser?.isSingleCheckInAllowed;
+          const isHalfLeave = row.original.finalStatus === "HL" || String(row.original.finalStatus).toLowerCase().includes("half leave") || String(row.original.finalStatus).toLowerCase() === "half day leave";
+          const isWeeklyOff = row.original.finalStatus === "WO" || String(row.original.finalStatus).toLowerCase().includes("weekly off") || isWeekend(row.original.rawDateStr);
+          
+          let isRed = false;
+          if (isWeeklyOff) {
+            isRed = false;
+          } else if (isHalfLeave) {
+            isRed = isLessThanFourFifteen(row.original.workingHrs);
+          } else {
+            isRed = isLessThanEightFifteen(row.original.workingHrs) && !matchedUser?.isSingleCheckInAllowed;
+          }
           
           return (
             <span
@@ -470,7 +515,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
           }
 
           return (
-            <div className="w-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+            <div className="w-full flex items-center justify-start" onClick={(e) => e.stopPropagation()}>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -558,7 +603,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4 py-2">
-            {!isRegularizingForAnotherEmployee && (
+            {!isAdmin && (
               <div className="space-y-2 flex flex-col">
                 <Label className="text-sm font-semibold flex items-center gap-1 mb-1">
                   Compensatory Date
@@ -946,7 +991,7 @@ export const RegularizationRequestsPanel: React.FC<{
                           </div>
                         </td>
                         <td className="px-4 py-2.5 text-right">
-                          {req.status === "pending" && loggedInUserId === 4 ? (
+                          {req.status === "pending" && isAdmin ? (
                             <div className="flex items-center justify-end gap-1.5">
                               <Button
                                 size="sm"
