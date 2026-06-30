@@ -2,7 +2,16 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { GlobalTable } from "@/components/table/global-table";
 import { MonthYearPicker } from "./month-year-picker";
-import { CalendarIcon, CheckCircle, CheckCircle2, Clock, Info, Loader2, XCircle, Siren } from "lucide-react";
+import {
+  CalendarIcon,
+  CheckCircle,
+  CheckCircle2,
+  Clock,
+  Info,
+  Loader2,
+  XCircle,
+  Siren,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -21,7 +30,7 @@ import { format } from "date-fns";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/stores/use-auth-store";
-import { useQueryClient } from "@tanstack/react-query";
+// import { useQueryClient } from "@tanstack/react-query";
 
 import { ColumnDef } from "@tanstack/react-table";
 import {
@@ -37,6 +46,7 @@ import { roles } from "@/utils/constant";
 import { Calendar } from "@/components/ui/calendar";
 import API from "@/config/api/api";
 import SimpleDropDownSearchable from "@/components/shared/custome-simple-dropdown";
+import { useQueryClient } from "@tanstack/react-query";
 
 const formatToYYYYMMDD = (date: Date) => {
   const year = date.getFullYear();
@@ -281,15 +291,22 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
     return (
       (empId && Number(empId) === Number(resolvedEmpId)) ||
       Number(u.id) === Number(resolvedEmpId) ||
-      (u.mewurkEmployeeCode && String(u.mewurkEmployeeCode).trim() === String(resolvedEmpId).trim())
+      (u.mewurkEmployeeCode &&
+        String(u.mewurkEmployeeCode).trim() === String(resolvedEmpId).trim())
     );
   });
 
-  const employeeCode = matchedUser?.mewurkEmployeeCode || (resolvedEmpId ? String(resolvedEmpId) : "");
+  const employeeCode =
+    matchedUser?.mewurkEmployeeCode ||
+    (resolvedEmpId ? String(resolvedEmpId) : "");
 
   // Fetch available compensatory dates
   const { data: highWorkingHoursData, isPending: isLoadingHighWorkingHours } =
-    useGetCompensatoryDates(employeeCode, selectedRegDate, isModalOpen && !isAdmin);
+    useGetCompensatoryDates(
+      employeeCode,
+      selectedRegDate,
+      isModalOpen && !isAdmin
+    );
 
   const queryClient = useQueryClient();
   useRegularizationAction(() => {
@@ -391,22 +408,31 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
         accessorKey: "firstIn",
         header: "First In",
         cell: ({ row }) => {
-          if (isFutureDate(row.original.rawDateStr)) return <span className="font-semibold text-foreground"></span>;
+          if (isFutureDate(row.original.rawDateStr))
+            return <span className="font-semibold text-foreground"></span>;
           let val = row.original.firstIn === "-" ? "" : row.original.firstIn;
-          if (isTodayOrFutureDate(row.original.rawDateStr) && val === "00:00") val = "";
-          
+          if (isTodayOrFutureDate(row.original.rawDateStr) && val === "00:00")
+            val = "";
+
           let lateVal = row.original.lateInTime;
           if (lateVal === "00:00") lateVal = "";
-          const isHLOrWO = row.original.finalStatus === "HL" || row.original.finalStatus === "WO" || isWeekend(row.original.rawDateStr);
+          const isHLOrWO =
+            row.original.finalStatus === "HL" ||
+            row.original.finalStatus === "WO" ||
+            isWeekend(row.original.rawDateStr);
           const isLate = lateVal && lateVal !== "-" && !isHLOrWO;
           const titleText = isLate ? `Late In: ${lateVal}` : undefined;
 
           return (
-            <div className="relative flex items-center justify-start gap-1.5" title={titleText}>
-              <span 
+            <div
+              className="relative flex items-center justify-start gap-1.5"
+              title={titleText}
+            >
+              <span
                 className={`font-semibold ${isLate ? "text-rose-600 dark:text-rose-400 cursor-help" : "text-foreground"}`}
               >
-                {val || (isTodayOrFutureDate(row.original.rawDateStr) ? "" : "-")}
+                {val ||
+                  (isTodayOrFutureDate(row.original.rawDateStr) ? "" : "-")}
               </span>
               {isLate && (
                 <Siren className="h-3.5 w-3.5 text-rose-500 animate-pulse" />
@@ -425,9 +451,11 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
         accessorKey: "lastOut",
         header: "Last Out",
         cell: ({ row }) => {
-          if (isFutureDate(row.original.rawDateStr)) return <span className="font-semibold text-foreground"></span>;
+          if (isFutureDate(row.original.rawDateStr))
+            return <span className="font-semibold text-foreground"></span>;
           let val = row.original.lastOut === "-" ? "" : row.original.lastOut;
-          if (isTodayOrFutureDate(row.original.rawDateStr) && val === "00:00") val = "";
+          if (isTodayOrFutureDate(row.original.rawDateStr) && val === "00:00")
+            val = "";
           return (
             <span className="font-semibold text-foreground">
               {val || (isTodayOrFutureDate(row.original.rawDateStr) ? "" : "-")}
@@ -439,9 +467,13 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
         accessorKey: "breakHrs",
         header: "Break Time",
         cell: ({ row }) => {
-          if (isFutureDate(row.original.rawDateStr)) return <span className="font-medium text-muted-foreground/85"></span>;
+          if (isFutureDate(row.original.rawDateStr))
+            return (
+              <span className="font-medium text-muted-foreground/85"></span>
+            );
           let val = row.original.breakHrs === "-" ? "" : row.original.breakHrs;
-          if (isTodayOrFutureDate(row.original.rawDateStr) && val === "00:00") val = "";
+          if (isTodayOrFutureDate(row.original.rawDateStr) && val === "00:00")
+            val = "";
           return (
             <span className="font-medium text-muted-foreground/85">
               {val || (isTodayOrFutureDate(row.original.rawDateStr) ? "" : "-")}
@@ -454,46 +486,76 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
         header: "Working Hours",
         meta: {
           getCellClassName: (row: any) => {
-            const isHalfLeave = row.finalStatus === "HL" || String(row.finalStatus).toLowerCase().includes("half leave") || String(row.finalStatus).toLowerCase() === "half day leave";
-            const isWeeklyOff = row.finalStatus === "WO" || String(row.finalStatus).toLowerCase().includes("weekly off") || isWeekend(row.rawDateStr);
-            
+            const isHalfLeave =
+              row.finalStatus === "HL" ||
+              String(row.finalStatus).toLowerCase().includes("half leave") ||
+              String(row.finalStatus).toLowerCase() === "half day leave";
+            const isWeeklyOff =
+              row.finalStatus === "WO" ||
+              String(row.finalStatus).toLowerCase().includes("weekly off") ||
+              isWeekend(row.rawDateStr);
+
             let isRed = false;
             if (isWeeklyOff) {
               isRed = false;
             } else if (isHalfLeave) {
               isRed = isLessThanFourFifteen(row.workingHrs);
             } else {
-              isRed = isLessThanEightFifteen(row.workingHrs) && !matchedUser?.isSingleCheckInAllowed;
+              isRed =
+                isLessThanEightFifteen(row.workingHrs) &&
+                !matchedUser?.isSingleCheckInAllowed;
             }
             return isRed ? "bg-rose-500/10 dark:bg-rose-900/20" : "";
-          }
+          },
         },
         cell: ({ row }) => {
-          if (isFutureDate(row.original.rawDateStr)) return <span className="font-bold text-muted-foreground"></span>;
-          let workingHrsVal = row.original.workingHrs === "-" ? "" : row.original.workingHrs;
-          if (isTodayOrFutureDate(row.original.rawDateStr) && workingHrsVal === "00:00") workingHrsVal = "";
-          
-          const isHalfLeave = row.original.finalStatus === "HL" || String(row.original.finalStatus).toLowerCase().includes("half leave") || String(row.original.finalStatus).toLowerCase() === "half day leave";
-          const isWeeklyOff = row.original.finalStatus === "WO" || String(row.original.finalStatus).toLowerCase().includes("weekly off") || isWeekend(row.original.rawDateStr);
-          
+          if (isFutureDate(row.original.rawDateStr))
+            return <span className="font-bold text-muted-foreground"></span>;
+          let workingHrsVal =
+            row.original.workingHrs === "-" ? "" : row.original.workingHrs;
+          if (
+            isTodayOrFutureDate(row.original.rawDateStr) &&
+            workingHrsVal === "00:00"
+          )
+            workingHrsVal = "";
+
+          const isHalfLeave =
+            row.original.finalStatus === "HL" ||
+            String(row.original.finalStatus)
+              .toLowerCase()
+              .includes("half leave") ||
+            String(row.original.finalStatus).toLowerCase() === "half day leave";
+          const isWeeklyOff =
+            row.original.finalStatus === "WO" ||
+            String(row.original.finalStatus)
+              .toLowerCase()
+              .includes("weekly off") ||
+            isWeekend(row.original.rawDateStr);
+
           let isRed = false;
           if (isWeeklyOff) {
             isRed = false;
           } else if (isHalfLeave) {
             isRed = isLessThanFourFifteen(row.original.workingHrs);
           } else {
-            isRed = isLessThanEightFifteen(row.original.workingHrs) && !matchedUser?.isSingleCheckInAllowed;
+            isRed =
+              isLessThanEightFifteen(row.original.workingHrs) &&
+              !matchedUser?.isSingleCheckInAllowed;
           }
-          
+
           return (
             <span
               className={`font-bold transition-colors ${
                 isRed
-                ? "text-rose-600 dark:text-rose-400"
-                : "text-sky-600 dark:text-sky-400"
-                }`}
+                  ? "text-rose-600 dark:text-rose-400"
+                  : "text-sky-600 dark:text-sky-400"
+              }`}
             >
-              {workingHrsVal ? `${workingHrsVal}${row.original.isCorrected ? " *" : ""}` : (isTodayOrFutureDate(row.original.rawDateStr) ? "" : "-")}
+              {workingHrsVal
+                ? `${workingHrsVal}${row.original.isCorrected ? " *" : ""}`
+                : isTodayOrFutureDate(row.original.rawDateStr)
+                  ? ""
+                  : "-"}
             </span>
           );
         },
@@ -563,7 +625,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
           totalCount={detailedLogs.length}
           currentPage={1}
           pageSize={detailedLogs.length || 10}
-          onPaginationChange={() => { }}
+          onPaginationChange={() => {}}
           isPaginationEnabled={false}
           scrollY="480px"
           onRowClick={(row) => {
@@ -606,12 +668,16 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                     </span>
                   </div>
                 ) : (
-                  <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                  <Popover
+                    open={isCalendarOpen}
+                    onOpenChange={setIsCalendarOpen}
+                  >
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
-                        className={`w-full justify-start text-left font-normal border-border/80 ${!compensatoryDate && "text-muted-foreground"
-                          }`}
+                        className={`w-full justify-start text-left font-normal border-border/80 ${
+                          !compensatoryDate && "text-muted-foreground"
+                        }`}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
                         {compensatoryDate ? (
@@ -639,8 +705,16 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                         }}
                         disabled={(date) => {
                           const dateStr = formatToYYYYMMDD(date);
-                          const isDisabled = !highWorkingHoursDates.includes(dateStr);
-                          console.log("AttendanceTable Calendar Date:", dateStr, "isDisabled:", isDisabled, "highWorkingHoursDates:", highWorkingHoursDates);
+                          const isDisabled =
+                            !highWorkingHoursDates.includes(dateStr);
+                          console.log(
+                            "AttendanceTable Calendar Date:",
+                            dateStr,
+                            "isDisabled:",
+                            isDisabled,
+                            "highWorkingHoursDates:",
+                            highWorkingHoursDates
+                          );
                           return isDisabled;
                         }}
                         month={currentCalendarMonth}
@@ -731,15 +805,21 @@ export const RegularizationRequestsPanel: React.FC<{
   const [currentStatusFilter, setCurrentStatusFilter] = useState<
     "" | "pending" | "approved" | "rejected"
   >(statusFilter);
-  const [currentEmployeeFilter, setCurrentEmployeeFilter] = useState<number | null>(
+  const [currentEmployeeFilter, setCurrentEmployeeFilter] = useState<
+    number | null
+  >(
     canFilterEmployees
-      ? (employeeId && employeeId !== loggedInUserId ? employeeId : null)
-      : (employeeId || null)
+      ? employeeId && employeeId !== loggedInUserId
+        ? employeeId
+        : null
+      : employeeId || null
   );
 
   useEffect(() => {
     if (canFilterEmployees) {
-      setCurrentEmployeeFilter(employeeId && employeeId !== loggedInUserId ? employeeId : null);
+      setCurrentEmployeeFilter(
+        employeeId && employeeId !== loggedInUserId ? employeeId : null
+      );
     } else {
       setCurrentEmployeeFilter(employeeId || null);
     }
@@ -850,9 +930,7 @@ export const RegularizationRequestsPanel: React.FC<{
               value={currentStatusFilter || undefined}
               placeholder="Filter by status"
               className="w-full sm:w-[160px]"
-              onChange={(value) =>
-                setCurrentStatusFilter((value as any) || "")
-              }
+              onChange={(value) => setCurrentStatusFilter((value as any) || "")}
               allowClear
             />
 
@@ -860,7 +938,11 @@ export const RegularizationRequestsPanel: React.FC<{
             {canFilterEmployees && (
               <SimpleDropDownSearchable
                 options={employeeOptions}
-                value={currentEmployeeFilter ? String(currentEmployeeFilter) : undefined}
+                value={
+                  currentEmployeeFilter
+                    ? String(currentEmployeeFilter)
+                    : undefined
+                }
                 placeholder="Filter by employee"
                 className="w-full sm:w-[220px]"
                 isLoading={isLoadingEmployees}
