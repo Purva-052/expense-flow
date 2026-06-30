@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { GlobalTable } from "@/components/table/global-table";
 import { MonthYearPicker } from "./month-year-picker";
-import { CalendarIcon, CheckCircle, CheckCircle2, Clock, Info, Loader2, MoreVertical, XCircle, Siren } from "lucide-react";
+import { CalendarIcon, CheckCircle, CheckCircle2, Clock, Info, Loader2, XCircle, Siren } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -35,8 +35,6 @@ import { useGetUsersList, useGetUserDropdownList } from "../../users/services";
 import { toast } from "sonner";
 import { roles } from "@/utils/constant";
 import { Calendar } from "@/components/ui/calendar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-
 import API from "@/config/api/api";
 import SimpleDropDownSearchable from "@/components/shared/custome-simple-dropdown";
 
@@ -255,7 +253,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
   ).toLowerCase();
   const isAdmin = roleName === roles.ADMIN;
 
-  const isRegularizingForAnotherEmployee = isAdmin && (Number(resolvedEmpId) !== Number(user?.user?.id));
+  // const isRegularizingForAnotherEmployee = isAdmin && (Number(resolvedEmpId) !== Number(user?.user?.id));
 
   // const { data: allocationsResponse } = useGetLeaveAllocations(isAdmin) as any;
   // const allocations = allocationsResponse?.data || {};
@@ -294,13 +292,13 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
     useGetCompensatoryDates(employeeCode, selectedRegDate, isModalOpen && !isAdmin);
 
   const queryClient = useQueryClient();
-  const { mutate: autoApprove } = useRegularizationAction(() => {
+  useRegularizationAction(() => {
     queryClient.invalidateQueries({ queryKey: [API.attendance.regularization_list] });
     queryClient.invalidateQueries({ queryKey: [API.attendance.compensatory_date] });
   });
 
   const { mutate: createRegularization, isPending: isSubmitting } =
-    useCreateRegularizationRequest((data: any) => {
+    useCreateRegularizationRequest((_data: any) => {
       setIsModalOpen(false);
       setCompensatoryDate("");
       setReason("");
@@ -503,6 +501,9 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
       {
         id: "actions",
         header: () => <div className="text-center font-semibold">Actions</div>,
+        meta: {
+          getCellClassName: () => "!py-0.5",
+        },
         cell: ({ row }: any) => {
           const future = isFutureDate(row.original.rawDateStr);
           const canApplyRegularization =
@@ -515,29 +516,18 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
           }
 
           return (
-            <div className="w-full flex items-center justify-start" onClick={(e) => e.stopPropagation()}>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 p-0 hover:bg-muted"
-                  >
-                    <MoreVertical className="h-4 w-4" />
-                    <span className="sr-only">Open menu</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-40">
-                  <DropdownMenuItem
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleOpenRegularization(row.original.rawDateStr);
-                    }}
-                  >
-                    Apply Regularization
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+            <div className="w-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-[11px] font-semibold bg-sky-500/10 text-sky-400 border border-sky-500/20 hover:bg-sky-500/20 hover:text-sky-300 rounded-lg px-3 flex items-center justify-center"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOpenRegularization(row.original.rawDateStr);
+                }}
+              >
+                Apply Regularization
+              </Button>
             </div>
           );
         },
@@ -883,152 +873,180 @@ export const RegularizationRequestsPanel: React.FC<{
           </div>
         </div>
 
-        {isLoadingList ? (
-          <div className="flex items-center justify-center py-10 gap-2 text-muted-foreground text-sm">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Loading requests...
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left">
-              <thead>
-                <tr className="bg-muted border-b border-border text-muted-foreground text-xs font-bold">
-                  {canFilterEmployees && (
-                    <th className="px-4 py-2.5 bg-muted">Employee</th>
-                  )}
-                  <th className="px-4 py-2.5 bg-muted">Reg. Date</th>
-                  <th className="px-4 py-2.5 bg-muted">Comp. Date</th>
-                  <th className="px-4 py-2.5 bg-muted">Working Time</th>
-                  <th className="px-4 py-2.5 bg-muted">Prev. Status</th>
-                  <th className="px-4 py-2.5 bg-muted">Reason</th>
-                  <th className="px-4 py-2.5 bg-muted">Status</th>
-                  <th className="px-4 py-2.5 bg-muted text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border text-xs text-foreground">
-                {requests.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={canFilterEmployees ? 8 : 7}
-                      className="text-center py-10 text-muted-foreground text-xs font-medium"
-                    >
-                      <CheckCircle2 className="h-8 w-8 mx-auto text-emerald-500 mb-2 opacity-60" />
-                      {currentStatusFilter === "pending"
-                        ? "All caught up! No pending requests."
-                        : "No regularization requests found for the selected filters."}
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-left">
+            <thead>
+              <tr className="bg-muted border-b border-border text-muted-foreground text-xs font-bold">
+                {canFilterEmployees && (
+                  <th className="px-4 py-2.5 bg-muted">Employee</th>
+                )}
+                <th className="px-4 py-2.5 bg-muted">Reg. Date</th>
+                <th className="px-4 py-2.5 bg-muted">Comp. Date</th>
+                <th className="px-4 py-2.5 bg-muted">Working Time</th>
+                <th className="px-4 py-2.5 bg-muted">Prev. Status</th>
+                <th className="px-4 py-2.5 bg-muted">Reason</th>
+                <th className="px-4 py-2.5 bg-muted">Status</th>
+                <th className="px-4 py-2.5 bg-muted">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border text-xs text-foreground">
+              {isLoadingList ? (
+                Array.from({ length: 5 }).map((_, index) => (
+                  <tr key={index} className="border-b border-border">
+                    {canFilterEmployees && (
+                      <td className="px-4 py-3">
+                        <div className="h-4 w-32 bg-muted animate-pulse rounded" />
+                      </td>
+                    )}
+                    <td className="px-4 py-3">
+                      <div className="h-4 w-20 bg-muted animate-pulse rounded" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="h-4 w-20 bg-muted animate-pulse rounded" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="h-4 w-12 bg-muted animate-pulse rounded" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="h-4 w-16 bg-muted animate-pulse rounded" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="h-4 w-36 bg-muted animate-pulse rounded" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="h-6 w-20 bg-muted animate-pulse rounded-md" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1.5">
+                        <div className="h-7 w-16 bg-muted animate-pulse rounded-lg" />
+                        <div className="h-7 w-16 bg-muted animate-pulse rounded-lg" />
+                      </div>
                     </td>
                   </tr>
-                ) : (
-                  requests.map((req: any) => {
-                    const cfg = statusConfig[req.status] || statusConfig["pending"];
-                    const employeeName = req.employee?.fullName || req.requestedByUser?.fullName || req.user?.name || req.user?.fullName || "-";
-                    return (
-                      <tr key={req.id} className="hover:bg-muted/10 transition-colors">
-                        {canFilterEmployees && (
-                          <td className="px-4 py-2.5 font-bold text-foreground">
-                            {employeeName}
-                          </td>
-                        )}
-                        <td className="px-4 py-2.5 font-semibold text-muted-foreground whitespace-nowrap">
-                          {formatDisplayDate(req.regularizationDate)}
+                ))
+              ) : requests.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={canFilterEmployees ? 8 : 7}
+                    className="text-center py-10 text-muted-foreground text-xs font-medium"
+                  >
+                    <CheckCircle2 className="h-8 w-8 mx-auto text-emerald-500 mb-2 opacity-60" />
+                    {currentStatusFilter === "pending"
+                      ? "All caught up! No pending requests."
+                      : "No regularization requests found for the selected filters."}
+                  </td>
+                </tr>
+              ) : (
+                requests.map((req: any) => {
+                  const cfg = statusConfig[req.status] || statusConfig["pending"];
+                  const employeeName = req.employee?.fullName || req.requestedByUser?.fullName || req.user?.name || req.user?.fullName || "-";
+                  return (
+                    <tr key={req.id} className="hover:bg-muted/10 transition-colors">
+                      {canFilterEmployees && (
+                        <td className="px-4 py-2.5 font-bold text-foreground">
+                          {employeeName}
                         </td>
-                        <td className="px-4 py-2.5 whitespace-nowrap">
-                          {formatDisplayDate(req.compensatoryDate)}
-                        </td>
-                        <td className="px-4 py-2.5 font-medium">
-                          {req.workingTime || "-"}
-                        </td>
-                        <td className="px-4 py-2.5">
-                          <span className="text-muted-foreground">
-                            {req.previousStatus || "-"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-2.5 max-w-[200px]">
-                          <p
-                            className="truncate text-muted-foreground"
-                            title={req.reason}
+                      )}
+                      <td className="px-4 py-2.5 font-semibold text-muted-foreground whitespace-nowrap">
+                        {formatDisplayDate(req.regularizationDate)}
+                      </td>
+                      <td className="px-4 py-2.5 whitespace-nowrap">
+                        {formatDisplayDate(req.compensatoryDate)}
+                      </td>
+                      <td className="px-4 py-2.5 font-medium">
+                        {req.workingTime || "-"}
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <span className="text-muted-foreground">
+                          {req.previousStatus || "-"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2.5 max-w-[200px]">
+                        <p
+                          className="truncate text-muted-foreground"
+                          title={req.reason}
+                        >
+                          {req.reason || "-"}
+                        </p>
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <div className="flex items-center gap-1.5">
+                          <Badge
+                            className={`flex items-center gap-1 w-fit text-[10px] font-semibold rounded-md px-2 py-0.5 ${cfg.color}`}
                           >
-                            {req.reason || "-"}
-                          </p>
-                        </td>
-                        <td className="px-4 py-2.5">
-                          <div className="flex items-center gap-1.5">
-                            <Badge
-                              className={`flex items-center gap-1 w-fit text-[10px] font-semibold rounded-md px-2 py-0.5 ${cfg.color}`}
-                            >
-                              {cfg.icon}
-                              {cfg.label}
-                            </Badge>
-                            {req.status === "rejected" && req.rejectionReason && (
-                              <Popover>
-                                <PopoverTrigger asChild>
-                                  <button
-                                    type="button"
-                                    className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-rose-500/30 bg-rose-500/10 text-rose-500 transition-colors hover:bg-rose-500/15"
-                                    aria-label="View rejection reason"
-                                  >
-                                    <Info className="h-3.5 w-3.5" />
-                                  </button>
-                                </PopoverTrigger>
-                                <PopoverContent
-                                  side="top"
-                                  align="start"
-                                  className="w-[360px] max-w-[calc(100vw-2rem)] border border-rose-200/60 bg-popover p-0 text-left shadow-xl"
+                            {cfg.icon}
+                            {cfg.label}
+                          </Badge>
+                          {req.status === "rejected" && req.rejectionReason && (
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <button
+                                  type="button"
+                                  className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-rose-500/30 bg-rose-500/10 text-rose-500 transition-colors hover:bg-rose-500/15"
+                                  aria-label="View rejection reason"
                                 >
-                                  <div className="border-b border-border/60 px-4 py-3">
-                                    <p className="text-xs font-semibold text-foreground">
-                                      Rejection Reason
-                                    </p>
-                                  </div>
-                                  <div className="max-h-64 overflow-y-auto px-4 py-3">
-                                    <p className="whitespace-pre-wrap break-words text-xs leading-5 text-muted-foreground">
-                                      {req.rejectionReason}
-                                    </p>
-                                  </div>
-                                </PopoverContent>
-                              </Popover>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-4 py-2.5 text-right">
-                          {req.status === "pending" && isAdmin ? (
-                            <div className="flex items-center justify-end gap-1.5">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-7 text-[11px] gap-1 border-emerald-500/40 text-emerald-600 hover:bg-emerald-500/10 hover:text-emerald-700"
-                                disabled={isActioning}
-                                onClick={() => handleApprove(req.id)}
+                                  <Info className="h-3.5 w-3.5" />
+                                </button>
+                              </PopoverTrigger>
+                              <PopoverContent
+                                side="top"
+                                align="start"
+                                className="w-[360px] max-w-[calc(100vw-2rem)] border border-rose-200/60 bg-popover p-0 text-left shadow-xl"
                               >
-                                {isActioning ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <CheckCircle className="h-3 w-3" />
-                                )}
-                                Approve
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-7 text-[11px] gap-1 border-rose-500/40 text-rose-600 hover:bg-rose-500/10 hover:text-rose-700"
-                                disabled={isActioning}
-                                onClick={() => handleOpenReject(req.id)}
-                              >
-                                <XCircle className="h-3 w-3" />
-                                Reject
-                              </Button>
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground mr-4">-</span>
+                                <div className="border-b border-border/60 px-4 py-3">
+                                  <p className="text-xs font-semibold text-foreground">
+                                    Rejection Reason
+                                  </p>
+                                </div>
+                                <div className="max-h-64 overflow-y-auto px-4 py-3">
+                                  <p className="whitespace-pre-wrap break-words text-xs leading-5 text-muted-foreground">
+                                    {req.rejectionReason}
+                                  </p>
+                                </div>
+                              </PopoverContent>
+                            </Popover>
                           )}
-                        </td>
-                      </tr>
-                    );
-                  }))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-2.5 text-center">
+                        {req.status === "pending" && isAdmin ? (
+                          <div className="flex items-center justify-start gap-1.5">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-[11px] gap-1 border-emerald-500/40 text-emerald-600 hover:bg-emerald-500/10 hover:text-emerald-700"
+                              disabled={isActioning}
+                              onClick={() => handleApprove(req.id)}
+                            >
+                              {isActioning ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <CheckCircle className="h-3 w-3" />
+                              )}
+                              Approve
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-[11px] gap-1 border-rose-500/40 text-rose-600 hover:bg-rose-500/10 hover:text-rose-700"
+                              disabled={isActioning}
+                              onClick={() => handleOpenReject(req.id)}
+                            >
+                              <XCircle className="h-3 w-3" />
+                              Reject
+                            </Button>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground mr-4">-</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Reject reason dialog */}
