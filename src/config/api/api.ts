@@ -198,6 +198,7 @@ const API = {
     add: "/leave-balances/admin/set-allocations",
     import: "/leave-balances/admin/import-excel",
     delete: "/leave-balances/allocations",
+    allocations: "/leave-balances/admin/allocations",
   },
   tools_management: {
     create: "/tools",
@@ -373,6 +374,8 @@ const API = {
     regularization_list: "/attendance-regularizations",
     regularization_action: (id: number) => `/attendance-regularizations/${id}/action`,
     summary: "/attendance/summary",
+    late_deduction_list: "/attendance/late-in",
+    late_deduction_action: "/attendance/action/{employeeId}/{weekStartDate}",
   },
 };
 

@@ -396,7 +396,7 @@ export function BalanceLogsTab({ onAdjustLeavesClick }: BalanceLogsTabProps) {
               cell: ({ row }: any) => {
                 const log = row.original;
                 return (
-                  <div className="flex justify-end">
+                  <div className="flex justify-start">
                     <Button
                       variant="ghost"
                       size="icon"

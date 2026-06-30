@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { MonthYearPicker } from "./month-year-picker";
-import { CalendarIcon, MoreVertical, Siren } from "lucide-react";
+import { CalendarIcon, Siren } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlobalTable } from "@/components/table/global-table";
 import { ColumnDef } from "@tanstack/react-table";
@@ -26,19 +26,16 @@ import { useAuthStore } from "@/stores/use-auth-store";
 import {
   useGetCompensatoryDates,
   useCreateRegularizationRequest,
+  useRegularizationAction,
   // useRegularizationAction,
 } from "../services";
 import { useGetUsersList } from "../../users/services";
 // import { useGetLeaveAllocations } from "../../leave-management/services";
 import { toast } from "sonner";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { roles } from "@/utils/constant";
+import { useQueryClient } from "@tanstack/react-query";
+import API from "@/config/api/api";
 // import { useQueryClient } from "@tanstack/react-query";
 // import API from "@/config/api/api";
 
@@ -242,9 +239,6 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
   ).toLowerCase();
   const isAdmin = roleName === roles.ADMIN;
 
-  // const isRegularizingForAnotherEmployee =
-  //   isAdmin && Number(resolvedEmpId) !== Number(user?.user?.id);
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRegDate, _setSelectedRegDate] = useState("");
   const [compensatoryDate, setCompensatoryDate] = useState("");
@@ -276,18 +270,18 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
       isModalOpen && !isAdmin
     );
 
-  // const queryClient = useQueryClient();
-  // const { mutate: autoApprove } = useRegularizationAction(() => {
-  //   queryClient.invalidateQueries({
-  //     queryKey: [API.attendance.regularization_list],
-  //   });
-  //   queryClient.invalidateQueries({
-  //     queryKey: [API.attendance.compensatory_date],
-  //   });
-  // });
+  const queryClient = useQueryClient();
+  useRegularizationAction(() => {
+    queryClient.invalidateQueries({
+      queryKey: [API.attendance.regularization_list],
+    });
+    queryClient.invalidateQueries({
+      queryKey: [API.attendance.compensatory_date],
+    });
+  });
 
   const { mutate: createRegularization, isPending: isSubmitting } =
-    useCreateRegularizationRequest(() => {
+    useCreateRegularizationRequest((_data: any) => {
       setIsModalOpen(false);
       setCompensatoryDate("");
       setReason("");
@@ -540,51 +534,41 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
       },
       ...(isAdmin
         ? [
-            {
-              id: "actions",
-              header: () => (
-                <div className="text-center font-semibold">Actions</div>
-              ),
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              cell: ({ row }: any) => {
-                const future = isFutureDate(row.original.rawDateStr);
-                const canApply =
-                  !future &&
-                  isLessThanEightFifteen(row.original.workingHrs) &&
-                  !matchedUser?.isSingleCheckInAllowed;
-                if (!canApply) return <div className="w-full text-center" />;
-                return (
-                  <div
-                    className="w-full flex items-center justify-start"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 p-0 hover:bg-muted"
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                          <span className="sr-only">Open menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-40">
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenRegularization(row.original.rawDateStr);
-                          }}
-                        >
-                          Apply Regularization
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                );
-              },
+          {
+            id: "actions",
+            header: () => <div className="text-center font-semibold">Actions</div>,
+            meta: {
+              getCellClassName: () => "!py-0.5",
             },
-          ]
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            cell: ({ row }: any) => {
+              const future = isFutureDate(row.original.rawDateStr);
+              const canApply =
+                !future &&
+                isLessThanEightFifteen(row.original.workingHrs) &&
+                !matchedUser?.isSingleCheckInAllowed;
+              if (!canApply) return <div className="w-full text-center" />;
+              return (
+                <div
+                  className="w-full flex items-center justify-center"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-[11px] font-semibold bg-sky-500/10 text-sky-400 border border-sky-500/20 hover:bg-sky-500/20 hover:text-sky-300 rounded-lg px-3 flex items-center justify-center"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenRegularization(row.original.rawDateStr);
+                    }}
+                  >
+                    Apply Regularization
+                  </Button>
+                </div>
+              );
+            },
+          },
+        ]
         : []),
     ],
     [isAdmin, matchedUser]
