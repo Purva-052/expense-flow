@@ -115,7 +115,6 @@ export function UserActionForm({
           joiningDate: currentRow?.joiningDate
             ? currentRow.joiningDate.slice(0, 10)
             : null,
-          isSingleCheckInAllowed: currentRow?.isSingleCheckInAllowed ?? false,
           excludeFromReports: currentRow?.excludeFromReports ?? false,
           reportingStartDate: currentRow?.reportingStartDate
             ? currentRow.reportingStartDate.slice(0, 10)
@@ -137,7 +136,6 @@ export function UserActionForm({
           status: true,
           joining: false,
           joiningDate: null,
-          isSingleCheckInAllowed: false,
           excludeFromReports: false,
           reportingStartDate: null,
           mewurkEmployeeCode: "",
@@ -195,7 +193,6 @@ export function UserActionForm({
         joiningDate: currentRow?.joiningDate
           ? currentRow.joiningDate.slice(0, 10)
           : null,
-        isSingleCheckInAllowed: currentRow?.isSingleCheckInAllowed ?? false,
         excludeFromReports: currentRow?.excludeFromReports ?? false,
         reportingStartDate: currentRow?.reportingStartDate
           ? currentRow.reportingStartDate.slice(0, 10)
@@ -634,7 +631,7 @@ export function UserActionForm({
                 />
 
                 {/* ✅ Status Checkbox */}
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-row items-center gap-6">
                   <Controller
                     control={form.control}
                     name="status"
@@ -649,20 +646,6 @@ export function UserActionForm({
                     )}
                   />
 
-                  <Controller
-                    control={form.control}
-                    name="isSingleCheckInAllowed"
-                    render={({ field }) => (
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          checked={!!field.value}
-                          onCheckedChange={field.onChange}
-                          disabled={user?.user?.role !== roles.ADMIN}
-                        />
-                        <label className="text-sm font-medium">Single Check-In Allowed</label>
-                      </div>
-                    )}
-                  />
 
                   <Controller
                     control={form.control}

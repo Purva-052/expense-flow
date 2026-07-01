@@ -48,7 +48,6 @@ export function ActionFormModal({
       profilePicS3Key: values.profilePicS3Key || "",
       reportingToId: values.reportingToId || null,
       mewurkEmployeeCode: values.mewurkEmployeeCode || null,
-      isSingleCheckInAllowed: values.isSingleCheckInAllowed,
       excludeFromReports: values.excludeFromReports,
       reportingStartDate: values.reportingStartDate,
     };
@@ -72,7 +71,6 @@ export function ActionFormModal({
       profilePicS3Key: values.profilePicS3Key || "",
       reportingToId: values.reportingToId || null,
       mewurkEmployeeCode: values.mewurkEmployeeCode || null,
-      isSingleCheckInAllowed: values.isSingleCheckInAllowed,
       excludeFromReports: values.excludeFromReports,
       reportingStartDate: values.reportingStartDate,
     };

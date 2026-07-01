@@ -393,47 +393,48 @@ export interface FileRoutesByFullPath {
   '/503': typeof errors503Route
   '/unauthorized': typeof errorsUnauthorizedRoute
   '/sign/$token': typeof SignTokenRoute
-  '/admob-analytics/': typeof AuthenticatedAdmobAnalyticsIndexRoute
-  '/attendance/': typeof AuthenticatedAttendanceIndexRoute
-  '/brands/': typeof AuthenticatedBrandsIndexRoute
-  '/client-inventory-type/': typeof AuthenticatedClientInventoryTypeIndexRoute
-  '/client-inventory/': typeof AuthenticatedClientInventoryIndexRoute
-  '/client-nda/': typeof AuthenticatedClientNdaIndexRoute
-  '/clients/': typeof AuthenticatedClientsIndexRoute
-  '/conference-room-booking/': typeof AuthenticatedConferenceRoomBookingIndexRoute
-  '/daily-report/': typeof AuthenticatedDailyReportIndexRoute
-  '/device-management/': typeof AuthenticatedDeviceManagementIndexRoute
-  '/domain/': typeof AuthenticatedDomainIndexRoute
-  '/extra-work-report/': typeof AuthenticatedExtraWorkReportIndexRoute
-  '/headphone-brand/': typeof AuthenticatedHeadphoneBrandIndexRoute
-  '/inbound-sources/': typeof AuthenticatedInboundSourcesIndexRoute
-  '/industry/': typeof AuthenticatedIndustryIndexRoute
-  '/inquiry-channels/': typeof AuthenticatedInquiryChannelsIndexRoute
-  '/inquiry-requirements/': typeof AuthenticatedInquiryRequirementsIndexRoute
-  '/inquiry-types/': typeof AuthenticatedInquiryTypesIndexRoute
-  '/inquiry/': typeof AuthenticatedInquiryIndexRoute
-  '/interviews/': typeof AuthenticatedInterviewsIndexRoute
-  '/leave-management/': typeof AuthenticatedLeaveManagementIndexRoute
-  '/linode-server-dashboard/': typeof AuthenticatedLinodeServerDashboardIndexRoute
-  '/meetings-overview/': typeof AuthenticatedMeetingsOverviewIndexRoute
-  '/mobile-inventory/': typeof AuthenticatedMobileInventoryIndexRoute
-  '/monitor-size/': typeof AuthenticatedMonitorSizeIndexRoute
-  '/new-joinees/': typeof AuthenticatedNewJoineesIndexRoute
-  '/outbound-sources/': typeof AuthenticatedOutboundSourcesIndexRoute
-  '/processor/': typeof AuthenticatedProcessorIndexRoute
-  '/product-inquiry/': typeof AuthenticatedProductInquiryIndexRoute
-  '/profile/': typeof AuthenticatedProfileIndexRoute
-  '/project-type/': typeof AuthenticatedProjectTypeIndexRoute
-  '/projects-analytics/': typeof AuthenticatedProjectsAnalyticsIndexRoute
-  '/projects/': typeof AuthenticatedProjectsIndexRoute
-  '/ram-types/': typeof AuthenticatedRamTypesIndexRoute
-  '/server/': typeof AuthenticatedServerIndexRoute
-  '/storage/': typeof AuthenticatedStorageIndexRoute
-  '/system-inventory/': typeof AuthenticatedSystemInventoryIndexRoute
-  '/technology/': typeof AuthenticatedTechnologyIndexRoute
-  '/tools-management/': typeof AuthenticatedToolsManagementIndexRoute
-  '/transactions-logs/': typeof AuthenticatedTransactionsLogsIndexRoute
-  '/users/': typeof AuthenticatedUsersIndexRoute
+  '/': typeof AuthenticatedIndexRoute
+  '/admob-analytics': typeof AuthenticatedAdmobAnalyticsIndexRoute
+  '/attendance': typeof AuthenticatedAttendanceIndexRoute
+  '/brands': typeof AuthenticatedBrandsIndexRoute
+  '/client-inventory-type': typeof AuthenticatedClientInventoryTypeIndexRoute
+  '/client-inventory': typeof AuthenticatedClientInventoryIndexRoute
+  '/client-nda': typeof AuthenticatedClientNdaIndexRoute
+  '/clients': typeof AuthenticatedClientsIndexRoute
+  '/conference-room-booking': typeof AuthenticatedConferenceRoomBookingIndexRoute
+  '/daily-report': typeof AuthenticatedDailyReportIndexRoute
+  '/device-management': typeof AuthenticatedDeviceManagementIndexRoute
+  '/domain': typeof AuthenticatedDomainIndexRoute
+  '/extra-work-report': typeof AuthenticatedExtraWorkReportIndexRoute
+  '/headphone-brand': typeof AuthenticatedHeadphoneBrandIndexRoute
+  '/inbound-sources': typeof AuthenticatedInboundSourcesIndexRoute
+  '/industry': typeof AuthenticatedIndustryIndexRoute
+  '/inquiry-channels': typeof AuthenticatedInquiryChannelsIndexRoute
+  '/inquiry-requirements': typeof AuthenticatedInquiryRequirementsIndexRoute
+  '/inquiry-types': typeof AuthenticatedInquiryTypesIndexRoute
+  '/inquiry': typeof AuthenticatedInquiryIndexRoute
+  '/interviews': typeof AuthenticatedInterviewsIndexRoute
+  '/leave-management': typeof AuthenticatedLeaveManagementIndexRoute
+  '/linode-server-dashboard': typeof AuthenticatedLinodeServerDashboardIndexRoute
+  '/meetings-overview': typeof AuthenticatedMeetingsOverviewIndexRoute
+  '/mobile-inventory': typeof AuthenticatedMobileInventoryIndexRoute
+  '/monitor-size': typeof AuthenticatedMonitorSizeIndexRoute
+  '/new-joinees': typeof AuthenticatedNewJoineesIndexRoute
+  '/outbound-sources': typeof AuthenticatedOutboundSourcesIndexRoute
+  '/processor': typeof AuthenticatedProcessorIndexRoute
+  '/product-inquiry': typeof AuthenticatedProductInquiryIndexRoute
+  '/profile': typeof AuthenticatedProfileIndexRoute
+  '/project-type': typeof AuthenticatedProjectTypeIndexRoute
+  '/projects-analytics': typeof AuthenticatedProjectsAnalyticsIndexRoute
+  '/projects': typeof AuthenticatedProjectsIndexRoute
+  '/ram-types': typeof AuthenticatedRamTypesIndexRoute
+  '/server': typeof AuthenticatedServerIndexRoute
+  '/storage': typeof AuthenticatedStorageIndexRoute
+  '/system-inventory': typeof AuthenticatedSystemInventoryIndexRoute
+  '/technology': typeof AuthenticatedTechnologyIndexRoute
+  '/tools-management': typeof AuthenticatedToolsManagementIndexRoute
+  '/transactions-logs': typeof AuthenticatedTransactionsLogsIndexRoute
+  '/users': typeof AuthenticatedUsersIndexRoute
   '/linode-server-dashboard/detail/$id': typeof AuthenticatedLinodeServerDashboardDetailIdRoute
   '/projects/detail/$id': typeof AuthenticatedProjectsDetailIdRoute
 }
@@ -564,47 +565,48 @@ export interface FileRouteTypes {
     | '/503'
     | '/unauthorized'
     | '/sign/$token'
-    | '/admob-analytics/'
-    | '/attendance/'
-    | '/brands/'
-    | '/client-inventory-type/'
-    | '/client-inventory/'
-    | '/client-nda/'
-    | '/clients/'
-    | '/conference-room-booking/'
-    | '/daily-report/'
-    | '/device-management/'
-    | '/domain/'
-    | '/extra-work-report/'
-    | '/headphone-brand/'
-    | '/inbound-sources/'
-    | '/industry/'
-    | '/inquiry-channels/'
-    | '/inquiry-requirements/'
-    | '/inquiry-types/'
-    | '/inquiry/'
-    | '/interviews/'
-    | '/leave-management/'
-    | '/linode-server-dashboard/'
-    | '/meetings-overview/'
-    | '/mobile-inventory/'
-    | '/monitor-size/'
-    | '/new-joinees/'
-    | '/outbound-sources/'
-    | '/processor/'
-    | '/product-inquiry/'
-    | '/profile/'
-    | '/project-type/'
-    | '/projects-analytics/'
-    | '/projects/'
-    | '/ram-types/'
-    | '/server/'
-    | '/storage/'
-    | '/system-inventory/'
-    | '/technology/'
-    | '/tools-management/'
-    | '/transactions-logs/'
-    | '/users/'
+    | '/'
+    | '/admob-analytics'
+    | '/attendance'
+    | '/brands'
+    | '/client-inventory-type'
+    | '/client-inventory'
+    | '/client-nda'
+    | '/clients'
+    | '/conference-room-booking'
+    | '/daily-report'
+    | '/device-management'
+    | '/domain'
+    | '/extra-work-report'
+    | '/headphone-brand'
+    | '/inbound-sources'
+    | '/industry'
+    | '/inquiry-channels'
+    | '/inquiry-requirements'
+    | '/inquiry-types'
+    | '/inquiry'
+    | '/interviews'
+    | '/leave-management'
+    | '/linode-server-dashboard'
+    | '/meetings-overview'
+    | '/mobile-inventory'
+    | '/monitor-size'
+    | '/new-joinees'
+    | '/outbound-sources'
+    | '/processor'
+    | '/product-inquiry'
+    | '/profile'
+    | '/project-type'
+    | '/projects-analytics'
+    | '/projects'
+    | '/ram-types'
+    | '/server'
+    | '/storage'
+    | '/system-inventory'
+    | '/technology'
+    | '/tools-management'
+    | '/transactions-logs'
+    | '/users'
     | '/linode-server-dashboard/detail/$id'
     | '/projects/detail/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -944,7 +946,7 @@ declare module '@tanstack/react-router' {
     '/_authenticated/mobile-inventory/': {
       id: '/_authenticated/mobile-inventory/'
       path: '/mobile-inventory'
-      fullPath: '/mobile-inventory/'
+      fullPath: '/mobile-inventory'
       preLoaderRoute: typeof AuthenticatedMobileInventoryIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }

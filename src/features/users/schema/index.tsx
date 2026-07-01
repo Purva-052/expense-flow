@@ -63,7 +63,6 @@ const baseUserSchema = z.object({
   ),
   status: z.boolean(),
   joining: z.boolean(),
-  isSingleCheckInAllowed: z.boolean().optional(),
   excludeFromReports: z.boolean().optional(),
   reportingStartDate: z.preprocess(
     normalizeOptionalDate,
