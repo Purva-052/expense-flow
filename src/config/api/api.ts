@@ -191,7 +191,7 @@ const API = {
     leave_adjust: "/leave-management/adjust/balance",
     leave_balance: "/leave-management/credit-history",
     exam_leave: "/leave-management/exam-eligibility",
-    leave_details: " /leave-management/{id}/details"
+    leave_details: " /leave-management/{id}/details",
   },
   leave_balance: {
     get: "/leave-balances",
@@ -367,12 +367,20 @@ const API = {
     submitSignature: (token: string) => `/sign/${token}/submit`,
     rejectSignature: (token: string) => `/sign/${token}/reject`,
   },
+  mobile_inventory: {
+    create: "/mobile-inventory",
+    list: "/mobile-inventory",
+    update: (id: string) => `/mobile-inventory/${id}`,
+    delete: (id: string) => `/mobile-inventory/${id}`,
+    update_inventory: (id: string) => `/mobile-inventory/${id}`,
+  },
   attendance: {
     high_working_hours: "/attendance/high-working-hours",
     compensatory_date: "/attendance-regularizations/compensatory-dates",
     regularizations: "/attendance-regularizations",
     regularization_list: "/attendance-regularizations",
-    regularization_action: (id: number) => `/attendance-regularizations/${id}/action`,
+    regularization_action: (id: number) =>
+      `/attendance-regularizations/${id}/action`,
     summary: "/attendance/summary",
     late_deduction_list: "/attendance/late-in",
     late_deduction_action: "/attendance/action/{employeeId}/{weekStartDate}",
