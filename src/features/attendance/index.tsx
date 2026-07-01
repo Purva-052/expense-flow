@@ -26,6 +26,7 @@ const AttendancePage: React.FC = () => {
   ).toLowerCase();
 
   const isAdmin = roleName === roles.ADMIN;
+  const isTeamLead = roleName === roles.TEAM_LEAD;
   return (
     <PageLayout>
       <div className="flex flex-col gap-4">
@@ -115,6 +116,12 @@ const AttendancePage: React.FC = () => {
                   <Clock className="h-4 w-4" />
                   My Attendance
                 </TabsTrigger>
+                {isTeamLead && (
+                  <TabsTrigger value="employee-attendance" className={tabTriggerClass}>
+                    <Users className="h-4 w-4" />
+                    Monthly Attendance
+                  </TabsTrigger>
+                )}
                 <TabsTrigger value="regularization" className={tabTriggerClass}>
                   <ClipboardList className="h-4 w-4" />
                   Regularization
@@ -137,6 +144,15 @@ const AttendancePage: React.FC = () => {
                 <RegularizationRequestsPanel employeeId={Number(user?.user?.id || user?.user_id)} statusFilter="" />
               </Card>
             </TabsContent>
+
+            {isTeamLead && (
+              <TabsContent
+                value="employee-attendance"
+                className="mt-2 focus-visible:outline-none flex-none"
+              >
+                <EmployeeAttendance />
+              </TabsContent>
+            )}
           </Tabs>
         )}
       </div>
