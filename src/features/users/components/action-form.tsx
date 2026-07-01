@@ -34,7 +34,6 @@ import { toast } from "sonner";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { Switch } from "@/components/ui/switch";
 
 interface Props {
   currentRow?: any;
