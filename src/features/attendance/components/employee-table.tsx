@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { MonthYearPicker } from "./month-year-picker";
-import { CalendarIcon, MoreVertical, Siren } from "lucide-react";
+import { CalendarIcon, Siren } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlobalTable } from "@/components/table/global-table";
 import { ColumnDef } from "@tanstack/react-table";
@@ -27,20 +27,17 @@ import {
   useGetCompensatoryDates,
   useCreateRegularizationRequest,
   useRegularizationAction,
+  // useRegularizationAction,
 } from "../services";
 import { useGetUsersList } from "../../users/services";
 // import { useGetLeaveAllocations } from "../../leave-management/services";
 import { toast } from "sonner";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { roles } from "@/utils/constant";
 import { useQueryClient } from "@tanstack/react-query";
 import API from "@/config/api/api";
+// import { useQueryClient } from "@tanstack/react-query";
+// import API from "@/config/api/api";
 
 interface EmployeeTableProps {
   detailedLogs: any[];
@@ -132,7 +129,7 @@ const isTodayOrFutureDate = (dateStr: string) => {
 // };
 
 const getStatusBadge = (
-  status: "P" | "A" | "WO" | "AH" | "E" | "L" | "",
+  status: "P" | "A" | "WO" | "AH" | "E" | "L" | "HL" | "",
   isFuture: boolean = false,
   isCorrected: boolean = false
 ) => {
@@ -162,6 +159,12 @@ const getStatusBadge = (
       return (
         <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-500 border border-amber-500/30 hover:bg-amber-500/20 text-[10px] font-bold rounded-md px-2 py-0.5">
           HALF DAY{isCorrected ? " *" : ""}
+        </Badge>
+      );
+    case "HL":
+      return (
+        <Badge className="bg-orange-500/15 text-orange-600 dark:text-orange-500 border border-orange-500/30 hover:bg-orange-500/20 text-[10px] font-bold rounded-md px-2 py-0.5">
+          HALF LEAVE{isCorrected ? " *" : ""}
         </Badge>
       );
     case "E":
@@ -194,6 +197,32 @@ const isLessThanEightFifteen = (
   return hours * 60 + minutes < 495; // 8 * 60 + 15 = 495
 };
 
+const isLessThanFourFifteen = (
+  workingHrs: string | null | undefined
+): boolean => {
+  if (!workingHrs || workingHrs === "-") return false;
+  const cleanStr = workingHrs.replace(/HRS/gi, "").trim();
+  const parts = cleanStr.split(":");
+  if (parts.length < 2) return false;
+  const hours = parseInt(parts[0], 10);
+  const minutes = parseInt(parts[1], 10);
+  if (isNaN(hours) || isNaN(minutes)) return false;
+  return hours * 60 + minutes < 255; // 4 * 60 + 15 = 255
+};
+
+const isWeekend = (dateStr: string): boolean => {
+  if (!dateStr) return false;
+  const parts = dateStr.split("-");
+  if (parts.length < 3) return false;
+  const date = new Date(
+    Number(parts[0]),
+    Number(parts[1]) - 1,
+    Number(parts[2])
+  );
+  const day = date.getDay();
+  return day === 0 || day === 6; // 0 is Sunday, 6 is Saturday
+};
+
 export const EmployeeTable: React.FC<EmployeeTableProps> = ({
   detailedLogs,
   onRowClick,
@@ -210,9 +239,6 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
   ).toLowerCase();
   const isAdmin = roleName === roles.ADMIN;
 
-  const isRegularizingForAnotherEmployee =
-    isAdmin && Number(resolvedEmpId) !== Number(user?.user?.id);
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRegDate, _setSelectedRegDate] = useState("");
   const [compensatoryDate, setCompensatoryDate] = useState("");
@@ -228,8 +254,8 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
     status: "active",
   });
 
-  const matchedUser = (usersResponse as any)?.data?.find((u: any) =>
-    Number(u.id) === Number(resolvedEmpId)
+  const matchedUser = (usersResponse as any)?.data?.find(
+    (u: any) => Number(u.id) === Number(resolvedEmpId)
   );
 
   const employeeCode =
@@ -238,10 +264,14 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
 
   // Fetch available compensatory dates
   const { data: highWorkingHoursData, isPending: isLoadingHighWorkingHours } =
-    useGetCompensatoryDates(employeeCode, selectedRegDate, isModalOpen);
+    useGetCompensatoryDates(
+      employeeCode,
+      selectedRegDate,
+      isModalOpen && !isAdmin
+    );
 
   const queryClient = useQueryClient();
-  const { mutate: autoApprove } = useRegularizationAction(() => {
+  useRegularizationAction(() => {
     queryClient.invalidateQueries({
       queryKey: [API.attendance.regularization_list],
     });
@@ -251,15 +281,10 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
   });
 
   const { mutate: createRegularization, isPending: isSubmitting } =
-    useCreateRegularizationRequest((data: any) => {
+    useCreateRegularizationRequest((_data: any) => {
       setIsModalOpen(false);
       setCompensatoryDate("");
       setReason("");
-
-      const regId = data?.id;
-      if (resolvedEmpId === 4 && regId) {
-        autoApprove({ id: regId, status: "approved" });
-      }
     });
 
   // const { data: allocationsResponse } = useGetLeaveAllocations(isAdmin) as any;
@@ -304,7 +329,7 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
       toast.error("Employee ID is missing.");
       return;
     }
-    if (!isRegularizingForAnotherEmployee && !compensatoryDate) {
+    if (!isAdmin && !compensatoryDate) {
       toast.error("Please select a compensatory date.");
       return;
     }
@@ -316,9 +341,8 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
     createRegularization({
       employeeCode: Number(resolvedEmpId),
       regularizationDate: selectedRegDate,
-      ...(isRegularizingForAnotherEmployee ? {} : { compensatoryDate }),
+      ...(isAdmin ? {} : { compensatoryDate }),
       reason: reason.trim(),
-      ...(Number(resolvedEmpId) === 4 ? { status: "approved" } : {}),
     });
   };
 
@@ -358,21 +382,31 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
         accessorKey: "firstIn",
         header: "First In",
         cell: ({ row }) => {
-          if (isFutureDate(row.original.rawDateStr)) return <span className="font-semibold text-foreground"></span>;
+          if (isFutureDate(row.original.rawDateStr))
+            return <span className="font-semibold text-foreground"></span>;
           let val = row.original.firstIn === "-" ? "" : row.original.firstIn;
-          if (isTodayOrFutureDate(row.original.rawDateStr) && val === "00:00") val = "";
+          if (isTodayOrFutureDate(row.original.rawDateStr) && val === "00:00")
+            val = "";
 
           let lateVal = row.original.lateInTime;
           if (lateVal === "00:00") lateVal = "";
-          const isLate = lateVal && lateVal !== "-";
+          const isHLOrWO =
+            row.original.finalStatus === "HL" ||
+            row.original.finalStatus === "WO" ||
+            isWeekend(row.original.rawDateStr);
+          const isLate = lateVal && lateVal !== "-" && !isHLOrWO;
           const titleText = isLate ? `Late In: ${lateVal}` : undefined;
 
           return (
-            <div className="relative flex items-center justify-start gap-1.5" title={titleText}>
+            <div
+              className="relative flex items-center justify-start gap-1.5"
+              title={titleText}
+            >
               <span
                 className={`font-semibold ${isLate ? "text-rose-600 dark:text-rose-400 cursor-help" : "text-foreground"}`}
               >
-                {val || (isTodayOrFutureDate(row.original.rawDateStr) ? "" : "-")}
+                {val ||
+                  (isTodayOrFutureDate(row.original.rawDateStr) ? "" : "-")}
               </span>
               {isLate && (
                 <Siren className="h-3.5 w-3.5 text-rose-500 animate-pulse" />
@@ -391,9 +425,11 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
         accessorKey: "lastOut",
         header: "Last Out",
         cell: ({ row }) => {
-          if (isFutureDate(row.original.rawDateStr)) return <span className="font-semibold text-foreground"></span>;
+          if (isFutureDate(row.original.rawDateStr))
+            return <span className="font-semibold text-foreground"></span>;
           let val = row.original.lastOut === "-" ? "" : row.original.lastOut;
-          if (isTodayOrFutureDate(row.original.rawDateStr) && val === "00:00") val = "";
+          if (isTodayOrFutureDate(row.original.rawDateStr) && val === "00:00")
+            val = "";
           return (
             <span className="font-semibold text-foreground">
               {val || (isTodayOrFutureDate(row.original.rawDateStr) ? "" : "-")}
@@ -405,9 +441,13 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
         accessorKey: "breakHrs",
         header: "Break Time",
         cell: ({ row }) => {
-          if (isFutureDate(row.original.rawDateStr)) return <span className="font-medium text-muted-foreground/85"></span>;
+          if (isFutureDate(row.original.rawDateStr))
+            return (
+              <span className="font-medium text-muted-foreground/85"></span>
+            );
           let val = row.original.breakHrs === "-" ? "" : row.original.breakHrs;
-          if (isTodayOrFutureDate(row.original.rawDateStr) && val === "00:00") val = "";
+          if (isTodayOrFutureDate(row.original.rawDateStr) && val === "00:00")
+            val = "";
           return (
             <span className="font-medium text-muted-foreground/85">
               {val || (isTodayOrFutureDate(row.original.rawDateStr) ? "" : "-")}
@@ -420,25 +460,74 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
         header: "Working Hours",
         meta: {
           getCellClassName: (row: any) => {
-            const isHalfDay = row.finalStatus === "AH" || String(row.finalStatus).toLowerCase().includes("half day");
-            const isRed = !isHalfDay && isLessThanEightFifteen(row.workingHrs) && !matchedUser?.isSingleCheckInAllowed;
+            const isHalfLeave =
+              row.finalStatus === "HL" ||
+              String(row.finalStatus).toLowerCase().includes("half leave") ||
+              String(row.finalStatus).toLowerCase() === "half day leave";
+            const isWeeklyOff =
+              row.finalStatus === "WO" ||
+              String(row.finalStatus).toLowerCase().includes("weekly off") ||
+              isWeekend(row.rawDateStr);
+
+            let isRed = false;
+            if (isWeeklyOff) {
+              isRed = false;
+            } else if (isHalfLeave) {
+              isRed = isLessThanFourFifteen(row.workingHrs);
+            } else {
+              isRed =
+                isLessThanEightFifteen(row.workingHrs) &&
+                !matchedUser?.isSingleCheckInAllowed;
+            }
             return isRed ? "bg-rose-500/10 dark:bg-rose-900/20" : "";
-          }
+          },
         },
         cell: ({ row }) => {
-          if (isFutureDate(row.original.rawDateStr)) return <span className="font-bold text-muted-foreground"></span>;
-          let workingHrsVal = row.original.workingHrs === "-" ? "" : row.original.workingHrs;
-          if (isTodayOrFutureDate(row.original.rawDateStr) && workingHrsVal === "00:00") workingHrsVal = "";
-          const isHalfDay = row.original.finalStatus === "AH" || String(row.original.finalStatus).toLowerCase().includes("half day");
-          const isRed = !isHalfDay && isLessThanEightFifteen(row.original.workingHrs) && !matchedUser?.isSingleCheckInAllowed;
+          if (isFutureDate(row.original.rawDateStr))
+            return <span className="font-bold text-muted-foreground"></span>;
+          let workingHrsVal =
+            row.original.workingHrs === "-" ? "" : row.original.workingHrs;
+          if (
+            isTodayOrFutureDate(row.original.rawDateStr) &&
+            workingHrsVal === "00:00"
+          )
+            workingHrsVal = "";
+          const isHalfLeave =
+            row.original.finalStatus === "HL" ||
+            String(row.original.finalStatus)
+              .toLowerCase()
+              .includes("half leave") ||
+            String(row.original.finalStatus).toLowerCase() === "half day leave";
+          const isWeeklyOff =
+            row.original.finalStatus === "WO" ||
+            String(row.original.finalStatus)
+              .toLowerCase()
+              .includes("weekly off") ||
+            isWeekend(row.original.rawDateStr);
+
+          let isRed = false;
+          if (isWeeklyOff) {
+            isRed = false;
+          } else if (isHalfLeave) {
+            isRed = isLessThanFourFifteen(row.original.workingHrs);
+          } else {
+            isRed =
+              isLessThanEightFifteen(row.original.workingHrs) &&
+              !matchedUser?.isSingleCheckInAllowed;
+          }
           return (
             <span
-              className={`font-bold transition-colors ${isRed
-                ? "text-rose-600 dark:text-rose-400"
-                : "text-sky-600 dark:text-sky-400"
-                }`}
+              className={`font-bold transition-colors ${
+                isRed
+                  ? "text-rose-600 dark:text-rose-400"
+                  : "text-sky-600 dark:text-sky-400"
+              }`}
             >
-              {workingHrsVal ? `${workingHrsVal}${row.original.isCorrected ? " *" : ""}` : (isTodayOrFutureDate(row.original.rawDateStr) ? "" : "-")}
+              {workingHrsVal
+                ? `${workingHrsVal}${row.original.isCorrected ? " *" : ""}`
+                : isTodayOrFutureDate(row.original.rawDateStr)
+                  ? ""
+                  : "-"}
             </span>
           );
         },
@@ -448,6 +537,9 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
           {
             id: "actions",
             header: () => <div className="text-center font-semibold">Actions</div>,
+            meta: {
+              getCellClassName: () => "!py-0.5",
+            },
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             cell: ({ row }: any) => {
               const future = isFutureDate(row.original.rawDateStr);
@@ -461,28 +553,17 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
                   className="w-full flex items-center justify-center"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 p-0 hover:bg-muted"
-                      >
-                        <MoreVertical className="h-4 w-4" />
-                        <span className="sr-only">Open menu</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-40">
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleOpenRegularization(row.original.rawDateStr);
-                        }}
-                      >
-                        Apply Regularization
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-[11px] font-semibold bg-sky-500/10 text-sky-400 border border-sky-500/20 hover:bg-sky-500/20 hover:text-sky-300 rounded-lg px-3 flex items-center justify-center"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenRegularization(row.original.rawDateStr);
+                    }}
+                  >
+                    Apply Regularization
+                  </Button>
                 </div>
               );
             },
@@ -497,12 +578,12 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
     <div
       className={
         embedded
-          ? "overflow-hidden flex flex-col"
-          : "border border-border rounded-xl shadow-md bg-card overflow-hidden flex flex-col"
+          ? "flex flex-col min-h-0"
+          : "border border-border rounded-xl shadow-lg bg-card overflow-hidden flex flex-col"
       }
     >
       {monthNavigator && (
-        <div className="flex justify-center py-3 px-4 border-b border-border bg-card">
+        <div className="flex justify-center py-3 px-4 border-b border-border bg-card shrink-0">
           <MonthYearPicker
             month={monthNavigator.month}
             year={monthNavigator.year}
@@ -514,13 +595,13 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
         </div>
       )}
       <div className="min-h-0">
-        <GlobalTable
+        <GlobalTable<any>
           data={detailedLogs}
           columns={columns}
           totalCount={detailedLogs.length}
           currentPage={1}
           pageSize={detailedLogs.length || 10}
-          onPaginationChange={() => { }}
+          onPaginationChange={() => {}}
           isPaginationEnabled={false}
           scrollY="480px"
           onRowClick={(row) => {
@@ -550,7 +631,7 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4 py-2">
-            {!isRegularizingForAnotherEmployee && (
+            {!isAdmin && (
               <div className="space-y-2 flex flex-col">
                 <Label className="text-sm font-semibold flex items-center gap-1 mb-1">
                   Compensatory Date
@@ -570,8 +651,9 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
-                        className={`w-full justify-start text-left font-normal border-border/80 ${!compensatoryDate && "text-muted-foreground"
-                          }`}
+                        className={`w-full justify-start text-left font-normal border-border/80 ${
+                          !compensatoryDate && "text-muted-foreground"
+                        }`}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
                         {compensatoryDate ? (

@@ -130,6 +130,7 @@ export function LeaveSummaryChart({
                       ))}
                     </Pie>
                     <Tooltip
+                      wrapperStyle={{ zIndex: 50 }}
                       contentStyle={{
                         backgroundColor: "var(--popover)",
                         borderColor: "var(--border)",

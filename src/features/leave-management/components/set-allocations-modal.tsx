@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import CustomButton from "@/components/shared/custom-button";
-import { useSetLeaveAllocations } from "../services";
+import { useSetLeaveAllocations, useGetLeaveAllocations } from "../services";
 import { AlertTriangle } from "lucide-react";
 
 interface SetAllocationsModalProps {
@@ -67,21 +67,28 @@ export function SetAllocationsModal({
     },
   });
 
+  const { data: allocationsResponse } = useGetLeaveAllocations(open) as any;
+
   const { mutateAsync: setLeaveAllocations, isPending: isSubmitting } =
     useSetLeaveAllocations(() => {
       onOpenChange(false);
     });
 
-  // Reset form when dialog opens/closes
+  // Reset form when dialog opens/closes or when allocations data is fetched
   useEffect(() => {
     if (open) {
+      const allocations = allocationsResponse?.data || allocationsResponse;
+      const casualLeave = allocations?.casualLeave !== undefined ? allocations.casualLeave : allocations?.casual_leave;
+      const paidLeave = allocations?.paidLeave !== undefined ? allocations.paidLeave : allocations?.paid_leave;
+      const workingDaysAllowed = allocations?.workingDaysAllowed !== undefined ? allocations.workingDaysAllowed : allocations?.working_days_allowed;
+
       form.reset({
-        casualLeave: undefined,
-        paidLeave: undefined,
-        workingDaysAllowed: undefined,
+        casualLeave: casualLeave ?? undefined,
+        paidLeave: paidLeave ?? undefined,
+        workingDaysAllowed: workingDaysAllowed ?? undefined,
       });
     }
-  }, [open, form]);
+  }, [open, allocationsResponse, form]);
 
   const onSubmit = async (values: TSetAllocationsFormSchema) => {
     try {

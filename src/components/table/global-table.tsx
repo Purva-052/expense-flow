@@ -220,7 +220,10 @@ export function GlobalTable<TData>({
                     {row.getVisibleCells().map((cell: any) => (
                       <td
                         key={cell.id}
-                        className="p-4 align-middle whitespace-nowrap"
+                        className={cn(
+                          "p-4 align-middle whitespace-nowrap",
+                          cell.column.columnDef.meta?.getCellClassName?.(row.original)
+                        )}
                       >
                         {flexRender(
                           cell.column.columnDef.cell,

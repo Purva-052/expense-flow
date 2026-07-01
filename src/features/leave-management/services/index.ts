@@ -5,7 +5,7 @@ import usePatchData from "@/hooks/use-patch-data";
 import useDeleteData from "@/hooks/use-delete-data";
 import useFetchData from "@/hooks/use-fetch-data";
 import { useLeaveStore } from "../stores";
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import instance from "@/config/instance/instance";
 import { toast } from "sonner";
 import { extractErrorInfo } from "@/utils/error-response";
@@ -20,6 +20,7 @@ const leaveRefetchQueries = [
   LEAVE_DASHBOARD_URL,
   API.leave_management.leave_balance,
   API.users.list,
+  API.leave_balance.allocations,
 ];
 
 export const useCreateLeaveData = () => {
@@ -209,17 +210,8 @@ export const useSetLeaveAllocations = (onSuccess?: () => void) => {
  * Fetch leave allocations settings.
  */
 export const useGetLeaveAllocations = (enabled = true) => {
-  return useQuery<any, Error>({
-    queryKey: [API.leave_balance.add, "fetch"],
-    queryFn: async (): Promise<any> => {
-      const response = await instance.post({
-        url: API.leave_balance.add,
-        data: {},
-      });
-      return response;
-    },
-    refetchOnWindowFocus: false,
-    retry: 1,
+  return useFetchData({
+    url: API.leave_balance.allocations,
     enabled,
   });
 };

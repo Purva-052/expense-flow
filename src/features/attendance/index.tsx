@@ -4,10 +4,11 @@ import TablePageHeader from "@/components/table/table-page-header";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
-import { ClipboardList, Clock, Users } from "lucide-react";
+import { ClipboardList, Clock, Users, ClockAlert } from "lucide-react";
 import { MyAttendance } from "./components/my-attendance";
 import { EmployeeAttendance } from "./components/employee-attendance";
 import { RegularizationRequestsPanel } from "./components/attendance-table";
+import { LateInLeaveDeductions } from "./components/late-in-deductions";
 import { Card } from "@/components/ui/card";
 
 const tabTriggerClass =
@@ -61,6 +62,10 @@ const AttendancePage: React.FC = () => {
                   <ClipboardList className="h-4 w-4" />
                   Regularization
                 </TabsTrigger>
+                <TabsTrigger value="late-in-deductions" className={tabTriggerClass}>
+                  <ClockAlert className="h-4 w-4" />
+                  Late In Deductions
+                </TabsTrigger>
               </TabsList>
               <div
                 id="attendance-filters-slot-admin"
@@ -91,6 +96,15 @@ const AttendancePage: React.FC = () => {
                   employeeId={Number(user?.user?.id || user?.user_id)}
                   statusFilter=""
                 />
+              </Card>
+            </TabsContent>
+
+            <TabsContent
+              value="late-in-deductions"
+              className="mt-2 focus-visible:outline-none flex-none"
+            >
+              <Card className="w-full overflow-hidden border border-border shadow-sm">
+                <LateInLeaveDeductions />
               </Card>
             </TabsContent>
           </Tabs>
