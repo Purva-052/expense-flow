@@ -64,6 +64,23 @@ const baseUserSchema = z.object({
   status: z.boolean(),
   joining: z.boolean(),
   isSingleCheckInAllowed: z.boolean().optional(),
+  excludeFromReports: z.boolean().optional(),
+  reportingStartDate: z.preprocess(
+    normalizeOptionalDate,
+    z
+      .string()
+      .nullable()
+      .optional()
+      .refine(
+        (val) => {
+          if (!val) return true; // allow empty/null
+          return !isNaN(Date.parse(val));
+        },
+        {
+          message: "Invalid date format.",
+        }
+      )
+  ),
   mewurkEmployeeCode: z
     .string()
     .trim()

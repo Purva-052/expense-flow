@@ -107,7 +107,6 @@ export function GlobalTable<TData>({
     manualPagination: true,
     manualSorting,
     enableSorting,
-    enableSortingRemoval: false,
     pageCount: Math.ceil((totalCount ?? 0) / (pageSize ?? 10)),
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),

@@ -116,6 +116,10 @@ export function UserActionForm({
             ? currentRow.joiningDate.slice(0, 10)
             : null,
           isSingleCheckInAllowed: currentRow?.isSingleCheckInAllowed ?? false,
+          excludeFromReports: currentRow?.excludeFromReports ?? false,
+          reportingStartDate: currentRow?.reportingStartDate
+            ? currentRow.reportingStartDate.slice(0, 10)
+            : null,
           mewurkEmployeeCode: currentRow?.mewurkEmployeeCode ?? "",
           // currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
           profilePicS3Key: currentRow?.profilePicUrl ?? "",
@@ -134,6 +138,8 @@ export function UserActionForm({
           joining: false,
           joiningDate: null,
           isSingleCheckInAllowed: false,
+          excludeFromReports: false,
+          reportingStartDate: null,
           mewurkEmployeeCode: "",
           password: "",
           profilePicS3Key: "",
@@ -190,6 +196,10 @@ export function UserActionForm({
           ? currentRow.joiningDate.slice(0, 10)
           : null,
         isSingleCheckInAllowed: currentRow?.isSingleCheckInAllowed ?? false,
+        excludeFromReports: currentRow?.excludeFromReports ?? false,
+        reportingStartDate: currentRow?.reportingStartDate
+          ? currentRow.reportingStartDate.slice(0, 10)
+          : null,
         mewurkEmployeeCode: currentRow?.mewurkEmployeeCode ?? "",
         // currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
         profilePicS3Key: currentRow?.profilePicUrl ?? "",
@@ -262,8 +272,10 @@ export function UserActionForm({
 
     const payload = {
       ...values,
+      excludeFromReports: values.excludeFromReports ?? false,
       dateOfBirth: formatDateToYMD(values.dateOfBirth),
       careerStartDate: formatDateToYMD(values.careerStartDate) || "",
+      reportingStartDate: values.reportingStartDate ? formatDateToYMD(values.reportingStartDate) : null,
       profilePicS3Key: finalFileKey,
     };
     delete payload.file;
@@ -599,6 +611,28 @@ export function UserActionForm({
                   )}
                 />
 
+                <FormField
+                  control={form.control}
+                  name="reportingStartDate"
+                  render={({ fieldState }) => (
+                    <FormItem>
+                      <FormLabel
+                        className={cn(
+                          "flex items-center gap-1",
+                          fieldState.error && "text-red-500"
+                        )}
+                      >
+                        Reporting Start Date
+                      </FormLabel>
+                      <CustomDatePicker
+                        control={form.control}
+                        name="reportingStartDate"
+                        label=""
+                      />
+                    </FormItem>
+                  )}
+                />
+
                 {/* ✅ Status Checkbox */}
                 <div className="flex flex-col gap-4">
                   <Controller
@@ -626,6 +660,20 @@ export function UserActionForm({
                           disabled={user?.user?.role !== roles.ADMIN}
                         />
                         <label className="text-sm font-medium">Single Check-In Allowed</label>
+                      </div>
+                    )}
+                  />
+
+                  <Controller
+                    control={form.control}
+                    name="excludeFromReports"
+                    render={({ field }) => (
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                        <label className="text-sm font-medium">Exclude from Reports</label>
                       </div>
                     )}
                   />
