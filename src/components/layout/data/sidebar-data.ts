@@ -276,6 +276,17 @@ export const sidebarData: SidebarData = {
           ],
         },
         {
+          title: "Mobile Inventory",
+          url: "/mobile-inventory",
+          icon: Database,
+          allowedTech: [29, 37],
+          requiredRoles: [
+            roles.ADMIN,
+            roles.TEAM_LEAD,
+            roles.PROJECT_MANAGER,
+          ],
+        },
+        {
           title: "Client Inventory",
           url: "/client-inventory",
           icon: Laptop,
