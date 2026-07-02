@@ -237,11 +237,12 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   const [orgModalOpen, setOrgModalOpen] = useState(false);
 
   // Mewurk API states
-  const [selectedMonth, setSelectedMonth] = useState(6); // default to June (6)
-  const [selectedYear, setSelectedYear] = useState(2026); // default to 2026
+  const today = new Date();
+  const [selectedMonth, setSelectedMonth] = useState(today.getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(today.getFullYear());
 
   const [currentCalendarMonth, setCurrentCalendarMonth] = useState<Date>(
-    new Date(2026, 5)
+    new Date(today.getFullYear(), today.getMonth(), 1)
   );
 
   // Sync selectedMonth and selectedYear to the viewed calendar month
