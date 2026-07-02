@@ -7,11 +7,13 @@ import usePatchData from "@/hooks/use-patch-data";
 import useDeleteData from "@/hooks/use-delete-data";
 import axios from "axios";
 import { AxiosError } from "axios";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { buildQueryString } from "@/utils/storage";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
+import instance from "@/config/instance/instance";
+import { extractErrorInfo } from "@/utils/error-response";
 
 const GET_API_URL = API.users.list;
 const GET_ROLES_API_URL = API.users.role;
@@ -228,3 +230,41 @@ export const useImportUsers = (): UseImportUsersReturn => {
 
   return { isUploading, uploadFile };
 };
+
+export const useUpdateSingleCheckInAllowed = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      isSingleCheckInAllowed,
+    }: {
+      id: string | number;
+      isSingleCheckInAllowed: boolean;
+    }) => {
+      const response = await instance.patch({
+        url: `${API.users.list}/${id}`,
+        data: { isSingleCheckInAllowed },
+      });
+      if (response?.statusCode === 200 || response?.statusCode === 201) {
+        return response;
+      }
+      throw new Error(response?.message || "Failed to update user settings");
+    },
+    onSuccess: (data: any) => {
+      toast.success(data?.message ?? "Single check-in settings updated successfully", {
+        position: "top-right",
+      });
+      queryClient.invalidateQueries({ queryKey: [GET_API_URL] });
+    },
+    onError: (error: any) => {
+      const errorInfo = extractErrorInfo(error);
+      toast.error(errorInfo.title, {
+        description: errorInfo.description,
+        duration: 3000,
+        position: "top-right",
+      });
+    },
+  });
+};
+

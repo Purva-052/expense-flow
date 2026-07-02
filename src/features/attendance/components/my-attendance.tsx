@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { MewurkService } from "../services/mewurk-service";
-import { CalendarDays, Network, X } from "lucide-react";
+import { Network } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   OrgChart,
@@ -21,21 +21,66 @@ import {
 } from "@/components/ui/dialog";
 import SimpleDropDownSearchable from "@/components/shared/custome-simple-dropdown";
 import { roles } from "@/utils/constant";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-
 import { DayDetailModal } from "./day-detail-modal";
 import { AttendanceStats } from "./attendance-stats";
 import { AttendanceTable } from "./attendance-table";
 import { EmployeeStats } from "./employee-stats";
 import { EmployeeTable } from "./employee-table";
 import { EmployeeHeader } from "./employee-header";
+
+const applySandwichLeaveToAttendanceArray = (attendance: any[]): any[] => {
+  if (!Array.isArray(attendance)) return [];
+  const sorted = [...attendance].sort((a, b) => a.date.localeCompare(b.date));
+  const n = sorted.length;
+
+  const isWO = (statusStr: string) => {
+    const s = (statusStr || "").toLowerCase().trim();
+    return (
+      s === "holiday" || s === "weekend" || s === "weekly off" || s === "wo"
+    );
+  };
+
+  const isLeave = (statusStr: string) => {
+    const s = (statusStr || "").toLowerCase().trim();
+    return s === "leave" || s === "l" || s === "approved leave";
+  };
+
+  let i = 0;
+  while (i < n) {
+    const currentStatus =
+      sorted[i].finalStatus || sorted[i].originalStatus || "";
+    if (isWO(currentStatus)) {
+      let j = i;
+      while (j < n) {
+        const jsStatus =
+          sorted[j].finalStatus || sorted[j].originalStatus || "";
+        if (!isWO(jsStatus)) break;
+        j++;
+      }
+      const beforeIdx = i - 1;
+      const afterIdx = j;
+
+      if (beforeIdx >= 0 && afterIdx < n) {
+        const beforeStatus =
+          sorted[beforeIdx].finalStatus ||
+          sorted[beforeIdx].originalStatus ||
+          "";
+        const afterStatus =
+          sorted[afterIdx].finalStatus || sorted[afterIdx].originalStatus || "";
+        if (isLeave(beforeStatus) && isLeave(afterStatus)) {
+          for (let k = i; k < j; k++) {
+            sorted[k].finalStatus = "Leave";
+            sorted[k].originalStatus = "Leave";
+          }
+        }
+      }
+      i = j;
+    } else {
+      i++;
+    }
+  }
+  return sorted;
+};
 
 interface SelectedEmployee {
   id: string;
@@ -45,19 +90,21 @@ interface SelectedEmployee {
   phone: string;
   email: string;
   code: string;
-  dailyStatus?: Record<number, "P" | "A" | "WO" | "AH" | "E" | "L" | "">;
+  dailyStatus?: Record<number, "P" | "A" | "WO" | "AH" | "E" | "L" | "HL" | "">;
 }
 
 interface MyAttendanceProps {
   employee?: SelectedEmployee;
   onBack?: () => void;
   filtersPortalId?: string;
+  onEmployeeSelect?: (employeeId: number | null) => void;
 }
 
 export const MyAttendance: React.FC<MyAttendanceProps> = ({
   employee,
   onBack,
   filtersPortalId,
+  onEmployeeSelect,
 }) => {
   const user = useAuthStore((state) => state.user);
   const loggedInId = user?.user?.id;
@@ -72,6 +119,12 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   const [isLoadingEmployees, setIsLoadingEmployees] = useState(false);
 
   const activeEmployee: any = employee || selectedFilterEmployee;
+
+  useEffect(() => {
+    if (onEmployeeSelect) {
+      onEmployeeSelect(activeEmployee ? Number(activeEmployee.id) : null);
+    }
+  }, [activeEmployee, onEmployeeSelect]);
 
   const rawRole = user?.role || user?.user?.role;
   const roleName = String(
@@ -106,7 +159,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           (u: any) =>
             u.mewurkEmployeeCode &&
             String(u.mewurkEmployeeCode).trim() ===
-              String(activeEmployee.code).trim()
+            String(activeEmployee.code).trim()
         );
         if (match) return match;
       }
@@ -117,7 +170,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           (u: any) =>
             u.email &&
             u.email.toLowerCase().trim() ===
-              activeEmployee.email.toLowerCase().trim()
+            activeEmployee.email.toLowerCase().trim()
         );
         if (match) return match;
       }
@@ -128,7 +181,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           (u: any) =>
             u.fullName &&
             u.fullName.toLowerCase().trim() ===
-              activeEmployee.name.toLowerCase().trim()
+            activeEmployee.name.toLowerCase().trim()
         );
         if (match) return match;
       }
@@ -184,15 +237,12 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   const [orgModalOpen, setOrgModalOpen] = useState(false);
 
   // Mewurk API states
-  const [selectedMonth, setSelectedMonth] = useState(6); // default to June (6)
-  const [selectedYear, setSelectedYear] = useState(2026); // default to 2026
+  const today = new Date();
+  const [selectedMonth, setSelectedMonth] = useState(today.getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(today.getFullYear());
 
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    new Date(2026, 5, 18)
-  );
-  const [datePopoverOpen, setDatePopoverOpen] = useState(false);
   const [currentCalendarMonth, setCurrentCalendarMonth] = useState<Date>(
-    new Date(2026, 5)
+    new Date(today.getFullYear(), today.getMonth(), 1)
   );
 
   // Sync selectedMonth and selectedYear to the viewed calendar month
@@ -240,13 +290,21 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
 
       let empName = "";
       if (match) {
-        empName = match.employeeName;
+        empName =
+          match.employeeName ||
+          match.fullName ||
+          `${match.firstName || ""} ${match.lastName || ""}`.trim() ||
+          String(match.employeeCode);
       } else {
         const localMatch = allEmployees.find(
           (e) => String(e.employeeCode) === String(code)
         );
         if (localMatch) {
-          empName = localMatch.employeeName;
+          empName =
+            localMatch.employeeName ||
+            (localMatch as any).fullName ||
+            `${(localMatch as any).firstName || ""} ${(localMatch as any).lastName || ""}`.trim() ||
+            String(localMatch.employeeCode);
         }
       }
 
@@ -278,9 +336,6 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   );
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isLoadingDayDetails, setIsLoadingDayDetails] = useState(false);
-  const [regStatusFilter, _setRegStatusFilter] = useState<
-    "" | "pending" | "approved" | "rejected"
-  >("pending");
 
   // Helpers for time formatting
   const formatMewurkTime = (timeStr: string | null) => {
@@ -384,7 +439,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
             (e.email && e.email.toLowerCase() === targetEmail.toLowerCase()) ||
             (e.employeeName &&
               e.employeeName.toLowerCase().trim() ===
-                targetName.toLowerCase().trim())
+              targetName.toLowerCase().trim())
         );
 
         if (!match) {
@@ -425,6 +480,9 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           selectedMonth,
           selectedYear
         );
+        if (res && Array.isArray(res.attendance)) {
+          res.attendance = applySandwichLeaveToAttendanceArray(res.attendance);
+        }
         setMonthlyData(res);
       } catch (err) {
         console.error("Error loading Mewurk monthly logs:", err);
@@ -487,6 +545,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
     presentCount,
     absentCount,
     leaveCount,
+    lateCount,
     woCount,
     totalWorkHours,
     avgWorkHours,
@@ -494,7 +553,8 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
     let p = 0,
       a = 0,
       l = 0,
-      wo = 0;
+      wo = 0,
+      late = 0;
 
     if (monthlyData) {
       p = monthlyData.workingDays || 0;
@@ -515,6 +575,12 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           ) {
             wo++;
           }
+          if (
+            status.includes("late") ||
+            (item.lateInMinutes && Number(item.lateInMinutes) > 0)
+          ) {
+            late++;
+          }
         });
       }
 
@@ -533,6 +599,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
         presentCount: p,
         absentCount: a,
         leaveCount: l,
+        lateCount: late,
         woCount: wo,
         totalWorkHours: parseTimeToMins(monthlyData.totalWorkingHours),
         avgWorkHours: parseTimeToMins(monthlyData.avgWorkingHours),
@@ -543,6 +610,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
       presentCount: 0,
       absentCount: 0,
       leaveCount: 0,
+      lateCount: 0,
       woCount: 0,
       totalWorkHours: 0,
       avgWorkHours: 0,
@@ -736,16 +804,43 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
 
         const statusMap: Record<
           string,
-          "P" | "A" | "WO" | "AH" | "E" | "L" | ""
+          "P" | "A" | "WO" | "AH" | "E" | "L" | "HL" | ""
         > = {
           Present: "P",
           Absent: "A",
           "Weekly off": "WO",
           "Weekly Off": "WO",
-          "Half Day": "AH",
+          "Half Day Leave": "HL",
           Late: "E",
           Leave: "L",
         };
+
+        const resolveStatusAbbr = (
+          rawStatus: string | null | undefined
+        ): "P" | "A" | "WO" | "AH" | "E" | "L" | "HL" | "" => {
+          if (!rawStatus) return "";
+          let statusVal: "P" | "A" | "WO" | "AH" | "E" | "L" | "HL" | "" =
+            statusMap[rawStatus] || "";
+          if (!statusVal) {
+            const statusName = rawStatus.toLowerCase();
+            if (statusName.includes("half day leave") || statusName.includes("half leave")) statusVal = "HL";
+            else if (statusName.includes("present")) statusVal = "P";
+            else if (statusName.includes("half")) statusVal = "AH";
+            else if (statusName.includes("leave")) statusVal = "L";
+            else if (
+              statusName.includes("off") ||
+              statusName.includes("holiday") ||
+              statusName.includes("weekly")
+            )
+              statusVal = "WO";
+            else if (statusName.includes("absent")) statusVal = "A";
+            else if (statusName.includes("late")) statusVal = "E";
+          }
+          return statusVal;
+        };
+
+        const originalStatus = resolveStatusAbbr(log.originalStatus);
+        const finalStatus = resolveStatusAbbr(log.finalStatus);
 
         let status =
           statusMap[log.finalStatus || log.originalStatus || ""] || "";
@@ -755,7 +850,9 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
             log.originalStatus ||
             ""
           ).toLowerCase();
-          if (statusName.includes("present")) status = "P";
+          if (statusName.includes("half day leave") || statusName.includes("half leave")) status = "HL";
+          else if (statusName.includes("present")) status = "P";
+          else if (statusName.includes("half")) status = "AH";
           else if (statusName.includes("leave")) status = "L";
           else if (
             statusName.includes("off") ||
@@ -764,7 +861,6 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           )
             status = "WO";
           else if (statusName.includes("absent")) status = "A";
-          else if (statusName.includes("half")) status = "AH";
           else if (statusName.includes("late")) status = "E";
         }
 
@@ -774,6 +870,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
         }
 
         const firstIn = log.firstIn ? formatMewurkTime(log.firstIn) : "-";
+        const lateInTime = log.lateInTime || "00:00";
         const lastOut = log.lastOut ? formatMewurkTime(log.lastOut) : "-";
         const workingHrs = log.workingTime ? `${log.workingTime} HRS` : "-";
         const breakHrs = log.breakTime ? `${log.breakTime} HRS` : "-";
@@ -783,12 +880,17 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           date: dayStr,
           rawDateStr: log.date,
           status,
+          originalStatus,
+          finalStatus,
           shift: "GS01",
           firstIn,
+          lateInTime,
           lastOut,
           breakHrs,
           workingHrs,
           overtimeHrs: "-",
+          isRegularization: log.isRegularization,
+          isCorrected: !!log.isCorrected,
         };
       });
     }
@@ -865,7 +967,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
       {/* <Select
         value={regStatusFilter || "all"}
         onValueChange={(value) =>
-          setRegStatusFilter(
+          _setRegStatusFilter(
             value === "all"
               ? ""
               : (value as "pending" | "approved" | "rejected")
@@ -886,7 +988,11 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
       {canFilterEmployees && (
         <SimpleDropDownSearchable
           options={allEmployees.map((emp) => ({
-            label: emp.employeeName,
+            label:
+              emp.employeeName ||
+              (emp as any).fullName ||
+              `${(emp as any).firstName || ""} ${(emp as any).lastName || ""}`.trim() ||
+              String(emp.employeeCode),
             value: emp.employeeCode,
           }))}
           value={(selectedFilterEmployee as any)?.code || undefined}
@@ -898,99 +1004,42 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           allowClear={true}
         />
       )}
-
-      <Popover open={datePopoverOpen} onOpenChange={setDatePopoverOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className={cn(
-              "h-9 gap-2 rounded-full border-border bg-background px-3 font-normal hover:bg-muted/50",
-              !selectedDate && "text-muted-foreground"
-            )}
-          >
-            <CalendarDays className="h-4 w-4 text-rose-500 shrink-0" />
-            <span className="truncate max-w-[140px]">
-              {selectedDate
-                ? format(selectedDate, "MMM d, yyyy")
-                : "Select date"}
-            </span>
-            {selectedDate && (
-              <button
-                type="button"
-                aria-label="Clear date"
-                className="hover:bg-muted -mr-1 flex h-5 w-5 items-center justify-center rounded-full transition-colors"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  setSelectedDate(undefined);
-                  const today = new Date();
-                  setCurrentCalendarMonth(today);
-                }}
-              >
-                <X className="text-muted-foreground h-3 w-3" />
-              </button>
-            )}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent
-          className="w-auto p-0 rounded-2xl border border-border shadow-2xl"
-          align="end"
-        >
-          <Calendar
-            mode="single"
-            selected={selectedDate}
-            onSelect={(date) => {
-              setSelectedDate(date);
-              if (date) {
-                setCurrentCalendarMonth(date);
-              }
-              setDatePopoverOpen(false);
-            }}
-            month={currentCalendarMonth}
-            onMonthChange={setCurrentCalendarMonth}
-            numberOfMonths={1}
-            captionLayout="dropdown"
-            fromYear={2020}
-            toYear={2030}
-            className="rounded-2xl"
-          />
-        </PopoverContent>
-      </Popover>
     </div>
   );
 
-  const monthNavLabel = `${
-    [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ][selectedMonth - 1]
-  } ${selectedYear}`;
+  const monthNavLabel = `${[
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ][selectedMonth - 1]
+    } ${selectedYear}`;
 
   const goToPreviousMonth = () => {
     const d = new Date(selectedYear, selectedMonth - 2, 1);
     setCurrentCalendarMonth(d);
-    setSelectedDate(d);
   };
 
   const goToNextMonth = () => {
     const d = new Date(selectedYear, selectedMonth, 1);
     setCurrentCalendarMonth(d);
-    setSelectedDate(d);
   };
 
   const monthNavigatorProps = {
     label: monthNavLabel,
+    month: selectedMonth,
+    year: selectedYear,
+    onChange: (m: number, y: number) => {
+      setCurrentCalendarMonth(new Date(y, m - 1, 1));
+    },
     onPrev: goToPreviousMonth,
     onNext: goToNextMonth,
     isLoading: isLoadingLogs,
@@ -1059,6 +1108,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
                     absentPct={absentPct}
                     presentCount={presentCount}
                     absentCount={absentCount}
+                    lateCount={lateCount}
                     woCount={woCount}
                     leaveCount={leaveCount}
                     resolvedProfilePic={resolvedProfilePic}
@@ -1093,6 +1143,8 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
                       detailedLogs={detailedLogs}
                       onRowClick={handleRowClick}
                       monthNavigator={monthNavigatorProps}
+                      employeeId={activeEmployee ? Number(activeEmployee.id) : undefined}
+                      lateInDays={monthlyData ? (monthlyData.lateInDays ?? 0) : undefined}
                     />
                   )}
                 </div>
@@ -1146,7 +1198,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
       {isLoadingLogs ? (
         <Card className="w-full overflow-hidden border-border shadow-sm">
           <div className="flex divide-x divide-border">
-            {[...Array(4)].map((_, i) => (
+            {[...Array(5)].map((_, i) => (
               <div
                 key={i}
                 className="flex-1 p-4 min-w-[150px] flex items-center gap-3"
@@ -1167,6 +1219,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           absentPct={absentPct}
           presentCount={presentCount}
           absentCount={absentCount}
+          lateCount={lateCount}
           woCount={woCount}
           leaveCount={leaveCount}
           resolvedProfilePic={resolvedProfilePic}
@@ -1244,7 +1297,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
                 ? Number(activeEmployee.id)
                 : Number(user?.user?.id)
             }
-            regularizationStatusFilter={regStatusFilter}
+            lateInDays={monthlyData ? (monthlyData.lateInDays ?? 0) : undefined}
           />
         )}
       </div>

@@ -5,13 +5,14 @@ import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import { formatDate } from "@/utils/commonFunctions";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
-import { useGetLeaveCreditHistory } from "../services";
+import { useGetLeaveCreditHistory, useDeleteLeaveCreditHistory } from "../services";
 import {
   useGetUserDropdownList,
   useImportUsers,
 } from "@/features/users/services";
 import { Button } from "@/components/ui/button";
-import { FileDown, Settings } from "lucide-react";
+import { FileDown, Settings, Trash2 } from "lucide-react";
+import { DeleteModal } from "@/components/model/delete-model";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -39,6 +40,9 @@ export function BalanceLogsTab({ onAdjustLeavesClick }: BalanceLogsTabProps) {
 
   const isAdmin = roleName === roles.ADMIN;
   const canViewManagerTabs = isAdmin || roleName === roles.PROJECT_MANAGER;
+
+  const [deleteLogOpen, setDeleteLogOpen] = useState(false);
+  const [selectedLogForDelete, setSelectedLogForDelete] = useState<any>(null);
 
   const [queryParams, setQueryParams] = useQueryStates({
     pageSize: parseAsInteger.withDefault(10),
@@ -384,8 +388,35 @@ export function BalanceLogsTab({ onAdjustLeavesClick }: BalanceLogsTabProps) {
           return <span>-</span>;
         },
       },
+      ...(isAdmin
+        ? [
+            {
+              id: "actions",
+              header: "Actions",
+              cell: ({ row }: any) => {
+                const log = row.original;
+                return (
+                  <div className="flex justify-start">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive shrink-0"
+                      onClick={() => {
+                        setSelectedLogForDelete(log);
+                        setDeleteLogOpen(true);
+                      }}
+                      title="Delete Balance Log"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                );
+              },
+            },
+          ]
+        : []),
     ],
-    []
+    [isAdmin]
   );
 
   return (
@@ -453,6 +484,39 @@ export function BalanceLogsTab({ onAdjustLeavesClick }: BalanceLogsTabProps) {
         isLoading={isParsingFile}
         onConfirm={handleImportPreviewConfirm}
       />
+
+      {selectedLogForDelete && (
+        <BalanceLogDeleteModal
+          isOpen={deleteLogOpen}
+          onClose={() => {
+            setDeleteLogOpen(false);
+            setSelectedLogForDelete(null);
+          }}
+          log={selectedLogForDelete}
+        />
+      )}
     </div>
+  );
+}
+
+function BalanceLogDeleteModal({
+  isOpen,
+  onClose,
+  log,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  log: any;
+}) {
+  const { mutate: deleteLog, isPending } = useDeleteLeaveCreditHistory(log.id, onClose);
+
+  return (
+    <DeleteModal
+      isOpen={isOpen}
+      onClose={onClose}
+      onConfirm={deleteLog}
+      itemName={`this balance log adjustment of ${log.adjustment} days for ${log.employee?.fullName}`}
+      loading={isPending}
+    />
   );
 }

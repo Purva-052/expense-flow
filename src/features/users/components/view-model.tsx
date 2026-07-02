@@ -37,26 +37,26 @@ export function ViewUserModal() {
 
   return (
     <Dialog open={open === "view"} onOpenChange={() => setOpen(null)}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>User Details</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col items-center gap-4 py-4">
-          <div className="h-24 w-24 overflow-hidden rounded-full border-2 border-primary/20 shadow-sm">
-            {currentRow.profilePicUrl ? (
-              <img
-                src={currentRow.profilePicUrl}
-                alt={currentRow.fullName}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center bg-gray-100 text-gray-400">
-                No Photo
-              </div>
-            )}
+        <div className="overflow-y-auto flex-1 pr-1 space-y-4 py-2">
+          <div className="flex flex-col items-center gap-4 py-2">
+            <div className="h-24 w-24 overflow-hidden rounded-full border-2 border-primary/20 shadow-sm">
+              {currentRow.profilePicUrl ? (
+                <img
+                  src={currentRow.profilePicUrl}
+                  alt={currentRow.fullName}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-gray-100 text-gray-400">
+                  No Photo
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-        <div className="space-y-4">
           <div>
             <h3 className="text-sm font-medium">Full Name</h3>
             <p className="text-sm text-gray-600">{currentRow.fullName}</p>
@@ -98,6 +98,12 @@ export function ViewUserModal() {
           <div>
             <h3 className="text-sm font-medium">Career Start Date</h3>
             <p className="text-sm text-gray-600">{careerStartDate}</p>
+          </div>
+          <div>
+            <h3 className="text-sm font-medium">Mewurk Employee Code</h3>
+            <p className="text-sm text-gray-600">
+              {currentRow.mewurkEmployeeCode || "-"}
+            </p>
           </div>
           <div>
             <h3 className="text-sm font-medium">Status</h3>

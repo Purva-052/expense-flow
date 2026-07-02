@@ -38,6 +38,7 @@ import { Route as AuthenticatedProcessorIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedOutboundSourcesIndexRouteImport } from './routes/_authenticated/outbound-sources/index'
 import { Route as AuthenticatedNewJoineesIndexRouteImport } from './routes/_authenticated/new-joinees/index'
 import { Route as AuthenticatedMonitorSizeIndexRouteImport } from './routes/_authenticated/monitor-size/index'
+import { Route as AuthenticatedMobileInventoryIndexRouteImport } from './routes/_authenticated/mobile-inventory/index'
 import { Route as AuthenticatedMeetingsOverviewIndexRouteImport } from './routes/_authenticated/meetings-overview/index'
 import { Route as AuthenticatedLinodeServerDashboardIndexRouteImport } from './routes/_authenticated/linode-server-dashboard/index'
 import { Route as AuthenticatedLeaveManagementIndexRouteImport } from './routes/_authenticated/leave-management/index'
@@ -222,6 +223,12 @@ const AuthenticatedMonitorSizeIndexRoute =
   AuthenticatedMonitorSizeIndexRouteImport.update({
     id: '/monitor-size/',
     path: '/monitor-size/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMobileInventoryIndexRoute =
+  AuthenticatedMobileInventoryIndexRouteImport.update({
+    id: '/mobile-inventory/',
+    path: '/mobile-inventory/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedMeetingsOverviewIndexRoute =
@@ -410,6 +417,7 @@ export interface FileRoutesByFullPath {
   '/leave-management': typeof AuthenticatedLeaveManagementIndexRoute
   '/linode-server-dashboard': typeof AuthenticatedLinodeServerDashboardIndexRoute
   '/meetings-overview': typeof AuthenticatedMeetingsOverviewIndexRoute
+  '/mobile-inventory': typeof AuthenticatedMobileInventoryIndexRoute
   '/monitor-size': typeof AuthenticatedMonitorSizeIndexRoute
   '/new-joinees': typeof AuthenticatedNewJoineesIndexRoute
   '/outbound-sources': typeof AuthenticatedOutboundSourcesIndexRoute
@@ -465,6 +473,7 @@ export interface FileRoutesByTo {
   '/leave-management': typeof AuthenticatedLeaveManagementIndexRoute
   '/linode-server-dashboard': typeof AuthenticatedLinodeServerDashboardIndexRoute
   '/meetings-overview': typeof AuthenticatedMeetingsOverviewIndexRoute
+  '/mobile-inventory': typeof AuthenticatedMobileInventoryIndexRoute
   '/monitor-size': typeof AuthenticatedMonitorSizeIndexRoute
   '/new-joinees': typeof AuthenticatedNewJoineesIndexRoute
   '/outbound-sources': typeof AuthenticatedOutboundSourcesIndexRoute
@@ -522,6 +531,7 @@ export interface FileRoutesById {
   '/_authenticated/leave-management/': typeof AuthenticatedLeaveManagementIndexRoute
   '/_authenticated/linode-server-dashboard/': typeof AuthenticatedLinodeServerDashboardIndexRoute
   '/_authenticated/meetings-overview/': typeof AuthenticatedMeetingsOverviewIndexRoute
+  '/_authenticated/mobile-inventory/': typeof AuthenticatedMobileInventoryIndexRoute
   '/_authenticated/monitor-size/': typeof AuthenticatedMonitorSizeIndexRoute
   '/_authenticated/new-joinees/': typeof AuthenticatedNewJoineesIndexRoute
   '/_authenticated/outbound-sources/': typeof AuthenticatedOutboundSourcesIndexRoute
@@ -579,6 +589,7 @@ export interface FileRouteTypes {
     | '/leave-management'
     | '/linode-server-dashboard'
     | '/meetings-overview'
+    | '/mobile-inventory'
     | '/monitor-size'
     | '/new-joinees'
     | '/outbound-sources'
@@ -634,6 +645,7 @@ export interface FileRouteTypes {
     | '/leave-management'
     | '/linode-server-dashboard'
     | '/meetings-overview'
+    | '/mobile-inventory'
     | '/monitor-size'
     | '/new-joinees'
     | '/outbound-sources'
@@ -690,6 +702,7 @@ export interface FileRouteTypes {
     | '/_authenticated/leave-management/'
     | '/_authenticated/linode-server-dashboard/'
     | '/_authenticated/meetings-overview/'
+    | '/_authenticated/mobile-inventory/'
     | '/_authenticated/monitor-size/'
     | '/_authenticated/new-joinees/'
     | '/_authenticated/outbound-sources/'
@@ -930,6 +943,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMonitorSizeIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/mobile-inventory/': {
+      id: '/_authenticated/mobile-inventory/'
+      path: '/mobile-inventory'
+      fullPath: '/mobile-inventory'
+      preLoaderRoute: typeof AuthenticatedMobileInventoryIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/meetings-overview/': {
       id: '/_authenticated/meetings-overview/'
       path: '/meetings-overview'
@@ -1133,6 +1153,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedLeaveManagementIndexRoute: typeof AuthenticatedLeaveManagementIndexRoute
   AuthenticatedLinodeServerDashboardIndexRoute: typeof AuthenticatedLinodeServerDashboardIndexRoute
   AuthenticatedMeetingsOverviewIndexRoute: typeof AuthenticatedMeetingsOverviewIndexRoute
+  AuthenticatedMobileInventoryIndexRoute: typeof AuthenticatedMobileInventoryIndexRoute
   AuthenticatedMonitorSizeIndexRoute: typeof AuthenticatedMonitorSizeIndexRoute
   AuthenticatedNewJoineesIndexRoute: typeof AuthenticatedNewJoineesIndexRoute
   AuthenticatedOutboundSourcesIndexRoute: typeof AuthenticatedOutboundSourcesIndexRoute
@@ -1189,6 +1210,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedLinodeServerDashboardIndexRoute,
   AuthenticatedMeetingsOverviewIndexRoute:
     AuthenticatedMeetingsOverviewIndexRoute,
+  AuthenticatedMobileInventoryIndexRoute:
+    AuthenticatedMobileInventoryIndexRoute,
   AuthenticatedMonitorSizeIndexRoute: AuthenticatedMonitorSizeIndexRoute,
   AuthenticatedNewJoineesIndexRoute: AuthenticatedNewJoineesIndexRoute,
   AuthenticatedOutboundSourcesIndexRoute:

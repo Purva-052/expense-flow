@@ -63,7 +63,29 @@ const baseUserSchema = z.object({
   ),
   status: z.boolean(),
   joining: z.boolean(),
-  currentWorkingProjectId: z.any().optional(),
+  excludeFromReports: z.boolean().optional(),
+  reportingStartDate: z.preprocess(
+    normalizeOptionalDate,
+    z
+      .string()
+      .nullable()
+      .optional()
+      .refine(
+        (val) => {
+          if (!val) return true; // allow empty/null
+          return !isNaN(Date.parse(val));
+        },
+        {
+          message: "Invalid date format.",
+        }
+      )
+  ),
+  mewurkEmployeeCode: z
+    .string()
+    .trim()
+    .max(50, { message: "Employee code cannot exceed 50 characters." })
+    .optional()
+    .nullable(),
   profilePicS3Key: z.string().optional(),
   file: z
     .any()

@@ -34,7 +34,6 @@ import { toast } from "sonner";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-// import { Switch } from "@/components/ui/switch";
 
 interface Props {
   currentRow?: any;
@@ -115,6 +114,11 @@ export function UserActionForm({
           joiningDate: currentRow?.joiningDate
             ? currentRow.joiningDate.slice(0, 10)
             : null,
+          excludeFromReports: currentRow?.excludeFromReports ?? false,
+          reportingStartDate: currentRow?.reportingStartDate
+            ? currentRow.reportingStartDate.slice(0, 10)
+            : null,
+          mewurkEmployeeCode: currentRow?.mewurkEmployeeCode ?? "",
           // currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
           profilePicS3Key: currentRow?.profilePicUrl ?? "",
           file: null,
@@ -131,6 +135,9 @@ export function UserActionForm({
           status: true,
           joining: false,
           joiningDate: null,
+          excludeFromReports: false,
+          reportingStartDate: null,
+          mewurkEmployeeCode: "",
           password: "",
           profilePicS3Key: "",
           file: null,
@@ -185,6 +192,11 @@ export function UserActionForm({
         joiningDate: currentRow?.joiningDate
           ? currentRow.joiningDate.slice(0, 10)
           : null,
+        excludeFromReports: currentRow?.excludeFromReports ?? false,
+        reportingStartDate: currentRow?.reportingStartDate
+          ? currentRow.reportingStartDate.slice(0, 10)
+          : null,
+        mewurkEmployeeCode: currentRow?.mewurkEmployeeCode ?? "",
         // currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
         profilePicS3Key: currentRow?.profilePicUrl ?? "",
         file: null,
@@ -256,8 +268,10 @@ export function UserActionForm({
 
     const payload = {
       ...values,
+      excludeFromReports: values.excludeFromReports ?? false,
       dateOfBirth: formatDateToYMD(values.dateOfBirth),
       careerStartDate: formatDateToYMD(values.careerStartDate) || "",
+      reportingStartDate: values.reportingStartDate ? formatDateToYMD(values.reportingStartDate) : null,
       profilePicS3Key: finalFileKey,
     };
     delete payload.file;
@@ -423,6 +437,20 @@ export function UserActionForm({
                   )}
                 />
 
+                <FormField
+                  control={form.control}
+                  name="mewurkEmployeeCode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mewurk Employee Code</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter Mewurk employee code" {...field} value={field.value ?? ""} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 {!isEdit && (
                   <FormField
                     control={form.control}
@@ -579,8 +607,30 @@ export function UserActionForm({
                   )}
                 />
 
+                <FormField
+                  control={form.control}
+                  name="reportingStartDate"
+                  render={({ fieldState }) => (
+                    <FormItem>
+                      <FormLabel
+                        className={cn(
+                          "flex items-center gap-1",
+                          fieldState.error && "text-red-500"
+                        )}
+                      >
+                        Reporting Start Date
+                      </FormLabel>
+                      <CustomDatePicker
+                        control={form.control}
+                        name="reportingStartDate"
+                        label=""
+                      />
+                    </FormItem>
+                  )}
+                />
+
                 {/* ✅ Status Checkbox */}
-                <div className="flex gap-6">
+                <div className="flex flex-row items-center gap-6">
                   <Controller
                     control={form.control}
                     name="status"
@@ -591,6 +641,21 @@ export function UserActionForm({
                           onCheckedChange={field.onChange}
                         />
                         <label className="text-sm font-medium">Active</label>
+                      </div>
+                    )}
+                  />
+
+
+                  <Controller
+                    control={form.control}
+                    name="excludeFromReports"
+                    render={({ field }) => (
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                        <label className="text-sm font-medium">Exclude from Reports</label>
                       </div>
                     )}
                   />

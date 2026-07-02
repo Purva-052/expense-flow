@@ -1,7 +1,7 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Award, TrendingUp, UserCheck, UserX, CalendarOff, Clock } from "lucide-react";
+import { Award, TrendingUp, UserCheck, UserX, CalendarOff, Clock, Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface EmployeeStatsProps {
@@ -9,6 +9,7 @@ interface EmployeeStatsProps {
   absentPct: number;
   presentCount: number;
   absentCount: number;
+  lateCount: number;
   woCount: number;
   leaveCount: number;
   resolvedProfilePic: string;
@@ -31,6 +32,7 @@ export const EmployeeStats: React.FC<EmployeeStatsProps> = ({
   absentPct,
   presentCount,
   absentCount,
+  lateCount,
   woCount,
   leaveCount,
   resolvedProfilePic,
@@ -52,6 +54,7 @@ export const EmployeeStats: React.FC<EmployeeStatsProps> = ({
         : "0h 0m"
       : "8h 49m";
 
+
     const stripItems = [
       {
         icon: UserCheck,
@@ -70,6 +73,14 @@ export const EmployeeStats: React.FC<EmployeeStatsProps> = ({
         valueClass: "text-rose-600 dark:text-rose-400",
       },
       {
+        icon: Timer,
+        iconBg: "bg-orange-500/10",
+        iconColor: "text-orange-600 dark:text-orange-400",
+        label: "Late In",
+        value: String(lateCount),
+        valueClass: "text-orange-600 dark:text-orange-400",
+      },
+      {
         icon: CalendarOff,
         iconBg: "bg-blue-500/10",
         iconColor: "text-blue-600 dark:text-blue-400",
@@ -77,6 +88,7 @@ export const EmployeeStats: React.FC<EmployeeStatsProps> = ({
         value: String(woCount + leaveCount),
         valueClass: "text-blue-600 dark:text-blue-400",
       },
+
       {
         icon: Clock,
         iconBg: "bg-amber-500/10",

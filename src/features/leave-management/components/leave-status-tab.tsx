@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import { formatDate } from "@/utils/commonFunctions";
 import { useAuthStore } from "@/stores/use-auth-store";
-import { roles } from "@/utils/constant";
+import { roles, LEAVE_TYPE } from "@/utils/constant";
 import { useGetAllLeaveBalances, useGetLeaveData } from "../services";
 import {
   useGetUserDropdownList,
@@ -47,6 +47,7 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
     tab: parseAsString.withDefault("pending"),
     sortBy: parseAsString,
     sortOrder: parseAsString,
+    leaveTypeId: parseAsInteger,
   });
 
   const listParams = {
@@ -58,6 +59,7 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
     startDate: queryParams.startDate,
     endDate: queryParams.endDate,
     tab: queryParams.tab,
+    leaveTypeId: queryParams.leaveTypeId,
   };
 
   const getStatusFromTab = (tab: string) => {
@@ -79,6 +81,7 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
     status: getStatusFromTab(queryParams.tab),
     sortBy: queryParams.sortBy ?? undefined,
     sortOrder: queryParams.sortOrder ?? undefined,
+    leaveTypeId: listParams.leaveTypeId ?? undefined,
   };
 
   const { data: listData, isPending: loading } = useGetLeaveData(apiParams);
@@ -188,6 +191,7 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
       endDate: null,
       sortBy: null,
       sortOrder: null,
+      leaveTypeId: null,
     });
   };
 
@@ -250,6 +254,23 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
         });
       },
       isLoading: approverListLoading,
+    },
+    {
+      type: "select" as const,
+      key: "leaveTypeId",
+      placeholder: "Filter by leave type",
+      options: LEAVE_TYPE.map((type) => ({
+        value: type.value,
+        label: type.label,
+      })),
+      value: listParams.leaveTypeId?.toString(),
+      onChange: (value: any) => {
+        setQueryParams({
+          ...listParams,
+          leaveTypeId: value ? Number(value) : null,
+          currentPage: 1,
+        });
+      },
     },
   ];
 

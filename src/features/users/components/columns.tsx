@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, ArrowUpDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,12 +15,25 @@ import { useUsersStore } from "../stores/useUsersStore";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { formatRole } from "@/utils/commonFunctions";
 import { roles } from "@/utils/constant";
+import { Switch } from "@/components/ui/switch";
+import { useUpdateSingleCheckInAllowed } from "../services";
 
 // 🎯 Columns
 export const columns: ColumnDef<any>[] = [
   {
     accessorKey: "fullName",
-    header: "Full Name",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          className="p-0 hover:bg-transparent"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Full Name
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
     cell: ({ row }) => {
       const { setOpen, setCurrentRow } = useUsersStore();
 
@@ -41,7 +54,13 @@ export const columns: ColumnDef<any>[] = [
   {
     accessorKey: "email",
     header: "Email",
+    enableSorting: false,
   },
+  // {
+  //   accessorKey: "mewurkEmployeeCode",
+  //   header: "Employee Code",
+  //   cell: ({ row }) => row.original.mewurkEmployeeCode || "-",
+  // },
   {
     accessorKey: "role",
     header: "Role",
@@ -53,6 +72,7 @@ export const columns: ColumnDef<any>[] = [
         {formatRole(row.original.role)}
       </Badge>
     ),
+    enableSorting: false,
   },
   {
     accessorKey: "technology.name",
@@ -69,6 +89,7 @@ export const columns: ColumnDef<any>[] = [
         </div>
       );
     },
+    enableSorting: false,
   },
   {
     accessorKey: "dateOfBirth",
@@ -82,10 +103,22 @@ export const columns: ColumnDef<any>[] = [
         day: "numeric",
       });
     },
+    enableSorting: false,
   },
   {
     accessorKey: "joiningDate",
-    header: "Joining Date",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          className="p-0 hover:bg-transparent"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Joining Date
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
     cell: ({ row }) => {
       if (!row.original.joiningDate) return "-";
       const date = new Date(row.original.joiningDate);
@@ -98,7 +131,18 @@ export const columns: ColumnDef<any>[] = [
   },
   {
     accessorKey: "careerStartDate",
-    header: "Career Start Date",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          className="p-0 hover:bg-transparent"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Career Start Date
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
     cell: ({ row }) => {
       if (!row.original.careerStartDate) return "-";
       const date = new Date(row.original.careerStartDate);
@@ -118,6 +162,40 @@ export const columns: ColumnDef<any>[] = [
   //   },
   // },
   {
+    accessorKey: "isSingleCheckInAllowed",
+    header: "Single Check-In Allowed",
+    cell: function Cell({ row }: any) {
+      const isSingleCheckInAllowed = row.original.isSingleCheckInAllowed;
+      const userId = row.original.id;
+      const { mutate: updateSingleCheckIn, isPending } = useUpdateSingleCheckInAllowed();
+
+      const user = useAuthStore((state) => state.user);
+      const rawRole = user?.role || user?.user?.role;
+      const roleName = String(
+        rawRole && typeof rawRole === "object" ? rawRole?.name : rawRole || ""
+      ).toLowerCase();
+      const isAdmin = roleName === roles.ADMIN;
+
+      return (
+        <div className="flex justify-center">
+          <Switch
+            checked={!!isSingleCheckInAllowed}
+            disabled={!isAdmin || isPending}
+            onCheckedChange={(checked) => {
+              if (userId != null) {
+                updateSingleCheckIn({
+                  id: userId,
+                  isSingleCheckInAllowed: checked,
+                });
+              }
+            }}
+          />
+        </div>
+      );
+    },
+    enableSorting: false,
+  },
+  {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => (
@@ -128,6 +206,7 @@ export const columns: ColumnDef<any>[] = [
         {row.original.status}
       </Badge>
     ),
+    enableSorting: false,
   },
   {
     id: "actions",

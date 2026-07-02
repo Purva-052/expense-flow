@@ -20,6 +20,7 @@ const leaveRefetchQueries = [
   LEAVE_DASHBOARD_URL,
   API.leave_management.leave_balance,
   API.users.list,
+  API.leave_balance.allocations,
 ];
 
 export const useCreateLeaveData = () => {
@@ -58,6 +59,12 @@ export const useUpdateLeaveData = () => {
       leaveRefetchQueries.forEach((query) =>
         queryClient.invalidateQueries({ queryKey: [query] })
       );
+      queryClient.invalidateQueries({
+        predicate: (query) =>
+          typeof query.queryKey[0] === "string" &&
+          query.queryKey[0].includes("/leave-management/") &&
+          query.queryKey[0].includes("/details"),
+      });
       setOpen(null);
     },
     onError: (error: any) => {
@@ -73,6 +80,14 @@ export const useUpdateLeaveData = () => {
 
 export const useGetLeaveData = (params?: any, enabled = true) => {
   return useFetchData({ url: GET_API_URL, params, enabled });
+};
+
+export const useGetLeaveDetails = (id?: string | number, enabled = true) => {
+  const cleanUrl = API.leave_management.leave_details.trim();
+  return useFetchData({
+    url: id ? cleanUrl.replace("{id}", String(id)) : "",
+    enabled: enabled && !!id,
+  });
 };
 
 export const useGetLeaveCreditHistory = (params?: any, enabled = true) => {
@@ -101,10 +116,17 @@ export const useGetLeaveDashboard = (
 
 export const useDeleteLeaveData = (id: string) => {
   const { setOpen } = useLeaveStore();
+  const queryClient = useQueryClient();
   return useDeleteData({
     url: `${API.leave_management.delete}/${id}`,
     refetchQueries: leaveRefetchQueries,
     onSuccess: () => {
+      queryClient.invalidateQueries({
+        predicate: (query) =>
+          typeof query.queryKey[0] === "string" &&
+          query.queryKey[0].includes("/leave-management/") &&
+          query.queryKey[0].includes("/details"),
+      });
       setOpen(null);
     },
   });
@@ -112,10 +134,17 @@ export const useDeleteLeaveData = (id: string) => {
 
 export const useApproveRejectLeave = (id: string) => {
   const { setOpen } = useLeaveStore();
+  const queryClient = useQueryClient();
   return usePatchData({
     url: API.leave_management.action.replace("{id}", id),
     refetchQueries: leaveRefetchQueries,
     onSuccess: () => {
+      queryClient.invalidateQueries({
+        predicate: (query) =>
+          typeof query.queryKey[0] === "string" &&
+          query.queryKey[0].includes("/leave-management/") &&
+          query.queryKey[0].includes("/details"),
+      });
       setOpen(null);
     },
   });
@@ -178,6 +207,16 @@ export const useSetLeaveAllocations = (onSuccess?: () => void) => {
 };
 
 /**
+ * Fetch leave allocations settings.
+ */
+export const useGetLeaveAllocations = (enabled = true) => {
+  return useFetchData({
+    url: API.leave_balance.allocations,
+    enabled,
+  });
+};
+
+/**
  * Fetch available leave types.
  */
 export const useGetLeaveTypes = (enabled = true) => {
@@ -229,12 +268,21 @@ export const useUpdateExamLeaveEligibility = () => {
 /**
  * Submits an attendance regularization request.
  */
-export const useCreateRegularizationRequest = (onSuccess?: () => void) => {
+export const useCreateRegularizationRequest = (onSuccess?: (data?: any) => void) => {
   return usePostData({
     url: API.attendance.regularizations,
-    refetchQueries: [API.attendance.high_working_hours],
+    refetchQueries: [API.attendance.compensatory_date],
     onSuccess,
   });
 };
+
+export const useDeleteLeaveCreditHistory = (id: string | number, onSuccess?: () => void) => {
+  return useDeleteData({
+    url: `${API.leave_balance.delete}/${id}`,
+    refetchQueries: leaveRefetchQueries,
+    onSuccess,
+  });
+};
+
 
 

@@ -23,7 +23,6 @@ import {
   Check,
   X,
   CheckCircle2,
-  Loader2,
   ChevronsLeftIcon,
   ChevronsRightIcon,
   Building2,
@@ -36,24 +35,18 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
-import DateRangeFilter from "@/components/table/custome-dateRange";
+import { MonthYearPicker } from "./month-year-picker";
 import SimpleDropDownSearchable from "@/components/shared/custome-simple-dropdown";
 import { toast } from "sonner";
 import { MyAttendance } from "./my-attendance";
 import { MewurkService } from "../services/mewurk-service";
 import {
-  useGetRegularizationRequests,
-  useRegularizationAction,
   useGetAttendanceSummary,
   useGetAttendanceEmployees,
 } from "../services";
-import { useGetUserDropdownList } from "@/features/users/services";
 import {
   DoubleArrowLeftIcon,
   DoubleArrowRightIcon,
@@ -70,7 +63,8 @@ interface EmployeeAttendanceRow {
   absent: number;
   leaves: number;
   isActive: boolean;
-  dailyStatus: Record<string, "P" | "A" | "WO" | "AH" | "E" | "L" | "">;
+  dailyStatus: Record<string, "P" | "A" | "WO" | "AH" | "E" | "L" | "HL" | "">;
+  dailyIsCorrected?: Record<string, boolean>;
   phone?: string;
   email?: string;
   profilePicUrl?: string | null;
@@ -110,13 +104,13 @@ const getNameInitials = (name: string) => {
   return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
 };
 
-const getDefaultSummaryDateRange = (): DateRange => {
-  const now = new Date();
-  return {
-    from: new Date(now.getFullYear(), now.getMonth(), 1),
-    to: now,
-  };
-};
+// const getDefaultSummaryDateRange = (): DateRange => {
+//   const now = new Date();
+//   return {
+//     from: new Date(now.getFullYear(), now.getMonth(), 1),
+//     to: now,
+//   };
+// };
 
 const getWeekdayFromDate = (dateStr: string) => {
   const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -132,7 +126,7 @@ const getWeekdayFromDate = (dateStr: string) => {
 
 const mapFinalStatusToCode = (
   finalStatus: string
-): "P" | "A" | "WO" | "AH" | "E" | "L" | "" => {
+): "P" | "A" | "WO" | "AH" | "E" | "L" | "HL" | "" => {
   const status = (finalStatus || "").toLowerCase().trim();
   if (status === "present" || status === "p") return "P";
   if (status === "absent" || status === "a") return "A";
@@ -146,6 +140,9 @@ const mapFinalStatusToCode = (
   }
   if (status === "leave" || status === "l" || status === "approved leave") {
     return "L";
+  }
+  if (status === "half day leave" || status === "half leave") {
+    return "HL";
   }
   if (
     status === "half day" ||
@@ -168,6 +165,8 @@ const getStatusLabel = (status: string) => {
       return "Weekly Off";
     case "AH":
       return "Half Day Absent";
+    case "HL":
+      return "Half Day Leave";
     case "E":
       return "Late/Excused";
     case "L":
@@ -178,9 +177,8 @@ const getStatusLabel = (status: string) => {
 };
 
 export const EmployeeAttendance: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<
-    "summary" | "regularization" | "overtime" | "onduty"
-  >("summary");
+  const [activeTab] = useState<"summary" | "overtime" | "onduty">("summary");
+
   const [selectedEmployee, setSelectedEmployee] =
     useState<EmployeeAttendanceRow | null>(null);
 
@@ -188,13 +186,20 @@ export const EmployeeAttendance: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  // Summary tab filters
-  const [summaryDateRange, setSummaryDateRange] = useState<
-    DateRange | undefined
-  >(getDefaultSummaryDateRange);
+  // Summary tab filters (Month & Year)
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
+  const summaryDateRange = useMemo<DateRange>(() => {
+    return {
+      from: new Date(selectedYear, selectedMonth - 1, 1),
+      to: new Date(selectedYear, selectedMonth, 0),
+    };
+  }, [selectedMonth, selectedYear]);
   const [summaryEmployeeCode, setSummaryEmployeeCode] = useState<string | null>(
     null
   );
+  const [summaryStatus, setSummaryStatus] = useState<"active" | "inactive">("active");
 
   // Day Detail Modal states
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
@@ -267,15 +272,12 @@ export const EmployeeAttendance: React.FC = () => {
       page: currentPage,
       limit: itemsPerPage,
       pagination: true,
-      fromDate: summaryDateRange?.from
-        ? format(summaryDateRange.from, "yyyy-MM-dd")
-        : undefined,
-      toDate: summaryDateRange?.to
-        ? format(summaryDateRange.to, "yyyy-MM-dd")
-        : undefined,
+      month: selectedMonth,
+      year: selectedYear,
       employeeCodes: summaryEmployeeCode ? [summaryEmployeeCode] : undefined,
+      status: summaryStatus,
     }),
-    [currentPage, itemsPerPage, summaryDateRange, summaryEmployeeCode]
+    [currentPage, itemsPerPage, selectedMonth, selectedYear, summaryEmployeeCode, summaryStatus]
   );
 
   const { data: summaryData, isPending: isLoadingSummary } =
@@ -300,18 +302,64 @@ export const EmployeeAttendance: React.FC = () => {
 
   const employeesList = useMemo<EmployeeAttendanceRow[]>(() => {
     const rows = (summaryData as any)?.data || [];
+    const todayStr = format(new Date(), "yyyy-MM-dd");
+
     return rows.map((emp: any) => {
       const dailyStatus: Record<
         string,
-        "P" | "A" | "WO" | "AH" | "E" | "L" | ""
+        "P" | "A" | "WO" | "AH" | "E" | "L" | "HL" | ""
       > = {};
       let present = 0;
       let absent = 0;
       let leaves = 0;
+      const dailyIsCorrected: Record<string, boolean> = {};
 
       (emp.attendance || []).forEach((day: any) => {
-        const code = mapFinalStatusToCode(day.finalStatus);
+        let code = mapFinalStatusToCode(day.finalStatus);
+
+        // Hide temporary absent/present statuses for today and the future
+        if (day.date >= todayStr) {
+          if (code === "A" || code === "P" || code === "AH" || code === "E") {
+            code = "";
+          }
+        }
+
         dailyStatus[day.date] = code;
+        dailyIsCorrected[day.date] = !!day.isCorrected;
+      });
+
+      // Apply sandwich leave logic on intermediate weekly off (WO) days
+      const sortedDates = Object.keys(dailyStatus).sort();
+      const n = sortedDates.length;
+      let idx = 0;
+      while (idx < n) {
+        if (dailyStatus[sortedDates[idx]] === "WO") {
+          let j = idx;
+          while (j < n && dailyStatus[sortedDates[j]] === "WO") {
+            j++;
+          }
+          const beforeIdx = idx - 1;
+          const afterIdx = j;
+
+          if (beforeIdx >= 0 && afterIdx < n) {
+            if (
+              dailyStatus[sortedDates[beforeIdx]] === "L" &&
+              dailyStatus[sortedDates[afterIdx]] === "L"
+            ) {
+              for (let k = idx; k < j; k++) {
+                dailyStatus[sortedDates[k]] = "L";
+              }
+            }
+          }
+          idx = j;
+        } else {
+          idx++;
+        }
+      }
+
+      // Calculate stats based on final dailyStatus values (after sandwich conversion!)
+      Object.keys(dailyStatus).forEach((date) => {
+        const code = dailyStatus[date];
         if (code === "P") present++;
         else if (code === "A" || code === "AH" || code === "E") absent++;
         else if (code === "L") leaves++;
@@ -329,6 +377,7 @@ export const EmployeeAttendance: React.FC = () => {
         leaves,
         isActive: true,
         dailyStatus,
+        dailyIsCorrected,
         profilePicUrl: emp.profilePicUrl,
       };
     });
@@ -336,85 +385,9 @@ export const EmployeeAttendance: React.FC = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [summaryDateRange, summaryEmployeeCode]);
+  }, [summaryDateRange, summaryEmployeeCode, summaryStatus]);
 
-  // Regularization approvals from API
-  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
-  const [selectedRejectId, setSelectedRejectId] = useState<number | null>(null);
-  const [rejectionReason, setRejectionReason] = useState("");
-  const [regStatusFilter, setRegStatusFilter] = useState<
-    "pending" | "approved" | "rejected"
-  >("pending");
-  const [regEmployeeFilter, setRegEmployeeFilter] = useState<number | null>(
-    null
-  );
 
-  const regListParams = useMemo(() => {
-    const params: { empId?: number; status?: string } = {
-      status: regStatusFilter,
-    };
-    if (regEmployeeFilter) params.empId = regEmployeeFilter;
-    return params;
-  }, [regStatusFilter, regEmployeeFilter]);
-
-  // const { data: pendingRegularizationData } = useGetRegularizationRequests({
-  //   status: "pending",
-  // });
-
-  const {
-    data: regularizationData,
-    isPending: isLoadingRegularizations,
-    refetch: refetchRegularizations,
-  } = useGetRegularizationRequests(
-    regListParams,
-    activeTab === "regularization"
-  );
-
-  const { data: employeeDropdownData, isPending: isLoadingEmployees } =
-    useGetUserDropdownList({ status: "active" });
-
-  const employeeOptions = useMemo(
-    () =>
-      ((employeeDropdownData as any)?.data || []).map((emp: any) => ({
-        value: emp.id,
-        label: emp.fullName,
-      })),
-    [employeeDropdownData]
-  );
-
-  const regularizations: any[] = (regularizationData as any)?.data || [];
-  // const pendingRegularizationCount = (
-  //   (pendingRegularizationData as any)?.data || []
-  // ).filter((r: any) => r.status === "pending").length;
-
-  const {
-    mutate: performRegularizationAction,
-    isPending: isActioningRegularization,
-  } = useRegularizationAction(() => {
-    refetchRegularizations();
-    setRejectDialogOpen(false);
-    setRejectionReason("");
-    setSelectedRejectId(null);
-  });
-
-  const handleOpenRejectRegularization = (id: number) => {
-    setSelectedRejectId(id);
-    setRejectionReason("");
-    setRejectDialogOpen(true);
-  };
-
-  const handleConfirmRejectRegularization = () => {
-    if (!selectedRejectId) return;
-    if (!rejectionReason.trim()) {
-      toast.error("Please enter a rejection reason.");
-      return;
-    }
-    performRegularizationAction({
-      id: selectedRejectId,
-      status: "rejected",
-      rejectionReason: rejectionReason.trim(),
-    });
-  };
 
   // Mock Overtime Requests
   const [overtimes, setOvertimes] = useState<RequestItem[]>([]);
@@ -546,50 +519,24 @@ export const EmployeeAttendance: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Sub Tabs Navigation */}
-      <div className="flex border-b border-border">
-        <button
-          onClick={() => setActiveTab("summary")}
-          className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all ${
-            activeTab === "summary"
-              ? "border-rose-500 text-rose-500 bg-rose-500/5"
-              : "border-transparent text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          Summary
-        </button>
-        {/* <button
-          onClick={() => setActiveTab("regularization")}
-          className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all flex items-center gap-1.5 ${
-            activeTab === "regularization"
-              ? "border-rose-500 text-rose-500 bg-rose-500/5"
-              : "border-transparent text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          Regularization Approvals
-          {pendingRegularizationCount > 0 && (
-            <Badge className="bg-rose-600 hover:bg-rose-700 text-[10px] px-1 py-0.2 ml-1">
-              {pendingRegularizationCount}
-            </Badge>
-          )}
-        </button> */}
-      </div>
-
-      {activeTab === "summary" && (
+      {(
         <>
           <div className="flex flex-col lg:flex-row lg:items-center gap-3">
-            <DateRangeFilter
-              value={summaryDateRange}
-              onChange={(range) => setSummaryDateRange(range)}
-              placeholder="Select date range"
-              className="h-9 text-xs rounded-lg w-full lg:w-[280px] border-border bg-background"
+            <MonthYearPicker
+              month={selectedMonth}
+              year={selectedYear}
+              onChange={(m, y) => {
+                setSelectedMonth(m);
+                setSelectedYear(y);
+              }}
+              isLoading={isLoadingSummary}
             />
 
             <SimpleDropDownSearchable
               options={summaryEmployeeOptions}
               value={summaryEmployeeCode ?? undefined}
               placeholder="Filter by employee"
-              className="w-full lg:w-[220px] h-9"
+              className="w-full lg:w-[220px] h-11"
               isLoading={isLoadingAttendanceEmployees}
               loadingText="Loading employees..."
               onChange={(val) =>
@@ -597,6 +544,19 @@ export const EmployeeAttendance: React.FC = () => {
               }
               allowClear
             />
+
+            <Select
+              value={summaryStatus}
+              onValueChange={(val: "active" | "inactive") => setSummaryStatus(val)}
+            >
+              <SelectTrigger className="w-full lg:w-[120px] h-9 bg-background border-border text-xs rounded-lg text-foreground">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent className="bg-popover border-border text-popover-foreground text-xs">
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Row count info */}
@@ -794,6 +754,7 @@ export const EmployeeAttendance: React.FC = () => {
                         {/* Individual Day statuses */}
                         {summaryDateColumns.map(({ dateStr }) => {
                           const status = emp.dailyStatus[dateStr] || "";
+                          const isCorrected = emp.dailyIsCorrected?.[dateStr] ?? false;
                           return (
                             <td
                               key={dateStr}
@@ -805,7 +766,7 @@ export const EmployeeAttendance: React.FC = () => {
                                   className={`${getCellClassName(status, dateStr)} cursor-pointer hover:scale-110 hover:shadow-md transition-transform`}
                                   onClick={() => handleDayClick(emp, dateStr)}
                                 >
-                                  {status}
+                                  {status ? `${status}${isCorrected ? "*" : ""}` : ""}
                                 </span>
                               </div>
                             </td>
@@ -915,65 +876,16 @@ export const EmployeeAttendance: React.FC = () => {
       )}
 
       {/* Approvals tab implementations */}
-      {(activeTab === "regularization" ||
-        activeTab === "overtime" ||
+      {(activeTab === "overtime" ||
         activeTab === "onduty") && (
         <Card className="p-5 bg-card border-border shadow-lg text-card-foreground">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
             <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">
-              {activeTab === "regularization" &&
-                (regStatusFilter === "pending"
-                  ? "Pending Regularization Approvals"
-                  : regStatusFilter === "approved"
-                    ? "Approved Regularization Requests"
-                    : "Rejected Regularization Requests")}
               {activeTab === "overtime" && "Pending Overtime Approvals"}
               {activeTab === "onduty" && "Pending On Duty Approvals"}
             </h3>
 
-            {activeTab === "regularization" && (
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                <Select
-                  value={regStatusFilter}
-                  onValueChange={(value) =>
-                    setRegStatusFilter(
-                      value as "pending" | "approved" | "rejected"
-                    )
-                  }
-                >
-                  <SelectTrigger className="h-8 w-full sm:w-[160px] text-xs bg-background border-border">
-                    <SelectValue placeholder="Filter by status" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover border-border text-popover-foreground text-xs">
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="approved">Approved</SelectItem>
-                    <SelectItem value="rejected">Rejected</SelectItem>
-                  </SelectContent>
-                </Select>
 
-                <Select
-                  value={regEmployeeFilter ? String(regEmployeeFilter) : "all"}
-                  onValueChange={(value) =>
-                    setRegEmployeeFilter(value === "all" ? null : Number(value))
-                  }
-                  disabled={isLoadingEmployees}
-                >
-                  <SelectTrigger className="h-8 w-full sm:w-[200px] text-xs bg-background border-border">
-                    <SelectValue placeholder="Filter by employee" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover border-border text-popover-foreground text-xs max-h-[240px]">
-                    <SelectItem value="all">All Employees</SelectItem>
-                    {employeeOptions.map(
-                      (emp: { value: number; label: string }) => (
-                        <SelectItem key={emp.value} value={String(emp.value)}>
-                          {emp.label}
-                        </SelectItem>
-                      )
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
           </div>
 
           <div className="overflow-x-auto">
@@ -998,124 +910,6 @@ export const EmployeeAttendance: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {activeTab === "regularization" && isLoadingRegularizations && (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8">
-                      <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
-                    </TableCell>
-                  </TableRow>
-                )}
-
-                {activeTab === "regularization" &&
-                  !isLoadingRegularizations &&
-                  regularizations.map((req: any) => {
-                    const employeeName =
-                      req.employee?.fullName ||
-                      req.requestedByUser?.fullName ||
-                      "Unknown Employee";
-                    const initials = getNameInitials(employeeName);
-                    const detailParts = [
-                      req.workingTime
-                        ? `Working Time: ${req.workingTime}`
-                        : null,
-                      req.previousStatus
-                        ? `Prev. Status: ${req.previousStatus}`
-                        : null,
-                      req.compensatoryDate
-                        ? `Comp. Date: ${formatDisplayDate(req.compensatoryDate)}`
-                        : null,
-                    ].filter(Boolean);
-
-                    return (
-                      <TableRow
-                        key={req.id}
-                        className="border-border hover:bg-muted/20"
-                      >
-                        <TableCell className="font-medium">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8 border border-border">
-                              <AvatarFallback className="bg-rose-500/10 text-rose-500 text-xs font-bold">
-                                {initials}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <span className="text-xs font-bold text-foreground block">
-                                {employeeName}
-                              </span>
-                              <span className="text-[10px] text-muted-foreground">
-                                ID: {req.empId}
-                              </span>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-xs text-muted-foreground">
-                          {formatDisplayDate(req.regularizationDate)}
-                        </TableCell>
-                        <TableCell className="text-xs text-foreground/90 font-semibold">
-                          {detailParts.join(" | ") || "-"}
-                        </TableCell>
-                        <TableCell
-                          className="text-xs text-muted-foreground max-w-[200px] truncate"
-                          title={req.reason}
-                        >
-                          {req.reason || "-"}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Badge
-                            variant={
-                              req.status === "pending"
-                                ? "warning"
-                                : req.status === "approved"
-                                  ? "success"
-                                  : "destructive"
-                            }
-                          >
-                            {req.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {req.status === "pending" ? (
-                            <div className="flex items-center justify-end gap-1.5">
-                              <Button
-                                size="icon"
-                                variant="outline"
-                                className="h-7 w-7 rounded-full bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20 hover:text-emerald-400"
-                                disabled={isActioningRegularization}
-                                onClick={() =>
-                                  performRegularizationAction({
-                                    id: req.id,
-                                    status: "approved",
-                                  })
-                                }
-                              >
-                                {isActioningRegularization ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Check className="h-4 w-4" />
-                                )}
-                              </Button>
-                              <Button
-                                size="icon"
-                                variant="outline"
-                                className="h-7 w-7 rounded-full bg-rose-500/10 text-rose-500 border-rose-500/20 hover:bg-rose-500/20 hover:text-rose-400"
-                                disabled={isActioningRegularization}
-                                onClick={() =>
-                                  handleOpenRejectRegularization(req.id)
-                                }
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ) : (
-                            <span className="text-xs text-muted-foreground italic">
-                              Actioned
-                            </span>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-
                 {activeTab === "overtime" &&
                   overtimes.map((req) => (
                     <TableRow
@@ -1270,10 +1064,7 @@ export const EmployeeAttendance: React.FC = () => {
                     </TableRow>
                   ))}
 
-                {((activeTab === "regularization" &&
-                  !isLoadingRegularizations &&
-                  regularizations.length === 0) ||
-                  (activeTab === "overtime" && overtimes.length === 0) ||
+                {((activeTab === "overtime" && overtimes.length === 0) ||
                   (activeTab === "onduty" && onDuties.length === 0)) && (
                   <TableRow>
                     <TableCell
@@ -1281,11 +1072,7 @@ export const EmployeeAttendance: React.FC = () => {
                       className="text-center py-8 text-muted-foreground text-xs"
                     >
                       <CheckCircle2 className="h-8 w-8 mx-auto text-emerald-500 mb-2 opacity-60" />
-                      {activeTab === "regularization"
-                        ? regStatusFilter === "pending"
-                          ? "All caught up! No pending requests."
-                          : "No regularization requests found for the selected filters."
-                        : "All caught up! No pending requests."}
+                      All caught up! No pending requests.
                     </TableCell>
                   </TableRow>
                 )}
@@ -1294,55 +1081,7 @@ export const EmployeeAttendance: React.FC = () => {
           </div>
         </Card>
       )}
-      {/* Reject Regularization Dialog */}
-      <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
-        <DialogContent className="sm:max-w-[420px]">
-          <DialogHeader>
-            <DialogTitle>Reject Regularization Request</DialogTitle>
-            <DialogDescription>
-              Please provide a reason for rejecting this request.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-2 py-2">
-            <Label
-              htmlFor="rejection-reason"
-              className="text-sm font-semibold flex items-center gap-1"
-            >
-              Rejection Reason <span className="text-rose-500">*</span>
-            </Label>
-            <Textarea
-              id="rejection-reason"
-              value={rejectionReason}
-              onChange={(e) => setRejectionReason(e.target.value)}
-              placeholder="Enter reason for rejection..."
-              rows={3}
-            />
-          </div>
-          <DialogFooter className="pt-4 border-t border-border/50">
-            <Button
-              variant="outline"
-              onClick={() => setRejectDialogOpen(false)}
-              disabled={isActioningRegularization}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleConfirmRejectRegularization}
-              disabled={isActioningRegularization}
-            >
-              {isActioningRegularization ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Rejecting...
-                </>
-              ) : (
-                "Reject Request"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
 
       {/* Day Detail Clock In/Out Modal */}
       <Dialog open={isDayModalOpen} onOpenChange={setIsDayModalOpen}>

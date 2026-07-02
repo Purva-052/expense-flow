@@ -30,7 +30,7 @@ export const leaveSchema = z
     isExamLeave: z.boolean().optional(),
 
     // Leave type — "1" = Casual, "2" = Paid (maps to LEAVE_TYPE constant values)
-    leaveTypeId: z.string().min(1, "Leave type is required"),
+    leaveTypeId: z.string().optional(),
 
     reason: z.string().trim().min(2, "Reason is required"),
 
@@ -75,8 +75,16 @@ export const leaveSchema = z
         },
         { message: "Only PDF and JPEG formats are allowed" }
       ),
+    notifyUserIds: z.array(z.string()).optional(),
   })
   .superRefine((data, ctx) => {
+    if (!data.isExamLeave && (!data.leaveTypeId || data.leaveTypeId.trim() === "")) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Leave type is required",
+        path: ["leaveTypeId"],
+      });
+    }
     if (data.fromDate && data.toDate && data.fromDate > data.toDate) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

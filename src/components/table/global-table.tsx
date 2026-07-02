@@ -46,6 +46,7 @@ interface GlobalTableProps<TData> {
   sorting?: SortingState;
   onSortingChange?: (sorting: SortingState) => void;
   manualSorting?: boolean;
+  onRowClick?: (row: TData) => void;
 }
 
 export function GlobalTable<TData>({
@@ -63,6 +64,7 @@ export function GlobalTable<TData>({
   sorting,
   onSortingChange,
   manualSorting = false,
+  onRowClick,
 }: Readonly<GlobalTableProps<TData>>) {
   const [localSorting, setLocalSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -105,7 +107,6 @@ export function GlobalTable<TData>({
     manualPagination: true,
     manualSorting,
     enableSorting,
-    enableSortingRemoval: false,
     pageCount: Math.ceil((totalCount ?? 0) / (pageSize ?? 10)),
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -214,11 +215,15 @@ export function GlobalTable<TData>({
                       "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
                       getRowClassName?.(row.original)
                     )}
+                    onClick={() => onRowClick?.(row.original)}
                   >
                     {row.getVisibleCells().map((cell: any) => (
                       <td
                         key={cell.id}
-                        className="p-4 align-middle whitespace-nowrap"
+                        className={cn(
+                          "p-4 align-middle whitespace-nowrap",
+                          cell.column.columnDef.meta?.getCellClassName?.(row.original)
+                        )}
                       >
                         {flexRender(
                           cell.column.columnDef.cell,

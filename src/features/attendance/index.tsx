@@ -4,9 +4,13 @@ import TablePageHeader from "@/components/table/table-page-header";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
-import { Clock, Users } from "lucide-react";
+import { ClipboardList, Clock, Users, ClockAlert } from "lucide-react";
 import { MyAttendance } from "./components/my-attendance";
 import { EmployeeAttendance } from "./components/employee-attendance";
+import { RegularizationRequestsPanel } from "./components/attendance-table";
+import { LateInLeaveDeductions } from "./components/late-in-deductions";
+import { Card } from "@/components/ui/card";
+import { useGetRegularizationRequests } from "./services";
 
 const tabTriggerClass =
   "flex items-center gap-2 rounded-[50px] !px-3 !py-2 transition-all h-[35px] " +
@@ -23,6 +27,25 @@ const AttendancePage: React.FC = () => {
   ).toLowerCase();
 
   const isAdmin = roleName === roles.ADMIN;
+  const isTeamLead = roleName === roles.TEAM_LEAD;
+  const canViewAllRegularizations =
+    isAdmin || roleName === roles.PROJECT_MANAGER;
+
+  const { data: pendingRegularizationData } = useGetRegularizationRequests(
+    {
+      ...(canViewAllRegularizations
+        ? {}
+        : { employeeId: Number(user?.user?.id || user?.user_id) }),
+      status: "pending",
+      page: 1,
+      limit: 10,
+    },
+    true
+  );
+
+  const pendingRegularizationCount =
+    (pendingRegularizationData as any)?.metadata?.totalCount ??
+    ((pendingRegularizationData as any)?.data || []).length;
 
   return (
     <PageLayout>
@@ -49,11 +72,19 @@ const AttendancePage: React.FC = () => {
               <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border border-rose-100/50 h-9 w-fit shrink-0">
                 <TabsTrigger value="my-attendance" className={tabTriggerClass}>
                   <Clock className="h-4 w-4" />
-                  My Attendance
+                  Team Attendance
                 </TabsTrigger>
                 <TabsTrigger value="employee-attendance" className={tabTriggerClass}>
                   <Users className="h-4 w-4" />
-                  Employee Attendance
+                  Monthly Attendance
+                </TabsTrigger>
+                <TabsTrigger value="regularization" className={tabTriggerClass}>
+                  <ClipboardList className="h-4 w-4" />
+                  {`Regularization (${pendingRegularizationCount})`}
+                </TabsTrigger>
+                <TabsTrigger value="late-in-deductions" className={tabTriggerClass}>
+                  <ClockAlert className="h-4 w-4" />
+                  Late In Deductions
                 </TabsTrigger>
               </TabsList>
               <div
@@ -75,9 +106,74 @@ const AttendancePage: React.FC = () => {
             >
               <EmployeeAttendance />
             </TabsContent>
+
+            <TabsContent
+              value="regularization"
+              className="mt-2 focus-visible:outline-none flex-none"
+            >
+              <Card className="w-full overflow-hidden border border-border shadow-sm">
+                <RegularizationRequestsPanel
+                  employeeId={Number(user?.user?.id || user?.user_id)}
+                  statusFilter=""
+                />
+              </Card>
+            </TabsContent>
+
+            <TabsContent
+              value="late-in-deductions"
+              className="mt-2 focus-visible:outline-none flex-none"
+            >
+              <Card className="w-full overflow-hidden border border-border shadow-sm">
+                <LateInLeaveDeductions />
+              </Card>
+            </TabsContent>
           </Tabs>
         ) : (
-          <MyAttendance filtersPortalId="attendance-filters-slot" />
+          <Tabs defaultValue="my-attendance" className="w-full gap-2">
+            <div className="flex flex-wrap items-center gap-3 w-full">
+              <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border border-rose-100/50 h-9 w-fit shrink-0">
+                <TabsTrigger value="my-attendance" className={tabTriggerClass}>
+                  <Clock className="h-4 w-4" />
+                  My Attendance
+                </TabsTrigger>
+                {isTeamLead && (
+                  <TabsTrigger value="employee-attendance" className={tabTriggerClass}>
+                    <Users className="h-4 w-4" />
+                    Monthly Attendance
+                  </TabsTrigger>
+                )}
+                <TabsTrigger value="regularization" className={tabTriggerClass}>
+                  <ClipboardList className="h-4 w-4" />
+                  {`Regularization (${pendingRegularizationCount})`}
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
+            <TabsContent
+              value="my-attendance"
+              className="mt-2 focus-visible:outline-none flex-none"
+            >
+              <MyAttendance filtersPortalId="attendance-filters-slot" />
+            </TabsContent>
+
+            <TabsContent
+              value="regularization"
+              className="mt-2 focus-visible:outline-none flex-none"
+            >
+              <Card className="w-full overflow-hidden border border-border shadow-sm">
+                <RegularizationRequestsPanel employeeId={Number(user?.user?.id || user?.user_id)} statusFilter="" />
+              </Card>
+            </TabsContent>
+
+            {isTeamLead && (
+              <TabsContent
+                value="employee-attendance"
+                className="mt-2 focus-visible:outline-none flex-none"
+              >
+                <EmployeeAttendance />
+              </TabsContent>
+            )}
+          </Tabs>
         )}
       </div>
     </PageLayout>
