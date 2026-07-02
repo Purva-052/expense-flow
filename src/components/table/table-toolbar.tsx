@@ -19,6 +19,7 @@ export interface FilterConfig {
   disable?: any;
   className?: any;
   multiple?: boolean;
+  component?: any;
 }
 
 interface DataTableToolbarProps {
@@ -104,6 +105,14 @@ export function DataTableToolbarCompact({
               disabled={filter.disable}
               className={filter.className}
             />
+          );
+        }
+
+        if (filter.type === "custom") {
+          return (
+            <div key={filter.key} className={filter.className}>
+              {filter.component}
+            </div>
           );
         }
 

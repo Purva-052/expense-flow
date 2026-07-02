@@ -137,7 +137,7 @@ export function EmployeeBalanceTab({ onAdjustClick }: EmployeeBalanceTabProps) {
           const isExamLeaveEligible = row.original.isExamLeaveEligible;
           const employeeId = row.original.id;
           const { mutate: updateExamLeaveEligibility, isPending } =
-            useUpdateExamLeaveEligibility();
+            useUpdateExamLeaveEligibility(employeeId || "");
 
           const user = useAuthStore((state) => state.user);
           const rawRole = user?.role || user?.user?.role;
@@ -156,9 +156,8 @@ export function EmployeeBalanceTab({ onAdjustClick }: EmployeeBalanceTabProps) {
                 onCheckedChange={(checked) => {
                   if (employeeId != null) {
                     updateExamLeaveEligibility({
-                      employeeId,
                       isExamLeaveEligible: checked,
-                    });
+                    } as any);
                   }
                 }}
               />
