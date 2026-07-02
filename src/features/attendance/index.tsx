@@ -10,6 +10,7 @@ import { EmployeeAttendance } from "./components/employee-attendance";
 import { RegularizationRequestsPanel } from "./components/attendance-table";
 import { LateInLeaveDeductions } from "./components/late-in-deductions";
 import { Card } from "@/components/ui/card";
+import { useGetRegularizationRequests } from "./services";
 
 const tabTriggerClass =
   "flex items-center gap-2 rounded-[50px] !px-3 !py-2 transition-all h-[35px] " +
@@ -27,6 +28,25 @@ const AttendancePage: React.FC = () => {
 
   const isAdmin = roleName === roles.ADMIN;
   const isTeamLead = roleName === roles.TEAM_LEAD;
+  const canViewAllRegularizations =
+    isAdmin || roleName === roles.PROJECT_MANAGER;
+
+  const { data: pendingRegularizationData } = useGetRegularizationRequests(
+    {
+      ...(canViewAllRegularizations
+        ? {}
+        : { employeeId: Number(user?.user?.id || user?.user_id) }),
+      status: "pending",
+      page: 1,
+      limit: 10,
+    },
+    true
+  );
+
+  const pendingRegularizationCount =
+    (pendingRegularizationData as any)?.metadata?.totalCount ??
+    ((pendingRegularizationData as any)?.data || []).length;
+
   return (
     <PageLayout>
       <div className="flex flex-col gap-4">
@@ -60,7 +80,7 @@ const AttendancePage: React.FC = () => {
                 </TabsTrigger>
                 <TabsTrigger value="regularization" className={tabTriggerClass}>
                   <ClipboardList className="h-4 w-4" />
-                  Regularization
+                  {`Regularization (${pendingRegularizationCount})`}
                 </TabsTrigger>
                 <TabsTrigger value="late-in-deductions" className={tabTriggerClass}>
                   <ClockAlert className="h-4 w-4" />
@@ -124,7 +144,7 @@ const AttendancePage: React.FC = () => {
                 )}
                 <TabsTrigger value="regularization" className={tabTriggerClass}>
                   <ClipboardList className="h-4 w-4" />
-                  Regularization
+                  {`Regularization (${pendingRegularizationCount})`}
                 </TabsTrigger>
               </TabsList>
             </div>
