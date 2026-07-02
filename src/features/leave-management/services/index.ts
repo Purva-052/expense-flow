@@ -1,4 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import axios from "axios";
+import { useAuthStore } from "@/stores/use-auth-store";
+import { buildQueryString } from "@/utils/storage";
 import API from "@/config/api/api";
 import usePostData from "@/hooks/use-post-data";
 import usePatchData from "@/hooks/use-patch-data";
@@ -6,9 +9,6 @@ import useDeleteData from "@/hooks/use-delete-data";
 import useFetchData from "@/hooks/use-fetch-data";
 import { useLeaveStore } from "../stores";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import instance from "@/config/instance/instance";
-import { toast } from "sonner";
-import { extractErrorInfo } from "@/utils/error-response";
 
 // Assuming your API structure has a leaves endpoint
 const GET_API_URL = API.leave_management.list;
@@ -34,31 +34,14 @@ export const useCreateLeaveData = () => {
   });
 };
 
-export const useUpdateLeaveData = () => {
+export const useUpdateLeaveData = (id: string | number) => {
   const { setOpen } = useLeaveStore();
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async ({
-      id,
-      data,
-    }: {
-      id: string | number;
-      data: FormData;
-    }) => {
-      const response = await instance.patch({
-        url: `${API.leave_management.update}/${id}`,
-        data,
-      });
-      return response;
-    },
-    onSuccess: (data: any) => {
-      toast.success(data?.message ?? "Leave updated successfully", {
-        position: "top-right",
-      });
-      leaveRefetchQueries.forEach((query) =>
-        queryClient.invalidateQueries({ queryKey: [query] })
-      );
+  return usePatchData({
+    url: `${API.leave_management.update}/${id}`,
+    refetchQueries: leaveRefetchQueries,
+    onSuccess: () => {
       queryClient.invalidateQueries({
         predicate: (query) =>
           typeof query.queryKey[0] === "string" &&
@@ -66,14 +49,6 @@ export const useUpdateLeaveData = () => {
           query.queryKey[0].includes("/details"),
       });
       setOpen(null);
-    },
-    onError: (error: any) => {
-      const errorInfo = extractErrorInfo(error);
-      toast.error(errorInfo.title, {
-        description: errorInfo.description,
-        duration: 3000,
-        position: "top-right",
-      });
     },
   });
 };
@@ -226,42 +201,10 @@ export const useGetLeaveTypes = (enabled = true) => {
   });
 };
 
-export const useUpdateExamLeaveEligibility = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({
-      employeeId,
-      isExamLeaveEligible,
-    }: {
-      employeeId: number | string;
-      isExamLeaveEligible: boolean;
-    }) => {
-      const response = await instance.patch({
-        url: `${API.leave_management.exam_leave}/${employeeId}`,
-        data: { isExamLeaveEligible },
-      });
-      return response;
-    },
-    onSuccess: (data: any) => {
-      toast.success(
-        data?.message ?? "Exam leave eligibility updated successfully",
-        {
-          position: "top-right",
-        }
-      );
-      leaveRefetchQueries.forEach((query) =>
-        queryClient.invalidateQueries({ queryKey: [query] })
-      );
-    },
-    onError: (error: any) => {
-      const errorInfo = extractErrorInfo(error);
-      toast.error(errorInfo.title, {
-        description: errorInfo.description,
-        duration: 3000,
-        position: "top-right",
-      });
-    },
+export const useUpdateExamLeaveEligibility = (employeeId: string | number) => {
+  return usePatchData({
+    url: `${API.leave_management.exam_leave}/${employeeId}`,
+    refetchQueries: leaveRefetchQueries,
   });
 };
 
@@ -284,5 +227,59 @@ export const useDeleteLeaveCreditHistory = (id: string | number, onSuccess?: () 
   });
 };
 
+export const useExportLeaveSummary = () => {
+  return useMutation({
+    mutationFn: async (params?: Record<string, any>) => {
+      try {
+        const queryString = buildQueryString(params ?? {});
+        const baseURL = import.meta.env.VITE_API_BASE_URL;
+        const token =
+          useAuthStore.getState().user?.token ?? useAuthStore.getState().token;
+        const response = await axios.get(
+          `${baseURL}${API.leave_management.export_summary}${queryString}`,
+          {
+            responseType: "blob",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
+        const contentDisposition = response.headers["content-disposition"];
+        let filename = `leave_summary_${new Date().toISOString().split("T")[0]}.xlsx`;
 
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(
+            /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+          );
+          if (filenameMatch?.[1]) {
+            filename = filenameMatch[1].replace(/['"]/g, "");
+          }
+        }
+
+        return {
+          blob: response.data,
+          filename,
+        };
+      } catch (error: any) {
+        if (axios.isAxiosError(error) && error.response?.data instanceof Blob) {
+          try {
+            const errorText = await error.response.data.text();
+            const parsedError = JSON.parse(errorText);
+            throw new Error(
+              parsedError?.message ||
+                parsedError?.messages?.[0] ||
+                "Failed to generate leave summary file"
+            );
+          } catch (parseError) {
+            if (parseError instanceof Error) {
+              throw parseError;
+            }
+          }
+        }
+
+        throw new Error(error?.message || "Failed to generate leave summary file");
+      }
+    },
+  });
+};

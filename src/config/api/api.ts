@@ -184,6 +184,7 @@ const API = {
     employee: "/leave-management/employees",
     create: "/leave-management",
     list: "/leave-management",
+    export_summary: "/leave-management/export-summary",
     update: "/leave-management",
     delete: "/leave-management",
     action: "/leave-management/{id}/action",

@@ -113,14 +113,14 @@ const LeaveManagementPage = () => {
   const { mutateAsync: createMutate, isPending: isCreateLoading } =
     useCreateLeaveData();
   const { mutateAsync: updateMutate, isPending: isUpdateLoading } =
-    useUpdateLeaveData();
+    useUpdateLeaveData(currentRow?.id || "");
 
   const handleCreate = (formData: FormData) => {
     createMutate(formData as any);
   };
 
   const handleEdit = (payload: { id: string | number; data: FormData }) => {
-    updateMutate({ id: payload.id, data: payload.data });
+    updateMutate(payload.data as any);
   };
 
   const handleCloseForm = () => {

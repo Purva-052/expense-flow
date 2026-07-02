@@ -68,7 +68,7 @@ export function CommentModal() {
   );
   const [_, setDemoScheduled] = useState(false);
   const [demoDate, setDemoDate] = useState<Date | undefined>(
-    currentRow?.demoDate ? new Date(currentRow.demoDate) : undefined
+    currentRow?.demoDate ? new Date(currentRow.demoDate) : new Date()
   );
 
   const inquiryId = currentRow?.id;
@@ -118,7 +118,7 @@ export function CommentModal() {
     setStatusOthersText(currentRow?.others || "");
     setDemoScheduled(false);
     setDemoDate(
-      currentRow?.demoDate ? new Date(currentRow.demoDate) : undefined
+      currentRow?.demoDate ? new Date(currentRow.demoDate) : new Date()
     );
   }, [currentRow]);
 
