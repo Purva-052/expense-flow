@@ -35,7 +35,11 @@ import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { useGetAllLeaveBalances, useGetLeaveDetails } from "../services";
+import {
+  useGetAllLeaveBalances,
+  useGetLeaveData,
+  useGetLeaveDetails,
+} from "../services";
 import {
   Wallet,
   ArrowLeft,
@@ -88,6 +92,32 @@ function buildLeaveDays(from: Date, to: Date, isAccountsTech?: boolean) {
     };
   });
 }
+
+const normalizeDateValue = (value: any) => {
+  if (!value) return "";
+  if (typeof value === "string") {
+    const match = value.match(/^\d{4}-\d{2}-\d{2}/);
+    if (match) return match[0];
+  }
+  const date = new Date(value);
+  return isNaN(date.getTime()) ? "" : format(startOfDay(date), "yyyy-MM-dd");
+};
+
+const isWeekendForDate = (date: Date, isAccountsTech?: boolean) => {
+  if (isAccountsTech && isSaturday(date)) {
+    const dayOfMonth = date.getDate();
+    const satIndex = Math.ceil(dayOfMonth / 7);
+    return satIndex === 2 || satIndex === 4;
+  }
+  return isSaturday(date) || isSunday(date);
+};
+
+const getListFromResponse = (data: any) => {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.data)) return data.data;
+  if (Array.isArray(data?.data?.data)) return data.data.data;
+  return [];
+};
 
 const CASUAL_LEAVE_TYPE_ID = "1";
 const PAID_LEAVE_TYPE_ID = "2";
@@ -238,7 +268,7 @@ const buildLeaveAllocation = ({
       paidDays: 0,
       lossOfPayDays: requestedDays,
       examDays: 0,
-      totalAvailableDays: 0,
+      totalAvailableDays: casualBalance + paidBalance,
       requestedDays,
       items: [
         {
@@ -253,19 +283,28 @@ const buildLeaveAllocation = ({
 
   if (selectedLeaveTypeId === CASUAL_LEAVE_TYPE_ID) {
     const casualDays = Math.min(requestedDays, casualBalance);
-    const lossOfPayDays = Math.max(requestedDays - casualDays, 0);
+    const paidDays = Math.min(
+      Math.max(requestedDays - casualDays, 0),
+      paidBalance
+    );
+    const lossOfPayDays = Math.max(requestedDays - casualDays - paidDays, 0);
     return {
       casualDays,
-      paidDays: 0,
+      paidDays,
       lossOfPayDays,
       examDays: 0,
-      totalAvailableDays: casualBalance,
+      totalAvailableDays: casualBalance + paidBalance,
       requestedDays,
       items: [
         {
           leaveTypeId: CASUAL_LEAVE_TYPE_ID,
           leaveTypeName: getLeaveTypeLabel(CASUAL_LEAVE_TYPE_ID),
           days: casualDays,
+        },
+        {
+          leaveTypeId: PAID_LEAVE_TYPE_ID,
+          leaveTypeName: getLeaveTypeLabel(PAID_LEAVE_TYPE_ID),
+          days: paidDays,
         },
         {
           leaveTypeId: LOSS_OF_PAY_LEAVE_TYPE_ID,
@@ -285,7 +324,7 @@ const buildLeaveAllocation = ({
       paidDays,
       lossOfPayDays,
       examDays: 0,
-      totalAvailableDays: paidBalance,
+      totalAvailableDays: casualBalance + paidBalance,
       requestedDays,
       items: [
         {
@@ -440,10 +479,20 @@ export function LeaveActionForm({
       : isSelfApplyMode
         ? currentUserId
         : watchEmployeeId;
+  const isDetailsMode = isEdit || isViewOnly;
 
   const { data: activeUserDetails } = useGetUserDetails(
     balanceUserId ? String(balanceUserId) : ""
   ) as any;
+
+  const { data: employeeLeaveData } = useGetLeaveData(
+    {
+      employeeId: balanceUserId,
+      status: ["pending", "approved"],
+      pagination: false,
+    },
+    open && !isDetailsMode && !!balanceUserId
+  );
 
   const selectedEmployee = useMemo(() => {
     const fromList = employeesList?.data?.find(
@@ -549,8 +598,6 @@ export function LeaveActionForm({
     }
   }, [watchFromDate, watchToDate, form]);
 
-  const isDetailsMode = isEdit || isViewOnly;
-
   // Fetch complete leave balance
   const { data: leaveBalanceData, isPending: leaveBalanceLoading } =
     useGetAllLeaveBalances(balanceUserId, open && !isDetailsMode) as any;
@@ -582,11 +629,12 @@ export function LeaveActionForm({
   // Fetch public holidays
   const { data: holidayData } = useGetReportDetails({
     type: "holiday",
+    pagination: false,
     limit: 100,
   });
 
   const holidayDatesSet = useMemo(() => {
-    const list = (holidayData as any)?.data || [];
+    const list = getListFromResponse(holidayData);
     const set = new Set<string>();
     list.forEach((item: any) => {
       if (item.date) {
@@ -608,10 +656,239 @@ export function LeaveActionForm({
     return holidayDatesSet.has(formatted);
   };
 
+  const contextSandwichDays = useMemo(() => {
+    if (isDetailsMode || !watchFromDate || !watchToDate) return [];
+
+    const currentDays = watchLeaveDays || [];
+    const currentDateSet = new Set(
+      currentDays
+        .map((day: any) => normalizeDateValue(day.date))
+        .filter(Boolean)
+    );
+    if (currentDateSet.size === 0) return [];
+    const currentDates = [...currentDateSet].sort();
+    const currentStartDate = currentDates[0];
+    const currentEndDate = currentDates[currentDates.length - 1];
+
+    const isAccountsTech = targetTechnologyId === 35;
+    const existingLeaves = getListFromResponse(employeeLeaveData).filter(
+      (leave: any) => {
+        if (currentRow?.id && String(leave?.id) === String(currentRow.id)) {
+          return false;
+        }
+        const status = String(leave?.status || "").toLowerCase();
+        return status === "pending" || status === "approved";
+      }
+    );
+
+    if (existingLeaves.length === 0) return [];
+
+    const dayMap = new Map<
+      string,
+      {
+        date: string;
+        dayType: string;
+        halfType?: string | null;
+        isWeekend: boolean;
+        fromCurrent: boolean;
+        fromExisting: boolean;
+      }
+    >();
+
+    const upsertDay = (
+      dateStr: string,
+      dayType: string,
+      source: "current" | "existing",
+      halfType?: string | null
+    ) => {
+      if (!dateStr) return;
+      const date = startOfDay(new Date(dateStr));
+      if (isNaN(date.getTime())) return;
+      const existing = dayMap.get(dateStr);
+      dayMap.set(dateStr, {
+        date: dateStr,
+        dayType:
+          existing?.dayType === "full" || dayType === "full" ? "full" : "half",
+        halfType: halfType ?? existing?.halfType ?? null,
+        isWeekend: isWeekendForDate(date, isAccountsTech),
+        fromCurrent: existing?.fromCurrent || source === "current",
+        fromExisting: existing?.fromExisting || source === "existing",
+      });
+    };
+
+    currentDays.forEach((day: any) => {
+      upsertDay(
+        normalizeDateValue(day.date),
+        day.dayType || "full",
+        "current",
+        day.halfType
+      );
+    });
+
+    existingLeaves.forEach((leave: any) => {
+      if (Array.isArray(leave?.leaveDays) && leave.leaveDays.length > 0) {
+        leave.leaveDays.forEach((day: any) => {
+          upsertDay(
+            normalizeDateValue(day.date || leave.fromDate),
+            day.dayType || "full",
+            "existing",
+            day.halfType
+          );
+        });
+        return;
+      }
+
+      if (!leave?.fromDate || !leave?.toDate) return;
+      try {
+        eachDayOfInterval({
+          start: startOfDay(new Date(leave.fromDate)),
+          end: startOfDay(new Date(leave.toDate)),
+        }).forEach((date) => {
+          upsertDay(format(date, "yyyy-MM-dd"), "full", "existing", null);
+        });
+      } catch {
+        // Ignore malformed existing leave ranges.
+      }
+    });
+
+    const existingDates = [...dayMap.values()]
+      .filter((day) => day.fromExisting && day.dayType === "full")
+      .map((day) => day.date)
+      .sort();
+    const previousExistingDate = existingDates
+      .filter((date) => date < currentStartDate)
+      .at(-1);
+    const nextExistingDate = existingDates.find(
+      (date) => date > currentEndDate
+    );
+
+    const rangeStart = previousExistingDate || currentStartDate;
+    const rangeEnd = nextExistingDate || currentEndDate;
+    if (!rangeStart || !rangeEnd) return [];
+
+    const start = startOfDay(new Date(rangeStart));
+    const end = startOfDay(new Date(rangeEnd));
+    const calendarDays = eachDayOfInterval({ start, end }).map((date) => {
+      const dateStr = format(date, "yyyy-MM-dd");
+      const mapped = dayMap.get(dateStr);
+      return {
+        date: dateStr,
+        dayName: format(date, "EEEE"),
+        dayType: mapped?.dayType,
+        isWeekend: mapped?.isWeekend ?? isWeekendForDate(date, isAccountsTech),
+        isHoliday: holidayDatesSet.has(dateStr),
+        fromCurrent: !!mapped?.fromCurrent,
+        fromExisting: !!mapped?.fromExisting,
+      };
+    });
+
+    const isOffDay = (day: (typeof calendarDays)[number]) =>
+      day.isWeekend || day.isHoliday;
+
+    return calendarDays.filter((day, idx) => {
+      if (!isOffDay(day)) return false;
+
+      // Stop at the FIRST non-off-day found (working day).
+      // Only accept it as a leave boundary if it actually has a dayType
+      // (i.e. it is a leave day from current or an existing record).
+      // This prevents weekends months away from being treated as sandwiched.
+      let prevDay: (typeof calendarDays)[number] | null = null;
+      for (let j = idx - 1; j >= 0; j--) {
+        if (!isOffDay(calendarDays[j])) {
+          // We hit a working day — use it only if it is a mapped leave day
+          if (calendarDays[j].dayType) {
+            prevDay = calendarDays[j];
+          }
+          break; // Always stop here — don't skip past regular workdays
+        }
+      }
+
+      let nextDay: (typeof calendarDays)[number] | null = null;
+      for (let j = idx + 1; j < calendarDays.length; j++) {
+        if (!isOffDay(calendarDays[j])) {
+          // We hit a working day — use it only if it is a mapped leave day
+          if (calendarDays[j].dayType) {
+            nextDay = calendarDays[j];
+          }
+          break; // Always stop here — don't skip past regular workdays
+        }
+      }
+
+      const isSelectedOffDay = currentDateSet.has(day.date);
+
+      // ── Special case: public holidays within the selected leave range ──
+      // A public holiday that falls inside the applied leave period (fromCurrent)
+      // should be counted as a sandwich day when:
+      //   1. It is a holiday (not just a weekend).
+      //   2. There is at least one adjacent existing leave record (context exists).
+      //   3. It has a full working leave day on at least one side.
+      // This handles trailing/leading holidays such as Nov 10–11 in a range of
+      // Nov 9–11 when Nov 6 already has an approved/pending leave.
+      if (
+        isSelectedOffDay &&
+        day.isHoliday &&
+        day.fromCurrent &&
+        !!(previousExistingDate || nextExistingDate)
+      ) {
+        const hasPrevFullLeave =
+          !!prevDay && prevDay.dayType === "full";
+        const hasNextFullLeave =
+          !!nextDay && nextDay.dayType === "full";
+        if (hasPrevFullLeave || hasNextFullLeave) {
+          return true;
+        }
+      }
+
+      if (
+        !prevDay ||
+        !nextDay ||
+        prevDay.dayType !== "full" ||
+        nextDay.dayType !== "full"
+      ) {
+        return false;
+      }
+
+      if (isSelectedOffDay) {
+        return (
+          day.fromCurrent &&
+          (prevDay.fromExisting || nextDay.fromExisting) &&
+          (prevDay.fromCurrent ||
+            nextDay.fromCurrent ||
+            (prevDay.fromExisting && nextDay.fromExisting))
+        );
+      }
+
+      return (
+        (prevDay.fromCurrent && nextDay.fromExisting) ||
+        (prevDay.fromExisting && nextDay.fromCurrent)
+      );
+    });
+  }, [
+    isDetailsMode,
+    watchFromDate,
+    watchToDate,
+    watchLeaveDays,
+    targetTechnologyId,
+    employeeLeaveData,
+    holidayDatesSet,
+    currentRow?.id,
+  ]);
+
   const isDaySandwiched = (leaveDays: any[], idx: number) => {
     const day = leaveDays[idx];
     const isDayOff = day?.isWeekend || getIsHoliday(day?.date);
     if (!isDayOff) return false;
+
+    // If this holiday is listed in contextSandwichDays (e.g. a public holiday
+    // at the trailing/leading edge of the selected range with adjacent existing
+    // leave), treat it as sandwiched for the UI label as well.
+    if (
+      day?.date &&
+      getIsHoliday(day.date) &&
+      contextSandwichDays.some((sd: any) => sd.date === day.date)
+    ) {
+      return true;
+    }
 
     let prevDay = null;
     for (let j = idx - 1; j >= 0; j--) {
@@ -688,23 +965,26 @@ export function LeaveActionForm({
   // change) uses the balance as it was before this request.
   const allocCasualBalance = useMemo(() => {
     if (isEdit && detailData?.allocationBreakdown) {
-      return casualBalance + toNumber(detailData.allocationBreakdown.casualLeaveDays);
+      return (
+        casualBalance + toNumber(detailData.allocationBreakdown.casualLeaveDays)
+      );
     }
     return casualBalance;
   }, [isEdit, detailData, casualBalance]);
 
   const allocPaidBalance = useMemo(() => {
     if (isEdit && detailData?.allocationBreakdown) {
-      return paidBalance + toNumber(detailData.allocationBreakdown.paidLeaveDays);
+      return (
+        paidBalance + toNumber(detailData.allocationBreakdown.paidLeaveDays)
+      );
     }
     return paidBalance;
   }, [isEdit, detailData, paidBalance]);
 
   const leaveAllocation = useMemo(() => {
-    const requestedDays = calculateRequestedDays(
-      watchLeaveDays,
-      holidayDatesSet
-    );
+    const requestedDays =
+      calculateRequestedDays(watchLeaveDays, holidayDatesSet) +
+      contextSandwichDays.length;
     return buildLeaveAllocation({
       requestedDays,
       casualBalance: allocCasualBalance,
@@ -715,6 +995,7 @@ export function LeaveActionForm({
   }, [
     watchLeaveDays,
     holidayDatesSet,
+    contextSandwichDays.length,
     allocCasualBalance,
     allocPaidBalance,
     watchIsExamLeave,
@@ -822,26 +1103,32 @@ export function LeaveActionForm({
         }
       }
 
+      const isAccountsTech = targetTechnologyId === 35;
+
       const days =
         displayRow.leaveDays?.map((d: any, idx: number) => {
-          const actualDate = dayList[idx] || (d.date ? new Date(d.date) : null);
+          // Prefer the date stored in d.date; positional dayList is a fallback
+          // for legacy records that lack a date field.
+          const normalised = normalizeDateValue(d.date);
+          const actualDate = normalised
+            ? startOfDay(new Date(normalised))
+            : dayList[idx] ?? null;
+
           const dateStr =
             actualDate && !isNaN(actualDate.getTime())
               ? format(actualDate, "yyyy-MM-dd")
-              : d.date || "";
+              : "";
 
-          let dayName = d.dayName || "";
-          if (!dayName && actualDate && !isNaN(actualDate.getTime())) {
-            dayName = format(actualDate, "EEEE");
-          }
+          // Always recompute dayName from the real date so stale DB values
+          // never cause wrong labels in the breakdown table.
+          const dayName =
+            actualDate && !isNaN(actualDate.getTime())
+              ? format(actualDate, "EEEE")
+              : d.dayName || "Weekday";
 
-          let isWeekend = d.isWeekend;
-          if (
-            isWeekend === undefined &&
-            actualDate &&
-            !isNaN(actualDate.getTime())
-          ) {
-            const isAccountsTech = targetTechnologyId === 35;
+          // Always recompute isWeekend — don't trust the stored DB value.
+          let isWeekend = false;
+          if (actualDate && !isNaN(actualDate.getTime())) {
             if (isAccountsTech && isSaturday(actualDate)) {
               const dayOfMonth = actualDate.getDate();
               const satIndex = Math.ceil(dayOfMonth / 7);
@@ -853,8 +1140,8 @@ export function LeaveActionForm({
 
           return {
             date: dateStr,
-            dayName: dayName || "Weekday",
-            isWeekend: !!isWeekend,
+            dayName,
+            isWeekend,
             dayType: d.dayType || "full",
             halfType: d.halfType || null,
           };
@@ -1098,8 +1385,59 @@ export function LeaveActionForm({
   };
 
   // ── Per-day table ──────────────────────────────────────────────────────────
+  // Build a merged, chronologically-sorted list of rows:
+  //   - All user-selected leave days (from `fields`)
+  //   - All contextSandwichDays that are NOT already in `fields`
+  // Sandwich days outside the selected range are shown as read-only rows.
+  const mergedTableRows = useMemo(() => {
+    if (isDetailsMode) return [];
+
+    const fieldDateSet = new Set(fields.map((f) => f.date));
+
+    const sandwichRows = contextSandwichDays
+      .filter((sd) => !fieldDateSet.has(sd.date))
+      .map((sd) => ({
+        id: `sandwich-${sd.date}`,
+        date: sd.date,
+        dayName: sd.dayName,
+        isWeekend: sd.isWeekend,
+        isHoliday: sd.isHoliday,
+        isSandwichOnly: true, // marker: not in leaveDays array
+        fieldIdx: -1,
+      }));
+
+    const fieldRows = fields.map((f, idx) => ({
+      id: f.id,
+      date: f.date,
+      dayName: f.dayName,
+      isWeekend: f.isWeekend,
+      isHoliday: getIsHoliday(f.date),
+      isSandwichOnly: false,
+      fieldIdx: idx,
+    }));
+
+    return [...fieldRows, ...sandwichRows].sort((a, b) =>
+      a.date < b.date ? -1 : a.date > b.date ? 1 : 0
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fields, contextSandwichDays, isDetailsMode]);
+
   const LeaveDaysTable = ({ className }: { className?: string }) => {
-    if (fields.length === 0) return null;
+    if (isDetailsMode ? fields.length === 0 : mergedTableRows.length === 0)
+      return null;
+
+    // In view/edit mode we still only render the original fields array
+    const rowsToRender = isDetailsMode
+      ? fields.map((f, idx) => ({
+          id: f.id,
+          date: f.date,
+          dayName: f.dayName,
+          isWeekend: f.isWeekend,
+          isHoliday: getIsHoliday(f.date),
+          isSandwichOnly: false,
+          fieldIdx: idx,
+        }))
+      : mergedTableRows;
 
     return (
       <div
@@ -1118,7 +1456,47 @@ export function LeaveActionForm({
 
         {/* Rows */}
         <div className="overflow-y-auto divide-y divide-slate-100 dark:divide-slate-900 flex-1 min-h-[200px]">
-          {fields.map((field, idx) => {
+          {rowsToRender.map((row) => {
+            // ── Sandwich-only rows (off-days outside the selected range) ──
+            if (row.isSandwichOnly) {
+              const isDayHoliday = row.isHoliday;
+              const isWknd = row.isWeekend;
+              return (
+                <div
+                  key={row.id}
+                  className="grid grid-cols-[1.1fr_1fr_1.4fr_1.1fr] gap-1.5 items-center px-3 py-3 bg-rose-50/50 dark:bg-rose-950/20 border-l-2 border-l-rose-500"
+                >
+                  <span className="font-semibold text-slate-800 dark:text-slate-200 tabular-nums text-xs">
+                    {formatDate(new Date(row.date), "dd MMM yyyy")}
+                  </span>
+                  <span className="text-amber-600 dark:text-amber-400 font-semibold flex flex-col">
+                    <span className="text-[11px]">{row.dayName}</span>
+                    <span className="text-[8px] text-rose-500 font-bold leading-none mt-0.5 animate-pulse">
+                      Sandwich Leave
+                    </span>
+                    {isWknd && !isDayHoliday && (
+                      <span className="text-[8px] text-amber-500 opacity-80 leading-none mt-0.5">
+                        Weekly Off
+                      </span>
+                    )}
+                    {isDayHoliday && (
+                      <span className="text-[8px] text-indigo-500 opacity-80 leading-none mt-0.5 font-semibold">
+                        Public Holiday
+                      </span>
+                    )}
+                  </span>
+                  {/* Non-editable — sandwich days are always full-day counted */}
+                  <span className="text-[10px] text-muted-foreground/60 italic">Full (auto)</span>
+                  <span className="text-[10px] text-muted-foreground/60">—</span>
+                </div>
+              );
+            }
+
+            // ── Normal field rows ──
+            const idx = row.fieldIdx;
+            const field = fields[idx];
+            if (!field) return null;
+
             const isWeekend = field.isWeekend;
             const isDayHoliday = getIsHoliday(field.date);
             const isDayOff = isWeekend || isDayHoliday;
@@ -1635,7 +2013,7 @@ export function LeaveActionForm({
             </div>
 
             {/* Right Column - Daily Breakdown */}
-            {fields.length > 0 && (
+            {(fields.length > 0 || mergedTableRows.length > 0) && (
               <div className="lg:col-span-5 flex flex-col h-full">
                 <div className="rounded-xl border border-slate-200 bg-card p-6 shadow-sm dark:border-slate-800 space-y-4 flex flex-col flex-1 h-full">
                   <div>
@@ -1704,6 +2082,12 @@ export function LeaveActionForm({
                           </div>
                         ))}
                       </div>
+                      {!isViewOnly && contextSandwichDays.length > 0 && (
+                        <div className="mt-2 rounded-md border border-rose-200 bg-rose-50 px-2 py-1.5 text-[10px] font-semibold text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/20 dark:text-rose-300">
+                          Includes {formatDays(contextSandwichDays.length)}{" "}
+                          sandwich day(s) from adjacent leave record(s).
+                        </div>
+                      )}
                       {!(isViewOnly
                         ? !!(
                             leaveDetailsData?.data?.isExamLeave ??
