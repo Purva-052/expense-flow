@@ -4,7 +4,11 @@ import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import { formatDate } from "@/utils/commonFunctions";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles, LEAVE_TYPE } from "@/utils/constant";
-import { useGetAllLeaveBalances, useGetLeaveData } from "../services";
+import {
+  useExportLeaveSummary,
+  useGetAllLeaveBalances,
+  useGetLeaveData,
+} from "../services";
 import {
   useGetUserDropdownList,
   useGetUserDetails,
@@ -15,6 +19,11 @@ import GlobalFilterSection from "@/components/table/global-table-filter";
 import { GlobalTable } from "@/components/table/global-table";
 import { FilterConfig } from "@/components/table/table-toolbar";
 import { SortingState } from "@tanstack/react-table";
+import { endOfMonth, format, startOfMonth } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
+import { toast } from "sonner";
+import { MonthYearPicker } from "@/features/attendance/components/month-year-picker";
 
 interface LeaveStatusTabProps {
   onEdit?: (row: any) => void;
@@ -48,6 +57,8 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
     sortBy: parseAsString,
     sortOrder: parseAsString,
     leaveTypeId: parseAsInteger,
+    month: parseAsInteger,
+    year: parseAsInteger,
   });
 
   const listParams = {
@@ -60,7 +71,35 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
     endDate: queryParams.endDate,
     tab: queryParams.tab,
     leaveTypeId: queryParams.leaveTypeId,
+    month: queryParams.month,
+    year: queryParams.year,
   };
+
+  const effectiveDateRange = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+
+    if (listParams.month || listParams.year) {
+      const year = listParams.year ?? currentYear;
+
+      if (listParams.month) {
+        const monthDate = new Date(year, listParams.month - 1, 1);
+        return {
+          startDate: format(startOfMonth(monthDate), "yyyy-MM-dd"),
+          endDate: format(endOfMonth(monthDate), "yyyy-MM-dd"),
+        };
+      }
+
+      return {
+        startDate: format(new Date(year, 0, 1), "yyyy-MM-dd"),
+        endDate: format(new Date(year, 11, 31), "yyyy-MM-dd"),
+      };
+    }
+
+    return {
+      startDate: listParams.startDate,
+      endDate: listParams.endDate,
+    };
+  }, [listParams.endDate, listParams.month, listParams.startDate, listParams.year]);
 
   const getStatusFromTab = (tab: string) => {
     if (tab === "approved") return ["approved"];
@@ -76,8 +115,8 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
     employeeId: canViewManagerTabs ? listParams.employeeId : undefined,
     approver: queryParams.tab === "pending" ? (listParams.approver || undefined) : undefined,
     actionedBy: queryParams.tab !== "pending" ? (listParams.approver || undefined) : undefined,
-    fromDate: listParams.startDate,
-    toDate: listParams.endDate,
+    fromDate: effectiveDateRange.startDate,
+    toDate: effectiveDateRange.endDate,
     status: getStatusFromTab(queryParams.tab),
     sortBy: queryParams.sortBy ?? undefined,
     sortOrder: queryParams.sortOrder ?? undefined,
@@ -85,6 +124,8 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
   };
 
   const { data: listData, isPending: loading } = useGetLeaveData(apiParams);
+  const { mutate: exportLeaveSummary, isPending: exportLoading } =
+    useExportLeaveSummary();
 
   const { data: employeeList, isPending: usersListLoading } =
     useGetUserDropdownList({
@@ -164,10 +205,6 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
     );
   }, [balanceUserId, currentEmployeeId, user, activeUserDetails]);
 
-  // const handleSearch = (search: string | undefined) => {
-  //   setQueryParams({ ...listParams, search: search ?? "", currentPage: 1 });
-  // };
-
   const handlePaginationChange = (newPagination: {
     pageIndex: number;
     pageSize: number;
@@ -192,6 +229,44 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
       sortBy: null,
       sortOrder: null,
       leaveTypeId: null,
+      month: null,
+      year: null,
+    });
+  };
+
+  const handleExportCSV = () => {
+    const payload = {
+      search: listParams.search || undefined,
+      employeeId: canViewManagerTabs ? listParams.employeeId || undefined : undefined,
+      approver:
+        queryParams.tab === "pending" ? listParams.approver || undefined : undefined,
+      actionedBy:
+        queryParams.tab !== "pending" ? listParams.approver || undefined : undefined,
+      month: listParams.month || new Date().getMonth() + 1,
+      year: listParams.year || new Date().getFullYear(),
+      status: getStatusFromTab(queryParams.tab),
+      sortBy: queryParams.sortBy ?? undefined,
+      sortOrder: queryParams.sortOrder ?? undefined,
+      leaveTypeId: listParams.leaveTypeId ?? undefined,
+    };
+
+    exportLeaveSummary(payload, {
+      onSuccess: ({ blob, filename }: any) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download =
+          filename ||
+          `leave_summary_${queryParams.tab}_${new Date().toISOString().split("T")[0]}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+        toast.success("Leave summary exported successfully.");
+      },
+      onError: (error: any) => {
+        toast.error(error.message || "Failed to generate leave summary file");
+      },
     });
   };
 
@@ -209,6 +284,8 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
           ...listParams,
           startDate: formatDate(range?.from) ?? null,
           endDate: formatDate(range?.to) ?? null,
+          month: null,
+          year: null,
           currentPage: 1,
         });
       },
@@ -276,7 +353,7 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
 
   const tableColumns = useMemo(() => {
     const isDevOrBDE = isDeveloper || isBDE;
-    return getColumns(queryParams.tab).filter((col: any) => {
+    return getColumns(queryParams.tab, (listData as any)?.data).filter((col: any) => {
       if (col.accessorKey === "status") {
         return isDevOrBDE;
       }
@@ -285,7 +362,7 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
       }
       return true;
     });
-  }, [isDeveloper, isBDE, queryParams.tab]);
+  }, [isDeveloper, isBDE, queryParams.tab, listData]);
 
   const sortingState = useMemo<SortingState>(() => {
     if (!queryParams.sortBy) return [];
@@ -314,6 +391,9 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
   };
 
   const totalCount = (listData as any)?.metadata?.totalCount ?? 0;
+  const leaveRows = (listData as any)?.data ?? [];
+
+
 
   return (
     <div className="flex flex-col gap-6">
@@ -341,13 +421,38 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
         </div>
       )}
 
-      <GlobalFilterSection filters={filters ?? []} />
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between w-full gap-4">
+        <div className="flex-[1] w-full min-w-0">
+          <GlobalFilterSection filters={filters ?? []} />
+        </div>
+
+        <div className="flex-none flex flex-wrap justify-start xl:justify-end items-center gap-3 w-full xl:w-auto">
+          <MonthYearPicker
+            month={listParams.month || new Date().getMonth() + 1}
+            year={listParams.year || new Date().getFullYear()}
+            onChange={(m, y) => {
+              setQueryParams({
+                ...listParams,
+                month: m,
+                year: y,
+                startDate: null,
+                endDate: null,
+                currentPage: 1,
+              });
+            }}
+          />
+          <Button type="button" variant="outline" onClick={handleExportCSV} className="shrink-0">
+            <Download className="h-4 w-4 mr-2" />
+            {exportLoading ? "Exporting..." : "Export CSV"}
+          </Button>
+        </div>
+      </div>
 
       <GlobalTable
         pageSize={listParams.pageSize}
         currentPage={listParams.currentPage}
         totalCount={totalCount}
-        data={(listData as any)?.data ?? []}
+        data={leaveRows}
         columns={tableColumns}
         loading={loading}
         isPaginationEnabled

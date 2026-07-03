@@ -60,6 +60,8 @@ export function ProductInquiryActionForm({
   const getDefaultValues = useCallback(
     (row?: any): Partial<TProductInquirySchema> => ({
       companyName: row?.companyName ?? "",
+      contactPerson:
+        row?.contactPerson?.fullName ?? row?.contactPerson ?? "",
       attendingPerson:
         toNumberOrNull(
           row?.attendingPerson?.id ??
@@ -68,7 +70,7 @@ export function ProductInquiryActionForm({
         ) ?? undefined,
       phoneNumber: row?.phoneNumber ?? "",
       emailId: row?.emailId ?? "",
-      demoDate: row?.demoDate ? new Date(row?.demoDate) : undefined,
+      demoDate: row?.demoDate ? new Date(row?.demoDate) : new Date(),
       city: row?.city ?? "",
       industryId: toNumberOrNull(row?.industry?.id ?? row?.industryId),
       productId: row?.product?.id ?? toNumberOrNull(row?.productId),

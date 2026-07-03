@@ -184,6 +184,7 @@ const API = {
     employee: "/leave-management/employees",
     create: "/leave-management",
     list: "/leave-management",
+    export_summary: "/leave-management/export-summary",
     update: "/leave-management",
     delete: "/leave-management",
     action: "/leave-management/{id}/action",
@@ -383,7 +384,8 @@ const API = {
       `/attendance-regularizations/${id}/action`,
     summary: "/attendance/summary",
     late_deduction_list: "/attendance/late-in",
-    late_deduction_action: "/attendance/action/{employeeId}/{weekStartDate}",
+    late_deduction_action: (employeeId: string, weekStartDate: string) =>
+      `/attendance/action/${employeeId}/${weekStartDate}`,
   },
 };
 

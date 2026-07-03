@@ -25,6 +25,20 @@ import {
   Check,
   X,
   Calendar as CalendarIcon,
+  Info,
+  MessageSquare,
+  ClipboardList,
+  PhoneCall,
+  UserX,
+  BellOff,
+  CalendarClock,
+  CalendarCheck,
+  FileText,
+  Trophy,
+  XCircle,
+  FlaskConical,
+  MoreHorizontal,
+  type LucideIcon,
 } from "lucide-react";
 import {
   Popover,
@@ -38,16 +52,110 @@ import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { DeleteModal } from "@/components/model/delete-model";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   PRODUCT_INQUIRY_STATUS,
   PRODUCT_INQUIRY_STATUS_OPTIONS,
 } from "@/utils/constant";
+
+type StatusMeta = {
+  icon: LucideIcon;
+  description: string;
+  iconWrap: string;
+  selected: string;
+  dot: string;
+  dotFill: string;
+};
+
+const STATUS_META: Record<string, StatusMeta> = {
+  [PRODUCT_INQUIRY_STATUS.CONTACTED]: {
+    icon: PhoneCall,
+    description: "We have contacted the client.",
+    iconWrap: "bg-emerald-500/15 text-emerald-500",
+    selected: "border-emerald-500 bg-emerald-500/10",
+    dot: "border-emerald-500",
+    dotFill: "bg-emerald-500",
+  },
+  [PRODUCT_INQUIRY_STATUS.UNQUALIFIED]: {
+    icon: UserX,
+    description: "This lead is not qualified.",
+    iconWrap: "bg-slate-500/15 text-slate-400",
+    selected: "border-slate-400 bg-slate-500/10",
+    dot: "border-slate-400",
+    dotFill: "bg-slate-400",
+  },
+  [PRODUCT_INQUIRY_STATUS.NO_RESPONSE]: {
+    icon: BellOff,
+    description: "No response from the client yet.",
+    iconWrap: "bg-amber-500/15 text-amber-500",
+    selected: "border-amber-500 bg-amber-500/10",
+    dot: "border-amber-500",
+    dotFill: "bg-amber-500",
+  },
+  [PRODUCT_INQUIRY_STATUS.DEMO_SCHEDULED]: {
+    icon: CalendarClock,
+    description: "A demo has been scheduled.",
+    iconWrap: "bg-blue-500/15 text-blue-500",
+    selected: "border-blue-500 bg-blue-500/10",
+    dot: "border-blue-500",
+    dotFill: "bg-blue-500",
+  },
+  [PRODUCT_INQUIRY_STATUS.DEMO_COMPLETED]: {
+    icon: CalendarCheck,
+    description: "The demo has been completed.",
+    iconWrap: "bg-indigo-500/15 text-indigo-500",
+    selected: "border-indigo-500 bg-indigo-500/10",
+    dot: "border-indigo-500",
+    dotFill: "bg-indigo-500",
+  },
+  [PRODUCT_INQUIRY_STATUS.PROPOSAL_SHARED]: {
+    icon: FileText,
+    description: "Proposal has been shared with the client.",
+    iconWrap: "bg-violet-500/15 text-violet-500",
+    selected: "border-violet-500 bg-violet-500/10",
+    dot: "border-violet-500",
+    dotFill: "bg-violet-500",
+  },
+  [PRODUCT_INQUIRY_STATUS.WON]: {
+    icon: Trophy,
+    description: "The deal has been won.",
+    iconWrap: "bg-green-500/15 text-green-500",
+    selected: "border-green-500 bg-green-500/10",
+    dot: "border-green-500",
+    dotFill: "bg-green-500",
+  },
+  [PRODUCT_INQUIRY_STATUS.LOST]: {
+    icon: XCircle,
+    description: "The deal has been lost.",
+    iconWrap: "bg-rose-500/15 text-rose-500",
+    selected: "border-rose-500 bg-rose-500/10",
+    dot: "border-rose-500",
+    dotFill: "bg-rose-500",
+  },
+  [PRODUCT_INQUIRY_STATUS.TRIAL]: {
+    icon: FlaskConical,
+    description: "The client is on a trial.",
+    iconWrap: "bg-cyan-500/15 text-cyan-500",
+    selected: "border-cyan-500 bg-cyan-500/10",
+    dot: "border-cyan-500",
+    dotFill: "bg-cyan-500",
+  },
+  [PRODUCT_INQUIRY_STATUS.OTHERS]: {
+    icon: MoreHorizontal,
+    description: "Set a custom status note.",
+    iconWrap: "bg-fuchsia-500/15 text-fuchsia-500",
+    selected: "border-fuchsia-500 bg-fuchsia-500/10",
+    dot: "border-fuchsia-500",
+    dotFill: "bg-fuchsia-500",
+  },
+};
+
+const DEFAULT_STATUS_META: StatusMeta = {
+  icon: Info,
+  description: "Update the inquiry status.",
+  iconWrap: "bg-slate-500/15 text-slate-400",
+  selected: "border-primary bg-primary/10",
+  dot: "border-primary",
+  dotFill: "bg-primary",
+};
 
 export function CommentModal() {
   const { open, setOpen, currentRow, setCurrentRow } = useProductInquiryStore();
@@ -60,6 +168,7 @@ export function CommentModal() {
   const [deletingCommentId, setDeletingCommentId] = useState<string | null>(
     null
   );
+  const [activeTab, setActiveTab] = useState<"comment" | "status">("comment");
   const [selectedStatus, setSelectedStatus] = useState(
     currentRow?.status || ""
   );
@@ -68,7 +177,7 @@ export function CommentModal() {
   );
   const [_, setDemoScheduled] = useState(false);
   const [demoDate, setDemoDate] = useState<Date | undefined>(
-    currentRow?.demoDate ? new Date(currentRow.demoDate) : undefined
+    currentRow?.demoDate ? new Date(currentRow.demoDate) : new Date()
   );
 
   const inquiryId = currentRow?.id;
@@ -118,7 +227,7 @@ export function CommentModal() {
     setStatusOthersText(currentRow?.others || "");
     setDemoScheduled(false);
     setDemoDate(
-      currentRow?.demoDate ? new Date(currentRow.demoDate) : undefined
+      currentRow?.demoDate ? new Date(currentRow.demoDate) : new Date()
     );
   }, [currentRow]);
 
@@ -281,7 +390,174 @@ export function CommentModal() {
     }
   };
 
+  const isSaveDisabled =
+    updatingStatus ||
+    !selectedStatus ||
+    (selectedStatus === PRODUCT_INQUIRY_STATUS.OTHERS &&
+      !statusOthersText.trim()) ||
+    (selectedStatus === PRODUCT_INQUIRY_STATUS.DEMO_SCHEDULED && !demoDate) ||
+    (selectedStatus === currentRow?.status &&
+      (selectedStatus === PRODUCT_INQUIRY_STATUS.OTHERS
+        ? statusOthersText === (currentRow?.others || "")
+        : selectedStatus === PRODUCT_INQUIRY_STATUS.DEMO_SCHEDULED
+          ? demoDate?.getTime() ===
+            (currentRow?.demoDate ? new Date(currentRow.demoDate).getTime() : 0)
+          : true));
+
   if (open !== "comment") return null;
+
+  const demoReminderActive = (() => {
+    if (selectedStatus !== PRODUCT_INQUIRY_STATUS.DEMO_SCHEDULED || !demoDate)
+      return false;
+    const todayLocal = new Date();
+    todayLocal.setHours(0, 0, 0, 0);
+    const demoLocal = new Date(demoDate);
+    demoLocal.setHours(0, 0, 0, 0);
+    return demoLocal.getTime() <= todayLocal.getTime();
+  })();
+
+  const renderStatusPanel = () => (
+    <>
+      {/* Info banner */}
+      <div className="flex items-start gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800/80 dark:bg-[#111722]">
+        <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+        <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+          Update the status of this inquiry. Adding a comment is optional.
+        </p>
+      </div>
+
+      {/* Status options */}
+      <ScrollArea className="min-h-0 flex-1">
+        <div className="space-y-2 pb-2 pr-3">
+          {PRODUCT_INQUIRY_STATUS_OPTIONS.map((status) => {
+            const meta = STATUS_META[status.value] || DEFAULT_STATUS_META;
+            const Icon = meta.icon;
+            const isSelected = selectedStatus === status.value;
+            return (
+              <button
+                type="button"
+                key={status.value}
+                onClick={() => handleStatusChange(status.value)}
+                disabled={updatingStatus}
+                className={cn(
+                  "flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-all",
+                  "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800/80 dark:bg-[#111722] dark:hover:border-slate-700 dark:hover:bg-[#161b22]",
+                  isSelected && meta.selected
+                )}
+              >
+                <span
+                  className={cn(
+                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+                    meta.iconWrap
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-semibold text-slate-800 dark:text-slate-100">
+                    {status.label}
+                  </span>
+                  <span className="block truncate text-xs text-slate-500 dark:text-slate-400">
+                    {meta.description}
+                  </span>
+                </span>
+                <span
+                  className={cn(
+                    "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2",
+                    isSelected
+                      ? meta.dot
+                      : "border-slate-300 dark:border-slate-600"
+                  )}
+                >
+                  {isSelected && (
+                    <span
+                      className={cn("h-2 w-2 rounded-full", meta.dotFill)}
+                    />
+                  )}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </ScrollArea>
+
+      {/* Others note */}
+      {selectedStatus === PRODUCT_INQUIRY_STATUS.OTHERS && (
+        <Textarea
+          value={statusOthersText}
+          onChange={(e) => setStatusOthersText(e.target.value)}
+          placeholder="Add a note for this custom status..."
+          className="min-h-[60px] rounded-xl border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 dark:border-slate-700 dark:bg-[#0b1018] dark:text-slate-200"
+        />
+      )}
+
+      {/* Demo date */}
+      {selectedStatus === PRODUCT_INQUIRY_STATUS.DEMO_SCHEDULED && (
+        <div className="space-y-2 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800/80 dark:bg-[#111722]">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+              Demo Date
+            </span>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "h-8 w-[150px] justify-start text-xs font-normal border-slate-300 bg-white transition-all hover:bg-slate-50 dark:border-slate-700 dark:bg-[#0b1018] dark:text-slate-200",
+                    !demoDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-3.5 w-3.5 text-primary" />
+                  {demoDate ? format(demoDate, "PPP") : <span>Pick date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 rounded-xl" align="end">
+                <Calendar
+                  mode="single"
+                  selected={demoDate}
+                  onSelect={handleDemoDateUpdate}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          {demoReminderActive && (
+            <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50/50 p-2.5 dark:border-red-950/40 dark:bg-red-950/10">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500"></span>
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-red-600 dark:text-red-400">
+                Action Required: Demo Reminder Active
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Optional comment */}
+      <div className="space-y-2">
+        <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
+          Add Comment (Optional)
+        </span>
+        <Textarea
+          value={commentText}
+          onChange={(e) => setCommentText(e.target.value)}
+          placeholder="Add a comment (optional)..."
+          className="min-h-[70px] resize-none rounded-xl border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 dark:border-slate-700 dark:bg-[#0b1018] dark:text-slate-200"
+        />
+      </div>
+
+      <Button
+        type="button"
+        className="h-11 w-full rounded-xl bg-primary text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90"
+        onClick={handleStatusSave}
+        disabled={isSaveDisabled}
+      >
+        {updatingStatus ? "Updating..." : "Update Status"}
+      </Button>
+    </>
+  );
 
   return (
     <>
@@ -289,15 +565,29 @@ export function CommentModal() {
         open={open === "comment"}
         onOpenChange={(val) => setOpen(val ? "comment" : null)}
       >
-        <DialogContent className="sm:max-w-4xl h-[85vh] p-0 flex flex-col overflow-hidden border border-slate-200 bg-white text-slate-900 dark:border-slate-800 dark:bg-[#0a0e14] dark:text-slate-100">
-          <DialogHeader className="flex flex-row items-center justify-between border-b border-slate-200 p-4 dark:border-slate-800">
-            <DialogTitle className="text-xl font-bold tracking-tight">
-              Inquiry Status & Comments
-            </DialogTitle>
+        <DialogContent className="sm:max-w-5xl h-[85vh] p-0 flex flex-col overflow-hidden border border-slate-200 bg-white text-slate-900 dark:border-slate-800 dark:bg-[#0a0e14] dark:text-slate-100">
+          <DialogHeader className="flex flex-row items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-800">
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2.5">
+                <DialogTitle className="text-lg font-bold tracking-tight">
+                  {currentRow?.companyName || "Inquiry"}
+                </DialogTitle>
+                {currentRow?.status && (
+                  <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">
+                    {PRODUCT_INQUIRY_STATUS_OPTIONS.find(
+                      (o) => o.value === currentRow.status
+                    )?.label || currentRow.status}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Inquiry Status &amp; Comments
+              </p>
+            </div>
           </DialogHeader>
 
           <div className="flex flex-1 overflow-hidden">
-            {/* Full Width: Chat UI */}
+            {/* Left: Timeline + composer */}
             <div className="relative flex min-h-0 flex-1 flex-col bg-white dark:bg-[#0a0e14]">
               <ScrollArea className="flex-1 min-h-0 p-6">
                 <div className="space-y-6 pb-4">
@@ -473,231 +763,86 @@ export function CommentModal() {
                   <div ref={scrollRef} />
                 </div>
               </ScrollArea>
-              {/* Action Area: Demo Scheduling and Status Update */}
-              <div className="border-t border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-[#0d1117]">
-                <div className="mx-auto max-w-4xl space-y-3">
-                  {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-3"> */}
-                  {/* <div className="flex flex-col gap-2.5 p-3 rounded-xl bg-white border border-slate-200 dark:bg-[#111722] dark:border-slate-800/80 shadow-sm">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                            <CalendarIcon className="h-4 w-4" />
-                          </div>
-                          <h4 className="text-[10px] font-bold tracking-widest text-slate-900 dark:text-white uppercase">
-                            Demo Scheduled
-                          </h4>
-                        </div>
-                        <Switch
-                          checked={demoScheduled}
-                          onCheckedChange={(val) => {
-                            setDemoScheduled(val);
-                            if (!val) setDemoDate(undefined);
-                          }}
-                          className="scale-90"
-                        />
-                      </div>
 
-                      {demoScheduled && (
-                        <div className="animate-in fade-in slide-in-from-top-1">
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                className={cn(
-                                  "h-8 w-full justify-start text-xs font-normal border-slate-200 bg-white transition-all hover:bg-slate-50 dark:border-slate-700 dark:bg-[#0b1018]",
-                                  !demoDate && "text-muted-foreground"
-                                )}
-                              >
-                                <CalendarIcon className="mr-2 h-3.5 w-3.5 text-primary" />
-                                {demoDate ? (
-                                  format(demoDate, "PPP")
-                                ) : (
-                                  <span>Pick date</span>
-                                )}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent
-                              className="w-auto p-0 rounded-xl"
-                              align="start"
-                            >
-                              <Calendar
-                                mode="single"
-                                selected={demoDate}
-                                onSelect={handleDemoDateUpdate}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-                        </div>
-                      )}
-                    </div> */}
-
-                  {/* Status Update Section (Condensed) */}
-                  <div className="flex flex-col gap-2.5 p-3 rounded-xl bg-white border border-slate-200 dark:bg-[#111722] dark:border-slate-800/80 shadow-sm">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 whitespace-nowrap pl-1">
-                        Status
-                      </span>
-                      <div className="flex flex-1 items-center gap-2 justify-end">
-                        <Select
-                          value={selectedStatus}
-                          onValueChange={handleStatusChange}
-                          disabled={updatingStatus}
-                        >
-                          <SelectTrigger className="h-8 w-[160px] rounded-lg border-slate-300 bg-white text-[11px] text-slate-800 dark:border-slate-700 dark:bg-[#0b1018] dark:text-slate-200">
-                            <SelectValue placeholder="Status" />
-                          </SelectTrigger>
-                          <SelectContent className="max-h-72 border-slate-200 bg-white text-slate-800 dark:border-slate-800 dark:bg-[#101722] dark:text-slate-200">
-                            {PRODUCT_INQUIRY_STATUS_OPTIONS.map((status) => (
-                              <SelectItem
-                                key={status.value}
-                                value={status.value}
-                                className="text-xs"
-                              >
-                                {status.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-
-                        <Button
-                          type="button"
-                          className="h-8 rounded-lg bg-primary px-3 text-[11px] font-semibold text-primary-foreground hover:bg-primary/90"
-                          onClick={handleStatusSave}
-                          disabled={
-                            updatingStatus ||
-                            (selectedStatus === PRODUCT_INQUIRY_STATUS.OTHERS &&
-                              !statusOthersText.trim()) ||
-                            (selectedStatus ===
-                              PRODUCT_INQUIRY_STATUS.DEMO_SCHEDULED &&
-                              !demoDate) ||
-                            (selectedStatus === currentRow?.status &&
-                              (selectedStatus === PRODUCT_INQUIRY_STATUS.OTHERS
-                                ? statusOthersText ===
-                                  (currentRow?.others || "")
-                                : selectedStatus ===
-                                    PRODUCT_INQUIRY_STATUS.DEMO_SCHEDULED
-                                  ? demoDate?.getTime() ===
-                                    (currentRow?.demoDate
-                                      ? new Date(currentRow.demoDate).getTime()
-                                      : 0)
-                                  : true))
-                          }
-                        >
-                          {updatingStatus ? "..." : "Save"}
-                        </Button>
-                      </div>
-                    </div>
-                    {selectedStatus === PRODUCT_INQUIRY_STATUS.OTHERS && (
-                      <Textarea
-                        value={statusOthersText}
-                        onChange={(e) => setStatusOthersText(e.target.value)}
-                        placeholder="Notes..."
-                        className="min-h-[32px] max-h-[60px] rounded-lg border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-800 dark:border-slate-700 dark:bg-[#0b1018] dark:text-slate-200"
-                      />
-                    )}
-
-                    {selectedStatus ===
-                      PRODUCT_INQUIRY_STATUS.DEMO_SCHEDULED && (
-                      <div className="flex flex-col gap-2 mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/60 animate-in fade-in slide-in-from-top-1">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">
-                            Demo Date
-                          </span>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                className={cn(
-                                  "h-8 w-[160px] justify-start text-xs font-normal border-slate-300 bg-white transition-all hover:bg-slate-50 dark:border-slate-700 dark:bg-[#0b1018] dark:text-slate-200",
-                                  !demoDate && "text-muted-foreground"
-                                )}
-                              >
-                                <CalendarIcon className="mr-2 h-3.5 w-3.5 text-primary" />
-                                {demoDate ? (
-                                  format(demoDate, "PPP")
-                                ) : (
-                                  <span>Pick date</span>
-                                )}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent
-                              className="w-auto p-0 rounded-xl"
-                              align="start"
-                            >
-                              <Calendar
-                                mode="single"
-                                selected={demoDate}
-                                onSelect={handleDemoDateUpdate}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-                        </div>
-
-                        {(() => {
-                          if (!demoDate) return null;
-                          const todayLocal = new Date();
-                          todayLocal.setHours(0, 0, 0, 0);
-                          const demoLocal = new Date(demoDate);
-                          demoLocal.setHours(0, 0, 0, 0);
-                          const isPastOrToday =
-                            demoLocal.getTime() <= todayLocal.getTime();
-
-                          if (!isPastOrToday) return null;
-
-                          return (
-                            <div className="flex items-center gap-2 p-2.5 rounded-lg border border-red-200 dark:border-red-950/40 bg-red-50/50 dark:bg-red-950/10 mt-1 animate-pulse">
-                              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500/10 text-red-500">
-                                <span className="relative flex h-2.5 w-2.5">
-                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
-                                </span>
-                              </div>
-                              <span className="text-[10px] font-bold tracking-wider text-red-600 dark:text-red-400 uppercase">
-                                Action Required: Demo Reminder Active
-                              </span>
-                            </div>
-                          );
-                        })()}
-                      </div>
-                    )}
-                  </div>
-                  {/* </div> */}
-                </div>
-
-                <div className="flex gap-3 items-end max-w-4xl mx-auto pt-4 border-t border-dashed border-slate-200 dark:border-slate-800/50 mt-4">
-                  <div className="flex-1 relative">
-                    <Textarea
-                      placeholder="Type your comment or update here..."
-                      className="min-h-[50px] max-h-[150px] resize-none rounded-2xl border-slate-300 bg-white py-3.5 pr-12 text-slate-800 transition-all placeholder:text-slate-400 focus:border-primary/30 focus:ring-2 focus:ring-primary/20 dark:border-slate-700/50 dark:bg-[#161b22] dark:text-slate-200 dark:placeholder:text-slate-600"
-                      value={commentText}
-                      onChange={(e) => setCommentText(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSend();
-                        }
-                      }}
-                    />
-                  </div>
-                  <Button
-                    size="icon"
+              {/* Bottom: Tabs + composer */}
+              <div className="border-t border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-[#0d1117]">
+                {/* Tab bar */}
+                <div className="flex items-center gap-1 border-b border-slate-200 px-4 pt-3 dark:border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("comment")}
                     className={cn(
-                      "h-12 w-12 rounded-2xl transition-all duration-300 shadow-lg shadow-primary/10",
-                      commentText.trim()
-                        ? "bg-primary hover:bg-primary/90 scale-100"
-                        : "scale-95 bg-slate-200 text-slate-400 dark:bg-slate-800 dark:text-slate-600"
+                      "flex items-center gap-2 border-b-2 px-3 pb-2.5 text-sm font-semibold transition-colors",
+                      activeTab === "comment"
+                        ? "border-primary text-primary"
+                        : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                     )}
-                    onClick={handleSend}
-                    disabled={creating || !commentText.trim()}
                   >
-                    <Send
-                      className={cn("h-5 w-5", creating && "animate-pulse")}
-                    />
-                  </Button>
+                    <MessageSquare className="h-4 w-4" />
+                    Add Comment
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("status")}
+                    className={cn(
+                      "flex items-center gap-2 border-b-2 px-3 pb-2.5 text-sm font-semibold transition-colors lg:hidden",
+                      activeTab === "status"
+                        ? "border-primary text-primary"
+                        : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                    )}
+                  >
+                    <ClipboardList className="h-4 w-4" />
+                    Update Status
+                  </button>
                 </div>
+
+                {/* Tab content */}
+                {activeTab === "comment" ? (
+                  <div className="flex items-end gap-3 p-4">
+                    <div className="relative flex-1">
+                      <Textarea
+                        placeholder="Type your comment here..."
+                        className="min-h-[50px] max-h-[150px] resize-none rounded-2xl border-slate-300 bg-white py-3.5 pr-12 text-slate-800 transition-all placeholder:text-slate-400 focus:border-primary/30 focus:ring-2 focus:ring-primary/20 dark:border-slate-700/50 dark:bg-[#161b22] dark:text-slate-200 dark:placeholder:text-slate-600"
+                        value={commentText}
+                        onChange={(e) => setCommentText(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSend();
+                          }
+                        }}
+                      />
+                    </div>
+                    <Button
+                      size="icon"
+                      className={cn(
+                        "h-12 w-12 rounded-2xl transition-all duration-300 shadow-lg shadow-primary/10",
+                        commentText.trim()
+                          ? "bg-primary hover:bg-primary/90 scale-100"
+                          : "scale-95 bg-slate-200 text-slate-400 dark:bg-slate-800 dark:text-slate-600"
+                      )}
+                      onClick={handleSend}
+                      disabled={creating || !commentText.trim()}
+                    >
+                      <Send
+                        className={cn("h-5 w-5", creating && "animate-pulse")}
+                      />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex max-h-[45vh] flex-col gap-3 overflow-y-auto p-4 lg:hidden">
+                    {renderStatusPanel()}
+                  </div>
+                )}
               </div>
+            </div>
+
+            {/* Right: Update Status panel (desktop) */}
+            <div className="hidden w-[340px] shrink-0 flex-col gap-3 border-l border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-[#0d1117] lg:flex">
+              <h3 className="text-base font-bold tracking-tight text-slate-900 dark:text-white">
+                Update Status
+              </h3>
+              {renderStatusPanel()}
             </div>
           </div>
         </DialogContent>
