@@ -62,6 +62,7 @@ import { Route as AuthenticatedClientInventoryTypeIndexRouteImport } from './rou
 import { Route as AuthenticatedBrandsIndexRouteImport } from './routes/_authenticated/brands/index'
 import { Route as AuthenticatedAttendanceIndexRouteImport } from './routes/_authenticated/attendance/index'
 import { Route as AuthenticatedAdmobAnalyticsIndexRouteImport } from './routes/_authenticated/admob-analytics/index'
+import { Route as AuthenticatedBackgroundJobsCronIndexRouteImport } from './routes/_authenticated/background-jobs/cron/index'
 import { Route as AuthenticatedProjectsDetailIdRouteImport } from './routes/_authenticated/projects/detail.$id'
 import { Route as AuthenticatedLinodeServerDashboardDetailIdRouteImport } from './routes/_authenticated/linode-server-dashboard/detail.$id'
 
@@ -369,6 +370,12 @@ const AuthenticatedAdmobAnalyticsIndexRoute =
     path: '/admob-analytics/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedBackgroundJobsCronIndexRoute =
+  AuthenticatedBackgroundJobsCronIndexRouteImport.update({
+    id: '/background-jobs/cron/',
+    path: '/background-jobs/cron/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProjectsDetailIdRoute =
   AuthenticatedProjectsDetailIdRouteImport.update({
     id: '/projects/detail/$id',
@@ -437,6 +444,7 @@ export interface FileRoutesByFullPath {
   '/users/': typeof AuthenticatedUsersIndexRoute
   '/linode-server-dashboard/detail/$id': typeof AuthenticatedLinodeServerDashboardDetailIdRoute
   '/projects/detail/$id': typeof AuthenticatedProjectsDetailIdRoute
+  '/background-jobs/cron': typeof AuthenticatedBackgroundJobsCronIndexRoute
 }
 export interface FileRoutesByTo {
   '/forgot-password': typeof authForgotPasswordRoute
@@ -493,6 +501,7 @@ export interface FileRoutesByTo {
   '/users': typeof AuthenticatedUsersIndexRoute
   '/linode-server-dashboard/detail/$id': typeof AuthenticatedLinodeServerDashboardDetailIdRoute
   '/projects/detail/$id': typeof AuthenticatedProjectsDetailIdRoute
+  '/background-jobs/cron': typeof AuthenticatedBackgroundJobsCronIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -551,6 +560,7 @@ export interface FileRoutesById {
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
   '/_authenticated/linode-server-dashboard/detail/$id': typeof AuthenticatedLinodeServerDashboardDetailIdRoute
   '/_authenticated/projects/detail/$id': typeof AuthenticatedProjectsDetailIdRoute
+  '/_authenticated/background-jobs/cron/': typeof AuthenticatedBackgroundJobsCronIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -609,6 +619,7 @@ export interface FileRouteTypes {
     | '/users/'
     | '/linode-server-dashboard/detail/$id'
     | '/projects/detail/$id'
+    | '/background-jobs/cron'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/forgot-password'
@@ -665,6 +676,7 @@ export interface FileRouteTypes {
     | '/users'
     | '/linode-server-dashboard/detail/$id'
     | '/projects/detail/$id'
+    | '/background-jobs/cron'
   id:
     | '__root__'
     | '/_authenticated'
@@ -722,6 +734,7 @@ export interface FileRouteTypes {
     | '/_authenticated/users/'
     | '/_authenticated/linode-server-dashboard/detail/$id'
     | '/_authenticated/projects/detail/$id'
+    | '/_authenticated/background-jobs/cron/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1111,6 +1124,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdmobAnalyticsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/background-jobs/cron/': {
+      id: '/_authenticated/background-jobs/cron/'
+      path: '/background-jobs/cron'
+      fullPath: '/background-jobs/cron'
+      preLoaderRoute: typeof AuthenticatedBackgroundJobsCronIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/projects/detail/$id': {
       id: '/_authenticated/projects/detail/$id'
       path: '/projects/detail/$id'
@@ -1173,6 +1193,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
   AuthenticatedLinodeServerDashboardDetailIdRoute: typeof AuthenticatedLinodeServerDashboardDetailIdRoute
   AuthenticatedProjectsDetailIdRoute: typeof AuthenticatedProjectsDetailIdRoute
+  AuthenticatedBackgroundJobsCronIndexRoute: typeof AuthenticatedBackgroundJobsCronIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -1237,6 +1258,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLinodeServerDashboardDetailIdRoute:
     AuthenticatedLinodeServerDashboardDetailIdRoute,
   AuthenticatedProjectsDetailIdRoute: AuthenticatedProjectsDetailIdRoute,
+  AuthenticatedBackgroundJobsCronIndexRoute:
+    AuthenticatedBackgroundJobsCronIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

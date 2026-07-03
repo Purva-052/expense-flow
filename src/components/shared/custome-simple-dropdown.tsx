@@ -104,18 +104,18 @@ const SimpleDropDownSearchable = ({
                         return more > 0 ? `${first} +${more} more` : first;
                       })()
                     : placeholder || "Select an option"
-                  : value === null || value === undefined
+                  : value === null || value === undefined || value === ""
                     ? placeholder || "Select an option"
                     : options?.find(
                         (item) => String(item.value) === String(value)
-                      )?.label}
+                      )?.label || placeholder || "Select an option"}
               </span>
               {!(
                 allowClear &&
                 !disabled &&
                 (Array.isArray(value)
                   ? value.length > 0
-                  : value !== null && value !== undefined)
+                  : value !== null && value !== undefined && value !== "")
               ) && (
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               )}
@@ -212,7 +212,7 @@ const SimpleDropDownSearchable = ({
           !disabled &&
           (Array.isArray(value)
             ? value.length > 0
-            : value !== null && value !== undefined) && (
+            : value !== null && value !== undefined && value !== "") && (
             <X
               className="absolute top-1/2 right-4 h-4 w-4 -translate-y-1/2 cursor-pointer text-muted-foreground hover:text-red-500"
               onClick={() => onChange?.(null)}
