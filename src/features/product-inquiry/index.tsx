@@ -35,6 +35,7 @@ import { useInView } from "react-intersection-observer";
 import { InquiryCard } from "./components/product-inquiry-card";
 import { GlobalTable } from "@/components/table/global-table";
 import { getColumns } from "./components/columns";
+import { ProductInquiryStats } from "./components/product-inquiry-stats";
 import { useGetProductInquiryList } from "./services";
 import { formatDate } from "@/utils/commonFunctions";
 
@@ -247,11 +248,9 @@ const ProductInquiryPage = () => {
   //     ?.totalCount ??
   //   0;
 
-  const scrollContainerRef = React.useRef<HTMLDivElement | null>(null);
   const fetchingLock = useRef(false);
 
   const { ref: loadMoreRef } = useInView({
-    root: scrollContainerRef.current,
     threshold: 0,
     rootMargin: "300px",
     onChange: (inView) => {
@@ -451,154 +450,66 @@ const ProductInquiryPage = () => {
       </TablePageHeader>
 
       <div className="flex-1 min-h-0 flex flex-col gap-4 py-2">
-        <Tabs
-          value={activeTab}
-          onValueChange={(val) => handleTabChange(val as "active" | "inactive")}
-          className="w-full"
-        >
-          <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border border-rose-100/50 h-9 w-fit">
-            <TabsTrigger value="active" className={tabTriggerClass}>
-              Active Inquiries
-            </TabsTrigger>
-            <TabsTrigger value="inactive" className={tabTriggerClass}>
-              Archive Inquiries
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex items-center justify-between w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={(val) => handleTabChange(val as "active" | "inactive")}
+            className="w-auto"
+          >
+            <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border border-rose-100/50 h-9 w-fit">
+              <TabsTrigger value="active" className={tabTriggerClass}>
+                Active Inquiries
+              </TabsTrigger>
+              <TabsTrigger value="inactive" className={tabTriggerClass}>
+                Archive Inquiries
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          {/* Back navigation when drilled into a product */}
+          {isSearchActive && (
+            <div className="flex items-center gap-2 bg-muted/40 px-3 py-1 rounded-lg border border-border/50 w-fit shadow-sm">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex items-center gap-1 text-muted-foreground hover:text-foreground px-2 h-7 hover:bg-muted rounded text-xs font-semibold"
+                onClick={() => {
+                  setQueryParams({
+                    search: "",
+                    status: "",
+                    drilled: "",
+                    productId: "",
+                    fromDate: null,
+                    toDate: null,
+                  });
+                  setView("grid");
+                }}
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                <span>All Products</span>
+              </Button>
+              <span className="text-muted-foreground/40 text-xs">/</span>
+              <span className="text-xs font-bold text-foreground pr-1">
+                {selectedProduct?.name || "Product"}
+              </span>
+            </div>
+          )}
+        </div>
 
         {/* Stats Cards */}
-        {isSearchActive &&
-          (() => {
-            const statStripItems = [
-              {
-                key: "",
-                icon: MessageSquare,
-                iconBg: "bg-blue-500/10",
-                iconColor: "text-blue-600 dark:text-blue-400",
-                label: "Total Inquiries",
-                value: stats?.totalInquiries?.count ?? 0,
-                valueClass: "text-blue-600 dark:text-blue-400",
-                activeBorderColor: "border-b-blue-500",
-              },
-              {
-                key: "in_progress",
-                icon: Clock,
-                iconBg: "bg-orange-500/10",
-                iconColor: "text-orange-600 dark:text-orange-400",
-                label: "In Progress Inquiries",
-                value: stats?.inProgressInquiries?.count ?? 0,
-                valueClass: "text-orange-600 dark:text-orange-400",
-                activeBorderColor: "border-b-orange-500",
-              },
-              {
-                key: "won",
-                icon: CheckCircle2,
-                iconBg: "bg-emerald-500/10",
-                iconColor: "text-emerald-600 dark:text-emerald-400",
-                label: "Won Inquiries",
-                value: stats?.wonInquiries?.count ?? 0,
-                valueClass: "text-emerald-600 dark:text-emerald-400",
-                activeBorderColor: "border-b-emerald-500",
-              },
-              {
-                key: "lost",
-                icon: XCircle,
-                iconBg: "bg-rose-500/10",
-                iconColor: "text-rose-600 dark:text-rose-400",
-                label: "Lost Inquiries",
-                value: stats?.lostInquiries?.count ?? 0,
-                valueClass: "text-rose-600 dark:text-rose-400",
-                activeBorderColor: "border-b-rose-500",
-              },
-            ];
-
-            return (
-              <Card className="w-full overflow-hidden border-border shadow-sm">
-                <div className="w-full overflow-x-auto">
-                  <div className="flex divide-x divide-border min-w-max">
-                    {statStripItems.map((item) => {
-                      const isActive = queryParams.status === item.key;
-                      return (
-                        <div
-                          key={item.label}
-                          role="button"
-                          tabIndex={0}
-                          onClick={() =>
-                            setQueryParams({
-                              status: isActive ? "" : item.key,
-                            })
-                          }
-                          className={cn(
-                            "flex-1 p-4 min-w-[150px] flex items-center gap-3 cursor-pointer hover:bg-muted/20 transition-colors border-b-2",
-                            isActive
-                              ? cn("bg-muted/20", item.activeBorderColor)
-                              : "border-b-transparent"
-                          )}
-                        >
-                          <div
-                            className={cn(
-                              "p-2 rounded-lg shrink-0",
-                              item.iconBg,
-                              item.iconColor
-                            )}
-                          >
-                            <item.icon className="h-5 w-5" />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
-                              {item.label}
-                            </p>
-                            {loadingStats ? (
-                              <div className="mt-1 h-4 w-10 bg-muted animate-pulse rounded" />
-                            ) : (
-                              <p
-                                className={cn(
-                                  "text-sm font-bold truncate",
-                                  item.valueClass
-                                )}
-                                title={String(item.value)}
-                              >
-                                {item.value}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </Card>
-            );
-          })()}
-
-        {/* Back navigation when drilled into a product */}
         {isSearchActive && (
-          <div className="flex items-center gap-2 bg-muted/40 px-3 py-1 rounded-lg border border-border/50 w-fit shadow-sm">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex items-center gap-1 text-muted-foreground hover:text-foreground px-2 h-7 hover:bg-muted rounded text-xs font-semibold"
-              onClick={() => {
-                setQueryParams({
-                  search: "",
-                  status: "",
-                  drilled: "",
-                  productId: "",
-                  fromDate: null,
-                  toDate: null,
-                });
-                setView("grid");
-              }}
-            >
-              <ArrowLeft className="h-3.5 w-3.5" />
-              <span>All Products</span>
-            </Button>
-            <span className="text-muted-foreground/40 text-xs">/</span>
-            <span className="text-xs font-bold text-foreground pr-1">
-              {selectedProduct?.name || "Product"}
-            </span>
-          </div>
+          <ProductInquiryStats
+            totalInquiries={stats?.totalInquiries?.count ?? 0}
+            inProgressCount={stats?.inProgressInquiries?.count ?? 0}
+            wonCount={stats?.wonInquiries?.count ?? 0}
+            lostCount={stats?.lostInquiries?.count ?? 0}
+            loadingStats={loadingStats}
+            activeStatus={queryParams.status}
+            onStatusClick={(status) => setQueryParams({ status })}
+          />
         )}
+
+
 
         {/* Filters + View Toggle */}
         <div className="flex flex-wrap items-start gap-3">
@@ -654,11 +565,8 @@ const ProductInquiryPage = () => {
           )}
         </div>
 
-        {/* Scrollable Content Area */}
-        <div
-          ref={scrollContainerRef}
-          className="space-y-4 !h-full overflow-y-auto overflow-x-hidden p-2 [scrollbar-gutter:stable] rounded-md"
-        >
+        {/* Content Area */}
+        <div className="flex-1 space-y-4 p-2 rounded-md">
           {loading ? (
             currentView === "table" ? (
               <GlobalTable
@@ -679,10 +587,10 @@ const ProductInquiryPage = () => {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <div className="min-w-[860px] flex flex-col gap-0 border rounded-lg bg-card overflow-hidden">
+                <div className="min-w-[1150px] flex flex-col gap-0 border rounded-lg bg-card overflow-hidden">
                   <div className="flex items-center gap-4 px-6 py-3 bg-muted/50 border-b text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
                     <div className="w-1 shrink-0" />
-                    <div className="flex-1 min-w-0">Product</div>
+                    <div className="flex-1 min-w-[250px]">Product</div>
                     <div className="w-32 shrink-0 text-center">Status</div>
                     <div className="w-28 shrink-0 text-center">Industry</div>
                     <div className="w-28 shrink-0 text-center">
@@ -737,11 +645,11 @@ const ProductInquiryPage = () => {
             )
           ) : (
             <div className="overflow-x-auto">
-              <div className="min-w-[860px] flex flex-col gap-0 border rounded-lg bg-card overflow-hidden">
+              <div className="min-w-[1150px] flex flex-col gap-0 border rounded-lg bg-card overflow-hidden">
                 {/* List Header */}
                 <div className="flex items-center gap-4 px-6 py-3 bg-muted/50 border-b text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
                   <div className="w-1 shrink-0" />
-                  <div className="flex-1 min-w-0">Product</div>
+                  <div className="flex-1 min-w-[250px]">Product</div>
                   <div className="w-32 shrink-0 text-center">Status</div>
                   <div className="w-28 shrink-0 text-center">Industry</div>
                   <div className="w-28 shrink-0 text-center">
@@ -794,7 +702,7 @@ const ProductInquiryPage = () => {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <div className="min-w-[860px] flex flex-col gap-0">
+                <div className="min-w-[1150px] flex flex-col gap-0">
                   {Array.from({ length: 3 }).map((_, i) => (
                     <ProjectCardSkeleton
                       key={`load-more-skeleton-${i}`}

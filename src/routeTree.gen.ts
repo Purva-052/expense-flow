@@ -417,6 +417,7 @@ export interface FileRoutesByFullPath {
   '/leave-management': typeof AuthenticatedLeaveManagementIndexRoute
   '/linode-server-dashboard': typeof AuthenticatedLinodeServerDashboardIndexRoute
   '/meetings-overview': typeof AuthenticatedMeetingsOverviewIndexRoute
+  '/mobile-inventory': typeof AuthenticatedMobileInventoryIndexRoute
   '/monitor-size': typeof AuthenticatedMonitorSizeIndexRoute
   '/new-joinees': typeof AuthenticatedNewJoineesIndexRoute
   '/outbound-sources': typeof AuthenticatedOutboundSourcesIndexRoute
@@ -588,6 +589,7 @@ export interface FileRouteTypes {
     | '/leave-management'
     | '/linode-server-dashboard'
     | '/meetings-overview'
+    | '/mobile-inventory'
     | '/monitor-size'
     | '/new-joinees'
     | '/outbound-sources'
@@ -944,7 +946,7 @@ declare module '@tanstack/react-router' {
     '/_authenticated/mobile-inventory/': {
       id: '/_authenticated/mobile-inventory/'
       path: '/mobile-inventory'
-      fullPath: '/mobile-inventory/'
+      fullPath: '/mobile-inventory'
       preLoaderRoute: typeof AuthenticatedMobileInventoryIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }

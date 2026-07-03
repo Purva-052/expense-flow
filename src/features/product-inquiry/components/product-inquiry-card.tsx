@@ -253,14 +253,14 @@ export function InquiryCard({
     return (
       <div
         className={cn(
-          "min-w-[860px] bg-card border-b hover:bg-muted/50 transition-colors py-4 px-6 relative group flex items-center gap-4",
+          "min-w-[1150px] bg-card border-b hover:bg-muted/50 transition-colors py-4 px-6 relative group flex items-center gap-4",
           shouldBlink && "demo-reminder-blink"
         )}
       >
         <div className="w-1 bg-muted-foreground/40 rounded-full h-8 shrink-0" />
 
         {/* Product Name + Company + Contact */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-[250px]">
           <div className="flex items-center gap-3 flex-wrap">
             <h3
               className="text-sm font-bold text-foreground truncate cursor-pointer hover:text-primary transition-colors"
