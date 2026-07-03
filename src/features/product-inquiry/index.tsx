@@ -451,20 +451,51 @@ const ProductInquiryPage = () => {
       </TablePageHeader>
 
       <div className="flex-1 min-h-0 flex flex-col gap-4 py-2">
-        <Tabs
-          value={activeTab}
-          onValueChange={(val) => handleTabChange(val as "active" | "inactive")}
-          className="w-full"
-        >
-          <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border border-rose-100/50 h-9 w-fit">
-            <TabsTrigger value="active" className={tabTriggerClass}>
-              Active Inquiries
-            </TabsTrigger>
-            <TabsTrigger value="inactive" className={tabTriggerClass}>
-              Inactive Inquiries
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex items-center justify-between w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={(val) => handleTabChange(val as "active" | "inactive")}
+            className="w-auto"
+          >
+            <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border border-rose-100/50 h-9 w-fit">
+              <TabsTrigger value="active" className={tabTriggerClass}>
+                Active Inquiries
+              </TabsTrigger>
+              <TabsTrigger value="inactive" className={tabTriggerClass}>
+                Inactive Inquiries
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          {/* Back navigation when drilled into a product */}
+          {isSearchActive && (
+            <div className="flex items-center gap-2 bg-muted/40 px-3 py-1 rounded-lg border border-border/50 w-fit shadow-sm">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex items-center gap-1 text-muted-foreground hover:text-foreground px-2 h-7 hover:bg-muted rounded text-xs font-semibold"
+                onClick={() => {
+                  setQueryParams({
+                    search: "",
+                    status: "",
+                    drilled: "",
+                    productId: "",
+                    fromDate: null,
+                    toDate: null,
+                  });
+                  setView("grid");
+                }}
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                <span>All Products</span>
+              </Button>
+              <span className="text-muted-foreground/40 text-xs">/</span>
+              <span className="text-xs font-bold text-foreground pr-1">
+                {selectedProduct?.name || "Product"}
+              </span>
+            </div>
+          )}
+        </div>
 
         {/* Stats Cards */}
         {isSearchActive && (
@@ -684,34 +715,6 @@ const ProductInquiryPage = () => {
           </div>
         )}
 
-        {/* Back navigation when drilled into a product */}
-        {isSearchActive && (
-          <div className="flex items-center gap-2 bg-muted/40 px-3 py-1 rounded-lg border border-border/50 w-fit shadow-sm">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex items-center gap-1 text-muted-foreground hover:text-foreground px-2 h-7 hover:bg-muted rounded text-xs font-semibold"
-              onClick={() => {
-                setQueryParams({
-                  search: "",
-                  status: "",
-                  drilled: "",
-                  productId: "",
-                  fromDate: null,
-                  toDate: null,
-                });
-                setView("grid");
-              }}
-            >
-              <ArrowLeft className="h-3.5 w-3.5" />
-              <span>All Products</span>
-            </Button>
-            <span className="text-muted-foreground/40 text-xs">/</span>
-            <span className="text-xs font-bold text-foreground pr-1">
-              {selectedProduct?.name || "Product"}
-            </span>
-          </div>
-        )}
 
         {/* Filters + View Toggle */}
         <div className="flex flex-wrap items-start gap-3">
