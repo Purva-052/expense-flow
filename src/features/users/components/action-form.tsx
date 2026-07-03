@@ -34,7 +34,6 @@ import { toast } from "sonner";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { Switch } from "@/components/ui/switch";
 
 interface Props {
   currentRow?: any;
@@ -115,7 +114,10 @@ export function UserActionForm({
           joiningDate: currentRow?.joiningDate
             ? currentRow.joiningDate.slice(0, 10)
             : null,
-          isSingleCheckInAllowed: currentRow?.isSingleCheckInAllowed ?? false,
+          excludeFromReports: currentRow?.excludeFromReports ?? false,
+          reportingStartDate: currentRow?.reportingStartDate
+            ? currentRow.reportingStartDate.slice(0, 10)
+            : null,
           mewurkEmployeeCode: currentRow?.mewurkEmployeeCode ?? "",
           // currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
           profilePicS3Key: currentRow?.profilePicUrl ?? "",
@@ -133,7 +135,8 @@ export function UserActionForm({
           status: true,
           joining: false,
           joiningDate: null,
-          isSingleCheckInAllowed: false,
+          excludeFromReports: false,
+          reportingStartDate: null,
           mewurkEmployeeCode: "",
           password: "",
           profilePicS3Key: "",
@@ -189,7 +192,11 @@ export function UserActionForm({
         joiningDate: currentRow?.joiningDate
           ? currentRow.joiningDate.slice(0, 10)
           : null,
-        isSingleCheckInAllowed: currentRow?.isSingleCheckInAllowed ?? false,
+        excludeFromReports: currentRow?.excludeFromReports ?? false,
+        reportingStartDate: currentRow?.reportingStartDate
+          ? currentRow.reportingStartDate.slice(0, 10)
+          : null,
+        mewurkEmployeeCode: currentRow?.mewurkEmployeeCode ?? "",
         // currentWorkingProjectId: currentRow?.currentProject?.id ?? null,
         profilePicS3Key: currentRow?.profilePicUrl ?? "",
         file: null,
@@ -261,8 +268,10 @@ export function UserActionForm({
 
     const payload = {
       ...values,
+      excludeFromReports: values.excludeFromReports ?? false,
       dateOfBirth: formatDateToYMD(values.dateOfBirth),
       careerStartDate: formatDateToYMD(values.careerStartDate) || "",
+      reportingStartDate: values.reportingStartDate ? formatDateToYMD(values.reportingStartDate) : null,
       profilePicS3Key: finalFileKey,
     };
     delete payload.file;
@@ -433,9 +442,9 @@ export function UserActionForm({
                   name="mewurkEmployeeCode"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Employee Code</FormLabel>
+                      <FormLabel>Mewurk Employee Code</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter employee code" {...field} value={field.value ?? ""} />
+                        <Input placeholder="Enter Mewurk employee code" {...field} value={field.value ?? ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -598,8 +607,30 @@ export function UserActionForm({
                   )}
                 />
 
+                <FormField
+                  control={form.control}
+                  name="reportingStartDate"
+                  render={({ fieldState }) => (
+                    <FormItem>
+                      <FormLabel
+                        className={cn(
+                          "flex items-center gap-1",
+                          fieldState.error && "text-red-500"
+                        )}
+                      >
+                        Reporting Start Date
+                      </FormLabel>
+                      <CustomDatePicker
+                        control={form.control}
+                        name="reportingStartDate"
+                        label=""
+                      />
+                    </FormItem>
+                  )}
+                />
+
                 {/* ✅ Status Checkbox */}
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-row items-center gap-6">
                   <Controller
                     control={form.control}
                     name="status"
@@ -614,17 +645,17 @@ export function UserActionForm({
                     )}
                   />
 
+
                   <Controller
                     control={form.control}
-                    name="isSingleCheckInAllowed"
+                    name="excludeFromReports"
                     render={({ field }) => (
                       <div className="flex items-center space-x-2">
-                        <Switch
-                          checked={!!field.value}
+                        <Checkbox
+                          checked={field.value}
                           onCheckedChange={field.onChange}
-                          disabled={user?.user?.role !== roles.ADMIN}
                         />
-                        <label className="text-sm font-medium">Single Check-In Allowed</label>
+                        <label className="text-sm font-medium">Exclude from Reports</label>
                       </div>
                     )}
                   />

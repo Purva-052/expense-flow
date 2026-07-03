@@ -2,22 +2,41 @@
 // src/utils/requireRole.ts
 import { redirect } from "@tanstack/react-router";
 import { useAuthStore } from "@/stores/use-auth-store";
+import instance from "@/config/instance/instance";
+import API from "@/config/api/api";
 
 type RequireRoleOptions = {
   allowUserIDs?: number[];
   allowedTech?: number[];
 };
 
-export function requireRole(roles: any, options?: RequireRoleOptions) {
+export async function requireRole(roles: any, options?: RequireRoleOptions) {
   const { user } = useAuthStore.getState();
+  if (!user) {
+    throw redirect({ to: "/sign-in" });
+  }
+
   const userRole = user?.user?.role || "";
   const userId = user?.user?.id;
   const hasRoleAccess = roles.includes(userRole);
   const hasUserIdAccess = options?.allowUserIDs?.includes(userId) ?? false;
-  const hasTechAccess =
-    options?.allowedTech?.includes(user?.user?.technology_id || -1) ?? false;
 
-  if (!user || (!hasRoleAccess && !hasUserIdAccess && !hasTechAccess)) {
+  let technologyId = user?.user?.technology_id || user?.user?.technology?.id;
+
+  if (userId && technologyId === undefined && options?.allowedTech) {
+    try {
+      const response = await instance.get<any>({ url: `${API.users.list}/${userId}` });
+      technologyId = response?.data?.technology?.id;
+    } catch (e) {
+      console.error("Failed to fetch user details in requireRole:", e);
+    }
+  }
+
+  const hasTechAccess =
+    options?.allowedTech?.includes(technologyId || -1) ?? false;
+
+  if (!hasRoleAccess && !hasUserIdAccess && !hasTechAccess) {
     throw redirect({ to: "/unauthorized" });
   }
 }
+

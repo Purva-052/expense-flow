@@ -90,7 +90,7 @@ interface SelectedEmployee {
   phone: string;
   email: string;
   code: string;
-  dailyStatus?: Record<number, "P" | "A" | "WO" | "AH" | "E" | "L" | "">;
+  dailyStatus?: Record<number, "P" | "A" | "WO" | "AH" | "E" | "L" | "HL" | "">;
 }
 
 interface MyAttendanceProps {
@@ -159,7 +159,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           (u: any) =>
             u.mewurkEmployeeCode &&
             String(u.mewurkEmployeeCode).trim() ===
-              String(activeEmployee.code).trim()
+            String(activeEmployee.code).trim()
         );
         if (match) return match;
       }
@@ -170,7 +170,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           (u: any) =>
             u.email &&
             u.email.toLowerCase().trim() ===
-              activeEmployee.email.toLowerCase().trim()
+            activeEmployee.email.toLowerCase().trim()
         );
         if (match) return match;
       }
@@ -181,7 +181,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           (u: any) =>
             u.fullName &&
             u.fullName.toLowerCase().trim() ===
-              activeEmployee.name.toLowerCase().trim()
+            activeEmployee.name.toLowerCase().trim()
         );
         if (match) return match;
       }
@@ -237,11 +237,12 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   const [orgModalOpen, setOrgModalOpen] = useState(false);
 
   // Mewurk API states
-  const [selectedMonth, setSelectedMonth] = useState(6); // default to June (6)
-  const [selectedYear, setSelectedYear] = useState(2026); // default to 2026
+  const today = new Date();
+  const [selectedMonth, setSelectedMonth] = useState(today.getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(today.getFullYear());
 
   const [currentCalendarMonth, setCurrentCalendarMonth] = useState<Date>(
-    new Date(2026, 5)
+    new Date(today.getFullYear(), today.getMonth(), 1)
   );
 
   // Sync selectedMonth and selectedYear to the viewed calendar month
@@ -438,7 +439,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
             (e.email && e.email.toLowerCase() === targetEmail.toLowerCase()) ||
             (e.employeeName &&
               e.employeeName.toLowerCase().trim() ===
-                targetName.toLowerCase().trim())
+              targetName.toLowerCase().trim())
         );
 
         if (!match) {
@@ -803,26 +804,28 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
 
         const statusMap: Record<
           string,
-          "P" | "A" | "WO" | "AH" | "E" | "L" | ""
+          "P" | "A" | "WO" | "AH" | "E" | "L" | "HL" | ""
         > = {
           Present: "P",
           Absent: "A",
           "Weekly off": "WO",
           "Weekly Off": "WO",
-          "Half Day": "AH",
+          "Half Day Leave": "HL",
           Late: "E",
           Leave: "L",
         };
 
         const resolveStatusAbbr = (
           rawStatus: string | null | undefined
-        ): "P" | "A" | "WO" | "AH" | "E" | "L" | "" => {
+        ): "P" | "A" | "WO" | "AH" | "E" | "L" | "HL" | "" => {
           if (!rawStatus) return "";
-          let statusVal: "P" | "A" | "WO" | "AH" | "E" | "L" | "" =
+          let statusVal: "P" | "A" | "WO" | "AH" | "E" | "L" | "HL" | "" =
             statusMap[rawStatus] || "";
           if (!statusVal) {
             const statusName = rawStatus.toLowerCase();
-            if (statusName.includes("present")) statusVal = "P";
+            if (statusName.includes("half day leave") || statusName.includes("half leave")) statusVal = "HL";
+            else if (statusName.includes("present")) statusVal = "P";
+            else if (statusName.includes("half")) statusVal = "AH";
             else if (statusName.includes("leave")) statusVal = "L";
             else if (
               statusName.includes("off") ||
@@ -831,7 +834,6 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
             )
               statusVal = "WO";
             else if (statusName.includes("absent")) statusVal = "A";
-            else if (statusName.includes("half")) statusVal = "AH";
             else if (statusName.includes("late")) statusVal = "E";
           }
           return statusVal;
@@ -848,7 +850,9 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
             log.originalStatus ||
             ""
           ).toLowerCase();
-          if (statusName.includes("present")) status = "P";
+          if (statusName.includes("half day leave") || statusName.includes("half leave")) status = "HL";
+          else if (statusName.includes("present")) status = "P";
+          else if (statusName.includes("half")) status = "AH";
           else if (statusName.includes("leave")) status = "L";
           else if (
             statusName.includes("off") ||
@@ -857,7 +861,6 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           )
             status = "WO";
           else if (statusName.includes("absent")) status = "A";
-          else if (statusName.includes("half")) status = "AH";
           else if (statusName.includes("late")) status = "E";
         }
 
@@ -867,6 +870,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
         }
 
         const firstIn = log.firstIn ? formatMewurkTime(log.firstIn) : "-";
+        const lateInTime = log.lateInTime || "00:00";
         const lastOut = log.lastOut ? formatMewurkTime(log.lastOut) : "-";
         const workingHrs = log.workingTime ? `${log.workingTime} HRS` : "-";
         const breakHrs = log.breakTime ? `${log.breakTime} HRS` : "-";
@@ -880,6 +884,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           finalStatus,
           shift: "GS01",
           firstIn,
+          lateInTime,
           lastOut,
           breakHrs,
           workingHrs,
@@ -1002,22 +1007,21 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
     </div>
   );
 
-  const monthNavLabel = `${
-    [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ][selectedMonth - 1]
-  } ${selectedYear}`;
+  const monthNavLabel = `${[
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ][selectedMonth - 1]
+    } ${selectedYear}`;
 
   const goToPreviousMonth = () => {
     const d = new Date(selectedYear, selectedMonth - 2, 1);
@@ -1139,9 +1143,8 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
                       detailedLogs={detailedLogs}
                       onRowClick={handleRowClick}
                       monthNavigator={monthNavigatorProps}
-                      employeeId={
-                        activeEmployee ? Number(activeEmployee.id) : undefined
-                      }
+                      employeeId={activeEmployee ? Number(activeEmployee.id) : undefined}
+                      lateInDays={monthlyData ? (monthlyData.lateInDays ?? 0) : undefined}
                     />
                   )}
                 </div>
@@ -1294,6 +1297,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
                 ? Number(activeEmployee.id)
                 : Number(user?.user?.id)
             }
+            lateInDays={monthlyData ? (monthlyData.lateInDays ?? 0) : undefined}
           />
         )}
       </div>

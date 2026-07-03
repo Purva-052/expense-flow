@@ -44,6 +44,8 @@ const UsersPage = () => {
     role: parseAsString,
     status: parseAsString,
     technologyId: parseAsInteger,
+    sortBy: parseAsString,
+    sortOrder: parseAsString,
   });
 
   const listParams = {
@@ -53,6 +55,8 @@ const UsersPage = () => {
     role: queryParams.role,
     status: queryParams.status ?? undefined,
     technologyId: queryParams.technologyId,
+    sortBy: queryParams.sortBy,
+    sortOrder: queryParams.sortOrder,
   };
 
   // const [listParams, setQueryParams] = useState({
@@ -72,6 +76,8 @@ const UsersPage = () => {
     role: listParams.role,
     technologyId: listParams.technologyId,
     status: listParams.status,
+    sortBy: listParams.sortBy ?? undefined,
+    sortOrder: listParams.sortOrder ?? undefined,
   };
 
   const didInitStatus = useRef(false);
@@ -264,6 +270,22 @@ const UsersPage = () => {
     });
   };
 
+  const handleSortingChange = (updater: any) => {
+    const sortingState = typeof updater === "function" ? updater(
+      listParams.sortBy ? [{ id: listParams.sortBy, desc: listParams.sortOrder === "desc" }] : []
+    ) : updater;
+
+    if (sortingState && sortingState.length > 0) {
+      setQueryParams({
+        sortBy: sortingState[0].id,
+        sortOrder: sortingState[0].desc ? "desc" : "asc",
+        currentPage: 1,
+      });
+    } else {
+      setQueryParams({ sortBy: null, sortOrder: null, currentPage: 1 });
+    }
+  };
+
   const filters: FilterConfig[] = [
     {
       type: "search",
@@ -384,6 +406,14 @@ const UsersPage = () => {
         columns={columns}
         loading={loading}
         isPaginationEnabled
+        enableSorting={true}
+        manualSorting={true}
+        sorting={
+          listParams.sortBy
+            ? [{ id: listParams.sortBy, desc: listParams.sortOrder === "desc" }]
+            : []
+        }
+        onSortingChange={handleSortingChange}
       />
       {open && (
         <ActionFormModal

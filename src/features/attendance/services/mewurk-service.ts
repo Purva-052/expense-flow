@@ -201,6 +201,7 @@ export const MewurkService = {
         weeklyoff: "WO",
         "half day": "AH",
         halfday: "AH",
+        "half day leave": "AH",
         late: "E",
         leave: "L",
         "on leave": "L",
