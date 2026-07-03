@@ -172,7 +172,8 @@ const formatDays = (days: number) =>
 
 export const calculateRequestedDays = (
   leaveDays: any[] = [],
-  holidayDatesSet: Set<string> = new Set()
+  holidayDatesSet: Set<string> = new Set(),
+  contextSandwichDays: any[] = []
 ) => {
   let total = 0;
 
@@ -198,35 +199,57 @@ export const calculateRequestedDays = (
         total += 1;
       }
     } else {
-      // It's a weekend or public holiday. Check if it's sandwiched between two full leaves.
-      let prevDay = null;
-      for (let j = i - 1; j >= 0; j--) {
-        const d = leaveDays[j];
-        if (!isOffDay(d)) {
-          prevDay = d;
-          break;
-        }
-      }
+      // It's a weekend or public holiday. Check if it's sandwiched.
+      // A day is sandwiched if:
+      // 1. It is in contextSandwichDays (which handles sandwich days across boundaries), OR
+      // 2. It is sandwiched between two full leaves within the current request.
+      const inContext = contextSandwichDays.some(
+        (sd) => normalizeDateValue(sd.date) === normalizeDateValue(day.date)
+      );
 
-      let nextDay = null;
-      for (let j = i + 1; j < leaveDays.length; j++) {
-        const d = leaveDays[j];
-        if (!isOffDay(d)) {
-          nextDay = d;
-          break;
-        }
-      }
-
-      if (
-        prevDay &&
-        nextDay &&
-        prevDay.dayType === "full" &&
-        nextDay.dayType === "full"
-      ) {
+      if (inContext) {
         total += 1;
+      } else {
+        let prevDay = null;
+        for (let j = i - 1; j >= 0; j--) {
+          const d = leaveDays[j];
+          if (!isOffDay(d)) {
+            prevDay = d;
+            break;
+          }
+        }
+
+        let nextDay = null;
+        for (let j = i + 1; j < leaveDays.length; j++) {
+          const d = leaveDays[j];
+          if (!isOffDay(d)) {
+            nextDay = d;
+            break;
+          }
+        }
+
+        if (
+          prevDay &&
+          nextDay &&
+          prevDay.dayType === "full" &&
+          nextDay.dayType === "full"
+        ) {
+          total += 1;
+        }
       }
     }
   }
+
+  // Add the sandwich days that are outside of leaveDays (i.e. not in leaveDays list)
+  const leaveDaysDates = new Set(
+    leaveDays.map((d) => normalizeDateValue(d.date)).filter(Boolean)
+  );
+
+  const outsideSandwichCount = contextSandwichDays.filter(
+    (sd) => !leaveDaysDates.has(normalizeDateValue(sd.date))
+  ).length;
+
+  total += outsideSandwichCount;
 
   return total;
 };
@@ -406,7 +429,7 @@ export function LeaveActionForm({
 
   const form = useForm<TLeaveFormSchema>({
     resolver: zodResolver(leaveSchema) as any,
-    mode: "onTouched",
+    mode: "onSubmit",
     defaultValues: {
       reason: "",
       description: "",
@@ -481,6 +504,35 @@ export function LeaveActionForm({
         : watchEmployeeId;
   const isDetailsMode = isEdit || isViewOnly;
 
+  // Fetch leave details
+  const { data: leaveDetailsData, isPending: leaveDetailsLoading } =
+    useGetLeaveDetails(currentRow?.id, open && isDetailsMode) as any;
+
+  const displayRow = useMemo(() => {
+    if (isDetailsMode) {
+      const details = leaveDetailsData?.data?.id
+        ? leaveDetailsData.data
+        : leaveDetailsData?.id
+          ? leaveDetailsData
+          : leaveDetailsData?.data?.data?.id
+            ? leaveDetailsData.data.data
+            : null;
+      if (details) {
+        return { ...currentRow, ...details };
+      }
+    }
+    return currentRow;
+  }, [isDetailsMode, leaveDetailsData, currentRow]);
+
+  const isDateRangeChanged = useMemo(() => {
+    if (!isEdit || !displayRow) return false;
+    const initialFrom = displayRow.fromDate ? format(new Date(displayRow.fromDate), "yyyy-MM-dd") : "";
+    const initialTo = displayRow.toDate ? format(new Date(displayRow.toDate), "yyyy-MM-dd") : "";
+    const currentFrom = watchFromDate ? format(watchFromDate, "yyyy-MM-dd") : "";
+    const currentTo = watchToDate ? format(watchToDate, "yyyy-MM-dd") : "";
+    return currentFrom !== initialFrom || currentTo !== initialTo;
+  }, [isEdit, displayRow, watchFromDate, watchToDate]);
+
   const { data: activeUserDetails } = useGetUserDetails(
     balanceUserId ? String(balanceUserId) : ""
   ) as any;
@@ -530,6 +582,13 @@ export function LeaveActionForm({
   // Auto-regenerate or merge leaveDays table whenever date range changes
   useEffect(() => {
     if (isViewOnly) return;
+
+    // In Edit mode, if the dates haven't changed from their initial values in the details API response,
+    // do not regenerate the days. This preserves the full API response's leaveDays (including sandwich leaves).
+    if (isEdit && !isDateRangeChanged) {
+      return;
+    }
+
     if (watchFromDate && watchToDate) {
       const from = startOfDay(new Date(watchFromDate));
       const to = startOfDay(new Date(watchToDate));
@@ -585,6 +644,8 @@ export function LeaveActionForm({
     replace,
     form,
     targetTechnologyId,
+    displayRow,
+    isDateRangeChanged,
   ]);
 
   // Reset toDate if it is earlier than fromDate
@@ -602,29 +663,9 @@ export function LeaveActionForm({
   const { data: leaveBalanceData, isPending: leaveBalanceLoading } =
     useGetAllLeaveBalances(balanceUserId, open && !isDetailsMode) as any;
 
-  // Fetch leave details
-  const { data: leaveDetailsData, isPending: leaveDetailsLoading } =
-    useGetLeaveDetails(currentRow?.id, open && isDetailsMode) as any;
-
   const balanceLoading = isDetailsMode
     ? leaveDetailsLoading
     : leaveBalanceLoading;
-
-  const displayRow = useMemo(() => {
-    if (isDetailsMode) {
-      const details = leaveDetailsData?.data?.id
-        ? leaveDetailsData.data
-        : leaveDetailsData?.id
-          ? leaveDetailsData
-          : leaveDetailsData?.data?.data?.id
-            ? leaveDetailsData.data.data
-            : null;
-      if (details) {
-        return { ...currentRow, ...details };
-      }
-    }
-    return currentRow;
-  }, [isDetailsMode, leaveDetailsData, currentRow]);
 
   // Fetch public holidays
   const { data: holidayData } = useGetReportDetails({
@@ -982,9 +1023,58 @@ export function LeaveActionForm({
   }, [isEdit, detailData, paidBalance]);
 
   const leaveAllocation = useMemo(() => {
-    const requestedDays =
-      calculateRequestedDays(watchLeaveDays, holidayDatesSet) +
-      contextSandwichDays.length;
+    if (isEdit && !isDateRangeChanged && detailData) {
+      const allocation = detailData.allocationBreakdown || {};
+      const summaryObj = detailData.summary || {};
+      
+      const casualDays = toNumber(allocation.casualLeaveDays);
+      const paidDays = toNumber(allocation.paidLeaveDays);
+      const lossOfPayDays = toNumber(allocation.lossOfPayDays);
+      const examDays = toNumber(allocation.examLeaveDays ?? allocation.examDays);
+      const requestedDays = toNumber(summaryObj.totalRequestedDays);
+      
+      const items = [];
+      if (examDays > 0 || watchIsExamLeave) {
+        items.push({
+          leaveTypeId: "4",
+          leaveTypeName: "Exam Leave",
+          days: examDays,
+        });
+      } else {
+        items.push({
+          leaveTypeId: CASUAL_LEAVE_TYPE_ID,
+          leaveTypeName: getLeaveTypeLabel(CASUAL_LEAVE_TYPE_ID),
+          days: casualDays,
+        });
+        items.push({
+          leaveTypeId: PAID_LEAVE_TYPE_ID,
+          leaveTypeName: getLeaveTypeLabel(PAID_LEAVE_TYPE_ID),
+          days: paidDays,
+        });
+        items.push({
+          leaveTypeId: LOSS_OF_PAY_LEAVE_TYPE_ID,
+          leaveTypeName: "Loss of Pay",
+          days: lossOfPayDays,
+          isLossOfPay: true,
+        });
+      }
+
+      return {
+        casualDays,
+        paidDays,
+        lossOfPayDays,
+        examDays,
+        requestedDays,
+        totalAvailableDays: toNumber(detailData.leaveBalance?.casualLeaveBalance) + toNumber(detailData.leaveBalance?.paidLeaveBalance),
+        items,
+      };
+    }
+
+    const requestedDays = calculateRequestedDays(
+      watchLeaveDays,
+      holidayDatesSet,
+      contextSandwichDays
+    );
     return buildLeaveAllocation({
       requestedDays,
       casualBalance: allocCasualBalance,
@@ -993,9 +1083,12 @@ export function LeaveActionForm({
       selectedLeaveTypeId: watchLeaveTypeId,
     });
   }, [
+    isEdit,
+    isDateRangeChanged,
+    detailData,
     watchLeaveDays,
     holidayDatesSet,
-    contextSandwichDays.length,
+    contextSandwichDays,
     allocCasualBalance,
     allocPaidBalance,
     watchIsExamLeave,
@@ -1144,6 +1237,7 @@ export function LeaveActionForm({
             isWeekend,
             dayType: d.dayType || "full",
             halfType: d.halfType || null,
+            isSandwichLeave: !!d.isSandwichLeave,
           };
         }) ?? [];
 
@@ -1428,15 +1522,20 @@ export function LeaveActionForm({
 
     // In view/edit mode we still only render the original fields array
     const rowsToRender = isDetailsMode
-      ? fields.map((f, idx) => ({
-          id: f.id,
-          date: f.date,
-          dayName: f.dayName,
-          isWeekend: f.isWeekend,
-          isHoliday: getIsHoliday(f.date),
-          isSandwichOnly: false,
-          fieldIdx: idx,
-        }))
+      ? fields.map((f, idx) => {
+          const fromStr = watchFromDate ? format(watchFromDate, "yyyy-MM-dd") : "";
+          const toStr = watchToDate ? format(watchToDate, "yyyy-MM-dd") : "";
+          const isSandwichOnly = !!(f.isSandwichLeave && (f.date < fromStr || f.date > toStr));
+          return {
+            id: f.id,
+            date: f.date,
+            dayName: f.dayName,
+            isWeekend: f.isWeekend,
+            isHoliday: getIsHoliday(f.date),
+            isSandwichOnly,
+            fieldIdx: idx,
+          };
+        })
       : mergedTableRows;
 
     return (
@@ -1501,7 +1600,8 @@ export function LeaveActionForm({
             const isDayHoliday = getIsHoliday(field.date);
             const isDayOff = isWeekend || isDayHoliday;
             const dayType = form.watch(`leaveDays.${idx}.dayType`);
-            const sandwiched = isDaySandwiched(watchLeaveDays || [], idx);
+            const sandwiched =
+              !!field.isSandwichLeave || isDaySandwiched(watchLeaveDays || [], idx);
             const hasHalfTypeError =
               !!form.formState.errors.leaveDays?.[idx]?.halfType;
 
@@ -2120,7 +2220,7 @@ export function LeaveActionForm({
               {isViewOnly ? "Close" : "Cancel"}
             </CustomButton>
             {!isViewOnly && (
-              <CustomButton type="submit" loading={loading}>
+              <CustomButton type="submit" form="leave-form" loading={loading}>
                 {isEdit ? "Update Request" : "Submit Request"}
               </CustomButton>
             )}
