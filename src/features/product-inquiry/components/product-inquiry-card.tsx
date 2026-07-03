@@ -253,14 +253,14 @@ export function InquiryCard({
     return (
       <div
         className={cn(
-          "min-w-[860px] bg-card border-b hover:bg-muted/50 transition-colors py-4 px-6 relative group flex items-center gap-4",
+          "w-full min-w-max bg-card border-b hover:bg-muted/50 transition-colors py-4 px-6 relative group flex items-center gap-4",
           shouldBlink && "demo-reminder-blink"
         )}
       >
         <div className="w-1 bg-muted-foreground/40 rounded-full h-8 shrink-0" />
 
         {/* Product Name + Company + Contact */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-[250px]">
           <div className="flex items-center gap-3 flex-wrap">
             <h3
               className="text-sm font-bold text-foreground truncate cursor-pointer hover:text-primary transition-colors"
@@ -415,14 +415,14 @@ export function InquiryCard({
         </div>
 
         {/* Number of Users */}
-        <div className="w-26 shrink-0 text-xs text-foreground font-semibold text-center truncate px-2">
+        <div className="w-28 shrink-0 text-xs text-foreground font-semibold text-center truncate px-2">
           {numberOfUsers !== null && numberOfUsers !== undefined && numberOfUsers !== 0
             ? numberOfUsers
             : "—"}
         </div>
 
         {/* Attending Person */}
-        <div className="w-26 shrink-0 flex items-center justify-center -space-x-2 overflow-visible">
+        <div className="w-28 shrink-0 flex items-center justify-center -space-x-2 overflow-visible">
           <TooltipProvider>
             {attendingPersons.slice(0, 3).map((ap: any, idx: number) => {
               const name =
