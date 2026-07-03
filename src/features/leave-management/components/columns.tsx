@@ -36,7 +36,8 @@ const getLeaveTypeLabel = (id: any) => {
   return match ? match.label : `Type ${id}`;
 };
 
-export const getColumns = (tab: string): ColumnDef<any>[] => [
+export const getColumns = (tab: string, data?: any[]): ColumnDef<any>[] => {
+  const columns: ColumnDef<any>[] = [
   {
     id: "employeeName",
     accessorKey: "employee.fullName",
@@ -433,3 +434,15 @@ export const getColumns = (tab: string): ColumnDef<any>[] => [
     enableSorting: false,
   },
 ];
+
+  const hasRejectionReason = data?.some(
+    (item: any) => String(item?.status).toLowerCase() === "rejected"
+  );
+
+  return columns.filter((col: any) => {
+    if (col.accessorKey === "rejectionReason") {
+      return !!hasRejectionReason;
+    }
+    return true;
+  });
+};

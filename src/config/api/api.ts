@@ -384,7 +384,8 @@ const API = {
       `/attendance-regularizations/${id}/action`,
     summary: "/attendance/summary",
     late_deduction_list: "/attendance/late-in",
-    late_deduction_action: "/attendance/action/{employeeId}/{weekStartDate}",
+    late_deduction_action: (employeeId: string, weekStartDate: string) =>
+      `/attendance/action/${employeeId}/${weekStartDate}`,
   },
 };
 
