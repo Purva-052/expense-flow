@@ -175,6 +175,7 @@ export const calculateRequestedDays = (
   holidayDatesSet: Set<string> = new Set(),
   contextSandwichDays: any[] = []
 ) => {
+  const validLeaveDays = leaveDays.filter((d) => d && d.date);
   let total = 0;
 
   const getIsHoliday = (dateStr: string) => {
@@ -189,8 +190,8 @@ export const calculateRequestedDays = (
     return day.isWeekend || getIsHoliday(day.date);
   };
 
-  for (let i = 0; i < leaveDays.length; i++) {
-    const day = leaveDays[i];
+  for (let i = 0; i < validLeaveDays.length; i++) {
+    const day = validLeaveDays[i];
 
     if (!isOffDay(day)) {
       if (day?.dayType === "half") {
@@ -212,7 +213,7 @@ export const calculateRequestedDays = (
       } else {
         let prevDay = null;
         for (let j = i - 1; j >= 0; j--) {
-          const d = leaveDays[j];
+          const d = validLeaveDays[j];
           if (!isOffDay(d)) {
             prevDay = d;
             break;
@@ -220,8 +221,8 @@ export const calculateRequestedDays = (
         }
 
         let nextDay = null;
-        for (let j = i + 1; j < leaveDays.length; j++) {
-          const d = leaveDays[j];
+        for (let j = i + 1; j < validLeaveDays.length; j++) {
+          const d = validLeaveDays[j];
           if (!isOffDay(d)) {
             nextDay = d;
             break;
@@ -242,7 +243,7 @@ export const calculateRequestedDays = (
 
   // Add the sandwich days that are outside of leaveDays (i.e. not in leaveDays list)
   const leaveDaysDates = new Set(
-    leaveDays.map((d) => normalizeDateValue(d.date)).filter(Boolean)
+    validLeaveDays.map((d) => normalizeDateValue(d.date)).filter(Boolean)
   );
 
   const outsideSandwichCount = contextSandwichDays.filter(
@@ -526,10 +527,10 @@ export function LeaveActionForm({
 
   const isDateRangeChanged = useMemo(() => {
     if (!isEdit || !displayRow) return false;
-    const initialFrom = displayRow.fromDate ? format(new Date(displayRow.fromDate), "yyyy-MM-dd") : "";
-    const initialTo = displayRow.toDate ? format(new Date(displayRow.toDate), "yyyy-MM-dd") : "";
-    const currentFrom = watchFromDate ? format(watchFromDate, "yyyy-MM-dd") : "";
-    const currentTo = watchToDate ? format(watchToDate, "yyyy-MM-dd") : "";
+    const initialFrom = normalizeDateValue(displayRow.fromDate);
+    const initialTo = normalizeDateValue(displayRow.toDate);
+    const currentFrom = normalizeDateValue(watchFromDate);
+    const currentTo = normalizeDateValue(watchToDate);
     return currentFrom !== initialFrom || currentTo !== initialTo;
   }, [isEdit, displayRow, watchFromDate, watchToDate]);
 
@@ -543,7 +544,7 @@ export function LeaveActionForm({
       status: ["pending", "approved"],
       pagination: false,
     },
-    open && !isDetailsMode && !!balanceUserId
+    open && !isViewOnly && !!balanceUserId
   );
 
   const selectedEmployee = useMemo(() => {
@@ -596,7 +597,9 @@ export function LeaveActionForm({
         const newDays = buildLeaveDays(from, to, targetTechnologyId === 35);
         if (isEdit) {
           // Merge with current form values to preserve selections
-          const currentLeaveDays = form.getValues("leaveDays") || [];
+          const currentLeaveDays = (form.getValues("leaveDays") || []).filter(
+            (d: any) => d && d.date
+          );
           const mergedDays = newDays.map((newDay) => {
             const existing = currentLeaveDays.find(
               (d: any) => d.date === newDay.date
@@ -698,7 +701,7 @@ export function LeaveActionForm({
   };
 
   const contextSandwichDays = useMemo(() => {
-    if (isDetailsMode || !watchFromDate || !watchToDate) return [];
+    if (isViewOnly || (isEdit && !isDateRangeChanged) || !watchFromDate || !watchToDate) return [];
 
     const currentDays = watchLeaveDays || [];
     const currentDateSet = new Set(
@@ -1075,6 +1078,12 @@ export function LeaveActionForm({
       holidayDatesSet,
       contextSandwichDays
     );
+    console.log("DEBUG_SANDWICH:", {
+      requestedDays,
+      watchLeaveDays,
+      holidayDatesSet: Array.from(holidayDatesSet),
+      contextSandwichDays,
+    });
     return buildLeaveAllocation({
       requestedDays,
       casualBalance: allocCasualBalance,
@@ -1317,13 +1326,15 @@ export function LeaveActionForm({
     formData.append(
       "leaveDays",
       JSON.stringify(
-        values.leaveDays.map((d) => ({
-          date: d.date,
-          dayType: d.dayType,
-          ...(d.dayType === "half" && d.halfType
-            ? { halfType: d.halfType }
-            : {}),
-        }))
+        values.leaveDays
+          .filter((d: any) => d && d.date)
+          .map((d) => ({
+            date: d.date,
+            dayType: d.dayType,
+            ...(d.dayType === "half" && d.halfType
+              ? { halfType: d.halfType }
+              : {}),
+          }))
       )
     );
 
@@ -1484,7 +1495,7 @@ export function LeaveActionForm({
   //   - All contextSandwichDays that are NOT already in `fields`
   // Sandwich days outside the selected range are shown as read-only rows.
   const mergedTableRows = useMemo(() => {
-    if (isDetailsMode) return [];
+    if (isViewOnly || (isEdit && !isDateRangeChanged)) return [];
 
     const fieldDateSet = new Set(fields.map((f) => f.date));
 
@@ -1514,14 +1525,15 @@ export function LeaveActionForm({
       a.date < b.date ? -1 : a.date > b.date ? 1 : 0
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fields, contextSandwichDays, isDetailsMode]);
+  }, [fields, contextSandwichDays, isEdit, isDateRangeChanged, isViewOnly]);
 
   const LeaveDaysTable = ({ className }: { className?: string }) => {
     if (isDetailsMode ? fields.length === 0 : mergedTableRows.length === 0)
       return null;
 
-    // In view/edit mode we still only render the original fields array
-    const rowsToRender = isDetailsMode
+    const showStaticFields = isViewOnly || (isEdit && !isDateRangeChanged);
+    // In view/edit mode we still only render the original fields array (if dates haven't changed)
+    const rowsToRender = showStaticFields
       ? fields.map((f, idx) => {
           const fromStr = watchFromDate ? format(watchFromDate, "yyyy-MM-dd") : "";
           const toStr = watchToDate ? format(watchToDate, "yyyy-MM-dd") : "";
