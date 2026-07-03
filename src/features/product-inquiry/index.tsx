@@ -11,21 +11,16 @@ import {
   useGetProductInquiryStats,
 } from "./services";
 import { ActionFormModal } from "./components/actions";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useGetIndustryDropdownList } from "../industry/services";
 import { PRODUCT_INQUIRY_STATUS_OPTIONS } from "@/utils/constant";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import {
   ArrowLeft,
   Download,
   LayoutGrid,
   List,
   Table as TableIcon,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  MessageSquare,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
