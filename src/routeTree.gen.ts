@@ -376,7 +376,6 @@ const AuthenticatedLinodeServerDashboardDetailIdRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AuthenticatedIndexRoute
   '/forgot-password': typeof authForgotPasswordRoute
   '/otp': typeof authOtpRoute
   '/sign-in': typeof authSignInRoute
@@ -387,46 +386,47 @@ export interface FileRoutesByFullPath {
   '/503': typeof errors503Route
   '/unauthorized': typeof errorsUnauthorizedRoute
   '/sign/$token': typeof SignTokenRoute
-  '/admob-analytics/': typeof AuthenticatedAdmobAnalyticsIndexRoute
-  '/attendance/': typeof AuthenticatedAttendanceIndexRoute
-  '/brands/': typeof AuthenticatedBrandsIndexRoute
-  '/client-inventory-type/': typeof AuthenticatedClientInventoryTypeIndexRoute
-  '/client-inventory/': typeof AuthenticatedClientInventoryIndexRoute
-  '/client-nda/': typeof AuthenticatedClientNdaIndexRoute
-  '/clients/': typeof AuthenticatedClientsIndexRoute
-  '/conference-room-booking/': typeof AuthenticatedConferenceRoomBookingIndexRoute
-  '/daily-report/': typeof AuthenticatedDailyReportIndexRoute
-  '/device-management/': typeof AuthenticatedDeviceManagementIndexRoute
-  '/domain/': typeof AuthenticatedDomainIndexRoute
-  '/extra-work-report/': typeof AuthenticatedExtraWorkReportIndexRoute
-  '/headphone-brand/': typeof AuthenticatedHeadphoneBrandIndexRoute
-  '/inbound-sources/': typeof AuthenticatedInboundSourcesIndexRoute
-  '/industry/': typeof AuthenticatedIndustryIndexRoute
-  '/inquiry-channels/': typeof AuthenticatedInquiryChannelsIndexRoute
-  '/inquiry-requirements/': typeof AuthenticatedInquiryRequirementsIndexRoute
-  '/inquiry-types/': typeof AuthenticatedInquiryTypesIndexRoute
-  '/inquiry/': typeof AuthenticatedInquiryIndexRoute
-  '/interviews/': typeof AuthenticatedInterviewsIndexRoute
-  '/leave-management/': typeof AuthenticatedLeaveManagementIndexRoute
-  '/linode-server-dashboard/': typeof AuthenticatedLinodeServerDashboardIndexRoute
-  '/meetings-overview/': typeof AuthenticatedMeetingsOverviewIndexRoute
-  '/monitor-size/': typeof AuthenticatedMonitorSizeIndexRoute
-  '/new-joinees/': typeof AuthenticatedNewJoineesIndexRoute
-  '/outbound-sources/': typeof AuthenticatedOutboundSourcesIndexRoute
-  '/processor/': typeof AuthenticatedProcessorIndexRoute
-  '/product-inquiry/': typeof AuthenticatedProductInquiryIndexRoute
-  '/profile/': typeof AuthenticatedProfileIndexRoute
-  '/project-type/': typeof AuthenticatedProjectTypeIndexRoute
-  '/projects-analytics/': typeof AuthenticatedProjectsAnalyticsIndexRoute
-  '/projects/': typeof AuthenticatedProjectsIndexRoute
-  '/ram-types/': typeof AuthenticatedRamTypesIndexRoute
-  '/server/': typeof AuthenticatedServerIndexRoute
-  '/storage/': typeof AuthenticatedStorageIndexRoute
-  '/system-inventory/': typeof AuthenticatedSystemInventoryIndexRoute
-  '/technology/': typeof AuthenticatedTechnologyIndexRoute
-  '/tools-management/': typeof AuthenticatedToolsManagementIndexRoute
-  '/transactions-logs/': typeof AuthenticatedTransactionsLogsIndexRoute
-  '/users/': typeof AuthenticatedUsersIndexRoute
+  '/': typeof AuthenticatedIndexRoute
+  '/admob-analytics': typeof AuthenticatedAdmobAnalyticsIndexRoute
+  '/attendance': typeof AuthenticatedAttendanceIndexRoute
+  '/brands': typeof AuthenticatedBrandsIndexRoute
+  '/client-inventory-type': typeof AuthenticatedClientInventoryTypeIndexRoute
+  '/client-inventory': typeof AuthenticatedClientInventoryIndexRoute
+  '/client-nda': typeof AuthenticatedClientNdaIndexRoute
+  '/clients': typeof AuthenticatedClientsIndexRoute
+  '/conference-room-booking': typeof AuthenticatedConferenceRoomBookingIndexRoute
+  '/daily-report': typeof AuthenticatedDailyReportIndexRoute
+  '/device-management': typeof AuthenticatedDeviceManagementIndexRoute
+  '/domain': typeof AuthenticatedDomainIndexRoute
+  '/extra-work-report': typeof AuthenticatedExtraWorkReportIndexRoute
+  '/headphone-brand': typeof AuthenticatedHeadphoneBrandIndexRoute
+  '/inbound-sources': typeof AuthenticatedInboundSourcesIndexRoute
+  '/industry': typeof AuthenticatedIndustryIndexRoute
+  '/inquiry-channels': typeof AuthenticatedInquiryChannelsIndexRoute
+  '/inquiry-requirements': typeof AuthenticatedInquiryRequirementsIndexRoute
+  '/inquiry-types': typeof AuthenticatedInquiryTypesIndexRoute
+  '/inquiry': typeof AuthenticatedInquiryIndexRoute
+  '/interviews': typeof AuthenticatedInterviewsIndexRoute
+  '/leave-management': typeof AuthenticatedLeaveManagementIndexRoute
+  '/linode-server-dashboard': typeof AuthenticatedLinodeServerDashboardIndexRoute
+  '/meetings-overview': typeof AuthenticatedMeetingsOverviewIndexRoute
+  '/monitor-size': typeof AuthenticatedMonitorSizeIndexRoute
+  '/new-joinees': typeof AuthenticatedNewJoineesIndexRoute
+  '/outbound-sources': typeof AuthenticatedOutboundSourcesIndexRoute
+  '/processor': typeof AuthenticatedProcessorIndexRoute
+  '/product-inquiry': typeof AuthenticatedProductInquiryIndexRoute
+  '/profile': typeof AuthenticatedProfileIndexRoute
+  '/project-type': typeof AuthenticatedProjectTypeIndexRoute
+  '/projects-analytics': typeof AuthenticatedProjectsAnalyticsIndexRoute
+  '/projects': typeof AuthenticatedProjectsIndexRoute
+  '/ram-types': typeof AuthenticatedRamTypesIndexRoute
+  '/server': typeof AuthenticatedServerIndexRoute
+  '/storage': typeof AuthenticatedStorageIndexRoute
+  '/system-inventory': typeof AuthenticatedSystemInventoryIndexRoute
+  '/technology': typeof AuthenticatedTechnologyIndexRoute
+  '/tools-management': typeof AuthenticatedToolsManagementIndexRoute
+  '/transactions-logs': typeof AuthenticatedTransactionsLogsIndexRoute
+  '/users': typeof AuthenticatedUsersIndexRoute
   '/linode-server-dashboard/detail/$id': typeof AuthenticatedLinodeServerDashboardDetailIdRoute
   '/projects/detail/$id': typeof AuthenticatedProjectsDetailIdRoute
 }
@@ -545,7 +545,6 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
     | '/forgot-password'
     | '/otp'
     | '/sign-in'
@@ -556,46 +555,47 @@ export interface FileRouteTypes {
     | '/503'
     | '/unauthorized'
     | '/sign/$token'
-    | '/admob-analytics/'
-    | '/attendance/'
-    | '/brands/'
-    | '/client-inventory-type/'
-    | '/client-inventory/'
-    | '/client-nda/'
-    | '/clients/'
-    | '/conference-room-booking/'
-    | '/daily-report/'
-    | '/device-management/'
-    | '/domain/'
-    | '/extra-work-report/'
-    | '/headphone-brand/'
-    | '/inbound-sources/'
-    | '/industry/'
-    | '/inquiry-channels/'
-    | '/inquiry-requirements/'
-    | '/inquiry-types/'
-    | '/inquiry/'
-    | '/interviews/'
-    | '/leave-management/'
-    | '/linode-server-dashboard/'
-    | '/meetings-overview/'
-    | '/monitor-size/'
-    | '/new-joinees/'
-    | '/outbound-sources/'
-    | '/processor/'
-    | '/product-inquiry/'
-    | '/profile/'
-    | '/project-type/'
-    | '/projects-analytics/'
-    | '/projects/'
-    | '/ram-types/'
-    | '/server/'
-    | '/storage/'
-    | '/system-inventory/'
-    | '/technology/'
-    | '/tools-management/'
-    | '/transactions-logs/'
-    | '/users/'
+    | '/'
+    | '/admob-analytics'
+    | '/attendance'
+    | '/brands'
+    | '/client-inventory-type'
+    | '/client-inventory'
+    | '/client-nda'
+    | '/clients'
+    | '/conference-room-booking'
+    | '/daily-report'
+    | '/device-management'
+    | '/domain'
+    | '/extra-work-report'
+    | '/headphone-brand'
+    | '/inbound-sources'
+    | '/industry'
+    | '/inquiry-channels'
+    | '/inquiry-requirements'
+    | '/inquiry-types'
+    | '/inquiry'
+    | '/interviews'
+    | '/leave-management'
+    | '/linode-server-dashboard'
+    | '/meetings-overview'
+    | '/monitor-size'
+    | '/new-joinees'
+    | '/outbound-sources'
+    | '/processor'
+    | '/product-inquiry'
+    | '/profile'
+    | '/project-type'
+    | '/projects-analytics'
+    | '/projects'
+    | '/ram-types'
+    | '/server'
+    | '/storage'
+    | '/system-inventory'
+    | '/technology'
+    | '/tools-management'
+    | '/transactions-logs'
+    | '/users'
     | '/linode-server-dashboard/detail/$id'
     | '/projects/detail/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -730,7 +730,7 @@ declare module '@tanstack/react-router' {
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
-      fullPath: '/'
+      fullPath: ''
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -814,280 +814,280 @@ declare module '@tanstack/react-router' {
     '/_authenticated/users/': {
       id: '/_authenticated/users/'
       path: '/users'
-      fullPath: '/users/'
+      fullPath: '/users'
       preLoaderRoute: typeof AuthenticatedUsersIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/transactions-logs/': {
       id: '/_authenticated/transactions-logs/'
       path: '/transactions-logs'
-      fullPath: '/transactions-logs/'
+      fullPath: '/transactions-logs'
       preLoaderRoute: typeof AuthenticatedTransactionsLogsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/tools-management/': {
       id: '/_authenticated/tools-management/'
       path: '/tools-management'
-      fullPath: '/tools-management/'
+      fullPath: '/tools-management'
       preLoaderRoute: typeof AuthenticatedToolsManagementIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/technology/': {
       id: '/_authenticated/technology/'
       path: '/technology'
-      fullPath: '/technology/'
+      fullPath: '/technology'
       preLoaderRoute: typeof AuthenticatedTechnologyIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/system-inventory/': {
       id: '/_authenticated/system-inventory/'
       path: '/system-inventory'
-      fullPath: '/system-inventory/'
+      fullPath: '/system-inventory'
       preLoaderRoute: typeof AuthenticatedSystemInventoryIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/storage/': {
       id: '/_authenticated/storage/'
       path: '/storage'
-      fullPath: '/storage/'
+      fullPath: '/storage'
       preLoaderRoute: typeof AuthenticatedStorageIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/server/': {
       id: '/_authenticated/server/'
       path: '/server'
-      fullPath: '/server/'
+      fullPath: '/server'
       preLoaderRoute: typeof AuthenticatedServerIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/ram-types/': {
       id: '/_authenticated/ram-types/'
       path: '/ram-types'
-      fullPath: '/ram-types/'
+      fullPath: '/ram-types'
       preLoaderRoute: typeof AuthenticatedRamTypesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/projects/': {
       id: '/_authenticated/projects/'
       path: '/projects'
-      fullPath: '/projects/'
+      fullPath: '/projects'
       preLoaderRoute: typeof AuthenticatedProjectsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/projects-analytics/': {
       id: '/_authenticated/projects-analytics/'
       path: '/projects-analytics'
-      fullPath: '/projects-analytics/'
+      fullPath: '/projects-analytics'
       preLoaderRoute: typeof AuthenticatedProjectsAnalyticsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/project-type/': {
       id: '/_authenticated/project-type/'
       path: '/project-type'
-      fullPath: '/project-type/'
+      fullPath: '/project-type'
       preLoaderRoute: typeof AuthenticatedProjectTypeIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/profile/': {
       id: '/_authenticated/profile/'
       path: '/profile'
-      fullPath: '/profile/'
+      fullPath: '/profile'
       preLoaderRoute: typeof AuthenticatedProfileIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/product-inquiry/': {
       id: '/_authenticated/product-inquiry/'
       path: '/product-inquiry'
-      fullPath: '/product-inquiry/'
+      fullPath: '/product-inquiry'
       preLoaderRoute: typeof AuthenticatedProductInquiryIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/processor/': {
       id: '/_authenticated/processor/'
       path: '/processor'
-      fullPath: '/processor/'
+      fullPath: '/processor'
       preLoaderRoute: typeof AuthenticatedProcessorIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/outbound-sources/': {
       id: '/_authenticated/outbound-sources/'
       path: '/outbound-sources'
-      fullPath: '/outbound-sources/'
+      fullPath: '/outbound-sources'
       preLoaderRoute: typeof AuthenticatedOutboundSourcesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/new-joinees/': {
       id: '/_authenticated/new-joinees/'
       path: '/new-joinees'
-      fullPath: '/new-joinees/'
+      fullPath: '/new-joinees'
       preLoaderRoute: typeof AuthenticatedNewJoineesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/monitor-size/': {
       id: '/_authenticated/monitor-size/'
       path: '/monitor-size'
-      fullPath: '/monitor-size/'
+      fullPath: '/monitor-size'
       preLoaderRoute: typeof AuthenticatedMonitorSizeIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/meetings-overview/': {
       id: '/_authenticated/meetings-overview/'
       path: '/meetings-overview'
-      fullPath: '/meetings-overview/'
+      fullPath: '/meetings-overview'
       preLoaderRoute: typeof AuthenticatedMeetingsOverviewIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/linode-server-dashboard/': {
       id: '/_authenticated/linode-server-dashboard/'
       path: '/linode-server-dashboard'
-      fullPath: '/linode-server-dashboard/'
+      fullPath: '/linode-server-dashboard'
       preLoaderRoute: typeof AuthenticatedLinodeServerDashboardIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/leave-management/': {
       id: '/_authenticated/leave-management/'
       path: '/leave-management'
-      fullPath: '/leave-management/'
+      fullPath: '/leave-management'
       preLoaderRoute: typeof AuthenticatedLeaveManagementIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/interviews/': {
       id: '/_authenticated/interviews/'
       path: '/interviews'
-      fullPath: '/interviews/'
+      fullPath: '/interviews'
       preLoaderRoute: typeof AuthenticatedInterviewsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/inquiry/': {
       id: '/_authenticated/inquiry/'
       path: '/inquiry'
-      fullPath: '/inquiry/'
+      fullPath: '/inquiry'
       preLoaderRoute: typeof AuthenticatedInquiryIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/inquiry-types/': {
       id: '/_authenticated/inquiry-types/'
       path: '/inquiry-types'
-      fullPath: '/inquiry-types/'
+      fullPath: '/inquiry-types'
       preLoaderRoute: typeof AuthenticatedInquiryTypesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/inquiry-requirements/': {
       id: '/_authenticated/inquiry-requirements/'
       path: '/inquiry-requirements'
-      fullPath: '/inquiry-requirements/'
+      fullPath: '/inquiry-requirements'
       preLoaderRoute: typeof AuthenticatedInquiryRequirementsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/inquiry-channels/': {
       id: '/_authenticated/inquiry-channels/'
       path: '/inquiry-channels'
-      fullPath: '/inquiry-channels/'
+      fullPath: '/inquiry-channels'
       preLoaderRoute: typeof AuthenticatedInquiryChannelsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/industry/': {
       id: '/_authenticated/industry/'
       path: '/industry'
-      fullPath: '/industry/'
+      fullPath: '/industry'
       preLoaderRoute: typeof AuthenticatedIndustryIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/inbound-sources/': {
       id: '/_authenticated/inbound-sources/'
       path: '/inbound-sources'
-      fullPath: '/inbound-sources/'
+      fullPath: '/inbound-sources'
       preLoaderRoute: typeof AuthenticatedInboundSourcesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/headphone-brand/': {
       id: '/_authenticated/headphone-brand/'
       path: '/headphone-brand'
-      fullPath: '/headphone-brand/'
+      fullPath: '/headphone-brand'
       preLoaderRoute: typeof AuthenticatedHeadphoneBrandIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/extra-work-report/': {
       id: '/_authenticated/extra-work-report/'
       path: '/extra-work-report'
-      fullPath: '/extra-work-report/'
+      fullPath: '/extra-work-report'
       preLoaderRoute: typeof AuthenticatedExtraWorkReportIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/domain/': {
       id: '/_authenticated/domain/'
       path: '/domain'
-      fullPath: '/domain/'
+      fullPath: '/domain'
       preLoaderRoute: typeof AuthenticatedDomainIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/device-management/': {
       id: '/_authenticated/device-management/'
       path: '/device-management'
-      fullPath: '/device-management/'
+      fullPath: '/device-management'
       preLoaderRoute: typeof AuthenticatedDeviceManagementIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/daily-report/': {
       id: '/_authenticated/daily-report/'
       path: '/daily-report'
-      fullPath: '/daily-report/'
+      fullPath: '/daily-report'
       preLoaderRoute: typeof AuthenticatedDailyReportIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/conference-room-booking/': {
       id: '/_authenticated/conference-room-booking/'
       path: '/conference-room-booking'
-      fullPath: '/conference-room-booking/'
+      fullPath: '/conference-room-booking'
       preLoaderRoute: typeof AuthenticatedConferenceRoomBookingIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/clients/': {
       id: '/_authenticated/clients/'
       path: '/clients'
-      fullPath: '/clients/'
+      fullPath: '/clients'
       preLoaderRoute: typeof AuthenticatedClientsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/client-nda/': {
       id: '/_authenticated/client-nda/'
       path: '/client-nda'
-      fullPath: '/client-nda/'
+      fullPath: '/client-nda'
       preLoaderRoute: typeof AuthenticatedClientNdaIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/client-inventory/': {
       id: '/_authenticated/client-inventory/'
       path: '/client-inventory'
-      fullPath: '/client-inventory/'
+      fullPath: '/client-inventory'
       preLoaderRoute: typeof AuthenticatedClientInventoryIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/client-inventory-type/': {
       id: '/_authenticated/client-inventory-type/'
       path: '/client-inventory-type'
-      fullPath: '/client-inventory-type/'
+      fullPath: '/client-inventory-type'
       preLoaderRoute: typeof AuthenticatedClientInventoryTypeIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/brands/': {
       id: '/_authenticated/brands/'
       path: '/brands'
-      fullPath: '/brands/'
+      fullPath: '/brands'
       preLoaderRoute: typeof AuthenticatedBrandsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/attendance/': {
       id: '/_authenticated/attendance/'
       path: '/attendance'
-      fullPath: '/attendance/'
+      fullPath: '/attendance'
       preLoaderRoute: typeof AuthenticatedAttendanceIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admob-analytics/': {
       id: '/_authenticated/admob-analytics/'
       path: '/admob-analytics'
-      fullPath: '/admob-analytics/'
+      fullPath: '/admob-analytics'
       preLoaderRoute: typeof AuthenticatedAdmobAnalyticsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
