@@ -353,7 +353,7 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
 
   const tableColumns = useMemo(() => {
     const isDevOrBDE = isDeveloper || isBDE;
-    return getColumns(queryParams.tab).filter((col: any) => {
+    return getColumns(queryParams.tab, (listData as any)?.data).filter((col: any) => {
       if (col.accessorKey === "status") {
         return isDevOrBDE;
       }
@@ -362,7 +362,7 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
       }
       return true;
     });
-  }, [isDeveloper, isBDE, queryParams.tab]);
+  }, [isDeveloper, isBDE, queryParams.tab, listData]);
 
   const sortingState = useMemo<SortingState>(() => {
     if (!queryParams.sortBy) return [];

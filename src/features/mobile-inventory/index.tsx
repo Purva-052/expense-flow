@@ -121,7 +121,7 @@ const MobileInventoryPage = () => {
     <PageLayout>
       <TablePageHeader
         title="Mobile Inventory"
-        buttonText="Add Mobile Inventory"
+        buttonText="Add Inventory"
         onButtonClick={handleAdd}
       >
         Manage your Mobile Inventories here.

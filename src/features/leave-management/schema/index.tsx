@@ -20,6 +20,7 @@ const leaveDaySchema = z.object({
   isWeekend: z.boolean().optional(),
   dayType: z.enum(["full", "half"]),
   halfType: z.enum(["first_half", "second_half"]).nullable().optional(),
+  isSandwichLeave: z.boolean().optional(),
 });
 
 export const leaveSchema = z

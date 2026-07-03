@@ -39,6 +39,7 @@ import {
   Network,
   Plane,
   ScrollText,
+  Smartphone,
   Tag,
   TrendingUp,
   UserStar,
@@ -279,7 +280,7 @@ export const sidebarData: SidebarData = {
         {
           title: "Mobile Inventory",
           url: "/mobile-inventory",
-          icon: Database,
+          icon: Smartphone,
           allowedTech: [29, 37],
           requiredRoles: [
             roles.ADMIN,

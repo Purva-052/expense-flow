@@ -75,9 +75,7 @@ export const LateInLeaveDeductions: React.FC = () => {
       weekStartDate: string;
       action: "deduct" | "ignore";
     }) => {
-      const url = API.attendance.late_deduction_action
-        .replace("{employeeId}", String(employeeId))
-        .replace("{weekStartDate}", weekStartDate);
+      const url = API.attendance.late_deduction_action(String(employeeId), weekStartDate);
 
       return await instance.post({
         url,
