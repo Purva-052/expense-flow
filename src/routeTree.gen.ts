@@ -444,7 +444,7 @@ export interface FileRoutesByFullPath {
   '/users/': typeof AuthenticatedUsersIndexRoute
   '/linode-server-dashboard/detail/$id': typeof AuthenticatedLinodeServerDashboardDetailIdRoute
   '/projects/detail/$id': typeof AuthenticatedProjectsDetailIdRoute
-  '/background-jobs/cron': typeof AuthenticatedBackgroundJobsCronIndexRoute
+  '/background-jobs/cron/': typeof AuthenticatedBackgroundJobsCronIndexRoute
 }
 export interface FileRoutesByTo {
   '/forgot-password': typeof authForgotPasswordRoute
@@ -619,7 +619,7 @@ export interface FileRouteTypes {
     | '/users/'
     | '/linode-server-dashboard/detail/$id'
     | '/projects/detail/$id'
-    | '/background-jobs/cron'
+    | '/background-jobs/cron/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/forgot-password'
@@ -1127,7 +1127,7 @@ declare module '@tanstack/react-router' {
     '/_authenticated/background-jobs/cron/': {
       id: '/_authenticated/background-jobs/cron/'
       path: '/background-jobs/cron'
-      fullPath: '/background-jobs/cron'
+      fullPath: '/background-jobs/cron/'
       preLoaderRoute: typeof AuthenticatedBackgroundJobsCronIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
