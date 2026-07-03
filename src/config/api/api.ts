@@ -387,6 +387,9 @@ const API = {
     late_deduction_action: (employeeId: string, weekStartDate: string) =>
       `/attendance/action/${employeeId}/${weekStartDate}`,
   },
+  background_jobs: {
+    cron: "/background-jobs/cron",
+  },
 };
 
 Object.freeze(API);
