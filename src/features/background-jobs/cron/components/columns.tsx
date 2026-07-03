@@ -8,7 +8,7 @@ const renderDateCell = (dateString: string | null) => {
   try {
     const d = new Date(dateString);
     const datePart = format(d, "dd/MM/yyyy");
-    const timePart = format(d, "hh:mm a");
+    const timePart = format(d, "hh:mm:ss a");
     return (
       <div className="flex flex-col">
         <span className="text-sm font-medium text-foreground">{datePart}</span>
