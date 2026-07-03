@@ -69,7 +69,7 @@ export function MobileInventoryForm({
     >
       <DialogContent className="sm:max-w-lg">
         <DialogHeader className="text-left">
-          <DialogTitle>{isEdit ? "Edit Mobile Inventory" : "Add Mobile Inventory"}</DialogTitle>
+          <DialogTitle>{isEdit ? "Edit Inventory" : "Add Inventory"}</DialogTitle>
         </DialogHeader>
 
         <div className="-mr-4 h-fit w-full overflow-y-auto py-1">
