@@ -15,7 +15,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useGetIndustryDropdownList } from "../industry/services";
 import { PRODUCT_INQUIRY_STATUS_OPTIONS } from "@/utils/constant";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import {
   ArrowLeft,
   Download,
@@ -461,228 +461,115 @@ const ProductInquiryPage = () => {
               Active Inquiries
             </TabsTrigger>
             <TabsTrigger value="inactive" className={tabTriggerClass}>
-              Inactive Inquiries
+              Archive Inquiries
             </TabsTrigger>
           </TabsList>
         </Tabs>
 
         {/* Stats Cards */}
-        {isSearchActive && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Total Inquiries Card */}
-            <Card
-              className={cn(
-                "border transition-all cursor-pointer hover:shadow-md",
-                queryParams.status === ""
-                  ? "bg-blue-50 border-blue-200 ring-2 ring-blue-100 dark:bg-blue-900/20 dark:border-blue-800 dark:ring-blue-900/30"
-                  : "border-slate-200 dark:border-slate-800"
-              )}
-              onClick={() => setQueryParams({ status: "" })}
-            >
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <span
-                    className={cn(
-                      "text-xs font-semibold uppercase tracking-wide",
-                      queryParams.status === ""
-                        ? "text-blue-700 dark:text-blue-400"
-                        : "text-slate-400"
-                    )}
-                  >
-                    Total Inquiries
-                  </span>
-                  <div
-                    className={cn(
-                      "p-2 rounded-xl",
-                      queryParams.status === ""
-                        ? "bg-blue-200 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
-                        : "bg-blue-50 text-blue-500 dark:bg-blue-900/30 dark:text-blue-400"
-                    )}
-                  >
-                    <MessageSquare size={20} />
-                  </div>
-                </div>
-                <div
-                  className={cn(
-                    "text-3xl font-bold tracking-tight",
-                    queryParams.status === ""
-                      ? "text-blue-900 dark:text-blue-100"
-                      : "text-slate-900 dark:text-slate-100"
-                  )}
-                >
-                  {loadingStats ? (
-                    <div className="h-9 w-12 bg-muted animate-pulse rounded" />
-                  ) : (
-                    (stats?.totalInquiries?.count ?? 0)
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+        {isSearchActive &&
+          (() => {
+            const statStripItems = [
+              {
+                key: "",
+                icon: MessageSquare,
+                iconBg: "bg-blue-500/10",
+                iconColor: "text-blue-600 dark:text-blue-400",
+                label: "Total Inquiries",
+                value: stats?.totalInquiries?.count ?? 0,
+                valueClass: "text-blue-600 dark:text-blue-400",
+                activeBorderColor: "border-b-blue-500",
+              },
+              {
+                key: "in_progress",
+                icon: Clock,
+                iconBg: "bg-orange-500/10",
+                iconColor: "text-orange-600 dark:text-orange-400",
+                label: "In Progress Inquiries",
+                value: stats?.inProgressInquiries?.count ?? 0,
+                valueClass: "text-orange-600 dark:text-orange-400",
+                activeBorderColor: "border-b-orange-500",
+              },
+              {
+                key: "won",
+                icon: CheckCircle2,
+                iconBg: "bg-emerald-500/10",
+                iconColor: "text-emerald-600 dark:text-emerald-400",
+                label: "Won Inquiries",
+                value: stats?.wonInquiries?.count ?? 0,
+                valueClass: "text-emerald-600 dark:text-emerald-400",
+                activeBorderColor: "border-b-emerald-500",
+              },
+              {
+                key: "lost",
+                icon: XCircle,
+                iconBg: "bg-rose-500/10",
+                iconColor: "text-rose-600 dark:text-rose-400",
+                label: "Lost Inquiries",
+                value: stats?.lostInquiries?.count ?? 0,
+                valueClass: "text-rose-600 dark:text-rose-400",
+                activeBorderColor: "border-b-rose-500",
+              },
+            ];
 
-            {/* In Progress Inquiries Card */}
-            <Card
-              className={cn(
-                "border transition-all cursor-pointer hover:shadow-md",
-                queryParams.status === "in_progress"
-                  ? "bg-orange-50 border-orange-200 ring-2 ring-orange-100 dark:bg-orange-900/20 dark:border-orange-800 dark:ring-orange-900/30"
-                  : "border-slate-200 dark:border-slate-800"
-              )}
-              onClick={() =>
-                setQueryParams({
-                  status:
-                    queryParams.status === "in_progress" ? "" : "in_progress",
-                })
-              }
-            >
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <span
-                    className={cn(
-                      "text-xs font-semibold uppercase tracking-wide",
-                      queryParams.status === "in_progress"
-                        ? "text-orange-700 dark:text-orange-400"
-                        : "text-slate-400"
-                    )}
-                  >
-                    In Progress Inquiries
-                  </span>
-                  <div
-                    className={cn(
-                      "p-2 rounded-xl",
-                      queryParams.status === "in_progress"
-                        ? "bg-orange-200 text-orange-700 dark:bg-orange-900 dark:text-orange-300"
-                        : "bg-orange-50 text-orange-500 dark:bg-orange-900/30 dark:text-orange-400"
-                    )}
-                  >
-                    <Clock size={20} />
+            return (
+              <Card className="w-full overflow-hidden border-border shadow-sm">
+                <div className="w-full overflow-x-auto">
+                  <div className="flex divide-x divide-border min-w-max">
+                    {statStripItems.map((item) => {
+                      const isActive = queryParams.status === item.key;
+                      return (
+                        <div
+                          key={item.label}
+                          role="button"
+                          tabIndex={0}
+                          onClick={() =>
+                            setQueryParams({
+                              status: isActive ? "" : item.key,
+                            })
+                          }
+                          className={cn(
+                            "flex-1 p-4 min-w-[150px] flex items-center gap-3 cursor-pointer hover:bg-muted/20 transition-colors border-b-2",
+                            isActive
+                              ? cn("bg-muted/20", item.activeBorderColor)
+                              : "border-b-transparent"
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              "p-2 rounded-lg shrink-0",
+                              item.iconBg,
+                              item.iconColor
+                            )}
+                          >
+                            <item.icon className="h-5 w-5" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+                              {item.label}
+                            </p>
+                            {loadingStats ? (
+                              <div className="mt-1 h-4 w-10 bg-muted animate-pulse rounded" />
+                            ) : (
+                              <p
+                                className={cn(
+                                  "text-sm font-bold truncate",
+                                  item.valueClass
+                                )}
+                                title={String(item.value)}
+                              >
+                                {item.value}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
-                <div
-                  className={cn(
-                    "text-3xl font-bold tracking-tight",
-                    queryParams.status === "in_progress"
-                      ? "text-orange-900 dark:text-orange-100"
-                      : "text-slate-900 dark:text-slate-100"
-                  )}
-                >
-                  {loadingStats ? (
-                    <div className="h-9 w-12 bg-muted animate-pulse rounded" />
-                  ) : (
-                    (stats?.inProgressInquiries?.count ?? 0)
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Won Inquiries Card */}
-            <Card
-              className={cn(
-                "border transition-all cursor-pointer hover:shadow-md",
-                queryParams.status === "won"
-                  ? "bg-emerald-50 border-emerald-200 ring-2 ring-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800 dark:ring-emerald-900/30"
-                  : "border-slate-200 dark:border-slate-800"
-              )}
-              onClick={() =>
-                setQueryParams({
-                  status: queryParams.status === "won" ? "" : "won",
-                })
-              }
-            >
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <span
-                    className={cn(
-                      "text-xs font-semibold uppercase tracking-wide",
-                      queryParams.status === "won"
-                        ? "text-emerald-700 dark:text-emerald-400"
-                        : "text-slate-400"
-                    )}
-                  >
-                    Won Inquiries
-                  </span>
-                  <div
-                    className={cn(
-                      "p-2 rounded-xl",
-                      queryParams.status === "won"
-                        ? "bg-emerald-200 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300"
-                        : "bg-emerald-50 text-emerald-500 dark:bg-emerald-900/30 dark:text-emerald-400"
-                    )}
-                  >
-                    <CheckCircle2 size={20} />
-                  </div>
-                </div>
-                <div
-                  className={cn(
-                    "text-3xl font-bold tracking-tight",
-                    queryParams.status === "won"
-                      ? "text-emerald-900 dark:text-emerald-100"
-                      : "text-slate-900 dark:text-slate-100"
-                  )}
-                >
-                  {loadingStats ? (
-                    <div className="h-9 w-12 bg-muted animate-pulse rounded" />
-                  ) : (
-                    (stats?.wonInquiries?.count ?? 0)
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Lost Inquiries Card */}
-            <Card
-              className={cn(
-                "border transition-all cursor-pointer hover:shadow-md",
-                queryParams.status === "lost"
-                  ? "bg-rose-50 border-rose-200 ring-2 ring-rose-100 dark:bg-rose-900/20 dark:border-rose-800 dark:ring-rose-900/30"
-                  : "border-slate-200 dark:border-slate-800"
-              )}
-              onClick={() =>
-                setQueryParams({
-                  status: queryParams.status === "lost" ? "" : "lost",
-                })
-              }
-            >
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <span
-                    className={cn(
-                      "text-xs font-semibold uppercase tracking-wide",
-                      queryParams.status === "lost"
-                        ? "text-rose-700 dark:text-rose-400"
-                        : "text-slate-400"
-                    )}
-                  >
-                    Lost Inquiries
-                  </span>
-                  <div
-                    className={cn(
-                      "p-2 rounded-xl",
-                      queryParams.status === "lost"
-                        ? "bg-rose-200 text-rose-700 dark:bg-rose-900 dark:text-rose-300"
-                        : "bg-rose-50 text-rose-500 dark:bg-rose-900/30 dark:text-rose-400"
-                    )}
-                  >
-                    <XCircle size={20} />
-                  </div>
-                </div>
-                <div
-                  className={cn(
-                    "text-3xl font-bold tracking-tight",
-                    queryParams.status === "lost"
-                      ? "text-rose-900 dark:text-rose-100"
-                      : "text-slate-900 dark:text-slate-100"
-                  )}
-                >
-                  {loadingStats ? (
-                    <div className="h-9 w-12 bg-muted animate-pulse rounded" />
-                  ) : (
-                    (stats?.lostInquiries?.count ?? 0)
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+              </Card>
+            );
+          })()}
 
         {/* Back navigation when drilled into a product */}
         {isSearchActive && (
