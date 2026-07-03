@@ -582,7 +582,7 @@ const ProductInquiryPage = () => {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <div className="min-w-[1150px] flex flex-col gap-0 border rounded-lg bg-card overflow-hidden">
+                <div className="w-full min-w-max flex flex-col gap-0 border rounded-lg bg-card overflow-hidden">
                   <div className="flex items-center gap-4 px-6 py-3 bg-muted/50 border-b text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
                     <div className="w-1 shrink-0" />
                     <div className="flex-1 min-w-[250px]">Product</div>
@@ -595,11 +595,11 @@ const ProductInquiryPage = () => {
                       Inquiry Date
                     </div>
                     <div className="w-28 shrink-0 text-center">Demo Date</div>
-                    <div className="w-26 shrink-0 text-center">
+                    <div className="w-28 shrink-0 text-center">
                       {" "}
                       Number of Users{" "}
                     </div>
-                    <div className="w-26 shrink-0 text-center">
+                    <div className="w-28 shrink-0 text-center">
                       Attending Person
                     </div>
                     <div className="w-[68px] shrink-0" />
@@ -640,7 +640,7 @@ const ProductInquiryPage = () => {
             )
           ) : (
             <div className="overflow-x-auto">
-              <div className="min-w-[1150px] flex flex-col gap-0 border rounded-lg bg-card overflow-hidden">
+              <div className="w-full min-w-max flex flex-col gap-0 border rounded-lg bg-card overflow-hidden">
                 {/* List Header */}
                 <div className="flex items-center gap-4 px-6 py-3 bg-muted/50 border-b text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
                   <div className="w-1 shrink-0" />
@@ -652,11 +652,11 @@ const ProductInquiryPage = () => {
                   </div>
                   <div className="w-28 shrink-0 text-center">Inquiry Date</div>
                   <div className="w-28 shrink-0 text-center">Demo Date</div>
-                  <div className="w-26 shrink-0 text-center">
+                  <div className="w-28 shrink-0 text-center">
                     {" "}
                     Number of Users{" "}
                   </div>
-                  <div className="w-26 shrink-0 text-center">
+                  <div className="w-28 shrink-0 text-center">
                     Attending Person
                   </div>
                   {isSearchActive && (
@@ -697,7 +697,7 @@ const ProductInquiryPage = () => {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <div className="min-w-[1150px] flex flex-col gap-0">
+                <div className="w-full min-w-max flex flex-col gap-0">
                   {Array.from({ length: 3 }).map((_, i) => (
                     <ProjectCardSkeleton
                       key={`load-more-skeleton-${i}`}
