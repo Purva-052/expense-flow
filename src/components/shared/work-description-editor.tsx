@@ -3,6 +3,7 @@ import { TiptapEditor } from "@/components/shared/tiptap-editor";
 interface WorkDescriptionEditorProps {
   value: string;
   onChange: (data: string) => void;
+  onBlur?: (data: string) => void;
   placeholder?: string;
   className?: string;
   disabled?: boolean;
@@ -11,6 +12,7 @@ interface WorkDescriptionEditorProps {
 export const WorkDescriptionEditor = ({
   value,
   onChange,
+  onBlur,
   placeholder = "Type your description here...",
   className,
   disabled = false,
@@ -19,6 +21,7 @@ export const WorkDescriptionEditor = ({
     <TiptapEditor
       value={value}
       onChange={onChange}
+      onBlur={onBlur}
       placeholder={placeholder}
       hideToolbarWhenDisabled
       className={className}

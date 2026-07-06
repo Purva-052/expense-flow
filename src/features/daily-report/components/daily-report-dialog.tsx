@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { correctSpellingInHtml } from "@/utils/spell-corrector";
 import {
   Dialog,
   DialogContent,
@@ -267,13 +268,16 @@ export function DailyReportDialog({
       !!watchMilestoneId
     );
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     const yyyy = values.reportingDate.getFullYear();
     const mm = String(values.reportingDate.getMonth() + 1).padStart(2, "0");
     const dd = String(values.reportingDate.getDate()).padStart(2, "0");
     const dateString = `${yyyy}-${mm}-${dd}`;
 
     const timeSpent = `${values.hours}h${values.minutes}m`;
+
+    const correctedDescription = await correctSpellingInHtml(values.taskDescription);
+    form.setValue("taskDescription", correctedDescription, { shouldValidate: true });
 
     const payload = {
       employeeId: isEdit
@@ -283,7 +287,7 @@ export function DailyReportDialog({
       projectId: Number(values.projectId) || 0,
       projectMilestoneId: Number(values.milestoneId) || 0,
       taskId: Number(values.taskId) || 0,
-      taskDescription: values.taskDescription,
+      taskDescription: correctedDescription,
       timeSpent: timeSpent,
       remark: values.remark,
     };
@@ -500,6 +504,12 @@ export function DailyReportDialog({
                                 placeholder="What did you work on?"
                                 value={field.value}
                                 onChange={field.onChange}
+                                onBlur={async (val) => {
+                                  const corrected = await correctSpellingInHtml(val);
+                                  if (corrected !== val) {
+                                    field.onChange(corrected);
+                                  }
+                                }}
                               />
                             </FormControl>
                             <FormMessage />
