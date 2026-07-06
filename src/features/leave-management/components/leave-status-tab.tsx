@@ -262,10 +262,6 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
         link.click();
         link.remove();
         window.URL.revokeObjectURL(url);
-        toast.success("Leave summary exported successfully.");
-      },
-      onError: (error: any) => {
-        toast.error(error.message || "Failed to generate leave summary file");
       },
     });
   };
@@ -441,10 +437,12 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
               });
             }}
           />
-          <Button type="button" variant="outline" onClick={handleExportCSV} className="shrink-0">
-            <Download className="h-4 w-4 mr-2" />
-            {exportLoading ? "Exporting..." : "Export CSV"}
-          </Button>
+          {isAdmin && (
+            <Button type="button" variant="default" onClick={handleExportCSV} className="shrink-0 bg-gradient-primary text-primary-foreground hover:bg-primary/80 shadow-xs">
+              <Download className="h-4 w-4 mr-2" />
+              {exportLoading ? "Exporting..." : "Export CSV"}
+            </Button>
+          )}
         </div>
       </div>
 
