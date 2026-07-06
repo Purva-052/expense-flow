@@ -49,38 +49,59 @@ const statusLabelMap = TransactionTypeStatus.reduce(
 );
 
 // Transaction type styling maps
-const transactionTypeStyleMap: Record<string, string> = {
-  onetime:
-    "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800/30",
-  subscription:
-    "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800/30",
-};
+// const transactionTypeStyleMap: Record<string, string> = {
+//   onetime:
+//     "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800/30",
+//   subscription:
+//     "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800/30",
+// };
 
-const transactionTypeLabelMap: Record<string, string> = {
-  onetime: "One Time",
-  subscription: "Subscription",
-};
+// const transactionTypeLabelMap: Record<string, string> = {
+//   onetime: "One Time",
+//   subscription: "Subscription",
+// };
 
-// Subscription cycle styling maps
-const subscriptionCycleStyleMap: Record<string, string> = {
-  monthly:
-    "bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-300 dark:border-cyan-800/30",
-  yearly:
-    "bg-pink-50 text-pink-700 border-pink-200 dark:bg-pink-900/20 dark:text-pink-300 dark:border-pink-800/30",
-};
+// // Subscription cycle styling maps
+// const subscriptionCycleStyleMap: Record<string, string> = {
+//   monthly:
+//     "bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-300 dark:border-cyan-800/30",
+//   yearly:
+//     "bg-pink-50 text-pink-700 border-pink-200 dark:bg-pink-900/20 dark:text-pink-300 dark:border-pink-800/30",
+// };
 
-const subscriptionCycleLabelMap: Record<string, string> = {
-  monthly: "Monthly",
-  yearly: "Yearly",
-};
+// const subscriptionCycleLabelMap: Record<string, string> = {
+//   monthly: "Monthly",
+//   yearly: "Yearly",
+// };
 
 export const columns: ColumnDef<any>[] = [
+  {
+    accessorKey: "transactionId",
+    header: "Transaction ID",
+    cell: ({ row }) => {
+      const id = row.original.transactionId;
+      return <span className="text-sm">{id ? id : "-"}</span>;
+    },
+    enableSorting: true,
+  },
+
   {
     accessorKey: "Created By",
     header: "User",
     cell: ({ row }) => {
       const createdBy = row.original.user?.name;
       return <span className="text-sm">{createdBy ? createdBy : "-"}</span>;
+    },
+    enableSorting: false,
+  },
+  {
+    accessorKey: "currency",
+    header: "Currency",
+    cell: ({ row }) => {
+      const currency = row.original.currency;
+      return (
+        <span className="text-sm uppercase">{currency ? currency : "-"}</span>
+      );
     },
     enableSorting: false,
   },
@@ -103,17 +124,7 @@ export const columns: ColumnDef<any>[] = [
     },
     enableSorting: false,
   },
-  {
-    accessorKey: "currency",
-    header: "Currency",
-    cell: ({ row }) => {
-      const currency = row.original.currency;
-      return (
-        <span className="text-sm uppercase">{currency ? currency : "-"}</span>
-      );
-    },
-    enableSorting: false,
-  },
+
   {
     accessorKey: "reason",
     header: "Reason",
@@ -171,50 +182,50 @@ export const columns: ColumnDef<any>[] = [
     },
     enableSorting: false,
   },
-  {
-    accessorKey: "transactionType",
-    header: "Transaction Type",
-    cell: ({ row }) => {
-      const transactionType = row.original.transactionType;
-      if (!transactionType) return <span className="text-sm">-</span>;
+  // {
+  //   accessorKey: "transactionType",
+  //   header: "Transaction Type",
+  //   cell: ({ row }) => {
+  //     const transactionType = row.original.transactionType;
+  //     if (!transactionType) return <span className="text-sm">-</span>;
 
-      const label =
-        transactionTypeLabelMap[transactionType] ||
-        transactionType.charAt(0).toUpperCase() + transactionType.slice(1);
-      const customClass =
-        transactionTypeStyleMap[transactionType] ||
-        "bg-muted text-muted-foreground";
+  //     const label =
+  //       transactionTypeLabelMap[transactionType] ||
+  //       transactionType.charAt(0).toUpperCase() + transactionType.slice(1);
+  //     const customClass =
+  //       transactionTypeStyleMap[transactionType] ||
+  //       "bg-muted text-muted-foreground";
 
-      return (
-        <Badge variant="outline" className={customClass}>
-          {label}
-        </Badge>
-      );
-    },
-    enableSorting: false,
-  },
-  {
-    accessorKey: "subscriptionCycle",
-    header: "Subscription Cycle",
-    cell: ({ row }) => {
-      const subscriptionCycle = row.original.subscriptionCycle;
-      if (!subscriptionCycle) return <span className="text-sm">-</span>;
+  //     return (
+  //       <Badge variant="outline" className={customClass}>
+  //         {label}
+  //       </Badge>
+  //     );
+  //   },
+  //   enableSorting: false,
+  // },
+  // {
+  //   accessorKey: "subscriptionCycle",
+  //   header: "Subscription Cycle",
+  //   cell: ({ row }) => {
+  //     const subscriptionCycle = row.original.subscriptionCycle;
+  //     if (!subscriptionCycle) return <span className="text-sm">-</span>;
 
-      const label =
-        subscriptionCycleLabelMap[subscriptionCycle] ||
-        subscriptionCycle.charAt(0).toUpperCase() + subscriptionCycle.slice(1);
-      const customClass =
-        subscriptionCycleStyleMap[subscriptionCycle] ||
-        "bg-muted text-muted-foreground";
+  //     const label =
+  //       subscriptionCycleLabelMap[subscriptionCycle] ||
+  //       subscriptionCycle.charAt(0).toUpperCase() + subscriptionCycle.slice(1);
+  //     const customClass =
+  //       subscriptionCycleStyleMap[subscriptionCycle] ||
+  //       "bg-muted text-muted-foreground";
 
-      return (
-        <Badge variant="outline" className={customClass}>
-          {label}
-        </Badge>
-      );
-    },
-    enableSorting: false,
-  },
+  //     return (
+  //       <Badge variant="outline" className={customClass}>
+  //         {label}
+  //       </Badge>
+  //     );
+  //   },
+  //   enableSorting: false,
+  // },
   // {
   //   accessorKey: "cardLast4",
   //   header: "Card Last 4 Digits",
@@ -315,9 +326,7 @@ export const columns: ColumnDef<any>[] = [
         (isPMorTL && isCreator);
 
       const canDelete =
-        isAdmin ||
-        roleName === roles.PROJECT_MANAGER ||
-        isAccountPerson;
+        isAdmin || roleName === roles.PROJECT_MANAGER || isAccountPerson;
 
       const canAcceptReject =
         [2, 126].includes(Number(user?.user?.id || user?.user_id)) &&
