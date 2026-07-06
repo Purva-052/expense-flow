@@ -604,21 +604,21 @@ const ProjectPage = ({
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-4">
       {/* {!isBdeView && ( */}
-      <div className="flex flex-wrap items-start gap-3 mt-4">
-        <div className="flex-1 min-w-0">
+      <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-start gap-3 mt-4 w-full">
+        <div className="w-full sm:flex-1 min-w-0">
           <GlobalFilterSection filters={filters ?? []} className="" />
         </div>
         <Tabs
           value={view}
           onValueChange={(v: any) => setView(v)}
-          className="flex-none"
+          className="w-full sm:w-auto flex-none"
         >
-          <TabsList className="bg-rose-50 dark:bg-muted rounded-full h-9 border border-rose-100/50 dark:border-white/10">
+          <TabsList className="bg-rose-50 dark:bg-muted rounded-full h-9 border border-rose-100/50 dark:border-white/10 w-full sm:w-auto flex">
             <TabsTrigger
               value="grid"
               className={cn(
                 tabTriggerClass,
-                "gap-2 px-3 h-8 text-xs font-medium transition-all",
+                "gap-2 px-3 h-8 text-xs font-medium transition-all flex-1 sm:flex-initial justify-center",
                 view === "grid" && "bg-background text-foreground shadow-sm"
               )}
             >
@@ -629,7 +629,7 @@ const ProjectPage = ({
               value="list"
               className={cn(
                 tabTriggerClass,
-                "gap-2 px-3 h-8 text-xs font-medium transition-all",
+                "gap-2 px-3 h-8 text-xs font-medium transition-all flex-1 sm:flex-initial justify-center",
                 view === "list" && "bg-background text-foreground shadow-sm"
               )}
             >
