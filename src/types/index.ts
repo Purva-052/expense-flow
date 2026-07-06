@@ -10,6 +10,7 @@ export interface ErrorResponse {
   message?: string;
   error?: string;
   errors?: string[] | Record<string, string[]>;
+  messages?: string[];
   statusCode?: number;
   code?: string;
 }
