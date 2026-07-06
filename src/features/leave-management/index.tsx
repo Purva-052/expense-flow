@@ -15,7 +15,13 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { useLocation } from "@tanstack/react-router";
 import { roles } from "@/utils/constant";
-import { LayoutDashboard, FileText, History, Users } from "lucide-react";
+import {
+  LayoutDashboard,
+  FileText,
+  History,
+  Users,
+  UserPlus,
+} from "lucide-react";
 import { LeaveDashboardTab } from "./components/leave-dashboard-tab";
 import { AdjustBalanceModal } from "./components/adjust-balance-modal";
 import { SetAllocationsModal } from "./components/set-allocations-modal";
@@ -23,6 +29,7 @@ import { useGetUserDropdownList } from "@/features/users/services";
 import { LeaveStatusTab } from "./components/leave-status-tab";
 import { BalanceLogsTab } from "./components/balance-logs-tab";
 import { EmployeeBalanceTab } from "./components/employee-balance-tab";
+import { AbsentEmployeesTab } from "./components/absent-employees-tab";
 
 const tabTriggerClass =
   "flex items-center gap-2 rounded-[50px] !px-3 !py-2 transition-all h-[35px] " +
@@ -69,9 +76,11 @@ const LeaveManagementPage = () => {
         ? "balance-logs"
         : queryParams.section === "employee-wise-leave"
           ? "employee-wise-leave"
-          : canViewDashboard
-            ? "dashboard"
-            : "leaves";
+          : queryParams.section === "absent-employees"
+            ? "absent-employees"
+            : canViewDashboard
+              ? "dashboard"
+              : "leaves";
 
   // Fetch employee dropdown list (needed for AdjustBalanceModal and stats)
   const { data: employeeList, isPending: usersListLoading } =
@@ -333,13 +342,22 @@ const LeaveManagementPage = () => {
                   Balance Logs
                 </TabsTrigger>
                 {isAdmin && (
-                  <TabsTrigger
-                    value="employee-wise-leave"
-                    className={tabTriggerClass}
-                  >
-                    <Users className="h-4 w-4" />
-                    Employee Balance
-                  </TabsTrigger>
+                  <>
+                    <TabsTrigger
+                      value="employee-wise-leave"
+                      className={tabTriggerClass}
+                    >
+                      <Users className="h-4 w-4" />
+                      Employee Balance
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="absent-employees"
+                      className={tabTriggerClass}
+                    >
+                      <UserPlus className="h-4 w-4" />
+                      Absent Employees
+                    </TabsTrigger>
+                  </>
                 )}
               </TabsList>
 
@@ -378,12 +396,22 @@ const LeaveManagementPage = () => {
               </TabsContent>
 
               {isAdmin && (
-                <TabsContent
-                  value="employee-wise-leave"
-                  className="mt-0 focus-visible:outline-none"
-                >
-                  <EmployeeBalanceTab onAdjustClick={handleOpenAdjustBalance} />
-                </TabsContent>
+                <>
+                  <TabsContent
+                    value="employee-wise-leave"
+                    className="mt-0 focus-visible:outline-none"
+                  >
+                    <EmployeeBalanceTab
+                      onAdjustClick={handleOpenAdjustBalance}
+                    />
+                  </TabsContent>
+                  <TabsContent
+                    value="absent-employees"
+                    className="mt-0 focus-visible:outline-none"
+                  >
+                    <AbsentEmployeesTab />
+                  </TabsContent>
+                </>
               )}
             </Tabs>
           </div>
