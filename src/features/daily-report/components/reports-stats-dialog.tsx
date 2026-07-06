@@ -572,12 +572,6 @@ export function ReportsStatsDialog({
             },
           ];
 
-  // Each row is ~53px tall, header ~45px, pagination ~52px
-  const ROW_HEIGHT = 53;
-  const HEADER_HEIGHT = 45;
-  const PAGINATION_HEIGHT = 52;
-  const tableMinHeight =
-    HEADER_HEIGHT + ROW_HEIGHT * listParams.pageSize + PAGINATION_HEIGHT;
   const totalCount = (listData as any)?.metadata?.totalCount;
 
   return (
@@ -591,7 +585,7 @@ export function ReportsStatsDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 pt-4 flex-1 overflow-hidden flex flex-col">
+        <div className="space-y-4 pt-4 flex-1 overflow-y-auto flex flex-col">
           {filters.length > 0 && (
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 w-full">
               <div className="w-full sm:flex-1">
@@ -712,7 +706,7 @@ export function ReportsStatsDialog({
               )}
             </div>
           ) : (
-            <div style={{ minHeight: tableMinHeight }}>
+            <div className="w-full">
               <GlobalTable<any>
                 pageSize={listParams.pageSize}
                 currentPage={listParams.currentPage}

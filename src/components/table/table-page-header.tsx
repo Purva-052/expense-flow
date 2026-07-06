@@ -24,7 +24,7 @@ const TablePageHeader = ({
   actions,
 }: Readonly<TablePageHeaderProps>) => {
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-4 w-full">
+    <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-4 w-full sm:w-auto">
       {(title || children) && (
         <div className="text-center sm:text-left">
           {title && <PageTitle>{title}</PageTitle>}
