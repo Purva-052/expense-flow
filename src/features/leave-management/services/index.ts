@@ -23,6 +23,10 @@ const leaveRefetchQueries = [
   API.leave_balance.allocations,
 ];
 
+export const useGetTLEmployees = (params?: any, enabled?: boolean) => {
+  return useFetchData({ url: API.leave_management.employee, params, enabled });
+};
+
 export const useCreateLeaveData = () => {
   const { setOpen } = useLeaveStore();
   return usePostData({
