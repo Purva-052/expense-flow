@@ -391,6 +391,12 @@ const API = {
   background_jobs: {
     cron: "/background-jobs/cron",
   },
+  hr_policy: {
+    list: "/hr-policy",
+    create: "/hr-policy",
+    update: "/hr-policy",
+    delete: "/hr-policy",
+  },
 };
 
 Object.freeze(API);
