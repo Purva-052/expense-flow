@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { AlarmClockPlus, CalendarIcon, Loader2 } from "lucide-react";
+import { correctSpellingInHtml } from "@/utils/spell-corrector";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { Button } from "@/components/ui/button";
 import {
@@ -118,7 +119,7 @@ export const AddHoursLogDialog = ({
   const [minutes, setMinutes] = useState("0");
   const [description, setDescription] = useState("");
   const [hasTriedSave, setHasTriedSave] = useState(false);
-  const { mutate: updateMilestone } = useUpdateMileStone();
+  const { mutate: updateMileStone } = useUpdateMileStone();
 
   useEffect(() => {
     if (open) {
@@ -153,7 +154,7 @@ export const AddHoursLogDialog = ({
   const { mutate: createReport, isPending: isCreating } = useCreateDailyReport(
     () => {
       if (milestoneStatus === "pending" && milestoneId) {
-        updateMilestone({
+        updateMileStone({
           id: milestoneId,
           data: { status: "in_progress", projectId: Number(projectId) },
         });
@@ -180,16 +181,19 @@ export const AddHoursLogDialog = ({
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setHasTriedSave(true);
 
     if (!isDescriptionValid || (hours === "0" && minutes === "0")) {
       return;
     }
 
+    const correctedDescription = await correctSpellingInHtml(description);
+    setDescription(correctedDescription);
+
     if (reportId) {
       updateReport({
-        taskDescription: description,
+        taskDescription: correctedDescription,
         timeSpent: `${hours}h${minutes}m`,
       });
     } else {
@@ -199,7 +203,7 @@ export const AddHoursLogDialog = ({
         projectId: Number(projectId),
         projectMilestoneId: Number(milestoneId),
         taskId: Number(taskId),
-        taskDescription: description,
+        taskDescription: correctedDescription,
         timeSpent: `${hours}h${minutes}m`,
       };
       createReport(payload);
@@ -316,6 +320,12 @@ export const AddHoursLogDialog = ({
               placeholder="What did you work on?"
               value={description}
               onChange={setDescription}
+              onBlur={async (val) => {
+                const corrected = await correctSpellingInHtml(val);
+                if (corrected !== val) {
+                  setDescription(corrected);
+                }
+              }}
             />
             {descriptionError && (
               <p className="text-sm text-destructive">{descriptionError}</p>

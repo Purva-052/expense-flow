@@ -41,6 +41,7 @@ export type ToolbarFeature =
 interface TiptapEditorProps {
   value: string;
   onChange: (data: string) => void;
+  onBlur?: (data: string) => void;
   placeholder?: string;
   className?: string;
   disabled?: boolean;
@@ -64,6 +65,7 @@ const DEFAULT_TOOLBAR: ToolbarFeature[] = [
 export const TiptapEditor = ({
   value,
   onChange,
+  onBlur,
   placeholder = "Type here...",
   className,
   disabled = false,
@@ -120,6 +122,9 @@ export const TiptapEditor = ({
     content: value,
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
+    },
+    onBlur: ({ editor }) => {
+      onBlur?.(editor.getHTML());
     },
     editorProps: {
       attributes: {
