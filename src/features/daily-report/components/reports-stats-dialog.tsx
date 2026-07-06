@@ -582,7 +582,7 @@ export function ReportsStatsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] sm:w-[85vw] md:w-[75vw] lg:w-[60vw] max-h-[90vh] flex flex-col">
+      <DialogContent className="w-[95vw] sm:w-[85vw] md:w-[75vw] lg:w-[60vw] max-w-none sm:max-w-none max-h-[90vh] flex flex-col">
         <DialogHeader className="flex flex-row items-center justify-between">
           <DialogTitle className="capitalize">
             {currentType === "holiday"
