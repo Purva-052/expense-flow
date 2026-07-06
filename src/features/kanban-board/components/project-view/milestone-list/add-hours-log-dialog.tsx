@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { AlarmClockPlus, CalendarIcon, Loader2 } from "lucide-react";
-import { correctSpellingInHtml } from "@/utils/spell-corrector";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { Button } from "@/components/ui/button";
 import {
@@ -188,12 +187,9 @@ export const AddHoursLogDialog = ({
       return;
     }
 
-    const correctedDescription = await correctSpellingInHtml(description);
-    setDescription(correctedDescription);
-
     if (reportId) {
       updateReport({
-        taskDescription: correctedDescription,
+        taskDescription: description,
         timeSpent: `${hours}h${minutes}m`,
       });
     } else {
@@ -203,7 +199,7 @@ export const AddHoursLogDialog = ({
         projectId: Number(projectId),
         projectMilestoneId: Number(milestoneId),
         taskId: Number(taskId),
-        taskDescription: correctedDescription,
+        taskDescription: description,
         timeSpent: `${hours}h${minutes}m`,
       };
       createReport(payload);
@@ -320,17 +316,12 @@ export const AddHoursLogDialog = ({
               placeholder="What did you work on?"
               value={description}
               onChange={setDescription}
-              onBlur={async (val) => {
-                const corrected = await correctSpellingInHtml(val);
-                if (corrected !== val) {
-                  setDescription(corrected);
-                }
-              }}
             />
             {descriptionError && (
               <p className="text-sm text-destructive">{descriptionError}</p>
             )}
           </div>
+
 
           <div className="flex justify-end gap-3 mt-2">
             <Button
