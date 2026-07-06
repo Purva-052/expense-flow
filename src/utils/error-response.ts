@@ -46,7 +46,7 @@ export const extractErrorInfo = (error: EnhancedError) => {
 
             case 500:
                 title = "Server Error";
-                description = "Our servers are experiencing issues. Please try again later";
+                description = getValidationMessage(responseData) ?? "Our servers are experiencing issues. Please try again later";
                 duration = 8000;
                 break;
 
@@ -115,6 +115,12 @@ const getValidationMessage = (responseData?: ErrorResponse): string | null => {
         } else if (typeof responseData.errors === "object") {
             const messages = Object.values(responseData.errors).flat();
             return messages.join(", ");
+        }
+    }
+
+    if (responseData.messages) {
+        if (Array.isArray(responseData.messages)) {
+            return responseData.messages.join(", ");
         }
     }
 
