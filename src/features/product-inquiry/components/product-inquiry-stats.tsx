@@ -36,7 +36,6 @@ export const ProductInquiryStats: React.FC<ProductInquiryStatsProps> = ({
       label: "Total Inquiries",
       value: totalInquiries,
       valueClass: "text-blue-600 dark:text-blue-400",
-      activeBorderColor: "border-b-blue-500",
     },
     {
       key: "in_progress",
@@ -46,7 +45,6 @@ export const ProductInquiryStats: React.FC<ProductInquiryStatsProps> = ({
       label: "In Progress Inquiries",
       value: inProgressCount,
       valueClass: "text-orange-600 dark:text-orange-400",
-      activeBorderColor: "border-b-orange-500",
     },
     {
       key: "won",
@@ -56,7 +54,6 @@ export const ProductInquiryStats: React.FC<ProductInquiryStatsProps> = ({
       label: "Won Inquiries",
       value: wonCount,
       valueClass: "text-emerald-600 dark:text-emerald-400",
-      activeBorderColor: "border-b-emerald-500",
     },
     {
       key: "lost",
@@ -66,7 +63,6 @@ export const ProductInquiryStats: React.FC<ProductInquiryStatsProps> = ({
       label: "Lost Inquiries",
       value: lostCount,
       valueClass: "text-rose-600 dark:text-rose-400",
-      activeBorderColor: "border-b-rose-500",
     },
   ];
 
@@ -86,39 +82,44 @@ export const ProductInquiryStats: React.FC<ProductInquiryStatsProps> = ({
                     onStatusClick(isActive ? "" : item.key);
                   }
                 }}
-                className={cn(
-                  "flex-1 p-4 min-w-[150px] flex items-center gap-3 hover:bg-muted/20 transition-colors border-b-2 cursor-pointer",
-                  isActive
-                    ? cn("bg-muted/20", item.activeBorderColor)
-                    : "border-b-transparent"
-                )}
+                className="flex-1 min-w-[150px] p-2 cursor-pointer"
               >
-                <div
-                  className={cn(
-                    "p-2 rounded-lg shrink-0",
-                    item.iconBg,
-                    item.iconColor
-                  )}
-                >
-                  <item.icon className="h-5 w-5" />
-                </div>
-                <div className="min-w-0 flex flex-col justify-center">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
-                    {item.label}
-                  </p>
-                  {loadingStats ? (
-                    <div className="mt-1 h-4 w-10 bg-muted animate-pulse rounded" />
-                  ) : (
+                <div className="h-full flex items-center gap-3 rounded-xl p-3 transition-colors hover:bg-muted/40">
+                  <div
+                    className={cn(
+                      "p-2 rounded-lg shrink-0",
+                      item.iconBg,
+                      item.iconColor
+                    )}
+                  >
+                    <item.icon className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0 flex flex-col justify-center">
                     <p
                       className={cn(
-                        "text-sm font-bold truncate",
-                        item.valueClass
+                        "text-xs uppercase tracking-wider transition-colors",
+                        isActive
+                          ? cn(item.valueClass, "font-extrabold")
+                          : "text-muted-foreground font-bold"
                       )}
-                      title={String(item.value)}
                     >
-                      {item.value}
+                      {item.label}
                     </p>
-                  )}
+                    {loadingStats ? (
+                      <div className="mt-1 h-5 w-12 bg-muted animate-pulse rounded" />
+                    ) : (
+                      <p
+                        className={cn(
+                          "text-lg truncate",
+                          item.valueClass,
+                          isActive ? "font-extrabold" : "font-bold"
+                        )}
+                        title={String(item.value)}
+                      >
+                        {item.value}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             );

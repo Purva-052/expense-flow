@@ -333,25 +333,30 @@ const ProductInquiryPage = () => {
     // Status & Date Range filters: always shown when on Archive tab, or when drilled into a product on Active tab
     ...(isSearchActive || activeTab === "inactive"
       ? [
-        {
-          type: "select" as const,
-          key: "status",
-          placeholder: "Filter by status",
-          value: queryParams.status || undefined,
-          onChange: handleStatusFilter,
-          options:
-            activeTab === "active"
-              ? [
-                { value: "in_progress", label: "In Progress" },
-                ...PRODUCT_INQUIRY_STATUS_OPTIONS,
-              ]
-              : PRODUCT_INQUIRY_STATUS_OPTIONS.filter(
-                (opt) =>
-                  opt.value === "lost" ||
-                  opt.value === "won" ||
-                  opt.value === "unqualified_lead"
-              ),
-        },
+        // Hide the status filter when the Won / Lost stat cards are selected
+        ...(queryParams.status === "won" || queryParams.status === "lost"
+          ? []
+          : [
+            {
+              type: "select" as const,
+              key: "status",
+              placeholder: "Filter by status",
+              value: queryParams.status || undefined,
+              onChange: handleStatusFilter,
+              options:
+                activeTab === "active"
+                  ? [
+                    { value: "in_progress", label: "In Progress" },
+                    ...PRODUCT_INQUIRY_STATUS_OPTIONS,
+                  ]
+                  : PRODUCT_INQUIRY_STATUS_OPTIONS.filter(
+                    (opt) =>
+                      opt.value === "lost" ||
+                      opt.value === "won" ||
+                      opt.value === "unqualified_lead"
+                  ),
+            },
+          ]),
         {
           type: "dateRange" as const,
           key: "dateRange",
