@@ -253,16 +253,45 @@ export function GlobalTable<TData>({
 
       {/* Pagination */}
       {isPaginationEnabled && (totalCount ?? 0) > 0 && (
-        <div className="flex flex-wrap flex-col gap-y-2 sm:flex-row sm:items-center sm:justify-between w-full">
-          <div className="text-sm text-muted-foreground">
-            Total <span className="font-medium">{totalCount}</span> records
+        <div className="flex flex-col gap-y-3 sm:flex-row sm:items-center sm:justify-between w-full">
+          {/* Left side: Total records on the left, select box on the right on mobile */}
+          <div className="flex items-center justify-between w-full sm:w-auto">
+            <div className="text-sm text-muted-foreground">
+              Total <span className="font-medium">{totalCount}</span> records
+            </div>
+
+            {/* Mobile-only rows per page selector */}
+            <div className="sm:hidden">
+              <Select
+                value={`${table.getState().pagination.pageSize}`}
+                onValueChange={(value) => {
+                  table.setPageSize(Number(value));
+                }}
+              >
+                <SelectTrigger className="h-8 w-[70px]">
+                  <SelectValue
+                    placeholder={table.getState().pagination.pageSize}
+                  />
+                </SelectTrigger>
+                <SelectContent side="top">
+                  {[10, 20, 30, 40, 50].map((pageSizeOption) => (
+                    <SelectItem
+                      key={pageSizeOption}
+                      value={`${pageSizeOption}`}
+                    >
+                      {pageSizeOption}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div className="flex flex-wrap gap-2 items-center">
-            <div className="flex items-center gap-2">
-              <p className="hidden text-sm font-medium sm:block">
-                Rows per page
-              </p>
+          {/* Right side controls */}
+          <div className="flex items-center w-full sm:w-auto">
+            {/* Desktop-only rows per page selector */}
+            <div className="hidden sm:flex items-center gap-2 mr-2">
+              <p className="text-sm font-medium">Rows per page</p>
               <Select
                 value={`${table.getState().pagination.pageSize}`}
                 onValueChange={(value) => {
@@ -287,7 +316,7 @@ export function GlobalTable<TData>({
               </Select>
             </div>
 
-            <div className="hidden sm:flex items-center text-sm text-muted-foreground">
+            <div className="hidden sm:flex items-center text-sm text-muted-foreground mr-4">
               Page{" "}
               <span className="ml-1 font-medium">
                 {table.getState().pagination.pageIndex + 1}
@@ -296,10 +325,11 @@ export function GlobalTable<TData>({
               <span className="ml-1 font-medium">{table.getPageCount()}</span>
             </div>
 
-            <div className="flex items-center gap-1">
+            {/* Navigation buttons: spans the whole row on mobile, compact on desktop */}
+            <div className="grid grid-cols-4 gap-2 w-full sm:flex sm:items-center sm:gap-1 sm:w-auto sm:ml-0">
               <Button
                 variant="outline"
-                className="h-8 w-8 p-0"
+                className="h-8 w-full sm:w-8 p-0"
                 onClick={() => table.setPageIndex(0)}
                 disabled={!table.getCanPreviousPage()}
               >
@@ -307,7 +337,7 @@ export function GlobalTable<TData>({
               </Button>
               <Button
                 variant="outline"
-                className="h-8 w-8 p-0"
+                className="h-8 w-full sm:w-8 p-0"
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
               >
@@ -315,7 +345,7 @@ export function GlobalTable<TData>({
               </Button>
               <Button
                 variant="outline"
-                className="h-8 w-8 p-0"
+                className="h-8 w-full sm:w-8 p-0"
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
               >
@@ -323,7 +353,7 @@ export function GlobalTable<TData>({
               </Button>
               <Button
                 variant="outline"
-                className="h-8 w-8 p-0"
+                className="h-8 w-full sm:w-8 p-0"
                 onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                 disabled={!table.getCanNextPage()}
               >
