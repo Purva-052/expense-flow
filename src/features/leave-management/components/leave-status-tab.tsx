@@ -22,7 +22,6 @@ import { SortingState } from "@tanstack/react-table";
 import { endOfMonth, format, startOfMonth } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
-import { toast } from "sonner";
 import { MonthYearPicker } from "@/features/attendance/components/month-year-picker";
 
 interface LeaveStatusTabProps {
@@ -288,25 +287,25 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
     },
     ...(canViewManagerTabs
       ? [
-          {
-            type: "select" as const,
-            key: "employeeId",
-            placeholder: "Filter by employee",
-            options: employeeList?.data?.map((emp: any) => ({
-              value: emp.id,
-              label: emp.fullName,
-            })),
-            value: listParams.employeeId?.toString(),
-            onChange: (value: any) => {
-              setQueryParams({
-                ...listParams,
-                employeeId: value ? Number(value) : null,
-                currentPage: 1,
-              });
-            },
-            isLoading: usersListLoading,
+        {
+          type: "select" as const,
+          key: "employeeId",
+          placeholder: "Filter by employee",
+          options: employeeList?.data?.map((emp: any) => ({
+            value: emp.id,
+            label: emp.fullName,
+          })),
+          value: listParams.employeeId?.toString(),
+          onChange: (value: any) => {
+            setQueryParams({
+              ...listParams,
+              employeeId: value ? Number(value) : null,
+              currentPage: 1,
+            });
           },
-        ]
+          isLoading: usersListLoading,
+        },
+      ]
       : []),
     {
       type: "select" as const,
@@ -405,11 +404,10 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
             <button
               key={tab}
               onClick={() => handleStatusTabChange(tab)}
-              className={`px-4 py-2 text-sm font-semibold capitalize transition-all border-b-2 -mb-[1px] ${
-                queryParams.tab === tab
+              className={`px-4 py-2 text-sm font-semibold capitalize transition-all border-b-2 -mb-[1px] ${queryParams.tab === tab
                   ? "border-rose-500 text-rose-500"
                   : "border-transparent text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
-              }`}
+                }`}
             >
               {tab}
             </button>
