@@ -5,7 +5,6 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { correctSpellingInHtml } from "@/utils/spell-corrector";
 import {
   Dialog,
   DialogContent,
@@ -276,9 +275,6 @@ export function DailyReportDialog({
 
     const timeSpent = `${values.hours}h${values.minutes}m`;
 
-    const correctedDescription = await correctSpellingInHtml(values.taskDescription);
-    form.setValue("taskDescription", correctedDescription, { shouldValidate: true });
-
     const payload = {
       employeeId: isEdit
         ? Number(values.employeeName) || 0
@@ -287,7 +283,7 @@ export function DailyReportDialog({
       projectId: Number(values.projectId) || 0,
       projectMilestoneId: Number(values.milestoneId) || 0,
       taskId: Number(values.taskId) || 0,
-      taskDescription: correctedDescription,
+      taskDescription: values.taskDescription,
       timeSpent: timeSpent,
       remark: values.remark,
     };
@@ -298,6 +294,7 @@ export function DailyReportDialog({
       createReport(payload);
     }
   };
+
 
   const isLoading = isEdit && isReportLoading;
   const isSubmitting = isUpdating || isCreating;
@@ -504,12 +501,6 @@ export function DailyReportDialog({
                                 placeholder="What did you work on?"
                                 value={field.value}
                                 onChange={field.onChange}
-                                onBlur={async (val) => {
-                                  const corrected = await correctSpellingInHtml(val);
-                                  if (corrected !== val) {
-                                    field.onChange(corrected);
-                                  }
-                                }}
                               />
                             </FormControl>
                             <FormMessage />
