@@ -118,7 +118,7 @@ export const AddHoursLogDialog = ({
   const [minutes, setMinutes] = useState("0");
   const [description, setDescription] = useState("");
   const [hasTriedSave, setHasTriedSave] = useState(false);
-  const { mutate: updateMilestone } = useUpdateMileStone();
+  const { mutate: updateMileStone } = useUpdateMileStone();
 
   useEffect(() => {
     if (open) {
@@ -153,7 +153,7 @@ export const AddHoursLogDialog = ({
   const { mutate: createReport, isPending: isCreating } = useCreateDailyReport(
     () => {
       if (milestoneStatus === "pending" && milestoneId) {
-        updateMilestone({
+        updateMileStone({
           id: milestoneId,
           data: { status: "in_progress", projectId: Number(projectId) },
         });
@@ -180,7 +180,7 @@ export const AddHoursLogDialog = ({
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setHasTriedSave(true);
 
     if (!isDescriptionValid || (hours === "0" && minutes === "0")) {
@@ -321,6 +321,7 @@ export const AddHoursLogDialog = ({
               <p className="text-sm text-destructive">{descriptionError}</p>
             )}
           </div>
+
 
           <div className="flex justify-end gap-3 mt-2">
             <Button

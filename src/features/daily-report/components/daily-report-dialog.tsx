@@ -267,7 +267,7 @@ export function DailyReportDialog({
       !!watchMilestoneId
     );
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     const yyyy = values.reportingDate.getFullYear();
     const mm = String(values.reportingDate.getMonth() + 1).padStart(2, "0");
     const dd = String(values.reportingDate.getDate()).padStart(2, "0");
@@ -294,6 +294,7 @@ export function DailyReportDialog({
       createReport(payload);
     }
   };
+
 
   const isLoading = isEdit && isReportLoading;
   const isSubmitting = isUpdating || isCreating;

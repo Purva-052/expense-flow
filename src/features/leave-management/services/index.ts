@@ -287,3 +287,11 @@ export const useExportLeaveSummary = () => {
     },
   });
 };
+
+export const useGetAbsentEmployees = (params?: any, enabled = true) => {
+  return useFetchData({
+    url: API.attendance.absent_employees,
+    params,
+    enabled,
+  });
+};

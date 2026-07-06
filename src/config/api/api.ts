@@ -386,6 +386,7 @@ const API = {
     late_deduction_list: "/attendance/late-in",
     late_deduction_action: (employeeId: string, weekStartDate: string) =>
       `/attendance/action/${employeeId}/${weekStartDate}`,
+    absent_employees: "/attendance/absent-employees",
   },
   background_jobs: {
     cron: "/background-jobs/cron",

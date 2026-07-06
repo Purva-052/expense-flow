@@ -24,12 +24,14 @@ const TablePageHeader = ({
   actions,
 }: Readonly<TablePageHeaderProps>) => {
   return (
-    <div className="flex items-center justify-between">
-      <div>
-        <PageTitle>{title}</PageTitle>
-        <span className="text-sm font-normal text-[#848485]">{children}</span>
-      </div>
-      <div className="flex items-center gap-2">
+    <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-4 w-full sm:w-auto">
+      {(title || children) && (
+        <div className="text-center sm:text-left">
+          {title && <PageTitle>{title}</PageTitle>}
+          {children && <span className="text-sm font-normal text-[#848485]">{children}</span>}
+        </div>
+      )}
+      <div className="flex flex-row items-center justify-center sm:justify-end gap-2 w-full sm:w-auto [&>button]:flex-1 sm:[&>button]:flex-none [&>button]:w-full sm:[&>button]:w-auto [&>a]:flex-1 sm:[&>a]:flex-none [&>a]:w-full sm:[&>a]:w-auto">
         {actions}
         {showActionButton && (
           <Button onClick={onButtonClick}>

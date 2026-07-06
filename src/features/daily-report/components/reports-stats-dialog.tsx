@@ -572,17 +572,11 @@ export function ReportsStatsDialog({
             },
           ];
 
-  // Each row is ~53px tall, header ~45px, pagination ~52px
-  const ROW_HEIGHT = 53;
-  const HEADER_HEIGHT = 45;
-  const PAGINATION_HEIGHT = 52;
-  const tableMinHeight =
-    HEADER_HEIGHT + ROW_HEIGHT * listParams.pageSize + PAGINATION_HEIGHT;
   const totalCount = (listData as any)?.metadata?.totalCount;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[60vw] max-w-none max-h-[90vh] flex flex-col sm:max-w-none">
+      <DialogContent className="w-[95vw] sm:w-[85vw] md:w-[75vw] lg:w-[60vw] max-w-none sm:max-w-none max-h-[90vh] flex flex-col">
         <DialogHeader className="flex flex-row items-center justify-between">
           <DialogTitle className="capitalize">
             {currentType === "holiday"
@@ -591,17 +585,17 @@ export function ReportsStatsDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 pt-4 flex-1 overflow-hidden flex flex-col">
+        <div className="space-y-4 pt-4 flex-1 overflow-y-auto flex flex-col">
           {filters.length > 0 && (
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-              <div className="flex-1">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 w-full">
+              <div className="w-full sm:flex-1">
                 <GlobalFilterSection filters={filters} className="my-0" />
               </div>
               {currentType === "pending" && exportPendingReports && (
                 <Button
                   onClick={handleExportPending}
                   disabled={exportPendingLoading}
-                  className="whitespace-nowrap h-10 px-5"
+                  className="whitespace-nowrap h-10 px-5 w-full sm:w-auto"
                 >
                   {exportPendingLoading ? (
                     "Exporting..."
@@ -617,7 +611,7 @@ export function ReportsStatsDialog({
                 <Button
                   onClick={handleExportIncomplete}
                   disabled={exportIncompleteLoading}
-                  className="whitespace-nowrap h-10 px-5"
+                  className="whitespace-nowrap h-10 px-5 w-full sm:w-auto"
                 >
                   {exportIncompleteLoading ? (
                     "Exporting..."
@@ -712,7 +706,7 @@ export function ReportsStatsDialog({
               )}
             </div>
           ) : (
-            <div style={{ minHeight: tableMinHeight }}>
+            <div className="w-full">
               <GlobalTable<any>
                 pageSize={listParams.pageSize}
                 currentPage={listParams.currentPage}
