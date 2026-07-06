@@ -49,6 +49,7 @@ import { Route as AuthenticatedInquiryRequirementsIndexRouteImport } from './rou
 import { Route as AuthenticatedInquiryChannelsIndexRouteImport } from './routes/_authenticated/inquiry-channels/index'
 import { Route as AuthenticatedIndustryIndexRouteImport } from './routes/_authenticated/industry/index'
 import { Route as AuthenticatedInboundSourcesIndexRouteImport } from './routes/_authenticated/inbound-sources/index'
+import { Route as AuthenticatedHrPolicyIndexRouteImport } from './routes/_authenticated/hr-policy/index'
 import { Route as AuthenticatedHeadphoneBrandIndexRouteImport } from './routes/_authenticated/headphone-brand/index'
 import { Route as AuthenticatedExtraWorkReportIndexRouteImport } from './routes/_authenticated/extra-work-report/index'
 import { Route as AuthenticatedDomainIndexRouteImport } from './routes/_authenticated/domain/index'
@@ -292,6 +293,12 @@ const AuthenticatedInboundSourcesIndexRoute =
     path: '/inbound-sources/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHrPolicyIndexRoute =
+  AuthenticatedHrPolicyIndexRouteImport.update({
+    id: '/hr-policy/',
+    path: '/hr-policy/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedHeadphoneBrandIndexRoute =
   AuthenticatedHeadphoneBrandIndexRouteImport.update({
     id: '/headphone-brand/',
@@ -414,6 +421,7 @@ export interface FileRoutesByFullPath {
   '/domain/': typeof AuthenticatedDomainIndexRoute
   '/extra-work-report/': typeof AuthenticatedExtraWorkReportIndexRoute
   '/headphone-brand/': typeof AuthenticatedHeadphoneBrandIndexRoute
+  '/hr-policy/': typeof AuthenticatedHrPolicyIndexRoute
   '/inbound-sources/': typeof AuthenticatedInboundSourcesIndexRoute
   '/industry/': typeof AuthenticatedIndustryIndexRoute
   '/inquiry-channels/': typeof AuthenticatedInquiryChannelsIndexRoute
@@ -471,6 +479,7 @@ export interface FileRoutesByTo {
   '/domain': typeof AuthenticatedDomainIndexRoute
   '/extra-work-report': typeof AuthenticatedExtraWorkReportIndexRoute
   '/headphone-brand': typeof AuthenticatedHeadphoneBrandIndexRoute
+  '/hr-policy': typeof AuthenticatedHrPolicyIndexRoute
   '/inbound-sources': typeof AuthenticatedInboundSourcesIndexRoute
   '/industry': typeof AuthenticatedIndustryIndexRoute
   '/inquiry-channels': typeof AuthenticatedInquiryChannelsIndexRoute
@@ -530,6 +539,7 @@ export interface FileRoutesById {
   '/_authenticated/domain/': typeof AuthenticatedDomainIndexRoute
   '/_authenticated/extra-work-report/': typeof AuthenticatedExtraWorkReportIndexRoute
   '/_authenticated/headphone-brand/': typeof AuthenticatedHeadphoneBrandIndexRoute
+  '/_authenticated/hr-policy/': typeof AuthenticatedHrPolicyIndexRoute
   '/_authenticated/inbound-sources/': typeof AuthenticatedInboundSourcesIndexRoute
   '/_authenticated/industry/': typeof AuthenticatedIndustryIndexRoute
   '/_authenticated/inquiry-channels/': typeof AuthenticatedInquiryChannelsIndexRoute
@@ -589,6 +599,7 @@ export interface FileRouteTypes {
     | '/domain/'
     | '/extra-work-report/'
     | '/headphone-brand/'
+    | '/hr-policy/'
     | '/inbound-sources/'
     | '/industry/'
     | '/inquiry-channels/'
@@ -646,6 +657,7 @@ export interface FileRouteTypes {
     | '/domain'
     | '/extra-work-report'
     | '/headphone-brand'
+    | '/hr-policy'
     | '/inbound-sources'
     | '/industry'
     | '/inquiry-channels'
@@ -704,6 +716,7 @@ export interface FileRouteTypes {
     | '/_authenticated/domain/'
     | '/_authenticated/extra-work-report/'
     | '/_authenticated/headphone-brand/'
+    | '/_authenticated/hr-policy/'
     | '/_authenticated/inbound-sources/'
     | '/_authenticated/industry/'
     | '/_authenticated/inquiry-channels/'
@@ -1033,6 +1046,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInboundSourcesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/hr-policy/': {
+      id: '/_authenticated/hr-policy/'
+      path: '/hr-policy'
+      fullPath: '/hr-policy/'
+      preLoaderRoute: typeof AuthenticatedHrPolicyIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/headphone-brand/': {
       id: '/_authenticated/headphone-brand/'
       path: '/headphone-brand'
@@ -1163,6 +1183,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDomainIndexRoute: typeof AuthenticatedDomainIndexRoute
   AuthenticatedExtraWorkReportIndexRoute: typeof AuthenticatedExtraWorkReportIndexRoute
   AuthenticatedHeadphoneBrandIndexRoute: typeof AuthenticatedHeadphoneBrandIndexRoute
+  AuthenticatedHrPolicyIndexRoute: typeof AuthenticatedHrPolicyIndexRoute
   AuthenticatedInboundSourcesIndexRoute: typeof AuthenticatedInboundSourcesIndexRoute
   AuthenticatedIndustryIndexRoute: typeof AuthenticatedIndustryIndexRoute
   AuthenticatedInquiryChannelsIndexRoute: typeof AuthenticatedInquiryChannelsIndexRoute
@@ -1216,6 +1237,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedExtraWorkReportIndexRoute:
     AuthenticatedExtraWorkReportIndexRoute,
   AuthenticatedHeadphoneBrandIndexRoute: AuthenticatedHeadphoneBrandIndexRoute,
+  AuthenticatedHrPolicyIndexRoute: AuthenticatedHrPolicyIndexRoute,
   AuthenticatedInboundSourcesIndexRoute: AuthenticatedInboundSourcesIndexRoute,
   AuthenticatedIndustryIndexRoute: AuthenticatedIndustryIndexRoute,
   AuthenticatedInquiryChannelsIndexRoute:

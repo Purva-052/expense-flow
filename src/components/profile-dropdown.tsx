@@ -16,6 +16,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { LogoutModal } from "./model/logout-model";
 import { useGetUserDetails } from "@/features/users/services";
+import { useGetHRPolicyList } from "@/features/hr-policy/services";
 
 export function ProfileDropdown() {
   const { logout, user } = useAuthStore();
@@ -23,6 +24,48 @@ export function ProfileDropdown() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  const { data: listData } = useGetHRPolicyList();
+
+  const fileUrl = (() => {
+    if (!listData) return null;
+    const anyData = listData as any;
+    if (anyData.data) {
+      if (anyData.data.fileUrl) return anyData.data.fileUrl;
+      if (Array.isArray(anyData.data) && anyData.data[0]?.fileUrl) {
+        return anyData.data[0].fileUrl;
+      }
+      if (anyData.data.rows) {
+        if (Array.isArray(anyData.data.rows) && anyData.data.rows[0]?.fileUrl) {
+          return anyData.data.rows[0].fileUrl;
+        }
+        if (anyData.data.rows.fileUrl) return anyData.data.rows.fileUrl;
+      }
+    }
+    if (anyData.fileUrl) return anyData.fileUrl;
+    if (Array.isArray(anyData) && anyData[0]?.fileUrl) return anyData[0].fileUrl;
+    return null;
+  })();
+
+  const title = (() => {
+    if (!listData) return "HR Policy";
+    const anyData = listData as any;
+    if (anyData.data) {
+      if (anyData.data.title) return anyData.data.title;
+      if (Array.isArray(anyData.data) && anyData.data[0]?.title) {
+        return anyData.data[0].title;
+      }
+      if (anyData.data.rows) {
+        if (Array.isArray(anyData.data.rows) && anyData.data.rows[0]?.title) {
+          return anyData.data.rows[0].title;
+        }
+        if (anyData.data.rows.title) return anyData.data.rows.title;
+      }
+    }
+    if (anyData.title) return anyData.title;
+    if (Array.isArray(anyData) && anyData[0]?.title) return anyData[0].title;
+    return "HR Policy";
+  })();
 
   const handleLogoutConfirm = async () => {
     setLoading(true);
@@ -82,6 +125,18 @@ export function ProfileDropdown() {
           >
             Profile
           </DropdownMenuItem>
+          {fileUrl && (
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <a
+                href={fileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center"
+              >
+                {title}
+              </a>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem
             onClick={() => setLogoutModalOpen(true)}
             className="cursor-pointer"
