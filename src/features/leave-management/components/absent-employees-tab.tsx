@@ -65,32 +65,15 @@ export function AbsentEmployeesTab() {
     useGetTechnologyDropdownList() as any;
 
   const filters: FilterConfig[] = [
-    {
-      type: "search",
-      placeholder: "Search name or code...",
-      key: "search",
-      value: listParams.search || "",
-      onChange: (search: string | undefined) => {
-        setQueryParams({ ...listParams, search: search ?? "", currentPage: 1 });
-      },
-    },
-    {
-      type: "dateRange",
-      key: "dateRange",
-      placeholder: "Filter by Date Range",
-      value: {
-        from: listParams.fromDate ? new Date(listParams.fromDate) : undefined,
-        to: listParams.toDate ? new Date(listParams.toDate) : undefined,
-      },
-      onChange: (range: { from?: Date; to?: Date } | undefined) => {
-        setQueryParams({
-          ...listParams,
-          fromDate: formatDate(range?.from) ?? null,
-          toDate: formatDate(range?.to) ?? null,
-          currentPage: 1,
-        });
-      },
-    },
+    // {
+    //   type: "search",
+    //   placeholder: "Search name or code...",
+    //   key: "search",
+    //   value: listParams.search || "",
+    //   onChange: (search: string | undefined) => {
+    //     setQueryParams({ ...listParams, search: search ?? "", currentPage: 1 });
+    //   },
+    // },
     {
       type: "select" as const,
       key: "employeeId",
@@ -109,6 +92,24 @@ export function AbsentEmployeesTab() {
       },
       isLoading: usersListLoading,
     },
+    {
+      type: "dateRange",
+      key: "dateRange",
+      placeholder: "Filter by Date Range",
+      value: {
+        from: listParams.fromDate ? new Date(listParams.fromDate) : undefined,
+        to: listParams.toDate ? new Date(listParams.toDate) : undefined,
+      },
+      onChange: (range: { from?: Date; to?: Date } | undefined) => {
+        setQueryParams({
+          ...listParams,
+          fromDate: formatDate(range?.from) ?? null,
+          toDate: formatDate(range?.to) ?? null,
+          currentPage: 1,
+        });
+      },
+    },
+
     {
       type: "select" as const,
       key: "technologyId",

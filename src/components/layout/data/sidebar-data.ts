@@ -25,6 +25,7 @@ import {
   Cpu,
   Database,
   FileCheck,
+  FileText,
   FingerprintPattern,
   Flame,
   Globe,
@@ -282,11 +283,7 @@ export const sidebarData: SidebarData = {
           url: "/mobile-inventory",
           icon: Smartphone,
           allowedTech: [29, 37],
-          requiredRoles: [
-            roles.ADMIN,
-            roles.TEAM_LEAD,
-            roles.PROJECT_MANAGER,
-          ],
+          requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
         {
           title: "Client Inventory",
@@ -463,6 +460,12 @@ export const sidebarData: SidebarData = {
       requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
       isCollapsible: true,
       items: [
+        {
+          title: "HR Policy",
+          url: "/hr-policy",
+          icon: FileText,
+          requiredRoles: [roles.ADMIN],
+        },
         {
           title: "Clients",
           url: "/clients",

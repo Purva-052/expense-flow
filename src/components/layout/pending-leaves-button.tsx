@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMemo } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useLocation } from "@tanstack/react-router";
 import { Umbrella } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/stores/use-auth-store";
@@ -9,6 +9,7 @@ import { useGetLeaveData } from "@/features/leave-management/services";
 
 export function PendingLeavesButton() {
   const navigate = useNavigate();
+  const location = useLocation();
   const user = useAuthStore((state) => state.user);
   
   const rawRole = user?.role || user?.user?.role;
@@ -23,6 +24,8 @@ export function PendingLeavesButton() {
 
   const currentEmployeeId = user?.user?.id || user?.user_id;
 
+  const isHRPolicyPage = location.pathname.includes("/hr-policy");
+
   const apiParams = useMemo(() => ({
     page: 1,
     limit: 10,
@@ -34,7 +37,7 @@ export function PendingLeavesButton() {
 
   const { data: listData } = useGetLeaveData(
     apiParams,
-    isEligible && !!currentEmployeeId
+    isEligible && !!currentEmployeeId && !isHRPolicyPage
   );
 
   const pendingCount = (listData as any)?.metadata?.totalCount ?? 0;
