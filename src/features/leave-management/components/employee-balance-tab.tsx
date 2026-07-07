@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import { useGetUsersList } from "@/features/users/services";
+import { SecurityPasswordDialog } from "@/components/shared/security-password-dialog";
+import { useVerifyPrivacyPassword } from "@/features/profile/services";
 import { Button } from "@/components/ui/button";
 import { FilterConfig } from "@/components/table/table-toolbar";
 import GlobalFilterSection from "@/components/table/global-table-filter";
@@ -16,6 +18,11 @@ interface EmployeeBalanceTabProps {
 }
 
 export function EmployeeBalanceTab({ onAdjustClick }: EmployeeBalanceTabProps) {
+  const [securityDialogOpen, setSecurityDialogOpen] = useState(false);
+  const [pendingEmpId, setPendingEmpId] = useState<number | null>(null);
+  const { mutateAsync: verifyPassword, isPending: isVerifying } =
+    useVerifyPrivacyPassword();
+
   const [queryParams, setQueryParams] = useQueryStates({
     pageSize: parseAsInteger.withDefault(10),
     currentPage: parseAsInteger.withDefault(1),
@@ -172,7 +179,10 @@ export function EmployeeBalanceTab({ onAdjustClick }: EmployeeBalanceTabProps) {
           const empId = row.original.id;
           return (
             <Button
-              onClick={() => onAdjustClick(empId)}
+              onClick={() => {
+                setPendingEmpId(empId);
+                setSecurityDialogOpen(true);
+              }}
               className="shrink-0 w-fit h-8 px-3 text-xs bg-rose-500 hover:bg-rose-600 text-white font-medium"
             >
               Adjust
@@ -219,6 +229,20 @@ export function EmployeeBalanceTab({ onAdjustClick }: EmployeeBalanceTabProps) {
         loading={employeeWiseLeaveLoading}
         isPaginationEnabled
         onPaginationChange={handlePaginationChange}
+      />
+
+      <SecurityPasswordDialog
+        open={securityDialogOpen}
+        onOpenChange={setSecurityDialogOpen}
+        title="Adjust Leave Balance Verification"
+        description="Please enter the privacy password to adjust this employee's leave balance."
+        isLoading={isVerifying}
+        onConfirm={async (password) => {
+          await verifyPassword({ privacyPassword: password });
+          if (pendingEmpId !== null) {
+            onAdjustClick(pendingEmpId);
+          }
+        }}
       />
     </div>
   );

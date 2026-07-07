@@ -7,6 +7,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import instance from "@/config/instance/instance";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { extractErrorInfo } from "@/utils/error-response";
 
 const GET_SKILLS_API_URL = API.skills.list;
 
@@ -206,5 +207,83 @@ export const useDeleteSkill = (id: string) => {
   return useDeleteData({
     url: `${API.skills.delete}/${id}`,
     refetchQueries: [GET_SKILLS_API_URL],
+  });
+};
+
+export const useSetPrivacyPassword = () => {
+  const queryClient = useQueryClient();
+  return useMutation<any, Error, any>({
+    mutationFn: async (data) => {
+      const response = await instance.post({
+        url: API.privacy_password.set,
+        data,
+      });
+      return response;
+    },
+    onSuccess: (data: any) => {
+      if (data?.message) {
+        toast.success(data.message, {
+          position: "top-right",
+        });
+      }
+      const authState = useAuthStore.getState().user;
+      const userId = authState?.user?.id ?? authState?.user_id;
+      if (userId) {
+        queryClient.invalidateQueries({
+          queryKey: [`${API.users.list}/${userId}`],
+        });
+      }
+    },
+    onError: (error: any) => {
+      const errorInfo = extractErrorInfo(error);
+      toast.error(errorInfo.description || errorInfo.title, {
+        position: "top-right",
+      });
+    },
+  });
+};
+
+export const useUpdatePrivacyPassword = () => {
+  const queryClient = useQueryClient();
+  return useMutation<any, Error, any>({
+    mutationFn: async (data) => {
+      const response = await instance.patch({
+        url: API.privacy_password.update,
+        data,
+      });
+      return response;
+    },
+    onSuccess: (data: any) => {
+      if (data?.message) {
+        toast.success(data.message, {
+          position: "top-right",
+        });
+      }
+      const authState = useAuthStore.getState().user;
+      const userId = authState?.user?.id ?? authState?.user_id;
+      if (userId) {
+        queryClient.invalidateQueries({
+          queryKey: [`${API.users.list}/${userId}`],
+        });
+      }
+    },
+    onError: (error: any) => {
+      const errorInfo = extractErrorInfo(error);
+      toast.error(errorInfo.description || errorInfo.title, {
+        position: "top-right",
+      });
+    },
+  });
+};
+
+export const useVerifyPrivacyPassword = () => {
+  return useMutation<any, Error, { privacyPassword: string }>({
+    mutationFn: async (data) => {
+      const response = await instance.post({
+        url: API.privacy_password.verify,
+        data,
+      });
+      return response;
+    },
   });
 };

@@ -397,6 +397,11 @@ const API = {
     update: "/hr-policy",
     delete: "/hr-policy",
   },
+  privacy_password: {
+    set: "/users/privacy-password/set",
+    update: "/users/privacy-password/change",
+    verify: "/users/privacy-password/verify",
+  },
 };
 
 Object.freeze(API);

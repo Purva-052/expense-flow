@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { DialogDescription, DialogTrigger } from "@/components/ui/dialog";
+import { DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -37,6 +37,7 @@ import {
   Calendar,
   Code,
   KeyRound,
+  ShieldCheck,
   Loader2,
   Pencil,
   Sparkles,
@@ -145,9 +146,18 @@ const ProfileSkeleton = () => {
 interface UserProfileCardProps {
   user: any;
   isReadOnly?: boolean;
+  onSecurityPasswordClick?: () => void;
+  isPrivacyPasswordSet?: boolean;
+  onUpdatePasswordClick?: () => void;
 }
 
-export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
+export const UserProfileCard = ({
+  user,
+  isReadOnly,
+  onSecurityPasswordClick,
+  isPrivacyPasswordSet,
+  onUpdatePasswordClick,
+}: UserProfileCardProps) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [localIsUploading, setLocalIsUploading] = useState(false);
   const [selectedSkills, setSelectedSkills] = useState<Skill[]>([]);
@@ -222,6 +232,7 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
     mutateAsync: updateSkillReference,
     isPending: isUpdatingSkillReference,
   } = useUpdateSkillReference();
+  const isAdmin = user?.role === "admin";
 
   const methods = useForm({
     defaultValues: {
@@ -1255,18 +1266,39 @@ export const UserProfileCard = ({ user, isReadOnly }: UserProfileCardProps) => {
           </Card>
         )}
 
-        {/* ================= UPDATE PASSWORD ================= */}
+        {/* ================= PASSWORD MANAGEMENT ================= */}
         {!isReadOnly && (
-          <Card className="shadow-sm">
-            <CardFooter className="pt-6">
-              <DialogTrigger asChild>
-                <Button className="w-full" variant="outline">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className="shadow-sm">
+              <CardFooter className="pt-6">
+                <Button
+                  className="w-full"
+                  variant="outline"
+                  onClick={onUpdatePasswordClick}
+                >
                   <KeyRound className="mr-2 h-4 w-4" />
                   Update Password
                 </Button>
-              </DialogTrigger>
-            </CardFooter>
-          </Card>
+              </CardFooter>
+            </Card>
+
+            {isAdmin && (
+              <Card className="shadow-sm">
+                <CardFooter className="pt-6">
+                  <Button
+                    className="w-full border-rose-200 text-rose-700 hover:text-rose-800 hover:bg-rose-50/50 dark:border-rose-950 dark:text-rose-400 dark:hover:bg-rose-950/20"
+                    variant="outline"
+                    onClick={onSecurityPasswordClick}
+                  >
+                    <ShieldCheck className="mr-2 h-4 w-4 text-rose-500" />
+                    {isPrivacyPasswordSet
+                      ? "Update Privacy Password"
+                      : "Create Privacy Password"}
+                  </Button>
+                </CardFooter>
+              </Card>
+            )}
+          </div>
         )}
       </div>
 
