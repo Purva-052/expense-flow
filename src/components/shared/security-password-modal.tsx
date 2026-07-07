@@ -84,7 +84,7 @@ export function SecurityPasswordModal({
     try {
       if (isPrivacyPasswordSet) {
         await updateMutation.mutateAsync({
-          currentPrivacyPassword: currentPassword,
+          oldPrivacyPassword: currentPassword,
           newPrivacyPassword: newPassword,
           confirmPrivacyPassword: confirmPassword,
         });
