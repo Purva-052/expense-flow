@@ -24,6 +24,12 @@ import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { useExportCSV } from "./services";
 import { toast } from "sonner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const ProjectBoard = () => {
   const [activeTab, setActiveTab] = useState("project_details");
@@ -305,15 +311,24 @@ const ProjectBoard = () => {
                     onButtonClick={handleAdd}
                     actions={
                       canExportCSV ? (
-                        <Button
-                          onClick={handleExportCSV}
-                          disabled={exportCSVLoading}
-                        >
-                          <Download />
-                          {exportCSVLoading
-                            ? "Exporting CSV ..."
-                            : "Export CSV"}
-                        </Button>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                onClick={handleExportCSV}
+                                disabled={exportCSVLoading}
+                              >
+                                <Download />
+                                {exportCSVLoading
+                                  ? "Exporting CSV ..."
+                                  : "Export CSV"}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              Export Projects Records
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       ) : null
                     }
                   >

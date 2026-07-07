@@ -461,12 +461,6 @@ export const sidebarData: SidebarData = {
       isCollapsible: true,
       items: [
         {
-          title: "HR Policy",
-          url: "/hr-policy",
-          icon: FileText,
-          requiredRoles: [roles.ADMIN],
-        },
-        {
           title: "Clients",
           url: "/clients",
           icon: UserStar,
@@ -483,6 +477,12 @@ export const sidebarData: SidebarData = {
           url: "/technology",
           icon: IconAugmentedReality,
           requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
+        },
+        {
+          title: "HR Policy",
+          url: "/hr-policy",
+          icon: FileText,
+          requiredRoles: [roles.ADMIN],
         },
         // {
         //   title: "Projects",

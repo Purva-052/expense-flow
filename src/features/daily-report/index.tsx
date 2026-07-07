@@ -33,6 +33,12 @@ import { Button } from "@/components/ui/button";
 import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import { formatDate } from "@/utils/commonFunctions";
 import { format } from "date-fns";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function DailyReportPage() {
   const search = useSearch({ from: "/_authenticated/daily-report/" });
@@ -572,20 +578,21 @@ export default function DailyReportPage() {
           </div>
           <div className="flex flex-wrap gap-2 items-center my-4">
             {canExportCSV && (
-              <Button
-                onClick={handleExportCSV}
-                disabled={exportCSVLoading}
-                className="whitespace-nowrap h-10 px-5"
-              >
-                {exportCSVLoading ? (
-                  "Exporting..."
-                ) : (
-                  <>
-                    <Download className="w-4 h-4 mr-2" />
-                    Export CSV
-                  </>
-                )}
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={handleExportCSV}
+                      disabled={exportCSVLoading}
+                      className="whitespace-nowrap h-10 px-5"
+                    >
+                      <Download />
+                      {exportCSVLoading ? "Exporting CSV ..." : "Export CSV"}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Export Daily Report Logs</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
             {canExportProjectCSV && (
               <Button

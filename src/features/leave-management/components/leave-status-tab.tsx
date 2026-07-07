@@ -23,6 +23,12 @@ import { endOfMonth, format, startOfMonth } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { MonthYearPicker } from "@/features/attendance/components/month-year-picker";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface LeaveStatusTabProps {
   onEdit?: (row: any) => void;
@@ -98,7 +104,12 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
       startDate: listParams.startDate,
       endDate: listParams.endDate,
     };
-  }, [listParams.endDate, listParams.month, listParams.startDate, listParams.year]);
+  }, [
+    listParams.endDate,
+    listParams.month,
+    listParams.startDate,
+    listParams.year,
+  ]);
 
   const getStatusFromTab = (tab: string) => {
     if (tab === "approved") return ["approved"];
@@ -112,8 +123,14 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
     search: listParams.search,
     pagination: true,
     employeeId: canViewManagerTabs ? listParams.employeeId : undefined,
-    approver: queryParams.tab === "pending" ? (listParams.approver || undefined) : undefined,
-    actionedBy: queryParams.tab !== "pending" ? (listParams.approver || undefined) : undefined,
+    approver:
+      queryParams.tab === "pending"
+        ? listParams.approver || undefined
+        : undefined,
+    actionedBy:
+      queryParams.tab !== "pending"
+        ? listParams.approver || undefined
+        : undefined,
     fromDate: effectiveDateRange.startDate,
     toDate: effectiveDateRange.endDate,
     status: getStatusFromTab(queryParams.tab),
@@ -140,11 +157,7 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
 
   const { data: approverList, isPending: approverListLoading } =
     useGetUserDropdownList({
-      role: [
-        roles.ADMIN,
-        roles.TEAM_LEAD,
-        roles.PROJECT_MANAGER,
-      ],
+      role: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
       status: "active",
     }) as any;
 
@@ -236,11 +249,17 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
   const handleExportCSV = () => {
     const payload = {
       search: listParams.search || undefined,
-      employeeId: canViewManagerTabs ? listParams.employeeId || undefined : undefined,
+      employeeId: canViewManagerTabs
+        ? listParams.employeeId || undefined
+        : undefined,
       approver:
-        queryParams.tab === "pending" ? listParams.approver || undefined : undefined,
+        queryParams.tab === "pending"
+          ? listParams.approver || undefined
+          : undefined,
       actionedBy:
-        queryParams.tab !== "pending" ? listParams.approver || undefined : undefined,
+        queryParams.tab !== "pending"
+          ? listParams.approver || undefined
+          : undefined,
       month: listParams.month || new Date().getMonth() + 1,
       year: listParams.year || new Date().getFullYear(),
       status: getStatusFromTab(queryParams.tab),
@@ -287,25 +306,25 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
     },
     ...(canViewManagerTabs
       ? [
-        {
-          type: "select" as const,
-          key: "employeeId",
-          placeholder: "Filter by employee",
-          options: employeeList?.data?.map((emp: any) => ({
-            value: emp.id,
-            label: emp.fullName,
-          })),
-          value: listParams.employeeId?.toString(),
-          onChange: (value: any) => {
-            setQueryParams({
-              ...listParams,
-              employeeId: value ? Number(value) : null,
-              currentPage: 1,
-            });
+          {
+            type: "select" as const,
+            key: "employeeId",
+            placeholder: "Filter by employee",
+            options: employeeList?.data?.map((emp: any) => ({
+              value: emp.id,
+              label: emp.fullName,
+            })),
+            value: listParams.employeeId?.toString(),
+            onChange: (value: any) => {
+              setQueryParams({
+                ...listParams,
+                employeeId: value ? Number(value) : null,
+                currentPage: 1,
+              });
+            },
+            isLoading: usersListLoading,
           },
-          isLoading: usersListLoading,
-        },
-      ]
+        ]
       : []),
     {
       type: "select" as const,
@@ -348,15 +367,17 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
 
   const tableColumns = useMemo(() => {
     const isDevOrBDE = isDeveloper || isBDE;
-    return getColumns(queryParams.tab, (listData as any)?.data).filter((col: any) => {
-      if (col.accessorKey === "status") {
-        return isDevOrBDE;
+    return getColumns(queryParams.tab, (listData as any)?.data).filter(
+      (col: any) => {
+        if (col.accessorKey === "status") {
+          return isDevOrBDE;
+        }
+        if (col.accessorKey === "rejectionReason") {
+          return isDevOrBDE || queryParams.tab === "rejected";
+        }
+        return true;
       }
-      if (col.accessorKey === "rejectionReason") {
-        return isDevOrBDE || queryParams.tab === "rejected";
-      }
-      return true;
-    });
+    );
   }, [isDeveloper, isBDE, queryParams.tab, listData]);
 
   const sortingState = useMemo<SortingState>(() => {
@@ -388,8 +409,6 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
   const totalCount = (listData as any)?.metadata?.totalCount ?? 0;
   const leaveRows = (listData as any)?.data ?? [];
 
-
-
   return (
     <div className="flex flex-col gap-6">
       <LeaveBalanceCards
@@ -404,10 +423,11 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
             <button
               key={tab}
               onClick={() => handleStatusTabChange(tab)}
-              className={`px-4 py-2 text-sm font-semibold capitalize transition-all border-b-2 -mb-[1px] ${queryParams.tab === tab
+              className={`px-4 py-2 text-sm font-semibold capitalize transition-all border-b-2 -mb-[1px] ${
+                queryParams.tab === tab
                   ? "border-rose-500 text-rose-500"
                   : "border-transparent text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
-                }`}
+              }`}
             >
               {tab}
             </button>
@@ -436,10 +456,22 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
             }}
           />
           {isAdmin && (
-            <Button type="button" variant="default" onClick={handleExportCSV} className="shrink-0 bg-gradient-primary text-primary-foreground hover:bg-primary/80 shadow-xs">
-              <Download className="h-4 w-4 mr-2" />
-              {exportLoading ? "Exporting..." : "Export CSV"}
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="default"
+                    onClick={handleExportCSV}
+                    className="shrink-0 bg-gradient-primary text-primary-foreground hover:bg-primary/80 shadow-xs"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    {exportLoading ? "Exporting..." : "Export CSV"}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Export Leave Records</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
         </div>
       </div>

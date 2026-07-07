@@ -7,7 +7,7 @@ import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
 import { ModeToggle } from "./mode-toggle";
 import { PendingLeavesButton } from "./pending-leaves-button";
-import { HRPolicyDownloadButton } from "./hr-policy-download-button";
+// import { HRPolicyDownloadButton } from "./hr-policy-download-button";
 
 const AppTopSidebar = () => {
   const user = useAuthStore((state) => state.user);
@@ -17,7 +17,7 @@ const AppTopSidebar = () => {
     <Header className="shadow-sm" fixed>
       <HeaderTitle />
       <div className="ml-auto flex items-center space-x-4">
-        <HRPolicyDownloadButton />
+        {/* <HRPolicyDownloadButton /> */}
         <PendingLeavesButton />
         <ModeToggle />
         {userRole != roles.ADMIN && userRole != roles.PROJECT_MANAGER && (

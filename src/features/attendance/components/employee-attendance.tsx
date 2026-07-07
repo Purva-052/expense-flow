@@ -1138,7 +1138,7 @@ export const EmployeeAttendance: React.FC = () => {
                   </span>
                 </div>
 
-                <div className="bg-rose-500/10 border border-rose-500/25 px-3 py-1.5 rounded-lg text-right">
+                {/* <div className="bg-rose-500/10 border border-rose-500/25 px-3 py-1.5 rounded-lg text-right">
                   <span className="text-[10px] font-bold text-rose-500 block uppercase">
                     {dayModalData.shiftName || "GS01"} - General Shift
                   </span>
@@ -1168,7 +1168,7 @@ export const EmployeeAttendance: React.FC = () => {
                       return `${fmt(dayModalData.shiftStartTime)} to ${fmt(dayModalData.shiftEndTime)}`;
                     })()}
                   </span>
-                </div>
+                </div> */}
               </div>
 
               {/* Punches table */}
