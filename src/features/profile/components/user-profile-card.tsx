@@ -1277,7 +1277,7 @@ export const UserProfileCard = ({
                   onClick={onUpdatePasswordClick}
                 >
                   <KeyRound className="mr-2 h-4 w-4" />
-                  Update Password
+                  Update Account Password
                 </Button>
               </CardFooter>
             </Card>
