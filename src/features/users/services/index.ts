@@ -52,8 +52,8 @@ export const useGetUserDetails = (id: string, params?: any) => {
   return useFetchData({ url: `${GET_API_URL}/${id}`, enabled: !!id, params });
 };
 
-export const useGetUserDropdownList = (params?: any) => {
-  return useFetchData({ url: GET_USER_DROPDOWN, params });
+export const useGetUserDropdownList = (params?: any, enabled?: boolean) => {
+  return useFetchData({ url: GET_USER_DROPDOWN, params, enabled });
 };
 
 export const useGetUsersRoles = (params?: any) => {

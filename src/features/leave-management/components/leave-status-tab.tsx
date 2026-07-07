@@ -8,6 +8,7 @@ import {
   useExportLeaveSummary,
   useGetAllLeaveBalances,
   useGetLeaveData,
+  useGetTLEmployees,
 } from "../services";
 import {
   useGetUserDropdownList,
@@ -46,7 +47,7 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
   const isAdmin = roleName === roles.ADMIN;
   const isDeveloper = roleName === roles.DEVELOPER;
   const isBDE = roleName === roles.BDE;
-  const canViewManagerTabs = isAdmin || roleName === roles.PROJECT_MANAGER;
+  const canViewManagerTabs = isAdmin || roleName === roles.PROJECT_MANAGER || roleName === roles.TEAM_LEAD;
   const showStatusTabs = !isDeveloper && !isBDE;
   const currentEmployeeId = user?.user?.id || user?.user_id;
 
@@ -143,17 +144,28 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
   const { mutate: exportLeaveSummary, isPending: exportLoading } =
     useExportLeaveSummary();
 
-  const { data: employeeList, isPending: usersListLoading } =
-    useGetUserDropdownList({
-      role: [
-        roles.TEAM_LEAD,
-        roles.ADMIN,
-        roles.PROJECT_MANAGER,
-        roles.DEVELOPER,
-        roles.BDE,
-      ],
-      status: "active",
-    }) as any;
+  const isTeamLead = roleName === roles.TEAM_LEAD;
+
+  const { data: generalEmployeeList, isPending: generalUsersListLoading } =
+    useGetUserDropdownList(
+      {
+        role: [
+          roles.TEAM_LEAD,
+          roles.ADMIN,
+          roles.PROJECT_MANAGER,
+          roles.DEVELOPER,
+          roles.BDE,
+        ],
+        status: "active",
+      },
+      !isTeamLead
+    ) as any;
+
+  const { data: tlEmployeeList, isPending: tlUsersListLoading } =
+    useGetTLEmployees(undefined, isTeamLead) as any;
+
+  const employeeList = isTeamLead ? tlEmployeeList : generalEmployeeList;
+  const usersListLoading = isTeamLead ? tlUsersListLoading : generalUsersListLoading;
 
   const { data: approverList, isPending: approverListLoading } =
     useGetUserDropdownList({
@@ -306,46 +318,62 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
     },
     ...(canViewManagerTabs
       ? [
-          {
-            type: "select" as const,
-            key: "employeeId",
-            placeholder: "Filter by employee",
-            options: employeeList?.data?.map((emp: any) => ({
-              value: emp.id,
-              label: emp.fullName,
-            })),
-            value: listParams.employeeId?.toString(),
-            onChange: (value: any) => {
-              setQueryParams({
-                ...listParams,
-                employeeId: value ? Number(value) : null,
-                currentPage: 1,
+        {
+          type: "select" as const,
+          key: "employeeId",
+          placeholder: "Filter by employee",
+          options: (() => {
+            const list = employeeList?.data || [];
+            const mapped = list.map((item: any) => {
+              const emp = item?.employee || item;
+              return {
+                value: emp?.id,
+                label: emp?.fullName,
+              };
+            }).filter((opt: any) => opt.value !== undefined);
+
+            if (isTeamLead && !mapped.some((opt: any) => opt.value === currentEmployeeId)) {
+              mapped.unshift({
+                value: currentEmployeeId,
+                label: user?.user?.fullName || "Me",
               });
-            },
-            isLoading: usersListLoading,
+            }
+            return mapped;
+          })(),
+          value: listParams.employeeId?.toString(),
+          onChange: (value: any) => {
+            setQueryParams({
+              ...listParams,
+              employeeId: value ? Number(value) : null,
+              currentPage: 1,
+            });
           },
         ]
       : []),
-    {
-      type: "select" as const,
-      key: "approver",
-      placeholder:
-        queryParams.tab === "pending"
-          ? "Filter by approver"
-          : queryParams.tab === "approved"
-            ? "Filter by approved by"
-            : "Filter by rejected by",
-      options: approverOptions,
-      value: listParams.approver?.toString(),
-      onChange: (value: any) => {
-        setQueryParams({
-          ...listParams,
-          approver: value ? Number(value) : null,
-          currentPage: 1,
-        });
-      },
-      isLoading: approverListLoading,
-    },
+    ...(!isDeveloper && !isBDE
+      ? [
+          {
+            type: "select" as const,
+            key: "approver",
+            placeholder:
+              queryParams.tab === "pending"
+                ? "Filter by approver"
+                : queryParams.tab === "approved"
+                  ? "Filter by approved by"
+                  : "Filter by rejected by",
+            options: approverOptions,
+            value: listParams.approver?.toString(),
+            onChange: (value: any) => {
+              setQueryParams({
+                ...listParams,
+                approver: value ? Number(value) : null,
+                currentPage: 1,
+              });
+            },
+            isLoading: approverListLoading,
+          },
+        ]
+      : []),
     {
       type: "select" as const,
       key: "leaveTypeId",
@@ -441,20 +469,22 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
         </div>
 
         <div className="flex-none flex flex-wrap justify-start xl:justify-end items-center gap-3 w-full xl:w-auto">
-          <MonthYearPicker
-            month={listParams.month || new Date().getMonth() + 1}
-            year={listParams.year || new Date().getFullYear()}
-            onChange={(m, y) => {
-              setQueryParams({
-                ...listParams,
-                month: m,
-                year: y,
-                startDate: null,
-                endDate: null,
-                currentPage: 1,
-              });
-            }}
-          />
+          {isAdmin && (
+            <MonthYearPicker
+              month={listParams.month || new Date().getMonth() + 1}
+              year={listParams.year || new Date().getFullYear()}
+              onChange={(m, y) => {
+                setQueryParams({
+                  ...listParams,
+                  month: m,
+                  year: y,
+                  startDate: null,
+                  endDate: null,
+                  currentPage: 1,
+                });
+              }}
+            />
+          )}
           {isAdmin && (
             <TooltipProvider>
               <Tooltip>
