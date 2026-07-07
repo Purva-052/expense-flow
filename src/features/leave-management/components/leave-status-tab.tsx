@@ -47,7 +47,10 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
   const isAdmin = roleName === roles.ADMIN;
   const isDeveloper = roleName === roles.DEVELOPER;
   const isBDE = roleName === roles.BDE;
-  const canViewManagerTabs = isAdmin || roleName === roles.PROJECT_MANAGER || roleName === roles.TEAM_LEAD;
+  const canViewManagerTabs =
+    isAdmin ||
+    roleName === roles.PROJECT_MANAGER ||
+    roleName === roles.TEAM_LEAD;
   const showStatusTabs = !isDeveloper && !isBDE;
   const currentEmployeeId = user?.user?.id || user?.user_id;
 
@@ -146,26 +149,27 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
 
   const isTeamLead = roleName === roles.TEAM_LEAD;
 
-  const { data: generalEmployeeList, isPending: generalUsersListLoading } =
-    useGetUserDropdownList(
-      {
-        role: [
-          roles.TEAM_LEAD,
-          roles.ADMIN,
-          roles.PROJECT_MANAGER,
-          roles.DEVELOPER,
-          roles.BDE,
-        ],
-        status: "active",
-      },
-      !isTeamLead
-    ) as any;
+  const { data: generalEmployeeList } = useGetUserDropdownList(
+    {
+      role: [
+        roles.TEAM_LEAD,
+        roles.ADMIN,
+        roles.PROJECT_MANAGER,
+        roles.DEVELOPER,
+        roles.BDE,
+      ],
+      status: "active",
+    },
+    !isTeamLead
+  ) as any;
 
-  const { data: tlEmployeeList, isPending: tlUsersListLoading } =
-    useGetTLEmployees(undefined, isTeamLead) as any;
+  const { data: tlEmployeeList } = useGetTLEmployees(
+    undefined,
+    isTeamLead
+  ) as any;
 
   const employeeList = isTeamLead ? tlEmployeeList : generalEmployeeList;
-  const usersListLoading = isTeamLead ? tlUsersListLoading : generalUsersListLoading;
+  // const usersListLoading = isTeamLead ? tlUsersListLoading : generalUsersListLoading;
 
   const { data: approverList, isPending: approverListLoading } =
     useGetUserDropdownList({
@@ -318,35 +322,41 @@ export function LeaveStatusTab(_: LeaveStatusTabProps) {
     },
     ...(canViewManagerTabs
       ? [
-        {
-          type: "select" as const,
-          key: "employeeId",
-          placeholder: "Filter by employee",
-          options: (() => {
-            const list = employeeList?.data || [];
-            const mapped = list.map((item: any) => {
-              const emp = item?.employee || item;
-              return {
-                value: emp?.id,
-                label: emp?.fullName,
-              };
-            }).filter((opt: any) => opt.value !== undefined);
+          {
+            type: "select" as const,
+            key: "employeeId",
+            placeholder: "Filter by employee",
+            options: (() => {
+              const list = employeeList?.data || [];
+              const mapped = list
+                .map((item: any) => {
+                  const emp = item?.employee || item;
+                  return {
+                    value: emp?.id,
+                    label: emp?.fullName,
+                  };
+                })
+                .filter((opt: any) => opt.value !== undefined);
 
-            if (isTeamLead && !mapped.some((opt: any) => opt.value === currentEmployeeId)) {
-              mapped.unshift({
-                value: currentEmployeeId,
-                label: user?.user?.fullName || "Me",
+              if (
+                isTeamLead &&
+                !mapped.some((opt: any) => opt.value === currentEmployeeId)
+              ) {
+                mapped.unshift({
+                  value: currentEmployeeId,
+                  label: user?.user?.fullName || "Me",
+                });
+              }
+              return mapped;
+            })(),
+            value: listParams.employeeId?.toString(),
+            onChange: (value: any) => {
+              setQueryParams({
+                ...listParams,
+                employeeId: value ? Number(value) : null,
+                currentPage: 1,
               });
-            }
-            return mapped;
-          })(),
-          value: listParams.employeeId?.toString(),
-          onChange: (value: any) => {
-            setQueryParams({
-              ...listParams,
-              employeeId: value ? Number(value) : null,
-              currentPage: 1,
-            });
+            },
           },
         ]
       : []),
