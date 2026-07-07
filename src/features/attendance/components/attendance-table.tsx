@@ -21,6 +21,8 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { SecurityPasswordDialog } from "@/components/shared/security-password-dialog";
+import { useVerifyPrivacyPassword } from "@/features/profile/services";
 import {
   Popover,
   PopoverContent,
@@ -707,14 +709,6 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                           const dateStr = formatToYYYYMMDD(date);
                           const isDisabled =
                             !highWorkingHoursDates.includes(dateStr);
-                          console.log(
-                            "AttendanceTable Calendar Date:",
-                            dateStr,
-                            "isDisabled:",
-                            isDisabled,
-                            "highWorkingHoursDates:",
-                            highWorkingHoursDates
-                          );
                           return isDisabled;
                         }}
                         month={currentCalendarMonth}
@@ -832,6 +826,13 @@ export const RegularizationRequestsPanel: React.FC<{
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [selectedRejectId, setSelectedRejectId] = useState<number | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [securityDialogOpen, setSecurityDialogOpen] = useState(false);
+  const { mutateAsync: verifyPassword, isPending: isVerifying } = useVerifyPrivacyPassword();
+  const [pendingAction, setPendingAction] = useState<{
+    id: number;
+    status: "approved" | "rejected";
+    rejectionReason?: string;
+  } | null>(null);
 
   const params: Record<string, any> = {};
   if (currentEmployeeFilter) params.employeeId = currentEmployeeFilter;
@@ -867,7 +868,8 @@ export const RegularizationRequestsPanel: React.FC<{
     });
 
   const handleApprove = (id: number) => {
-    performAction({ id, status: "approved" });
+    setPendingAction({ id, status: "approved" });
+    setSecurityDialogOpen(true);
   };
 
   const handleOpenReject = (id: number) => {
@@ -882,11 +884,12 @@ export const RegularizationRequestsPanel: React.FC<{
       toast.error("Please enter a rejection reason.");
       return;
     }
-    performAction({
+    setPendingAction({
       id: selectedRejectId,
       status: "rejected",
       rejectionReason: rejectionReason.trim(),
     });
+    setSecurityDialogOpen(true);
   };
 
   const formatDisplayDate = (dateStr: string) => {
@@ -1179,6 +1182,25 @@ export const RegularizationRequestsPanel: React.FC<{
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <SecurityPasswordDialog
+        open={securityDialogOpen}
+        onOpenChange={setSecurityDialogOpen}
+        title="Regularization Verification"
+        description={`Please enter the security password to ${pendingAction?.status === "approved" ? "approve" : "reject"} this regularization request.`}
+        isLoading={isVerifying}
+        onConfirm={async (password) => {
+          await verifyPassword({ privacyPassword: password });
+          if (pendingAction) {
+            performAction({
+              id: pendingAction.id,
+              status: pendingAction.status,
+              ...(pendingAction.status === "rejected" ? { rejectionReason: pendingAction.rejectionReason } : {})
+            });
+            setPendingAction(null);
+          }
+        }}
+      />
     </>
   );
 };

@@ -435,7 +435,7 @@ export function TransactionLogsActionForm({
                             )}
                           >
                             Card Last 4 Digits
-                            {isEdit && <span className="text-red-500">*</span>}
+                            {/* {isEdit && <span className="text-red-500">*</span>} */}
                           </FormLabel>
 
                           <FormControl>

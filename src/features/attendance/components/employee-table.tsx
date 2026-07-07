@@ -683,14 +683,6 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
                           const dateStr = formatToYYYYMMDD(date);
                           const isDisabled =
                             !highWorkingHoursDates.includes(dateStr);
-                          console.log(
-                            "EmployeeTable Calendar Date:",
-                            dateStr,
-                            "isDisabled:",
-                            isDisabled,
-                            "highWorkingHoursDates:",
-                            highWorkingHoursDates
-                          );
                           return isDisabled;
                         }}
                         month={currentCalendarMonth}

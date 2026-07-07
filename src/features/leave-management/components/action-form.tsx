@@ -710,12 +710,6 @@ export function LeaveActionForm({
       holidayDatesSet,
       contextSandwichDays
     );
-    console.log("DEBUG_SANDWICH:", {
-      requestedDays,
-      watchLeaveDays,
-      holidayDatesSet: Array.from(holidayDatesSet),
-      contextSandwichDays,
-    });
     return buildLeaveAllocation({
       requestedDays,
       casualBalance: allocCasualBalance,
