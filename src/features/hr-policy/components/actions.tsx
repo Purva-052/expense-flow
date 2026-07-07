@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { DeleteModal } from "@/components/model/delete-model";
+// import { DeleteModal } from "@/components/model/delete-model";
 import { useHRPolicyStore } from "../stores/useHRPolicyStore";
 import {
   useCreateHRPolicy,
-  useDeleteHRPolicy,
+  // useDeleteHRPolicy,
   useUpdateHRPolicy,
   useUploadHRPolicyFile,
 } from "../services";
@@ -17,8 +17,8 @@ export function ActionFormModal() {
     useCreateHRPolicy();
   const { mutateAsync: updateMutate, isPending: isUpdateLoading } =
     useUpdateHRPolicy();
-  const { mutateAsync: deleteMutate, isPending: isDeleteLoading } =
-    useDeleteHRPolicy(currentRow?.id || "");
+  // const { mutateAsync: deleteMutate, isPending: isDeleteLoading } =
+  //   useDeleteHRPolicy(currentRow?.id || "");
   const { mutateAsync: uploadMutate, isPending: isUploadLoading } =
     useUploadHRPolicyFile();
 
@@ -76,9 +76,9 @@ export function ActionFormModal() {
     updateMutate(payload);
   };
 
-  const handleDelete = () => {
-    deleteMutate();
-  };
+  // const handleDelete = () => {
+  //   deleteMutate();
+  // };
 
   const handleCloseDialog = () => {
     setOpen(null);
@@ -107,14 +107,14 @@ export function ActionFormModal() {
             onOpenChange={handleCloseDialog}
             currentRow={currentRow}
           />
-          <DeleteModal
+          {/* <DeleteModal
             onConfirm={handleDelete}
             key={`hr-policy-delete-${currentRow.id}`}
             isOpen={open === "delete"}
             onClose={handleCloseDialog}
             itemName={currentRow.title}
             loading={isDeleteLoading}
-          />
+          /> */}
         </>
       )}
     </>
