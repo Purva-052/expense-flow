@@ -26,6 +26,12 @@ import { Download } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { SortingState } from "@tanstack/react-table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const TransactionPage = () => {
   const { open, setOpen } = useTransactionStore();
@@ -335,10 +341,17 @@ const TransactionPage = () => {
         onButtonClick={handleAdd}
         actions={
           hasExportPermission && (
-            <Button onClick={handleExportCSV} disabled={exportCSVLoading}>
-              <Download />
-              {exportCSVLoading ? "Exporting CSV ..." : "Export CSV"}
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button onClick={handleExportCSV} disabled={exportCSVLoading}>
+                    <Download />
+                    {exportCSVLoading ? "Exporting CSV ..." : "Export CSV"}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Export Transaction Logs Records</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )
         }
       >

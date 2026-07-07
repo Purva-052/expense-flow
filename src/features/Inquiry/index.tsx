@@ -62,6 +62,12 @@ import { toast } from "sonner";
 import { useExportCSV } from "./services";
 import { cn } from "@/lib/utils";
 import { InquiryPerformanceChart } from "./components/inquiry-performance-chart";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const InquiryPage = () => {
   const { open, setOpen } = useInquiryStore();
@@ -179,14 +185,18 @@ const InquiryPage = () => {
     }));
 
     const existingIds = new Set(baseUsers.map((u: any) => u.value));
-    const uniqueExtraUsers = extraUsers.filter((u) => !existingIds.has(u.value));
+    const uniqueExtraUsers = extraUsers.filter(
+      (u) => !existingIds.has(u.value)
+    );
 
     return [...uniqueExtraUsers, ...baseUsers];
   }, [usersList]);
 
   const selectedSalesPersonName = useMemo(() => {
     if (queryParams.salesPersonId) {
-      const match = salesPersonOptions.find((o) => o.value === queryParams.salesPersonId);
+      const match = salesPersonOptions.find(
+        (o) => o.value === queryParams.salesPersonId
+      );
       return match?.label || "Sales Person";
     }
     return queryParams.search || null;
@@ -763,10 +773,17 @@ const InquiryPage = () => {
         buttonText="Add Lead"
         onButtonClick={handleAdd}
         actions={
-          <Button onClick={handleExportCSV} disabled={exportCSVLoading}>
-            <Download />
-            {exportCSVLoading ? "Exporting CSV ..." : "Export CSV"}
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button onClick={handleExportCSV} disabled={exportCSVLoading}>
+                  <Download />
+                  {exportCSVLoading ? "Exporting CSV ..." : "Export CSV"}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Export Service Inquiries Records</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         }
         showActionButton={
           userRole === roles.BDE ||
