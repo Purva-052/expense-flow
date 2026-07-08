@@ -46,7 +46,7 @@ const TransactionPage = () => {
     userId: parseAsInteger,
     transactionStartDate: parseAsString,
     transactionEndDate: parseAsString,
-    tab: parseAsString.withDefault("requests"),
+    tab: parseAsString.withDefault("all"),
     sortBy: parseAsString,
     sortOrder: parseAsString,
   });
