@@ -28,15 +28,16 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 
-// Status to badge variant mapping
-const statusVariantMap: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline" | "success" | "warning"
-> = {
-  pending: "warning",
-  approved: "success",
-  rejected: "destructive",
-  completed: "default",
+// Status to badge styling mapping
+const statusStyleMap: Record<string, string> = {
+  pending:
+    "bg-amber-500 hover:bg-amber-600 text-white dark:bg-amber-600 dark:hover:bg-amber-700 font-semibold border-transparent",
+  approved:
+    "bg-emerald-500 hover:bg-emerald-600 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700 font-semibold border-transparent",
+  completed:
+    "bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-800 font-semibold border-transparent",
+  rejected:
+    "bg-rose-600 hover:bg-rose-700 text-white dark:bg-rose-700 dark:hover:bg-rose-800 font-semibold border-transparent",
 };
 
 // Status value to label mapping
@@ -62,17 +63,17 @@ const transactionTypeLabelMap: Record<string, string> = {
 };
 
 // // Subscription cycle styling maps
-// const subscriptionCycleStyleMap: Record<string, string> = {
-//   monthly:
-//     "bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-300 dark:border-cyan-800/30",
-//   yearly:
-//     "bg-pink-50 text-pink-700 border-pink-200 dark:bg-pink-900/20 dark:text-pink-300 dark:border-pink-800/30",
-// };
+const subscriptionCycleStyleMap: Record<string, string> = {
+  monthly:
+    "bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-300 dark:border-cyan-800/30",
+  yearly:
+    "bg-pink-50 text-pink-700 border-pink-200 dark:bg-pink-900/20 dark:text-pink-300 dark:border-pink-800/30",
+};
 
-// const subscriptionCycleLabelMap: Record<string, string> = {
-//   monthly: "Monthly",
-//   yearly: "Yearly",
-// };
+const subscriptionCycleLabelMap: Record<string, string> = {
+  monthly: "Monthly",
+  yearly: "Yearly",
+};
 
 export const columns: ColumnDef<any>[] = [
   {
@@ -154,13 +155,16 @@ export const columns: ColumnDef<any>[] = [
       if (!status) {
         return <span className="text-sm">-</span>;
       }
-      const variant = statusVariantMap[status] || "default";
+      const customClass =
+        statusStyleMap[status] || "bg-muted text-muted-foreground";
       const label = statusLabelMap[status] || status;
 
       if (status === "approved") {
         return (
           <div className="flex items-center gap-1.5">
-            <Badge variant={variant}>{label}</Badge>
+            <Badge variant="secondary" className={customClass}>
+              {label}
+            </Badge>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -178,7 +182,11 @@ export const columns: ColumnDef<any>[] = [
         );
       }
 
-      return <Badge variant={variant}>{label}</Badge>;
+      return (
+        <Badge variant="secondary" className={customClass}>
+          {label}
+        </Badge>
+      );
     },
     enableSorting: false,
   },
@@ -204,28 +212,28 @@ export const columns: ColumnDef<any>[] = [
     },
     enableSorting: false,
   },
-  // {
-  //   accessorKey: "subscriptionCycle",
-  //   header: "Subscription Cycle",
-  //   cell: ({ row }) => {
-  //     const subscriptionCycle = row.original.subscriptionCycle;
-  //     if (!subscriptionCycle) return <span className="text-sm">-</span>;
+  {
+    accessorKey: "subscriptionCycle",
+    header: "Subscription Cycle",
+    cell: ({ row }) => {
+      const subscriptionCycle = row.original.subscriptionCycle;
+      if (!subscriptionCycle) return <span className="text-sm">-</span>;
 
-  //     const label =
-  //       subscriptionCycleLabelMap[subscriptionCycle] ||
-  //       subscriptionCycle.charAt(0).toUpperCase() + subscriptionCycle.slice(1);
-  //     const customClass =
-  //       subscriptionCycleStyleMap[subscriptionCycle] ||
-  //       "bg-muted text-muted-foreground";
+      const label =
+        subscriptionCycleLabelMap[subscriptionCycle] ||
+        subscriptionCycle.charAt(0).toUpperCase() + subscriptionCycle.slice(1);
+      const customClass =
+        subscriptionCycleStyleMap[subscriptionCycle] ||
+        "bg-muted text-muted-foreground";
 
-  //     return (
-  //       <Badge variant="outline" className={customClass}>
-  //         {label}
-  //       </Badge>
-  //     );
-  //   },
-  //   enableSorting: false,
-  // },
+      return (
+        <Badge variant="outline" className={customClass}>
+          {label}
+        </Badge>
+      );
+    },
+    enableSorting: false,
+  },
   // {
   //   accessorKey: "cardLast4",
   //   header: "Card Last 4 Digits",
