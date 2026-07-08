@@ -68,6 +68,7 @@ const TransactionPage = () => {
 
   const getStatusFromTab = (tab: string) => {
     if (tab === "completed") return ["completed"];
+    if (tab === "all") return ["pending", "approved", "completed", "rejected"];
     if (tab === "rejected") return ["rejected"];
     return ["pending", "approved"];
   };
@@ -365,6 +366,9 @@ const TransactionPage = () => {
           className="w-full"
         >
           <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border border-rose-100/50 h-9 w-fit">
+            <TabsTrigger value="all" className={tabTriggerClass}>
+              All
+            </TabsTrigger>
             <TabsTrigger value="requests" className={tabTriggerClass}>
               Pending & Approved
             </TabsTrigger>

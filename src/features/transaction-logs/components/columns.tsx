@@ -49,17 +49,17 @@ const statusLabelMap = TransactionTypeStatus.reduce(
 );
 
 // Transaction type styling maps
-// const transactionTypeStyleMap: Record<string, string> = {
-//   onetime:
-//     "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800/30",
-//   subscription:
-//     "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800/30",
-// };
+const transactionTypeStyleMap: Record<string, string> = {
+  onetime:
+    "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800/30",
+  subscription:
+    "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800/30",
+};
 
-// const transactionTypeLabelMap: Record<string, string> = {
-//   onetime: "One Time",
-//   subscription: "Subscription",
-// };
+const transactionTypeLabelMap: Record<string, string> = {
+  onetime: "One Time",
+  subscription: "Subscription",
+};
 
 // // Subscription cycle styling maps
 // const subscriptionCycleStyleMap: Record<string, string> = {
@@ -182,28 +182,28 @@ export const columns: ColumnDef<any>[] = [
     },
     enableSorting: false,
   },
-  // {
-  //   accessorKey: "transactionType",
-  //   header: "Transaction Type",
-  //   cell: ({ row }) => {
-  //     const transactionType = row.original.transactionType;
-  //     if (!transactionType) return <span className="text-sm">-</span>;
+  {
+    accessorKey: "transactionType",
+    header: "Transaction Type",
+    cell: ({ row }) => {
+      const transactionType = row.original.transactionType;
+      if (!transactionType) return <span className="text-sm">-</span>;
 
-  //     const label =
-  //       transactionTypeLabelMap[transactionType] ||
-  //       transactionType.charAt(0).toUpperCase() + transactionType.slice(1);
-  //     const customClass =
-  //       transactionTypeStyleMap[transactionType] ||
-  //       "bg-muted text-muted-foreground";
+      const label =
+        transactionTypeLabelMap[transactionType] ||
+        transactionType.charAt(0).toUpperCase() + transactionType.slice(1);
+      const customClass =
+        transactionTypeStyleMap[transactionType] ||
+        "bg-muted text-muted-foreground";
 
-  //     return (
-  //       <Badge variant="outline" className={customClass}>
-  //         {label}
-  //       </Badge>
-  //     );
-  //   },
-  //   enableSorting: false,
-  // },
+      return (
+        <Badge variant="outline" className={customClass}>
+          {label}
+        </Badge>
+      );
+    },
+    enableSorting: false,
+  },
   // {
   //   accessorKey: "subscriptionCycle",
   //   header: "Subscription Cycle",
