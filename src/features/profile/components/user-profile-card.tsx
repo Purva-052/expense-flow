@@ -627,7 +627,7 @@ export const UserProfileCard = ({
   return (
     <div className="w-full space-y-6 sm:space-y-8">
       {/* ================= HEADER ================= */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 w-full">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 w-full mt-8 py-4">
         <div className="bg-card text-foreground py-12 rounded-2xl border border-border relative overflow-hidden shadow-lg">
           {/* Glowing mesh blobs */}
           <div className="absolute right-0 top-0 w-96 h-96 bg-rose-500/10 dark:bg-rose-500/15 rounded-full blur-3xl pointer-events-none" />
