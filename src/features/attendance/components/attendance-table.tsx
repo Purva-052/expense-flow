@@ -273,6 +273,10 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
   //   ? Number(allocations.workingDaysAllowed)
   //   : 3;
 
+  const [applySecurityDialogOpen, setApplySecurityDialogOpen] = useState(false);
+  const { mutateAsync: verifyApplyPassword, isPending: isVerifyingApply } =
+    useVerifyPrivacyPassword();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRegDate, _setSelectedRegDate] = useState("");
   const [compensatoryDate, setCompensatoryDate] = useState("");
@@ -312,8 +316,12 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
 
   const queryClient = useQueryClient();
   useRegularizationAction(() => {
-    queryClient.invalidateQueries({ queryKey: [API.attendance.regularization_list] });
-    queryClient.invalidateQueries({ queryKey: [API.attendance.compensatory_date] });
+    queryClient.invalidateQueries({
+      queryKey: [API.attendance.regularization_list],
+    });
+    queryClient.invalidateQueries({
+      queryKey: [API.attendance.compensatory_date],
+    });
   });
 
   const { mutate: createRegularization, isPending: isSubmitting } =
@@ -368,12 +376,16 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
       return;
     }
 
-    createRegularization({
-      employeeId: Number(resolvedEmpId),
-      regularizationDate: selectedRegDate,
-      ...(isAdmin ? {} : { compensatoryDate }),
-      reason: reason.trim(),
-    });
+    if (isAdmin) {
+      setApplySecurityDialogOpen(true);
+    } else {
+      createRegularization({
+        employeeId: Number(resolvedEmpId),
+        regularizationDate: selectedRegDate,
+        ...(isAdmin ? {} : { compensatoryDate }),
+        reason: reason.trim(),
+      });
+    }
   };
 
   const columns = useMemo<ColumnDef<AttendanceLogRow>[]>(
@@ -580,7 +592,10 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
           }
 
           return (
-            <div className="w-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+            <div
+              className="w-full flex items-center justify-center"
+              onClick={(e) => e.stopPropagation()}
+            >
               <Button
                 variant="outline"
                 size="sm"
@@ -643,8 +658,23 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
         />
       </div>
 
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+      <Dialog open={isModalOpen} onOpenChange={(open) => {
+        if (!open && applySecurityDialogOpen) return;
+        setIsModalOpen(open);
+      }}>
+        <DialogContent
+          className="sm:max-w-[425px]"
+          onPointerDownOutside={(e) => {
+            if (applySecurityDialogOpen) {
+              e.preventDefault();
+            }
+          }}
+          onInteractOutside={(e) => {
+            if (applySecurityDialogOpen) {
+              e.preventDefault();
+            }
+          }}
+        >
           <DialogHeader>
             <DialogTitle>Apply Attendance Regularization</DialogTitle>
             <DialogDescription>
@@ -671,8 +701,8 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                   </div>
                 ) : (
                   <Popover
-                    open={isCalendarOpen}
-                    onOpenChange={setIsCalendarOpen}
+                     open={isCalendarOpen}
+                     onOpenChange={setIsCalendarOpen}
                   >
                     <PopoverTrigger asChild>
                       <Button
@@ -753,6 +783,25 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
           </form>
         </DialogContent>
       </Dialog>
+
+      {isAdmin && (
+        <SecurityPasswordDialog
+          open={applySecurityDialogOpen}
+          onOpenChange={setApplySecurityDialogOpen}
+          title="Regularization Authorization"
+          description="Please enter the privacy password to submit this regularization request."
+          isLoading={isVerifyingApply}
+          onConfirm={async (password) => {
+            await verifyApplyPassword({ privacyPassword: password });
+            createRegularization({
+              employeeId: Number(resolvedEmpId),
+              regularizationDate: selectedRegDate,
+              reason: reason.trim(),
+            });
+            setApplySecurityDialogOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 };
@@ -827,7 +876,8 @@ export const RegularizationRequestsPanel: React.FC<{
   const [selectedRejectId, setSelectedRejectId] = useState<number | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [securityDialogOpen, setSecurityDialogOpen] = useState(false);
-  const { mutateAsync: verifyPassword, isPending: isVerifying } = useVerifyPrivacyPassword();
+  const { mutateAsync: verifyPassword, isPending: isVerifying } =
+    useVerifyPrivacyPassword();
   const [pendingAction, setPendingAction] = useState<{
     id: number;
     status: "approved" | "rejected";
@@ -1023,10 +1073,19 @@ export const RegularizationRequestsPanel: React.FC<{
                 </tr>
               ) : (
                 requests.map((req: any) => {
-                  const cfg = statusConfig[req.status] || statusConfig["pending"];
-                  const employeeName = req.employee?.fullName || req.requestedByUser?.fullName || req.user?.name || req.user?.fullName || "-";
+                  const cfg =
+                    statusConfig[req.status] || statusConfig["pending"];
+                  const employeeName =
+                    req.employee?.fullName ||
+                    req.requestedByUser?.fullName ||
+                    req.user?.name ||
+                    req.user?.fullName ||
+                    "-";
                   return (
-                    <tr key={req.id} className="hover:bg-muted/10 transition-colors">
+                    <tr
+                      key={req.id}
+                      className="hover:bg-muted/10 transition-colors"
+                    >
                       {canFilterEmployees && (
                         <td className="px-4 py-2.5 font-bold text-foreground">
                           {employeeName}
@@ -1187,7 +1246,7 @@ export const RegularizationRequestsPanel: React.FC<{
         open={securityDialogOpen}
         onOpenChange={setSecurityDialogOpen}
         title="Regularization Verification"
-        description={`Please enter the security password to ${pendingAction?.status === "approved" ? "approve" : "reject"} this regularization request.`}
+        description={`Please enter the privacy password to ${pendingAction?.status === "approved" ? "approve" : "reject"} this regularization request.`}
         isLoading={isVerifying}
         onConfirm={async (password) => {
           await verifyPassword({ privacyPassword: password });
@@ -1195,7 +1254,9 @@ export const RegularizationRequestsPanel: React.FC<{
             performAction({
               id: pendingAction.id,
               status: pendingAction.status,
-              ...(pendingAction.status === "rejected" ? { rejectionReason: pendingAction.rejectionReason } : {})
+              ...(pendingAction.status === "rejected"
+                ? { rejectionReason: pendingAction.rejectionReason }
+                : {}),
             });
             setPendingAction(null);
           }

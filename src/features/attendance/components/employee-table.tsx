@@ -13,6 +13,8 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { SecurityPasswordDialog } from "@/components/shared/security-password-dialog";
+import { useVerifyPrivacyPassword } from "@/features/profile/services";
 import {
   Popover,
   PopoverContent,
@@ -239,6 +241,10 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
   ).toLowerCase();
   const isAdmin = roleName === roles.ADMIN;
 
+  const [applySecurityDialogOpen, setApplySecurityDialogOpen] = useState(false);
+  const { mutateAsync: verifyApplyPassword, isPending: isVerifyingApply } =
+    useVerifyPrivacyPassword();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRegDate, _setSelectedRegDate] = useState("");
   const [compensatoryDate, setCompensatoryDate] = useState("");
@@ -338,12 +344,16 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
       return;
     }
 
-    createRegularization({
-      employeeCode: Number(resolvedEmpId),
-      regularizationDate: selectedRegDate,
-      ...(isAdmin ? {} : { compensatoryDate }),
-      reason: reason.trim(),
-    });
+    if (isAdmin) {
+      setApplySecurityDialogOpen(true);
+    } else {
+      createRegularization({
+        employeeCode: Number(resolvedEmpId),
+        regularizationDate: selectedRegDate,
+        ...(isAdmin ? {} : { compensatoryDate }),
+        reason: reason.trim(),
+      });
+    }
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -617,8 +627,23 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
         />
       </div>
 
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+      <Dialog open={isModalOpen} onOpenChange={(open) => {
+        if (!open && applySecurityDialogOpen) return;
+        setIsModalOpen(open);
+      }}>
+        <DialogContent
+          className="sm:max-w-[425px]"
+          onPointerDownOutside={(e) => {
+            if (applySecurityDialogOpen) {
+              e.preventDefault();
+            }
+          }}
+          onInteractOutside={(e) => {
+            if (applySecurityDialogOpen) {
+              e.preventDefault();
+            }
+          }}
+        >
           <DialogHeader>
             <DialogTitle>Apply Attendance Regularization</DialogTitle>
             <DialogDescription>
@@ -727,6 +752,25 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
           </form>
         </DialogContent>
       </Dialog>
+
+      {isAdmin && (
+        <SecurityPasswordDialog
+          open={applySecurityDialogOpen}
+          onOpenChange={setApplySecurityDialogOpen}
+          title="Regularization Authorization"
+          description="Please enter the privacy password to submit this regularization request."
+          isLoading={isVerifyingApply}
+          onConfirm={async (password) => {
+            await verifyApplyPassword({ privacyPassword: password });
+            createRegularization({
+              employeeCode: Number(resolvedEmpId),
+              regularizationDate: selectedRegDate,
+              reason: reason.trim(),
+            });
+            setApplySecurityDialogOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 };
