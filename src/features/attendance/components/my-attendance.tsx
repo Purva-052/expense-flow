@@ -159,7 +159,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           (u: any) =>
             u.mewurkEmployeeCode &&
             String(u.mewurkEmployeeCode).trim() ===
-            String(activeEmployee.code).trim()
+              String(activeEmployee.code).trim()
         );
         if (match) return match;
       }
@@ -170,7 +170,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           (u: any) =>
             u.email &&
             u.email.toLowerCase().trim() ===
-            activeEmployee.email.toLowerCase().trim()
+              activeEmployee.email.toLowerCase().trim()
         );
         if (match) return match;
       }
@@ -181,7 +181,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           (u: any) =>
             u.fullName &&
             u.fullName.toLowerCase().trim() ===
-            activeEmployee.name.toLowerCase().trim()
+              activeEmployee.name.toLowerCase().trim()
         );
         if (match) return match;
       }
@@ -274,52 +274,32 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
     fetchEmployeesList();
   }, [canFilterEmployees]);
 
-  const handleEmployeeSelect = async (code: string) => {
+  const handleEmployeeSelect = (code: string) => {
     if (!code || code === "none") {
       setSelectedFilterEmployee(null);
       return;
     }
-    try {
-      const empResponse = await MewurkService.fetchAttendanceEmployees(code);
-      const list = Array.isArray(empResponse)
-        ? empResponse
-        : empResponse?.data || [];
-      const match = list.find(
-        (e: any) => String(e.employeeCode) === String(code)
-      );
-
-      let empName = "";
-      if (match) {
-        empName =
-          match.employeeName ||
-          match.fullName ||
-          `${match.firstName || ""} ${match.lastName || ""}`.trim() ||
-          String(match.employeeCode);
-      } else {
-        const localMatch = allEmployees.find(
-          (e) => String(e.employeeCode) === String(code)
-        );
-        if (localMatch) {
-          empName =
-            localMatch.employeeName ||
-            (localMatch as any).fullName ||
-            `${(localMatch as any).firstName || ""} ${(localMatch as any).lastName || ""}`.trim() ||
-            String(localMatch.employeeCode);
-        }
-      }
-
-      setSelectedFilterEmployee({
-        id: code,
-        name: empName || "Unknown Employee",
-        role: "Employee",
-        avatar: "",
-        phone: "-",
-        email: "-",
-        code: code,
-      });
-    } catch (err) {
-      console.error("Error retrieving selected employee info:", err);
+    const localMatch = allEmployees.find(
+      (e) => String(e.employeeCode) === String(code)
+    );
+    let empName = "";
+    if (localMatch) {
+      empName =
+        localMatch.employeeName ||
+        (localMatch as any).fullName ||
+        `${(localMatch as any).firstName || ""} ${(localMatch as any).lastName || ""}`.trim() ||
+        String(localMatch.employeeCode);
     }
+
+    setSelectedFilterEmployee({
+      id: code,
+      name: empName || "Unknown Employee",
+      role: "Employee",
+      avatar: "",
+      phone: "-",
+      email: "-",
+      code: code,
+    });
   };
 
   const [monthlyData, setMonthlyData] = useState<any | null>(null);
@@ -439,7 +419,7 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
             (e.email && e.email.toLowerCase() === targetEmail.toLowerCase()) ||
             (e.employeeName &&
               e.employeeName.toLowerCase().trim() ===
-              targetName.toLowerCase().trim())
+                targetName.toLowerCase().trim())
         );
 
         if (!match) {
@@ -823,7 +803,11 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
             statusMap[rawStatus] || "";
           if (!statusVal) {
             const statusName = rawStatus.toLowerCase();
-            if (statusName.includes("half day leave") || statusName.includes("half leave")) statusVal = "HL";
+            if (
+              statusName.includes("half day leave") ||
+              statusName.includes("half leave")
+            )
+              statusVal = "HL";
             else if (statusName.includes("present")) statusVal = "P";
             else if (statusName.includes("half")) statusVal = "AH";
             else if (statusName.includes("leave")) statusVal = "L";
@@ -850,7 +834,11 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
             log.originalStatus ||
             ""
           ).toLowerCase();
-          if (statusName.includes("half day leave") || statusName.includes("half leave")) status = "HL";
+          if (
+            statusName.includes("half day leave") ||
+            statusName.includes("half leave")
+          )
+            status = "HL";
           else if (statusName.includes("present")) status = "P";
           else if (statusName.includes("half")) status = "AH";
           else if (statusName.includes("leave")) status = "L";
@@ -1007,21 +995,22 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
     </div>
   );
 
-  const monthNavLabel = `${[
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ][selectedMonth - 1]
-    } ${selectedYear}`;
+  const monthNavLabel = `${
+    [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ][selectedMonth - 1]
+  } ${selectedYear}`;
 
   const goToPreviousMonth = () => {
     const d = new Date(selectedYear, selectedMonth - 2, 1);
@@ -1143,8 +1132,12 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
                       detailedLogs={detailedLogs}
                       onRowClick={handleRowClick}
                       monthNavigator={monthNavigatorProps}
-                      employeeId={activeEmployee ? Number(activeEmployee.id) : undefined}
-                      lateInDays={monthlyData ? (monthlyData.lateInDays ?? 0) : undefined}
+                      employeeId={
+                        activeEmployee ? Number(activeEmployee.id) : undefined
+                      }
+                      lateInDays={
+                        monthlyData ? (monthlyData.lateInDays ?? 0) : undefined
+                      }
                     />
                   )}
                 </div>

@@ -26,7 +26,8 @@ const formatDateRange = (startStr: string, endStr: string) => {
   try {
     const partsStart = startStr.split("-");
     const partsEnd = endStr.split("-");
-    if (partsStart.length < 3 || partsEnd.length < 3) return `${startStr} - ${endStr}`;
+    if (partsStart.length < 3 || partsEnd.length < 3)
+      return `${startStr} - ${endStr}`;
     const startFormatted = `${partsStart[2]}/${partsStart[1]}/${partsStart[0]}`;
     const endFormatted = `${partsEnd[2]}/${partsEnd[1]}/${partsEnd[0]}`;
     return `${startFormatted} - ${endFormatted}`;
@@ -75,7 +76,10 @@ export const LateInLeaveDeductions: React.FC = () => {
       weekStartDate: string;
       action: "deduct" | "ignore";
     }) => {
-      const url = API.attendance.late_deduction_action(String(employeeId), weekStartDate);
+      const url = API.attendance.late_deduction_action(
+        String(employeeId),
+        weekStartDate
+      );
 
       return await instance.post({
         url,
