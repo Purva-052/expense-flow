@@ -658,10 +658,13 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
         />
       </div>
 
-      <Dialog open={isModalOpen} onOpenChange={(open) => {
-        if (!open && applySecurityDialogOpen) return;
-        setIsModalOpen(open);
-      }}>
+      <Dialog
+        open={isModalOpen}
+        onOpenChange={(open) => {
+          if (!open && applySecurityDialogOpen) return;
+          setIsModalOpen(open);
+        }}
+      >
         <DialogContent
           className="sm:max-w-[425px]"
           onPointerDownOutside={(e) => {
@@ -701,8 +704,8 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                   </div>
                 ) : (
                   <Popover
-                     open={isCalendarOpen}
-                     onOpenChange={setIsCalendarOpen}
+                    open={isCalendarOpen}
+                    onOpenChange={setIsCalendarOpen}
                   >
                     <PopoverTrigger asChild>
                       <Button
