@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { MobileInventorySchema, TMobileInventorySchema } from "../schema";
 import CustomDropDownSearchable from "@/components/shared/custome-searchable-dropdown";
 import { useGetBrandDropdown } from "@/features/system-inventory/services";
+import { useGetUserDropdownList } from "@/features/users/services";
 
 interface Props {
   currentRow?: any;
@@ -42,15 +43,19 @@ export function MobileInventoryForm({
   const { data: brandDetails, isPending: brandLoading }: any =
     useGetBrandDropdown();
 
+  const { data: usersList, isPending: usersLoading }: any =
+    useGetUserDropdownList({ role: ["team_lead", "project_manager"] });
+
   const form = useForm<TMobileInventorySchema>({
     resolver: zodResolver(MobileInventorySchema) as any,
     defaultValues: {
+      ...currentRow,
       brandId: currentRow?.brand?.id || currentRow?.brandId || undefined,
       model: currentRow?.model || "",
       color: currentRow?.color || "",
       os: currentRow?.os || "",
       serialNumber: currentRow?.serialNumber || "",
-      ...currentRow,
+      allocateTo: currentRow?.allocateTo?.id || currentRow?.allocateTo || undefined,
     },
   });
 
@@ -159,6 +164,20 @@ export function MobileInventoryForm({
                     <FormMessage />
                   </FormItem>
                 )}
+              />
+
+              <CustomDropDownSearchable
+                form={form}
+                name="allocateTo"
+                label="Allocate To (User)"
+                options={usersList?.data?.map((u: any) => ({
+                  value: u.id,
+                  label: u.fullName || u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim() || `User ${u.id}`,
+                }))}
+                placeholder="Select User"
+                searchEnabled={true}
+                isLoading={usersLoading}
+                isClearable={true}
               />
             </form>
           </Form>

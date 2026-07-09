@@ -10,13 +10,18 @@ export function ActionFormModal() {
     useCreateMobileInventory();
 
   const handleCreate = (values: TMobileInventorySchema) => {
-    const payload = {
+    const payload: any = {
       brandId: values.brandId,
       model: values.model,
       color: values.color,
       serialNumber: values.serialNumber,
       os: values.os,
     };
+    if (values.allocateTo !== undefined) {
+      payload.allocateTo = values.allocateTo ? Number(values.allocateTo) : null;
+    } else {
+      payload.allocateTo = null;
+    }
     createMutate(payload);
   };
 
@@ -67,13 +72,18 @@ function EditFormWrapper({ currentRow, open, onClose }: EditWrapperProps) {
     useUpdateMobileInventory(currentRow?.id || "");
 
   const handleEdit = (values: TMobileInventorySchema) => {
-    const payload = {
+    const payload: any = {
       brandId: values.brandId,
       model: values.model,
       color: values.color,
       serialNumber: values.serialNumber,
       os: values.os,
     };
+    if (values.allocateTo !== undefined) {
+      payload.allocateTo = values.allocateTo ? Number(values.allocateTo) : null;
+    } else {
+      payload.allocateTo = null;
+    }
     updateMutate(payload);
   };
 
