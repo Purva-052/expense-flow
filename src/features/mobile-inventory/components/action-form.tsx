@@ -177,7 +177,6 @@ export function MobileInventoryForm({
                 placeholder="Select User"
                 searchEnabled={true}
                 isLoading={usersLoading}
-                isClearable={true}
               />
             </form>
           </Form>
