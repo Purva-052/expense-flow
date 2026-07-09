@@ -54,18 +54,15 @@ export const columns: ColumnDef<any>[] = [
     accessorKey: "serialNumber",
     header: "Serial Number",
   },
-  // {
-  //   accessorKey: "isActive",
-  //   header: "Active Status",
-  //   cell: ({ row }) => {
-  //     const active = row.original.isActive;
-  //     return (
-  //       <Badge variant={active ? "default" : "destructive"}>
-  //         {active ? "Active" : "Inactive"}
-  //       </Badge>
-  //     );
-  //   },
-  // },
+  {
+    accessorKey: "allocateTo.fullName",
+    header: "Allocated To",
+    cell: ({ row }) => {
+      const allocateTo = row.original.allocateTo;
+      if (!allocateTo) return "-";
+      return <span>{allocateTo.fullName}</span>;
+    },
+  },
   {
     id: "actions",
     header: "Actions",

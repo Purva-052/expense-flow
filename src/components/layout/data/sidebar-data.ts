@@ -122,6 +122,7 @@ export const sidebarData: SidebarData = {
           url: "/leave-management",
           icon: Plane,
           allowUserIDs: [86],
+          allowedTech:[29],
           requiredRoles: [
             roles.ADMIN,
             roles.TEAM_LEAD,
@@ -134,7 +135,8 @@ export const sidebarData: SidebarData = {
           title: "Attendance Management",
           url: "/attendance",
           icon: FingerprintPattern,
-          allowUserIDs: [86],
+          // allowUserIDs: [86],
+          allowedTech:[29],
           requiredRoles: [
             roles.ADMIN,
             roles.TEAM_LEAD,
@@ -282,14 +284,14 @@ export const sidebarData: SidebarData = {
           title: "Mobile Inventory",
           url: "/mobile-inventory",
           icon: Smartphone,
-          allowedTech: [29, 37],
+          allowedTech: [37],
           requiredRoles: [roles.ADMIN, roles.TEAM_LEAD, roles.PROJECT_MANAGER],
         },
         {
           title: "Client Inventory",
           url: "/client-inventory",
           icon: Laptop,
-          allowedTech: [29, 37],
+          allowedTech: [37],
           requiredRoles: [roles.ADMIN, roles.PROJECT_MANAGER, roles.TEAM_LEAD],
         },
         {

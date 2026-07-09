@@ -42,6 +42,14 @@ export const MobileInventorySchema = z.object({
     .max(100, {
       message: "Serial number cannot exceed 100 characters.",
     }),
+  allocateTo: z.preprocess(
+    (val) => {
+      if (val === "" || val === null || val === undefined) return undefined;
+      const num = Number(val);
+      return isNaN(num) ? undefined : num;
+    },
+    z.number().optional()
+  ),
 });
 
 export type TMobileInventorySchema = z.infer<typeof MobileInventorySchema>;
