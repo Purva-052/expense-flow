@@ -76,7 +76,7 @@ export const EmployeeHeader: React.FC<EmployeeHeaderProps> = ({
           >
             <Network className="h-3.5 w-3.5 text-blue-500 dark:text-blue-400" />
             <span>Org Chart</span>
-          </Button> */} 
+          </Button> */}
         </div>
       </div>
     </>

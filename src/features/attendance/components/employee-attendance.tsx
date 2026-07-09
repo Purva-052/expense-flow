@@ -199,7 +199,9 @@ export const EmployeeAttendance: React.FC = () => {
   const [summaryEmployeeCode, setSummaryEmployeeCode] = useState<string | null>(
     null
   );
-  const [summaryStatus, setSummaryStatus] = useState<"active" | "inactive">("active");
+  const [summaryStatus, setSummaryStatus] = useState<"active" | "inactive">(
+    "active"
+  );
 
   // Day Detail Modal states
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
@@ -277,7 +279,14 @@ export const EmployeeAttendance: React.FC = () => {
       employeeCodes: summaryEmployeeCode ? [summaryEmployeeCode] : undefined,
       status: summaryStatus,
     }),
-    [currentPage, itemsPerPage, selectedMonth, selectedYear, summaryEmployeeCode, summaryStatus]
+    [
+      currentPage,
+      itemsPerPage,
+      selectedMonth,
+      selectedYear,
+      summaryEmployeeCode,
+      summaryStatus,
+    ]
   );
 
   const { data: summaryData, isPending: isLoadingSummary } =
@@ -386,8 +395,6 @@ export const EmployeeAttendance: React.FC = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [summaryDateRange, summaryEmployeeCode, summaryStatus]);
-
-
 
   // Mock Overtime Requests
   const [overtimes, setOvertimes] = useState<RequestItem[]>([]);
@@ -519,7 +526,7 @@ export const EmployeeAttendance: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      {(
+      {
         <>
           <div className="flex flex-col lg:flex-row lg:items-center gap-3">
             <MonthYearPicker
@@ -547,7 +554,9 @@ export const EmployeeAttendance: React.FC = () => {
 
             <Select
               value={summaryStatus}
-              onValueChange={(val: "active" | "inactive") => setSummaryStatus(val)}
+              onValueChange={(val: "active" | "inactive") =>
+                setSummaryStatus(val)
+              }
             >
               <SelectTrigger className="w-full lg:w-[120px] h-9 bg-background border-border text-xs rounded-lg text-foreground">
                 <SelectValue placeholder="Status" />
@@ -754,7 +763,8 @@ export const EmployeeAttendance: React.FC = () => {
                         {/* Individual Day statuses */}
                         {summaryDateColumns.map(({ dateStr }) => {
                           const status = emp.dailyStatus[dateStr] || "";
-                          const isCorrected = emp.dailyIsCorrected?.[dateStr] ?? false;
+                          const isCorrected =
+                            emp.dailyIsCorrected?.[dateStr] ?? false;
                           return (
                             <td
                               key={dateStr}
@@ -766,7 +776,9 @@ export const EmployeeAttendance: React.FC = () => {
                                   className={`${getCellClassName(status, dateStr)} cursor-pointer hover:scale-110 hover:shadow-md transition-transform`}
                                   onClick={() => handleDayClick(emp, dateStr)}
                                 >
-                                  {status ? `${status}${isCorrected ? "*" : ""}` : ""}
+                                  {status
+                                    ? `${status}${isCorrected ? "*" : ""}`
+                                    : ""}
                                 </span>
                               </div>
                             </td>
@@ -873,19 +885,16 @@ export const EmployeeAttendance: React.FC = () => {
             </div>
           )}
         </>
-      )}
+      }
 
       {/* Approvals tab implementations */}
-      {(activeTab === "overtime" ||
-        activeTab === "onduty") && (
+      {(activeTab === "overtime" || activeTab === "onduty") && (
         <Card className="p-5 bg-card border-border shadow-lg text-card-foreground">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
             <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">
               {activeTab === "overtime" && "Pending Overtime Approvals"}
               {activeTab === "onduty" && "Pending On Duty Approvals"}
             </h3>
-
-
           </div>
 
           <div className="overflow-x-auto">
@@ -1082,7 +1091,6 @@ export const EmployeeAttendance: React.FC = () => {
         </Card>
       )}
 
-
       {/* Day Detail Clock In/Out Modal */}
       <Dialog open={isDayModalOpen} onOpenChange={setIsDayModalOpen}>
         <DialogContent className="max-w-xl bg-card border-border shadow-2xl p-6 rounded-2xl text-card-foreground">
@@ -1138,7 +1146,7 @@ export const EmployeeAttendance: React.FC = () => {
                   </span>
                 </div>
 
-                <div className="bg-rose-500/10 border border-rose-500/25 px-3 py-1.5 rounded-lg text-right">
+                {/* <div className="bg-rose-500/10 border border-rose-500/25 px-3 py-1.5 rounded-lg text-right">
                   <span className="text-[10px] font-bold text-rose-500 block uppercase">
                     {dayModalData.shiftName || "GS01"} - General Shift
                   </span>
@@ -1168,7 +1176,7 @@ export const EmployeeAttendance: React.FC = () => {
                       return `${fmt(dayModalData.shiftStartTime)} to ${fmt(dayModalData.shiftEndTime)}`;
                     })()}
                   </span>
-                </div>
+                </div> */}
               </div>
 
               {/* Punches table */}

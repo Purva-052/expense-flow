@@ -18,10 +18,12 @@ import { useAuthStore } from "@/stores/use-auth-store";
 import { useGetUserDetails, useGetUsersList } from "../users/services";
 import { OrgChart, extractOrgChartUsers } from "../users/components/org-chart";
 import { useState, useMemo } from "react";
+import { SecurityPasswordModal } from "@/components/shared/security-password-modal";
 
 const ProfilePage = () => {
   const [open, setOpen] = useState(false);
   const [orgModalOpen, setOrgModalOpen] = useState(false);
+  const [securityPasswordModalOpen, setSecurityPasswordModalOpen] = useState(false);
   const { user } = useAuthStore();
   const userId = user?.user?.id;
 
@@ -29,6 +31,8 @@ const ProfilePage = () => {
     isLearning: true,
   });
   const userDetails = userDetailsData?.data;
+  
+  const isPrivacyPasswordSet = true;
 
   const { data: allUsersResponse, isPending: allUsersLoading } =
     useGetUsersList({
@@ -65,12 +69,16 @@ const ProfilePage = () => {
         </div>
       </div>
 
-      {/* --- Main Content: Dialog containing both cards --- */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        {/* User profile is the trigger for the dialog */}
-        <UserProfileCard user={userDetails} />
+      {/* User profile card */}
+      <UserProfileCard
+        user={userDetails}
+        onSecurityPasswordClick={() => setSecurityPasswordModalOpen(true)}
+        isPrivacyPasswordSet={isPrivacyPasswordSet}
+        onUpdatePasswordClick={() => setOpen(true)}
+      />
 
-        {/* Dialog content for updating the password */}
+      {/* Main Account Password Update Dialog */}
+      <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Update Password</DialogTitle>
@@ -81,6 +89,13 @@ const ProfilePage = () => {
           <UpdatePasswordCard onClose={() => setOpen(false)} />
         </DialogContent>
       </Dialog>
+
+      {/* Security Password Modal */}
+      <SecurityPasswordModal
+        open={securityPasswordModalOpen}
+        onOpenChange={setSecurityPasswordModalOpen}
+        isPrivacyPasswordSet={isPrivacyPasswordSet}
+      />
 
       {/* Org Chart Dialog */}
       <Dialog open={orgModalOpen} onOpenChange={setOrgModalOpen}>

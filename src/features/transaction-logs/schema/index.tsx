@@ -95,13 +95,6 @@ const transactionLogSchemaBase = z
 export const getTransactionLogSchema = (isEdit: boolean) =>
   transactionLogSchemaBase.superRefine((data, ctx) => {
     if (isEdit) {
-      if (!data.cardLast4) {
-        ctx.addIssue({
-          path: ["cardLast4"],
-          message: "Card Last 4 digits is required",
-          code: z.ZodIssueCode.custom,
-        });
-      }
       if (!data.transactionDate) {
         ctx.addIssue({
           path: ["transactionDate"],

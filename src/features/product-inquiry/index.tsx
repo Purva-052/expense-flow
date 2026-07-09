@@ -33,6 +33,12 @@ import { getColumns } from "./components/columns";
 import { ProductInquiryStats } from "./components/product-inquiry-stats";
 import { useGetProductInquiryList } from "./services";
 import { formatDate } from "@/utils/commonFunctions";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const ProductInquiryPage = () => {
   const { setOpen, silencedInquiries } = useProductInquiryStore();
@@ -133,10 +139,10 @@ const ProductInquiryPage = () => {
   const { data: tableData, isPending: loadingTable } = useGetProductInquiryList(
     currentView === "table"
       ? {
-        ...apiParams,
-        page: queryParams.currentPage,
-        limit: queryParams.pageSize,
-      }
+          ...apiParams,
+          page: queryParams.currentPage,
+          limit: queryParams.pageSize,
+        }
       : null
   );
 
@@ -333,50 +339,50 @@ const ProductInquiryPage = () => {
     // Status & Date Range filters: always shown when on Archive tab, or when drilled into a product on Active tab
     ...(isSearchActive || activeTab === "inactive"
       ? [
-        // Hide the status filter when the Won / Lost stat cards are selected
-        ...(queryParams.status === "won" || queryParams.status === "lost"
-          ? []
-          : [
-            {
-              type: "select" as const,
-              key: "status",
-              placeholder: "Filter by status",
-              value: queryParams.status || undefined,
-              onChange: handleStatusFilter,
-              options:
-                activeTab === "active"
-                  ? [
-                    { value: "in_progress", label: "In Progress" },
-                    ...PRODUCT_INQUIRY_STATUS_OPTIONS,
-                  ]
-                  : PRODUCT_INQUIRY_STATUS_OPTIONS.filter(
-                    (opt) =>
-                      opt.value === "lost" ||
-                      opt.value === "won" ||
-                      opt.value === "unqualified_lead"
-                  ),
+          // Hide the status filter when the Won / Lost stat cards are selected
+          ...(queryParams.status === "won" || queryParams.status === "lost"
+            ? []
+            : [
+                {
+                  type: "select" as const,
+                  key: "status",
+                  placeholder: "Filter by status",
+                  value: queryParams.status || undefined,
+                  onChange: handleStatusFilter,
+                  options:
+                    activeTab === "active"
+                      ? [
+                          { value: "in_progress", label: "In Progress" },
+                          ...PRODUCT_INQUIRY_STATUS_OPTIONS,
+                        ]
+                      : PRODUCT_INQUIRY_STATUS_OPTIONS.filter(
+                          (opt) =>
+                            opt.value === "lost" ||
+                            opt.value === "won" ||
+                            opt.value === "unqualified_lead"
+                        ),
+                },
+              ]),
+          {
+            type: "dateRange" as const,
+            key: "dateRange",
+            placeholder: "Filter by Date",
+            disable: { after: new Date() },
+            value: {
+              from: queryParams.fromDate
+                ? new Date(queryParams.fromDate)
+                : undefined,
+              to: queryParams.toDate ? new Date(queryParams.toDate) : undefined,
             },
-          ]),
-        {
-          type: "dateRange" as const,
-          key: "dateRange",
-          placeholder: "Filter by Date",
-          disable: { after: new Date() },
-          value: {
-            from: queryParams.fromDate
-              ? new Date(queryParams.fromDate)
-              : undefined,
-            to: queryParams.toDate ? new Date(queryParams.toDate) : undefined,
+            onChange: (range: { from?: Date; to?: Date } | undefined) => {
+              setQueryParams({
+                fromDate: formatDate(range?.from) ?? null,
+                toDate: formatDate(range?.to) ?? null,
+                currentPage: 1,
+              });
+            },
           },
-          onChange: (range: { from?: Date; to?: Date } | undefined) => {
-            setQueryParams({
-              fromDate: formatDate(range?.from) ?? null,
-              toDate: formatDate(range?.to) ?? null,
-              currentPage: 1,
-            });
-          },
-        },
-      ]
+        ]
       : []),
   ];
 
@@ -440,10 +446,17 @@ const ProductInquiryPage = () => {
         buttonText="Add Inquiry"
         onButtonClick={handleAdd}
         actions={
-          <Button onClick={handleExportCSV} disabled={exportCSVLoading}>
-            <Download />
-            {exportCSVLoading ? "Exporting CSV ..." : "Export CSV"}
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button onClick={handleExportCSV} disabled={exportCSVLoading}>
+                  <Download />
+                  {exportCSVLoading ? "Exporting CSV ..." : "Export CSV"}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Export Service Inquiries Records</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         }
       >
         Manage your product inquiries here.
@@ -453,7 +466,9 @@ const ProductInquiryPage = () => {
         <div className="flex items-center justify-between w-full">
           <Tabs
             value={activeTab}
-            onValueChange={(val) => handleTabChange(val as "active" | "inactive")}
+            onValueChange={(val) =>
+              handleTabChange(val as "active" | "inactive")
+            }
             className="w-auto"
           >
             <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border border-rose-100/50 h-9 w-fit">
@@ -509,8 +524,6 @@ const ProductInquiryPage = () => {
           />
         )}
 
-
-
         {/* Filters + View Toggle */}
         <div className="flex flex-wrap items-start gap-3">
           <div className="flex-1 min-w-0">
@@ -530,7 +543,7 @@ const ProductInquiryPage = () => {
                       tabTriggerClass,
                       "gap-2 px-3 h-8 text-xs font-medium transition-all",
                       view === "grid" &&
-                      "bg-background text-foreground shadow-sm"
+                        "bg-background text-foreground shadow-sm"
                     )}
                   >
                     <LayoutGrid className="h-4 w-4" />
@@ -554,7 +567,7 @@ const ProductInquiryPage = () => {
                     tabTriggerClass,
                     "gap-2 px-3 h-8 text-xs font-medium transition-all",
                     view === "table" &&
-                    "bg-background text-foreground shadow-sm"
+                      "bg-background text-foreground shadow-sm"
                   )}
                 >
                   <TableIcon className="h-4 w-4" />

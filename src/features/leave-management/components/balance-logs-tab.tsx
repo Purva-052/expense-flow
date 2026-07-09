@@ -5,7 +5,10 @@ import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import { formatDate } from "@/utils/commonFunctions";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
-import { useGetLeaveCreditHistory, useDeleteLeaveCreditHistory } from "../services";
+import {
+  useGetLeaveCreditHistory,
+  useDeleteLeaveCreditHistory,
+} from "../services";
 import {
   useGetUserDropdownList,
   useImportUsers,
@@ -13,6 +16,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { FileDown, Settings, Trash2 } from "lucide-react";
 import { DeleteModal } from "@/components/model/delete-model";
+import { SecurityPasswordDialog } from "@/components/shared/security-password-dialog";
+import { useVerifyPrivacyPassword } from "@/features/profile/services";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -43,6 +48,9 @@ export function BalanceLogsTab({ onAdjustLeavesClick }: BalanceLogsTabProps) {
 
   const [deleteLogOpen, setDeleteLogOpen] = useState(false);
   const [selectedLogForDelete, setSelectedLogForDelete] = useState<any>(null);
+  const [securityDialogOpen, setSecurityDialogOpen] = useState(false);
+  const { mutateAsync: verifyPassword, isPending: isVerifying } =
+    useVerifyPrivacyPassword();
 
   const [queryParams, setQueryParams] = useQueryStates({
     pageSize: parseAsInteger.withDefault(10),
@@ -455,7 +463,10 @@ export function BalanceLogsTab({ onAdjustLeavesClick }: BalanceLogsTabProps) {
                 ? "Importing..."
                 : "Import Leaves"}
             </Button>
-            <Button onClick={onAdjustLeavesClick} className="shrink-0 w-fit">
+            <Button
+              onClick={() => setSecurityDialogOpen(true)}
+              className="shrink-0 w-fit"
+            >
               <Settings className="mr-2 h-4 w-4" />
               Leave Settings
             </Button>
@@ -495,6 +506,18 @@ export function BalanceLogsTab({ onAdjustLeavesClick }: BalanceLogsTabProps) {
           log={selectedLogForDelete}
         />
       )}
+
+      <SecurityPasswordDialog
+        open={securityDialogOpen}
+        onOpenChange={setSecurityDialogOpen}
+        title="Leave Settings Verification"
+        description="Please enter the privacy password to modify leave settings."
+        isLoading={isVerifying}
+        onConfirm={async (password) => {
+          await verifyPassword({ privacyPassword: password });
+          onAdjustLeavesClick();
+        }}
+      />
     </div>
   );
 }
@@ -508,7 +531,10 @@ function BalanceLogDeleteModal({
   onClose: () => void;
   log: any;
 }) {
-  const { mutate: deleteLog, isPending } = useDeleteLeaveCreditHistory(log.id, onClose);
+  const { mutate: deleteLog, isPending } = useDeleteLeaveCreditHistory(
+    log.id,
+    onClose
+  );
 
   return (
     <DeleteModal

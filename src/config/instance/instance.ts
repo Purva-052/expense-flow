@@ -57,7 +57,10 @@ axiosInstance.interceptors.response.use(
   (error: AxiosError) => {
     const status = error.response?.status;
     if (status === 401) {
-      useAuthStore.getState().logout();
+      const isPrivacyPasswordRequest = error.config?.url?.includes("/privacy-password/");
+      if (!isPrivacyPasswordRequest) {
+        useAuthStore.getState().logout();
+      }
     }
     return Promise.reject(error);
   }

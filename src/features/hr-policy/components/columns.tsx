@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ColumnDef } from "@tanstack/react-table";
-import { Pencil, Trash2, FileText, ExternalLink } from "lucide-react";
+import { Pencil, FileText, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -30,7 +30,11 @@ export const getColumns = (isAdmin: boolean): ColumnDef<any>[] => {
             </a>
           );
         }
-        return <span className="font-semibold text-gray-900 dark:text-slate-100">{title}</span>;
+        return (
+          <span className="font-semibold text-gray-900 dark:text-slate-100">
+            {title}
+          </span>
+        );
       },
     },
     {
@@ -68,10 +72,10 @@ export const getColumns = (isAdmin: boolean): ColumnDef<any>[] => {
           setCurrentRow(policy);
         };
 
-        const handleDelete = () => {
-          setOpen("delete");
-          setCurrentRow(policy);
-        };
+        // const handleDelete = () => {
+        //   setOpen("delete");
+        //   setCurrentRow(policy);
+        // };
 
         return (
           <TooltipProvider>
@@ -89,7 +93,7 @@ export const getColumns = (isAdmin: boolean): ColumnDef<any>[] => {
                 </TooltipTrigger>
                 <TooltipContent>Edit</TooltipContent>
               </Tooltip>
-              <Tooltip>
+              {/* <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
@@ -101,7 +105,7 @@ export const getColumns = (isAdmin: boolean): ColumnDef<any>[] => {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Delete</TooltipContent>
-              </Tooltip>
+              </Tooltip> */}
             </div>
           </TooltipProvider>
         );
