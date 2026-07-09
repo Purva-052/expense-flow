@@ -383,7 +383,13 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
   // };
 
   // Resolve Mewurk employee code by matching email/name
+  // IMPORTANT: Reset code and data immediately when activeEmployee changes
+  // to prevent stale data from the previous employee being shown.
   useEffect(() => {
+    // Reset state immediately to clear stale data from previous employee
+    setMewurkEmployeeCode(null);
+    setMonthlyData(null);
+
     if (activeEmployee && activeEmployee.code) {
       const codeNum = parseInt(activeEmployee.code);
       if (!isNaN(codeNum) && codeNum > 0) {
@@ -448,9 +454,14 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
     resolveEmployee();
   }, [activeEmployee, user, loggedInUserDetails]);
 
-  // Fetch logs
+  // Fetch logs — only runs after mewurkEmployeeCode is resolved.
+  // `activeEmployee` is intentionally NOT a dependency here; clearing
+  // monthlyData and resetting mewurkEmployeeCode is handled in the
+  // resolve effect above, so we never fetch with a stale code.
   useEffect(() => {
     if (!mewurkEmployeeCode) return;
+
+    let cancelled = false;
 
     const loadLogs = async () => {
       setIsLoadingLogs(true);
@@ -460,19 +471,24 @@ export const MyAttendance: React.FC<MyAttendanceProps> = ({
           selectedMonth,
           selectedYear
         );
+        if (cancelled) return; // discard if employee changed mid-flight
         if (res && Array.isArray(res.attendance)) {
           res.attendance = applySandwichLeaveToAttendanceArray(res.attendance);
         }
         setMonthlyData(res);
       } catch (err) {
-        console.error("Error loading Mewurk monthly logs:", err);
+        if (!cancelled) console.error("Error loading Mewurk monthly logs:", err);
       } finally {
-        setIsLoadingLogs(false);
+        if (!cancelled) setIsLoadingLogs(false);
       }
     };
 
     loadLogs();
-  }, [mewurkEmployeeCode, selectedMonth, selectedYear, activeEmployee]);
+
+    return () => {
+      cancelled = true; // cancel in-flight request on re-render
+    };
+  }, [mewurkEmployeeCode, selectedMonth, selectedYear]);
 
   // Fetch today's detailed clock-in/out details
   // useEffect(() => {
