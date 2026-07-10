@@ -7,17 +7,24 @@ import { useAuthStore } from "@/stores/use-auth-store";
 import { roles } from "@/utils/constant";
 import { ModeToggle } from "./mode-toggle";
 import { PendingLeavesButton } from "./pending-leaves-button";
+import { GlobalSearchModal } from "./global-search-modal";
+import { useSidebarAccess } from "@/hooks/use-sidebar-access";
 // import { HRPolicyDownloadButton } from "./hr-policy-download-button";
 
 const AppTopSidebar = () => {
   const user = useAuthStore((state) => state.user);
   const userRole = user?.user?.role;
+  const { technologyId } = useSidebarAccess();
+  const pathname = useLocation({ select: (location) => location.pathname });
+
+  const showSearch = userRole !== roles.DEVELOPER && userRole !== roles.BDE && technologyId !== 29;
 
   return (
     <Header className="shadow-sm" fixed>
       <HeaderTitle />
       <div className="ml-auto flex items-center space-x-4">
         {/* <HRPolicyDownloadButton /> */}
+        {showSearch && <GlobalSearchModal />}
         <PendingLeavesButton />
         <ModeToggle />
         {userRole != roles.ADMIN && userRole != roles.PROJECT_MANAGER && (

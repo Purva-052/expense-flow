@@ -72,9 +72,11 @@ export function MobileInventoryForm({
         onOpenChange(state);
       }}
     >
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader className="text-left">
-          <DialogTitle>{isEdit ? "Edit Inventory" : "Add Inventory"}</DialogTitle>
+      <DialogContent className="sm:max-w-3xl">
+        <DialogHeader className="border-b pb-4 text-left">
+          <DialogTitle className="text-xl font-semibold">
+            {isEdit ? "Edit Inventory" : "Add Inventory"}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="-mr-4 h-fit w-full overflow-y-auto py-1">
@@ -82,7 +84,7 @@ export function MobileInventoryForm({
             <form
               id="mobile-inventory-form"
               onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-4 p-0.5"
+              className="grid grid-cols-1 gap-6 md:grid-cols-2 p-1 py-4"
             >
               <CustomDropDownSearchable
                 form={form}
@@ -124,7 +126,7 @@ export function MobileInventoryForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Color <span className="text-red-500">*</span>
+                      Color
                     </FormLabel>
                     <FormControl>
                       <Input placeholder="Enter Color" {...field} />
@@ -140,7 +142,7 @@ export function MobileInventoryForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      OS <span className="text-red-500">*</span>
+                      OS
                     </FormLabel>
                     <FormControl>
                       <Input placeholder="Enter OS" {...field} />
@@ -156,7 +158,7 @@ export function MobileInventoryForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Serial Number <span className="text-red-500">*</span>
+                      Serial Number
                     </FormLabel>
                     <FormControl>
                       <Input placeholder="Enter Serial Number" {...field} />

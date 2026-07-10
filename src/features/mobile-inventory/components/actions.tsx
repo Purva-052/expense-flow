@@ -13,9 +13,9 @@ export function ActionFormModal() {
     const payload: any = {
       brandId: values.brandId,
       model: values.model,
-      color: values.color,
-      serialNumber: values.serialNumber,
-      os: values.os,
+      color: values.color || undefined,
+      serialNumber: values.serialNumber || undefined,
+      os: values.os || undefined,
     };
     if (values.allocateTo !== undefined) {
       payload.allocateTo = values.allocateTo ? Number(values.allocateTo) : null;
@@ -75,9 +75,9 @@ function EditFormWrapper({ currentRow, open, onClose }: EditWrapperProps) {
     const payload: any = {
       brandId: values.brandId,
       model: values.model,
-      color: values.color,
-      serialNumber: values.serialNumber,
-      os: values.os,
+      color: values.color || undefined,
+      serialNumber: values.serialNumber || undefined,
+      os: values.os || undefined,
     };
     if (values.allocateTo !== undefined) {
       payload.allocateTo = values.allocateTo ? Number(values.allocateTo) : null;
