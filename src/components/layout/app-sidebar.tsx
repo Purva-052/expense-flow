@@ -2,7 +2,6 @@
 import { Link } from "@tanstack/react-router";
 import sidebarLogo from "@/assets/devstree-black-square.svg";
 import darkLogo from "@/assets/devstree-squre-white-text-logo.svg";
-import { useAuthStore } from "@/stores/use-auth-store";
 import {
   Sidebar,
   SidebarContent,

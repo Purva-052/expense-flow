@@ -15,7 +15,6 @@ const AppTopSidebar = () => {
   const user = useAuthStore((state) => state.user);
   const userRole = user?.user?.role;
   const { technologyId } = useSidebarAccess();
-  const pathname = useLocation({ select: (location) => location.pathname });
 
   const showSearch = userRole !== roles.DEVELOPER && userRole !== roles.BDE && technologyId !== 29;
 

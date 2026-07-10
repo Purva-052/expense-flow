@@ -188,9 +188,6 @@ const SidebarMenuCollapsible = ({
   item: NavCollapsible;
   href: string;
 }) => {
-  const { setOpenMobile } = useSidebar();
-  const navigate = useNavigate();
-  
   const isActive = checkIsActive(href, item, true);
   const [isOpen, setIsOpen] = useState(item.defaultClosed ? false : isActive);
 
