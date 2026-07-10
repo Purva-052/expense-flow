@@ -15,6 +15,7 @@ interface LeaveDaysTableProps {
   isViewOnly?: boolean;
   isEdit?: boolean;
   isDateRangeChanged?: boolean;
+  isLeaveDaysChanged?: boolean;
   mergedTableRows: any[];
   holidayDatesSet: Set<string>;
   watchLeaveDays: any[];
@@ -30,6 +31,7 @@ export const LeaveDaysTable = ({
   isViewOnly,
   isEdit,
   isDateRangeChanged,
+  isLeaveDaysChanged,
   mergedTableRows,
   holidayDatesSet,
   watchLeaveDays,
@@ -50,49 +52,52 @@ export const LeaveDaysTable = ({
     const isDayOff = day?.isWeekend || getIsHoliday(day?.date);
     if (!isDayOff) return false;
 
-    // If this holiday is listed in contextSandwichDays (e.g. a public holiday
-    // at the trailing/leading edge of the selected range with adjacent existing
-    // leave), treat it as sandwiched for the UI label as well.
+    // If this day is listed in contextSandwichDays (e.g. a weekend or holiday
+    // adjacent to an existing leave record), treat it as sandwiched.
     if (
       day?.date &&
-      getIsHoliday(day.date) &&
       contextSandwichDays.some((sd: any) => sd.date === day.date)
     ) {
       return true;
     }
 
-    let prevDay = null;
+    // Find the nearest previous non-off working day
+    let prevIdx = -1;
     for (let j = idx - 1; j >= 0; j--) {
       const d = leaveDays[j];
       const isDOff = d?.isWeekend || getIsHoliday(d?.date);
       if (!isDOff) {
-        prevDay = d;
+        prevIdx = j;
         break;
       }
     }
 
-    let nextDay = null;
+    // Find the nearest next non-off working day
+    let nextIdx = -1;
     for (let j = idx + 1; j < leaveDays.length; j++) {
       const d = leaveDays[j];
       const isDOff = d?.isWeekend || getIsHoliday(d?.date);
       if (!isDOff) {
-        nextDay = d;
+        nextIdx = j;
         break;
       }
     }
 
-    return !!(
-      prevDay &&
-      nextDay &&
-      prevDay.dayType === "full" &&
-      nextDay.dayType === "full"
-    );
+    if (prevIdx === -1 || nextIdx === -1) return false;
+
+    // Read live dayType values directly from the form to react instantly
+    // when the user toggles half/full on an adjacent working day.
+    const prevDayType = form.watch(`leaveDays.${prevIdx}.dayType`);
+    const nextDayType = form.watch(`leaveDays.${nextIdx}.dayType`);
+
+    return prevDayType === "full" && nextDayType === "full";
   };
 
-  if (isEdit && !isDateRangeChanged ? fields.length === 0 : mergedTableRows.length === 0)
+
+  if (isEdit && !isDateRangeChanged && !isLeaveDaysChanged ? fields.length === 0 : mergedTableRows.length === 0)
     return null;
 
-  const showStaticFields = isViewOnly || (isEdit && !isDateRangeChanged);
+  const showStaticFields = isViewOnly || (isEdit && !isDateRangeChanged && !isLeaveDaysChanged);
   // In view/edit mode we still only render the original fields array (if dates haven't changed)
   const rowsToRender = showStaticFields
     ? fields.map((f, idx) => {
@@ -173,10 +178,7 @@ export const LeaveDaysTable = ({
           const isDayHoliday = getIsHoliday(field.date);
           const isDayOff = isWeekend || isDayHoliday;
           const dayType = form.watch(`leaveDays.${idx}.dayType`);
-          const sandwiched =
-            `leaveDays.${idx}.isSandwichLeave`
-              ? !!field.isSandwichLeave || isDaySandwiched(watchLeaveDays || [], idx)
-              : false;
+          const sandwiched = isDaySandwiched(watchLeaveDays || [], idx);
           const hasHalfTypeError =
             !!form.formState.errors.leaveDays?.[idx]?.halfType;
 
