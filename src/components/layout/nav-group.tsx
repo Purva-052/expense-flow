@@ -1,4 +1,4 @@
-import { ReactNode, useCallback, useState } from "react";
+import React, { ReactNode, useCallback, useState } from "react";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
 import {
@@ -31,7 +31,14 @@ import { NavCollapsible, NavItem, NavLink, type NavGroup } from "./types";
 export function NavGroup({ title, items, isCollapsible, defaultOpen }: NavGroup) {
   const { state } = useSidebar();
   const href = useLocation({ select: (location) => location.href });
-  const [isOpen, setIsOpen] = useState(defaultOpen ?? false);
+  const isActive = items.some(item => checkIsActive(href, item, true));
+  const [isOpen, setIsOpen] = useState(defaultOpen ?? isActive ?? false);
+
+  React.useEffect(() => {
+    if (isActive) {
+      setIsOpen(true);
+    }
+  }, [isActive]);
 
   // If the group is collapsible (like Masters), render with toggle functionality
   if (isCollapsible) {
@@ -103,6 +110,16 @@ const NavBadge = ({ children }: { children: ReactNode }) => (
 const SidebarMenuLink = ({ item, href }: { item: NavLink; href: string }) => {
   const { setOpenMobile } = useSidebar();
   const navigate = useNavigate();
+  const isActive = checkIsActive(href, item);
+  const ref = React.useRef<HTMLLIElement>(null);
+
+  React.useEffect(() => {
+    if (isActive && ref.current) {
+      setTimeout(() => {
+        ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 300);
+    }
+  }, [isActive]);
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
@@ -114,10 +131,10 @@ const SidebarMenuLink = ({ item, href }: { item: NavLink; href: string }) => {
   );
 
   return (
-    <SidebarMenuItem>
+    <SidebarMenuItem ref={ref}>
       <SidebarMenuButton
         asChild
-        isActive={checkIsActive(href, item)}
+        isActive={isActive}
         tooltip={item.title}
       >
         <Link to={item.url} onClick={handleClick}>
@@ -130,6 +147,40 @@ const SidebarMenuLink = ({ item, href }: { item: NavLink; href: string }) => {
   );
 };
 
+const SubItemLink = ({ subItem, href }: { subItem: NavItem; href: string }) => {
+  const { setOpenMobile } = useSidebar();
+  const navigate = useNavigate();
+  const isActive = checkIsActive(href, subItem);
+  const ref = React.useRef<HTMLLIElement>(null);
+
+  React.useEffect(() => {
+    if (isActive && ref.current) {
+      setTimeout(() => {
+        ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 300);
+    }
+  }, [isActive]);
+
+  return (
+    <SidebarMenuSubItem ref={ref}>
+      <SidebarMenuSubButton asChild isActive={isActive}>
+        <Link
+          to={subItem.url}
+          onClick={(e) => {
+            e.preventDefault();
+            setOpenMobile(false);
+            navigate({ to: subItem.url });
+          }}
+        >
+          {subItem.icon && <subItem.icon />}
+          <span>{subItem.title}</span>
+          {subItem.badge && <NavBadge>{subItem.badge}</NavBadge>}
+        </Link>
+      </SidebarMenuSubButton>
+    </SidebarMenuSubItem>
+  );
+};
+
 const SidebarMenuCollapsible = ({
   item,
   href,
@@ -137,12 +188,20 @@ const SidebarMenuCollapsible = ({
   item: NavCollapsible;
   href: string;
 }) => {
-  const { setOpenMobile } = useSidebar();
-  const navigate = useNavigate();
+  const isActive = checkIsActive(href, item, true);
+  const [isOpen, setIsOpen] = useState(item.defaultClosed ? false : isActive);
+
+  React.useEffect(() => {
+    if (isActive) {
+      setIsOpen(true);
+    }
+  }, [isActive]);
+
   return (
     <Collapsible
       asChild
-      defaultOpen={item.defaultClosed ? false : checkIsActive(href, item, true)}
+      open={isOpen}
+      onOpenChange={setIsOpen}
       className="group/collapsible"
     >
       <SidebarMenuItem>
@@ -157,25 +216,7 @@ const SidebarMenuCollapsible = ({
         <CollapsibleContent className="CollapsibleContent">
           <SidebarMenuSub>
             {item.items.map((subItem) => (
-              <SidebarMenuSubItem key={subItem.title}>
-                <SidebarMenuSubButton
-                  asChild
-                  isActive={checkIsActive(href, subItem)}
-                >
-                  <Link
-                    to={subItem.url}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setOpenMobile(false);
-                      navigate({ to: subItem.url });
-                    }}
-                  >
-                    {subItem.icon && <subItem.icon />}
-                    <span>{subItem.title}</span>
-                    {subItem.badge && <NavBadge>{subItem.badge}</NavBadge>}
-                  </Link>
-                </SidebarMenuSubButton>
-              </SidebarMenuSubItem>
+              <SubItemLink key={subItem.title} subItem={subItem} href={href} />
             ))}
           </SidebarMenuSub>
         </CollapsibleContent>

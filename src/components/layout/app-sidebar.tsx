@@ -2,7 +2,6 @@
 import { Link } from "@tanstack/react-router";
 import sidebarLogo from "@/assets/devstree-black-square.svg";
 import darkLogo from "@/assets/devstree-squre-white-text-logo.svg";
-import { useAuthStore } from "@/stores/use-auth-store";
 import {
   Sidebar,
   SidebarContent,
@@ -11,33 +10,10 @@ import {
 } from "@/components/ui/sidebar";
 import { NavGroup } from "@/components/layout/nav-group";
 import { sidebarData } from "./data/sidebar-data";
-import { useGetUserDetails } from "@/features/users/services";
+import { useSidebarAccess } from "@/hooks/use-sidebar-access";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user } = useAuthStore();
-  const role = user?.user?.role || "";
-  const id = user?.user?.id;
-
-  const { data: userDetails }: any = useGetUserDetails(user?.user?.id);
-  const technologyId = userDetails?.data?.technology?.id;
-  const restrictedTechnologyIds = [29];
-  const isRestrictedTechnologyUser = restrictedTechnologyIds.includes(technologyId);
-
-  const hasSidebarAccess = (item: {
-    requiredRoles?: string[];
-    allowUserIDs?: number[];
-    allowedTech?: number[];
-  }) => {
-    const hasRoleAccess = item.requiredRoles?.includes(role) ?? false;
-    const hasUserIDsAccess = item.allowUserIDs?.includes(id) ?? false;
-    const hasTechAccess = item.allowedTech?.includes(technologyId) ?? false;
-
-    if (isRestrictedTechnologyUser) {
-      return hasUserIDsAccess || hasTechAccess;
-    }
-
-    return hasRoleAccess || hasUserIDsAccess || hasTechAccess;
-  };
+  const { hasSidebarAccess } = useSidebarAccess();
 
   const filteredNavGroups = sidebarData.navGroups
     .filter((group: any) => {

@@ -22,26 +22,20 @@ export const MobileInventorySchema = z.object({
   color: z
     .string()
     .trim()
-    .min(1, {
-      message: "Color is required.",
-    })
-    .max(50, { message: "Color cannot exceed 50 characters." }),
+    .max(50, { message: "Color cannot exceed 50 characters." })
+    .optional(),
   os: z
     .string()
     .trim()
-    .min(1, {
-      message: "OS is required.",
-    })
-    .max(50, { message: "OS cannot exceed 50 characters." }),
+    .max(50, { message: "OS cannot exceed 50 characters." })
+    .optional(),
   serialNumber: z
     .string()
     .trim()
-    .min(5, {
-      message: "Serial number must be at least 5 characters long.",
-    })
     .max(100, {
       message: "Serial number cannot exceed 100 characters.",
-    }),
+    })
+    .optional(),
   allocateTo: z.preprocess(
     (val) => {
       if (val === "" || val === null || val === undefined) return undefined;
