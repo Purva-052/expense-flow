@@ -142,7 +142,30 @@ export const calculateRequestedDays = (
       );
 
       if (inContext) {
-        total += 1;
+        // Even if this off-day is a context sandwich day, we must check
+        // that the nearest adjacent working day within the CURRENT request
+        // is a full day or a sandwiching half-day. If it's a non-sandwiching half-day, the sandwich rule doesn't apply.
+        let prevWorkDay = null;
+        for (let j = i - 1; j >= 0; j--) {
+          const d = validLeaveDays[j];
+          if (!isOffDay(d)) {
+            prevWorkDay = d;
+            break;
+          }
+        }
+        let nextWorkDay = null;
+        for (let j = i + 1; j < validLeaveDays.length; j++) {
+          const d = validLeaveDays[j];
+          if (!isOffDay(d)) {
+            nextWorkDay = d;
+            break;
+          }
+        }
+        const prevIsHalf = prevWorkDay && prevWorkDay.dayType === "half";
+        const nextIsHalf = nextWorkDay && nextWorkDay.dayType === "half";
+        if (!prevIsHalf && !nextIsHalf) {
+          total += 1;
+        }
       } else {
         let prevDay = null;
         for (let j = i - 1; j >= 0; j--) {

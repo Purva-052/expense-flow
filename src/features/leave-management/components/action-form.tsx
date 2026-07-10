@@ -198,6 +198,19 @@ export function LeaveActionForm({
     return currentFrom !== initialFrom || currentTo !== initialTo;
   }, [isEdit, displayRow, watchFromDate, watchToDate]);
 
+  const isLeaveDaysChanged = useMemo(() => {
+    if (!isEdit || !displayRow?.leaveDays || !watchLeaveDays) return false;
+    if (displayRow.leaveDays.length !== watchLeaveDays.length) return true;
+    return watchLeaveDays.some((day, idx) => {
+      const originalDay = displayRow.leaveDays[idx];
+      if (!originalDay) return true;
+      return (
+        day.dayType !== (originalDay.dayType || "full") ||
+        day.halfType !== (originalDay.halfType || null)
+      );
+    });
+  }, [isEdit, displayRow, watchLeaveDays]);
+
   const { data: activeUserDetails } = useGetUserDetails(
     balanceUserId ? String(balanceUserId) : ""
   ) as any;
@@ -367,7 +380,7 @@ export function LeaveActionForm({
   const contextSandwichDays = useMemo(() => {
     if (
       isViewOnly ||
-      (isEdit && !isDateRangeChanged) ||
+      (isEdit && !isDateRangeChanged && !isLeaveDaysChanged) ||
       !watchFromDate ||
       !watchToDate
     )
@@ -419,10 +432,20 @@ export function LeaveActionForm({
       const date = startOfDay(new Date(dateStr));
       if (isNaN(date.getTime())) return;
       const existing = dayMap.get(dateStr);
+      // If this date is already in the map as a current-request day,
+      // the current form's selection (half/full) must take precedence
+      // over what any existing leave record says for the same date.
+      // This prevents an existing full-day leave from overriding the
+      // user's half-day selection and incorrectly sandwiching the weekend.
+      const resolvedDayType =
+        existing?.fromCurrent && source === "existing"
+          ? existing.dayType // keep current form's selection
+          : existing?.dayType === "full" || dayType === "full"
+            ? "full"
+            : "half";
       dayMap.set(dateStr, {
         date: dateStr,
-        dayType:
-          existing?.dayType === "full" || dayType === "full" ? "full" : "half",
+        dayType: resolvedDayType,
         halfType: halfType ?? existing?.halfType ?? null,
         isWeekend: isWeekendForDate(date, isAccountsTech),
         fromCurrent: existing?.fromCurrent || source === "current",
@@ -588,6 +611,7 @@ export function LeaveActionForm({
     employeeLeaveData,
     holidayDatesSet,
     currentRow?.id,
+    isLeaveDaysChanged,
   ]);
 
   const balanceArray = useMemo(
@@ -654,7 +678,7 @@ export function LeaveActionForm({
   }, [isEdit, detailData, paidBalance]);
 
   const leaveAllocation = useMemo(() => {
-    if (isEdit && !isDateRangeChanged && detailData) {
+    if (isEdit && !isDateRangeChanged && !isLeaveDaysChanged && detailData) {
       const allocation = detailData.allocationBreakdown || {};
       const summaryObj = detailData.summary || {};
 
@@ -720,6 +744,7 @@ export function LeaveActionForm({
   }, [
     isEdit,
     isDateRangeChanged,
+    isLeaveDaysChanged,
     detailData,
     watchLeaveDays,
     holidayDatesSet,
@@ -1016,7 +1041,7 @@ export function LeaveActionForm({
   //   - All contextSandwichDays that are NOT already in `fields`
   // Sandwich days outside the selected range are shown as read-only rows.
   const mergedTableRows = useMemo(() => {
-    if (isViewOnly || (isEdit && !isDateRangeChanged)) return [];
+    if (isViewOnly || (isEdit && !isDateRangeChanged && !isLeaveDaysChanged)) return [];
 
     const fieldDateSet = new Set(fields.map((f) => f.date));
 
@@ -1046,7 +1071,7 @@ export function LeaveActionForm({
       a.date < b.date ? -1 : a.date > b.date ? 1 : 0
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fields, contextSandwichDays, isEdit, isDateRangeChanged, isViewOnly]);
+  }, [fields, contextSandwichDays, isEdit, isDateRangeChanged, isLeaveDaysChanged, isViewOnly]);
 
   const targetUserId =
     isEdit || isViewOnly
@@ -1277,6 +1302,7 @@ export function LeaveActionForm({
                     isViewOnly={isViewOnly}
                     isEdit={isEdit}
                     isDateRangeChanged={isDateRangeChanged}
+                    isLeaveDaysChanged={isLeaveDaysChanged}
                     mergedTableRows={mergedTableRows}
                     holidayDatesSet={holidayDatesSet}
                     watchLeaveDays={watchLeaveDays}
