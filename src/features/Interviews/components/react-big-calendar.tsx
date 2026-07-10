@@ -251,7 +251,9 @@ export const ReactBigCalendar = ({
               </Button>
             </div>
             <h2 className="text-xl font-normal text-foreground ml-2">
-              {format(currentDate, "MMMM yyyy")}
+              {view === "day"
+                ? format(currentDate, "MMMM d, yyyy")
+                : format(currentDate, "MMMM yyyy")}
             </h2>
           </div>
         </div>
@@ -464,6 +466,10 @@ export const ReactBigCalendar = ({
 
   .google-calendar-wrapper .rbc-event:focus {
     outline: none !important;
+  }
+  
+  .google-calendar-wrapper .rbc-event-label {
+    color: var(--foreground) !important;
   }
 
 

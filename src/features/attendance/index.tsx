@@ -9,8 +9,11 @@ import { MyAttendance } from "./components/my-attendance";
 import { EmployeeAttendance } from "./components/employee-attendance";
 import { RegularizationRequestsPanel } from "./components/attendance-table";
 import { LateInLeaveDeductions } from "./components/late-in-deductions";
+import { MissingHoursDeductions } from "./components/missing-hours-deductions";
 import { Card } from "@/components/ui/card";
 import { useGetRegularizationRequests } from "./services";
+import useFetchData from "@/hooks/use-fetch-data";
+import API from "@/config/api/api";
 
 const tabTriggerClass =
   "flex items-center gap-2 rounded-[50px] !px-3 !py-2 transition-all h-[35px] " +
@@ -36,7 +39,6 @@ const AttendancePage: React.FC = () => {
       ...(canViewAllRegularizations
         ? {}
         : { employeeId: Number(user?.user?.id || user?.user_id) }),
-      status: "pending",
       page: 1,
       limit: 10,
     },
@@ -44,8 +46,23 @@ const AttendancePage: React.FC = () => {
   );
 
   const pendingRegularizationCount =
+    (pendingRegularizationData as any)?.data?.metadata?.totalCount ??
     (pendingRegularizationData as any)?.metadata?.totalCount ??
-    ((pendingRegularizationData as any)?.data || []).length;
+    ((pendingRegularizationData as any)?.data?.data || (pendingRegularizationData as any)?.data || []).length;
+
+  const { data: missingHoursData } = useFetchData({
+    url: API.attendance.eligible_dates,
+    params: {
+      month: new Date().getMonth() + 1,
+      year: new Date().getFullYear(),
+    },
+    enabled: isAdmin,
+  });
+
+  const missingHoursCount =
+    (missingHoursData as any)?.data?.metadata?.totalCount ??
+    (missingHoursData as any)?.metadata?.totalCount ??
+    ((missingHoursData as any)?.data?.data || (missingHoursData as any)?.data || []).length;
 
   return (
     <PageLayout>
@@ -68,8 +85,9 @@ const AttendancePage: React.FC = () => {
 
         {isAdmin ? (
           <Tabs defaultValue="my-attendance" className="w-full gap-2">
-            <div className="flex flex-wrap items-center gap-3 w-full">
-              <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border border-rose-100/50 h-9 w-fit shrink-0">
+            <div className="flex flex-col xl:flex-row xl:items-center gap-3 w-full">
+              <div className="flex-1 min-w-0 overflow-x-auto pb-1 -mb-1 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent">
+                <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border border-rose-100/50 h-9 w-max shrink-0 inline-flex flex-nowrap">
                 <TabsTrigger value="my-attendance" className={tabTriggerClass}>
                   <Clock className="h-4 w-4" />
                   Team Attendance
@@ -86,10 +104,15 @@ const AttendancePage: React.FC = () => {
                   <ClockAlert className="h-4 w-4" />
                   Late In Deductions
                 </TabsTrigger>
+                <TabsTrigger value="missing-hours" className={tabTriggerClass}>
+                  <ClockAlert className="h-4 w-4" />
+                  {`Incomplete Hours (${missingHoursCount})`}
+                </TabsTrigger>
               </TabsList>
+              </div>
               <div
                 id="attendance-filters-slot-admin"
-                className="flex items-center gap-2 sm:ml-auto shrink-0"
+                className="flex items-center gap-2 shrink-0"
               />
             </div>
 
@@ -127,11 +150,21 @@ const AttendancePage: React.FC = () => {
                 <LateInLeaveDeductions />
               </Card>
             </TabsContent>
+
+            <TabsContent
+              value="missing-hours"
+              className="mt-2 focus-visible:outline-none flex-none"
+            >
+              <Card className="w-full overflow-hidden border border-border shadow-sm">
+                <MissingHoursDeductions />
+              </Card>
+            </TabsContent>
           </Tabs>
         ) : (
           <Tabs defaultValue="my-attendance" className="w-full gap-2">
-            <div className="flex flex-wrap items-center gap-3 w-full">
-              <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border border-rose-100/50 h-9 w-fit shrink-0">
+            <div className="flex flex-col xl:flex-row xl:items-center gap-3 w-full">
+              <div className="flex-1 min-w-0 overflow-x-auto pb-1 -mb-1 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent">
+                <TabsList className="bg-[#fdebef] rounded-full dark:bg-muted dark:border-white/10 border border-rose-100/50 h-9 w-max shrink-0 inline-flex flex-nowrap">
                 <TabsTrigger value="my-attendance" className={tabTriggerClass}>
                   <Clock className="h-4 w-4" />
                   My Attendance
@@ -147,6 +180,7 @@ const AttendancePage: React.FC = () => {
                   {`Regularization (${pendingRegularizationCount})`}
                 </TabsTrigger>
               </TabsList>
+              </div>
             </div>
 
             <TabsContent

@@ -286,20 +286,14 @@ const ProductInquiryPage = () => {
   const handleSearch = (search: string | undefined) => {
     setQueryParams({
       search: search ?? "",
-      drilled: "",
-      productId: "",
-      fromDate: null,
-      toDate: null,
+      currentPage: 1,
     });
   };
 
   const handleIndustryFilter = (industryId?: string) => {
     setQueryParams({
       industryId: industryId ?? "",
-      drilled: "",
-      productId: "",
-      fromDate: null,
-      toDate: null,
+      currentPage: 1,
     });
   };
 

@@ -378,6 +378,7 @@ const API = {
   attendance: {
     high_working_hours: "/attendance/high-working-hours",
     compensatory_date: "/attendance-regularizations/compensatory-dates",
+    eligible_dates: "/attendance-regularizations/eligible-dates",
     regularizations: "/attendance-regularizations",
     regularization_list: "/attendance-regularizations",
     regularization_action: (id: number) =>
