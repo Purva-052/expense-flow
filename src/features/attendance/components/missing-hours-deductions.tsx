@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import useFetchData from "@/hooks/use-fetch-data";
 import API from "@/config/api/api";
-import { ClockAlert, Loader2 } from "lucide-react";
+import { ClockAlert } from "lucide-react";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { MonthYearPicker } from "./month-year-picker";
@@ -42,12 +42,12 @@ export const MissingHoursDeductions: React.FC = () => {
     [employeeDropdownData]
   );
 
-  const listData: MissingHoursRow[] = 
-    (fetchRes as any)?.data?.data || 
-    (fetchRes as any)?.data || 
+  const listData: MissingHoursRow[] =
+    (fetchRes as any)?.data?.data ||
+    (fetchRes as any)?.data ||
     [];
 
-  const totalCount = 
+  const totalCount =
     (fetchRes as any)?.data?.metadata?.totalCount ??
     (fetchRes as any)?.metadata?.totalCount ??
     listData.length;
@@ -128,8 +128,8 @@ export const MissingHoursDeductions: React.FC = () => {
             ) : (
               listData.map((row, idx) => {
                 const rowDate = row.date ? new Date(row.date) : null;
-                const formattedDate = rowDate && !isNaN(rowDate.getTime()) 
-                  ? format(rowDate, "dd MMM yyyy") 
+                const formattedDate = rowDate && !isNaN(rowDate.getTime())
+                  ? format(rowDate, "dd MMM yyyy")
                   : row.date;
 
                 const statusColor = row.status?.toLowerCase().includes("half day")
