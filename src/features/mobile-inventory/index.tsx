@@ -11,6 +11,7 @@ import { parseAsInteger, parseAsString, parseAsBoolean, useQueryStates } from "n
 import { useMobileInventoryStore } from "./stores/useMobileInventoryStore";
 import { useGetMobileInventoryList } from "./services";
 import { useGetBrandDropdown } from "@/features/system-inventory/services";
+import { useGetUserDropdownList } from "@/features/users/services";
 
 const MobileInventoryPage = () => {
   const { open, setOpen } = useMobileInventoryStore();
@@ -20,6 +21,7 @@ const MobileInventoryPage = () => {
     currentPage: parseAsInteger.withDefault(1),
     search: parseAsString.withDefault(""),
     brandId: parseAsInteger,
+    allocateTo: parseAsInteger,
     isActive: parseAsBoolean,
   });
 
@@ -28,6 +30,7 @@ const MobileInventoryPage = () => {
     pageSize: queryParams.pageSize,
     search: queryParams.search,
     brandId: queryParams.brandId ?? undefined,
+    allocateTo: queryParams.allocateTo ?? undefined,
     isActive: queryParams.isActive ?? undefined,
   };
 
@@ -37,11 +40,13 @@ const MobileInventoryPage = () => {
     search: listParams.search || undefined,
     pagination: true,
     brandId: listParams.brandId,
+    allocateTo: listParams.allocateTo,
     isActive: listParams.isActive,
   };
 
   const { data: listData, isPending: loading } = useGetMobileInventoryList(apiParams);
   const { data: brandDetails, isPending: brandLoading } = useGetBrandDropdown();
+  const { data: usersList, isPending: usersLoading }: any = useGetUserDropdownList({ role: ["team_lead", "project_manager"] });
 
   const totalCount = (listData as any)?.metadata?.totalCount;
 
@@ -53,6 +58,7 @@ const MobileInventoryPage = () => {
   };
 
   const brandList = useMemo(() => extractArray(brandDetails), [brandDetails]);
+  const userList = useMemo(() => extractArray(usersList), [usersList]);
 
   // const ACTIVE_STATUS_OPTIONS = [
   //   { value: "true", label: "Active" },
@@ -97,6 +103,23 @@ const MobileInventoryPage = () => {
         });
       },
       isLoading: brandLoading,
+    },
+    {
+      type: "select",
+      key: "allocateTo",
+      placeholder: "Filter by Allocated User",
+      options: userList?.map((u: any) => ({
+        value: u.id,
+        label: u.fullName || u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim() || `User ${u.id}`,
+      })),
+      value: listParams.allocateTo,
+      onChange: (value: any) => {
+        setQueryParams({
+          allocateTo: value ?? null,
+          currentPage: 1,
+        });
+      },
+      isLoading: usersLoading,
     },
     // {
     //   type: "select",
