@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { MonthYearPicker } from "./month-year-picker";
 import SimpleDropDownSearchable from "@/components/shared/custome-simple-dropdown";
 import { useGetUserDropdownList } from "../../users/services";
+import { GlobalTable } from "@/components/table/global-table";
+import { ColumnDef, PaginationState } from "@tanstack/react-table";
 
 interface MissingHoursRow {
   date: string;
@@ -20,12 +22,16 @@ export const MissingHoursDeductions: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState<number>(new Date().getMonth() + 1);
   const [currentYear, setCurrentYear] = useState<number>(new Date().getFullYear());
   const [currentEmployeeFilter, setCurrentEmployeeFilter] = useState<number | null>(null);
+  const [page, setPage] = useState<number>(1);
+  const [limit, setLimit] = useState<number>(10);
 
   const { data: fetchRes, isPending: isLoading } = useFetchData({
     url: API.attendance.eligible_dates,
     params: {
       month: currentMonth,
       year: currentYear,
+      page,
+      limit,
       ...(currentEmployeeFilter ? { employeeId: currentEmployeeFilter } : {}),
     },
   });
@@ -52,6 +58,70 @@ export const MissingHoursDeductions: React.FC = () => {
     (fetchRes as any)?.metadata?.totalCount ??
     listData.length;
 
+  const columns = useMemo<ColumnDef<MissingHoursRow>[]>(
+    () => [
+      {
+        accessorKey: "employeeName",
+        header: "Employee",
+        cell: ({ row }) => (
+          <span className="font-bold text-foreground">
+            {row.original.employeeName || "-"}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "date",
+        header: "Date",
+        cell: ({ row }) => {
+          const rowDate = row.original.date ? new Date(row.original.date) : null;
+          const formattedDate =
+            rowDate && !isNaN(rowDate.getTime())
+              ? format(rowDate, "dd MMM yyyy")
+              : row.original.date;
+          return (
+            <span className="font-semibold text-muted-foreground">
+              {formattedDate}
+            </span>
+          );
+        },
+      },
+      {
+        accessorKey: "workingTime",
+        header: () => <div className="text-center">Working Time</div>,
+        cell: ({ row }) => (
+          <div className="text-center font-medium text-muted-foreground">
+            {row.original.workingTime}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "status",
+        header: () => <div className="text-center">Status</div>,
+        cell: ({ row }) => {
+          const statusColor = row.original.status?.toLowerCase().includes("half day")
+            ? "text-rose-600 dark:text-rose-400 bg-rose-500/10 border-rose-500/30"
+            : "text-yellow-600 dark:text-yellow-400 bg-yellow-500/10 border-yellow-500/30";
+
+          return (
+            <div className="flex justify-center">
+              <Badge
+                className={`flex items-center gap-1 w-fit text-[10px] font-semibold rounded-md px-2 py-0.5 border ${statusColor}`}
+              >
+                {row.original.status}
+              </Badge>
+            </div>
+          );
+        },
+      },
+    ],
+    []
+  );
+
+  const handlePaginationChange = (newPagination: PaginationState) => {
+    setLimit(newPagination.pageSize);
+    setPage(newPagination.pageIndex + 1);
+  };
+
   return (
     <div className="w-full">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-4 py-3 border-b border-border bg-card">
@@ -74,6 +144,7 @@ export const MissingHoursDeductions: React.FC = () => {
             onChange={(m, y) => {
               setCurrentMonth(m);
               setCurrentYear(y);
+              setPage(1);
             }}
           />
 
@@ -83,86 +154,26 @@ export const MissingHoursDeductions: React.FC = () => {
             placeholder="Filter by employee"
             className="w-full sm:w-[220px]"
             isLoading={isLoadingEmployees}
-            onChange={(value) =>
-              setCurrentEmployeeFilter(value ? Number(value) : null)
-            }
+            onChange={(value) => {
+              setCurrentEmployeeFilter(value ? Number(value) : null);
+              setPage(1);
+            }}
             allowClear
           />
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-left">
-          <thead>
-            <tr className="bg-muted border-b border-border text-muted-foreground text-xs font-bold">
-              <th className="px-4 py-2.5 bg-muted">Employee</th>
-              <th className="px-4 py-2.5 bg-muted">Date</th>
-              <th className="px-4 py-2.5 bg-muted text-center">Working Time</th>
-              <th className="px-4 py-2.5 bg-muted text-center">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border text-xs text-foreground">
-            {isLoading ? (
-              Array.from({ length: 5 }).map((_, index) => (
-                <tr key={index} className="border-b border-border">
-                  <td className="px-4 py-3">
-                    <div className="h-4 w-32 bg-muted animate-pulse rounded" />
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="h-4 w-28 bg-muted animate-pulse rounded" />
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <div className="h-4 w-12 bg-muted animate-pulse rounded mx-auto" />
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <div className="h-6 w-20 bg-muted animate-pulse rounded-md mx-auto" />
-                  </td>
-                </tr>
-              ))
-            ) : listData.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="text-center py-10 text-muted-foreground text-xs font-medium">
-                  No missing hours records found.
-                </td>
-              </tr>
-            ) : (
-              listData.map((row, idx) => {
-                const rowDate = row.date ? new Date(row.date) : null;
-                const formattedDate = rowDate && !isNaN(rowDate.getTime())
-                  ? format(rowDate, "dd MMM yyyy")
-                  : row.date;
-
-                const statusColor = row.status?.toLowerCase().includes("half day")
-                  ? "text-rose-600 dark:text-rose-400 bg-rose-500/10 border-rose-500/30"
-                  : "text-yellow-600 dark:text-yellow-400 bg-yellow-500/10 border-yellow-500/30";
-
-                return (
-                  <tr
-                    key={`${row.employeeId}-${row.date}-${idx}`}
-                    className="hover:bg-muted/10 transition-colors"
-                  >
-                    <td className="px-4 py-2.5 font-bold text-foreground">
-                      {row.employeeName || "-"}
-                    </td>
-                    <td className="px-4 py-2.5 font-semibold text-muted-foreground">
-                      {formattedDate}
-                    </td>
-                    <td className="px-4 py-2.5 font-medium text-muted-foreground text-center">
-                      {row.workingTime}
-                    </td>
-                    <td className="px-4 py-2.5 flex justify-center">
-                      <Badge
-                        className={`flex items-center gap-1 w-fit text-[10px] font-semibold rounded-md px-2 py-0.5 border ${statusColor}`}
-                      >
-                        {row.status}
-                      </Badge>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+      <div className="p-4">
+        <GlobalTable
+          data={listData}
+          columns={columns}
+          totalCount={totalCount}
+          currentPage={page}
+          pageSize={limit}
+          onPaginationChange={handlePaginationChange}
+          isPaginationEnabled={true}
+          loading={isLoading}
+        />
       </div>
     </div>
   );

@@ -83,11 +83,13 @@ const normalizeSelectValue = (value: unknown): SelectValue => {
 };
 
 export const normalizeSystemInventoryRecord = (
-  inventory: unknown
+  rawInventory: unknown
 ): TSystemInventorySchema => {
-  if (!isObjectCheck(inventory)) {
+  if (!isObjectCheck(rawInventory)) {
     return DEFAULT_SYSTEM_INVENTORY_VALUES;
   }
+  
+  const inventory = rawInventory as any;
 
   const mouse = isObjectCheck(inventory.mouse)
     ? inventory.mouse
@@ -380,6 +382,8 @@ export const normalizeSystemInventoryRecord = (
         inventory.headphone_ownership_type
       )
     ),
+
+    employeeId: normalizeSelectValue(inventory.employee?.id),
 
     notes:
       typeof inventory.notes === "string"

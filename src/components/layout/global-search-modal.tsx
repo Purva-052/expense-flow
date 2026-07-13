@@ -35,9 +35,7 @@ export function GlobalSearchModal() {
   const runCommand = React.useCallback((command: () => unknown) => {
     setOpen(false);
     setSearch("");
-    setTimeout(() => {
-      command();
-    }, 250); // Wait for Dialog close transition (200ms) to finish completely before navigating
+    command();
   }, []);
 
   const filteredGroups = React.useMemo(() => {
@@ -92,7 +90,7 @@ export function GlobalSearchModal() {
         onOpenChange={(newOpen) => {
           setOpen(newOpen);
           if (!newOpen) {
-            setTimeout(() => setSearch(""), 150); // Clear after exit animation
+            setSearch("");
           }
         }}
       >

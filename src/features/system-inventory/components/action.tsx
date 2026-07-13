@@ -5,9 +5,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { DeleteModal } from "@/components/model/delete-model";
 import {
   useCreateSystemInventoryData,
   useUpdateSystemInventoryData,
+  useDeleteSystemInventoryData,
 } from "../services";
 import { useSystemInventoryStore } from "../stores/useSystemInventoryStore";
 import {
@@ -55,6 +57,9 @@ export function ActionFormModal({
   const { mutateAsync: updateMutate, isPending: isUpdateLoading } =
     useUpdateSystemInventoryData(recordId);
 
+  const { mutateAsync: deleteMutate, isPending: isDeleteLoading } =
+    useDeleteSystemInventoryData(recordId);
+
   const { mutateAsync: createMutate, isPending: isCreateLoading } =
     useCreateSystemInventoryData();
 
@@ -68,7 +73,7 @@ export function ActionFormModal({
       return;
     }
 
-    updateMutate(buildSystemInventoryPayload(values));
+    updateMutate(buildSystemInventoryPayload(values, { includeEmployeeId: true }));
   };
 
   const handleCreate = (values: TSystemInventorySchema) => {
@@ -82,6 +87,11 @@ export function ActionFormModal({
     setTimeout(() => {
       setCurrentRow(null);
     }, 300);
+  };
+
+  const handleDelete = () => {
+    if (!recordId) return;
+    deleteMutate();
   };
 
   return (
@@ -167,6 +177,8 @@ export function ActionFormModal({
             onSubmit={handleEdit}
             loading={isUpdateLoading}
             submitLabel="Save Changes"
+            showEmployeeSelect
+            employeeOptions={employeeOptions}
             processorList={processorList}
             ramList={ramList}
             storageList={storageList}
@@ -178,6 +190,16 @@ export function ActionFormModal({
           />
         </DialogContent>
       </Dialog>
+
+      {open === "delete" && !!currentRow && (
+        <DeleteModal
+          onConfirm={handleDelete}
+          isOpen={true}
+          onClose={handleCloseDialog}
+          itemName={userName ? `System Inventory for ${userName}` : "this System Inventory"}
+          loading={isDeleteLoading}
+        />
+      )}
     </>
   );
 }

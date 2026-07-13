@@ -34,6 +34,7 @@ import { cn } from "@/lib/utils";
 import { LeaveBalanceSummary } from "./leave-balance-summary";
 import { LeaveDaysTable } from "./leave-days-table";
 import { LeaveFormFields } from "./leave-form-fields";
+import { LeaveApproveRejectModal } from "./approve-reject-modal";
 
 // Helpers & Constants
 import {
@@ -91,6 +92,7 @@ export function LeaveActionForm({
   const currentUserId = user?.user?.id || user?.user_id;
 
   const [applyTab, setApplyTab] = useState<"self" | "others">("self");
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
 
   const form = useForm<TLeaveFormSchema>({
     resolver: zodResolver(leaveSchema) as any,
@@ -157,6 +159,30 @@ export function LeaveActionForm({
   }, [employeesList]);
 
   const isSelfApplyMode = !canApplyForOthers || applyTab === "self";
+
+  const rowStatus = String(currentRow?.status || "").toLowerCase();
+
+  const employeeReportingToId =
+    currentRow?.employee?.reportingToId ??
+    currentRow?.employee?.reportToId ??
+    currentRow?.employee?.reporttoId ??
+    currentRow?.employee?.reportingTo?.id;
+
+  const isReportingManager =
+    (employeeReportingToId != null &&
+      String(employeeReportingToId) === String(currentUserId)) ||
+    (currentRow?.approverId != null &&
+      String(currentRow?.approverId) === String(currentUserId)) ||
+    (currentRow?.approver?.id != null &&
+      String(currentRow?.approver?.id) === String(currentUserId));
+
+  const isPM = roleName === roles.PROJECT_MANAGER;
+
+  const canApproveReject =
+    isViewOnly &&
+    (isAdmin || isPM || isReportingManager) &&
+    rowStatus === "pending";
+
   const editEmployeeId =
     isEdit || isViewOnly
       ? (currentRow?.employeeId ?? currentRow?.employee?.id)
@@ -627,7 +653,7 @@ export function LeaveActionForm({
       : leaveDetailsData?.allocationBreakdown || leaveDetailsData?.leaveBalance
         ? leaveDetailsData
         : leaveDetailsData?.data?.data?.allocationBreakdown ||
-            leaveDetailsData?.data?.data?.leaveBalance
+          leaveDetailsData?.data?.data?.leaveBalance
           ? leaveDetailsData.data.data
           : null;
   }, [isDetailsMode, leaveDetailsData]);
@@ -768,60 +794,60 @@ export function LeaveActionForm({
       const isExam = !!detailData.isExamLeave;
       return isExam
         ? [
-            {
-              label: "Exam Leave",
-              value:
-                detailData.allocationBreakdown.examLeaveDays ??
-                detailData.allocationBreakdown.examDays ??
-                detailData.summary?.totalRequestedDays ??
-                0,
-              className: "text-amber-700 dark:text-amber-400 font-semibold",
-            },
-          ]
-        : [
-            {
-              label: "Casual Leave",
-              value: detailData.allocationBreakdown.casualLeaveDays ?? 0,
-              className: "text-emerald-700 dark:text-emerald-400 font-semibold",
-            },
-            {
-              label: "Paid Leave",
-              value: detailData.allocationBreakdown.paidLeaveDays ?? 0,
-              className: "text-blue-700 dark:text-blue-400 font-semibold",
-            },
-            {
-              label: "Loss of Pay",
-              value: detailData.allocationBreakdown.lossOfPayDays ?? 0,
-              className: "text-rose-700 dark:text-rose-400 font-semibold",
-            },
-          ];
-    }
-
-    return watchIsExamLeave
-      ? [
           {
             label: "Exam Leave",
-            value: leaveAllocation.examDays || 0,
+            value:
+              detailData.allocationBreakdown.examLeaveDays ??
+              detailData.allocationBreakdown.examDays ??
+              detailData.summary?.totalRequestedDays ??
+              0,
             className: "text-amber-700 dark:text-amber-400 font-semibold",
           },
         ]
-      : [
+        : [
           {
             label: "Casual Leave",
-            value: leaveAllocation.casualDays,
+            value: detailData.allocationBreakdown.casualLeaveDays ?? 0,
             className: "text-emerald-700 dark:text-emerald-400 font-semibold",
           },
           {
             label: "Paid Leave",
-            value: leaveAllocation.paidDays,
+            value: detailData.allocationBreakdown.paidLeaveDays ?? 0,
             className: "text-blue-700 dark:text-blue-400 font-semibold",
           },
           {
             label: "Loss of Pay",
-            value: leaveAllocation.lossOfPayDays,
+            value: detailData.allocationBreakdown.lossOfPayDays ?? 0,
             className: "text-rose-700 dark:text-rose-400 font-semibold",
           },
         ];
+    }
+
+    return watchIsExamLeave
+      ? [
+        {
+          label: "Exam Leave",
+          value: leaveAllocation.examDays || 0,
+          className: "text-amber-700 dark:text-amber-400 font-semibold",
+        },
+      ]
+      : [
+        {
+          label: "Casual Leave",
+          value: leaveAllocation.casualDays,
+          className: "text-emerald-700 dark:text-emerald-400 font-semibold",
+        },
+        {
+          label: "Paid Leave",
+          value: leaveAllocation.paidDays,
+          className: "text-blue-700 dark:text-blue-400 font-semibold",
+        },
+        {
+          label: "Loss of Pay",
+          value: leaveAllocation.lossOfPayDays,
+          className: "text-rose-700 dark:text-rose-400 font-semibold",
+        },
+      ];
   }, [watchIsExamLeave, leaveAllocation, isViewOnly, detailData]);
 
   const hasDatesSelected = !!(watchFromDate && watchToDate);
@@ -1110,7 +1136,28 @@ export function LeaveActionForm({
             </p>
           </div>
         </div>
+        {isViewOnly && canApproveReject && (
+          <CustomButton
+            type="button"
+            className="hidden sm:flex"
+            onClick={() => setIsReviewOpen(true)}
+          >
+            Take Action
+          </CustomButton>
+        )}
       </div>
+
+      {isViewOnly && canApproveReject && (
+        <div className="sm:hidden mb-4">
+          <CustomButton
+            type="button"
+            className="w-full"
+            onClick={() => setIsReviewOpen(true)}
+          >
+            Review Request
+          </CustomButton>
+        </div>
+      )}
 
       <Form {...form}>
         <form
@@ -1229,12 +1276,12 @@ export function LeaveActionForm({
                           {formatDays(
                             isViewOnly
                               ? (leaveDetailsData?.data?.summary
+                                ?.totalRequestedDays ??
+                                leaveDetailsData?.summary
                                   ?.totalRequestedDays ??
-                                  leaveDetailsData?.summary
-                                    ?.totalRequestedDays ??
-                                  leaveDetailsData?.data?.data?.summary
-                                    ?.totalRequestedDays ??
-                                  leaveAllocation.requestedDays)
+                                leaveDetailsData?.data?.data?.summary
+                                  ?.totalRequestedDays ??
+                                leaveAllocation.requestedDays)
                               : leaveAllocation.requestedDays
                           )}{" "}
                           day(s) requested
@@ -1246,10 +1293,10 @@ export function LeaveActionForm({
                           (
                             isViewOnly
                               ? !!(
-                                  leaveDetailsData?.data?.isExamLeave ??
-                                  leaveDetailsData?.isExamLeave ??
-                                  leaveDetailsData?.data?.data?.isExamLeave
-                                )
+                                leaveDetailsData?.data?.isExamLeave ??
+                                leaveDetailsData?.isExamLeave ??
+                                leaveDetailsData?.data?.data?.isExamLeave
+                              )
                               : watchIsExamLeave
                           )
                             ? "grid-cols-1"
@@ -1283,16 +1330,16 @@ export function LeaveActionForm({
                       )}
                       {!(isViewOnly
                         ? !!(
-                            leaveDetailsData?.data?.isExamLeave ??
-                            leaveDetailsData?.isExamLeave ??
-                            leaveDetailsData?.data?.data?.isExamLeave
-                          )
+                          leaveDetailsData?.data?.isExamLeave ??
+                          leaveDetailsData?.isExamLeave ??
+                          leaveDetailsData?.data?.data?.isExamLeave
+                        )
                         : watchIsExamLeave) && (
-                        <p className="mt-2 text-[10px] text-muted-foreground text-center font-bold">
-                          Priority: Casual leaves are allocated first, followed
-                          by Paid leaves, and then Loss of Pay.
-                        </p>
-                      )}
+                          <p className="mt-2 text-[10px] text-muted-foreground text-center font-bold">
+                            Priority: Casual leaves are allocated first, followed
+                            by Paid leaves, and then Loss of Pay.
+                          </p>
+                        )}
                     </div>
                   )}
 
@@ -1334,6 +1381,17 @@ export function LeaveActionForm({
           </div>
         </form>
       </Form>
+
+      {isViewOnly && canApproveReject && (
+        <LeaveApproveRejectModal
+          open={isReviewOpen}
+          onOpenChange={(val) => {
+            setIsReviewOpen(val);
+            // Optionally close the entire form after approval, but since we can't easily detect success vs cancel here, we just close the modal.
+          }}
+          currentRow={displayRow}
+        />
+      )}
     </div>
   );
 }

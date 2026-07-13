@@ -28,17 +28,34 @@ import {
 } from "../ui/dropdown-menu";
 import { NavCollapsible, NavItem, NavLink, type NavGroup } from "./types";
 
-export function NavGroup({ title, items, isCollapsible, defaultOpen }: NavGroup) {
-  const { state } = useSidebar();
-  const href = useLocation({ select: (location) => location.href });
-  const isActive = items.some(item => checkIsActive(href, item, true));
-  const [isOpen, setIsOpen] = useState(defaultOpen ?? isActive ?? false);
+function useScrollToActive<T extends HTMLElement>(isActive: boolean | undefined, ref: React.RefObject<T | null>) {
+  React.useEffect(() => {
+    if (isActive && ref.current) {
+      const timer = setTimeout(() => {
+        ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isActive, ref]);
+}
+
+function useSyncOpenState(isActive: boolean | undefined, defaultState: boolean | undefined) {
+  const [isOpen, setIsOpen] = useState(defaultState ?? false);
 
   React.useEffect(() => {
     if (isActive) {
       setIsOpen(true);
     }
   }, [isActive]);
+
+  return [isOpen, setIsOpen] as const;
+}
+
+export function NavGroup({ title, items, isCollapsible, defaultOpen }: NavGroup) {
+  const { state } = useSidebar();
+  const href = useLocation({ select: (location) => location.href });
+  const isActive = items.some(item => checkIsActive(href, item, true));
+  const [isOpen, setIsOpen] = useSyncOpenState(isActive, defaultOpen ?? isActive ?? false);
 
   // If the group is collapsible (like Masters), render with toggle functionality
   if (isCollapsible) {
@@ -112,14 +129,7 @@ const SidebarMenuLink = ({ item, href }: { item: NavLink; href: string }) => {
   const navigate = useNavigate();
   const isActive = checkIsActive(href, item);
   const ref = React.useRef<HTMLLIElement>(null);
-
-  React.useEffect(() => {
-    if (isActive && ref.current) {
-      setTimeout(() => {
-        ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      }, 300);
-    }
-  }, [isActive]);
+  useScrollToActive(isActive, ref);
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
@@ -152,14 +162,7 @@ const SubItemLink = ({ subItem, href }: { subItem: NavItem; href: string }) => {
   const navigate = useNavigate();
   const isActive = checkIsActive(href, subItem);
   const ref = React.useRef<HTMLLIElement>(null);
-
-  React.useEffect(() => {
-    if (isActive && ref.current) {
-      setTimeout(() => {
-        ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      }, 300);
-    }
-  }, [isActive]);
+  useScrollToActive(isActive, ref);
 
   return (
     <SidebarMenuSubItem ref={ref}>
@@ -189,13 +192,7 @@ const SidebarMenuCollapsible = ({
   href: string;
 }) => {
   const isActive = checkIsActive(href, item, true);
-  const [isOpen, setIsOpen] = useState(item.defaultClosed ? false : isActive);
-
-  React.useEffect(() => {
-    if (isActive) {
-      setIsOpen(true);
-    }
-  }, [isActive]);
+  const [isOpen, setIsOpen] = useSyncOpenState(isActive, item.defaultClosed ? false : isActive);
 
   return (
     <Collapsible
